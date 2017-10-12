@@ -29,6 +29,15 @@ Seed depends on Common Lisp, ASDF and Quicklisp. The only Common Lisp implementa
 
 **On some systems, the install process encounters errors compiling the static-vectors and fast-io packages. It's usually possible to complete the installation without problems by choosing to "continue" or "accept" when these errors occur. They appear to be connected to the presence of outdated packages in Quicklisp.**
 
+### Preparing Quicklisp
+
+Enter your Quicklisp local-projects directory (usually ~/quicklisp/local-projects) and create a symbolic link to the directory where you cloned the Seed repository. For example, if you cloned the repo to ~/mystuff/seed and your Quicklisp directory is ~/quicklisp/, enter:
+
+```
+cd ~/quicklisp/local-projects
+ln -s ~/mystuff/seed
+```
+
 ### Using the automatic installer
 
 Seed comes with an installation program called, appropriately enough, install-seed.lisp. To use it, enter the Seed repository directory and load the install-seed.lisp file using your Common Lisp implementation. For example, if you are using SBCL, type:
@@ -41,14 +50,7 @@ This should automatically set Seed up, install its dependencies and build the co
 
 ### Installing Seed manually
 
-Enter your Quicklisp local-projects directory (usually ~/quicklisp/local-projects) and create a symbolic link to the directory where you cloned the Seed repository. For example, if you cloned the repo to ~/mystuff/seed and your Quicklisp directory is ~/quicklisp/, enter:
-
-```
-cd ~/quicklisp/local-projects
-ln -s ~/mystuff/seed
-```
-
-Then, start a Common Lisp REPL and enter:
+To complete the installation manually, start a Common Lisp REPL and enter:
 
 ```
 (ql:quickload 'seed)
