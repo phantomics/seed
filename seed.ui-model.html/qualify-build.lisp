@@ -13,9 +13,9 @@
 						       :ignore-error-status t)
 				   (declare (ignore 1st 2nd))
 				   error-code))))
-	  (lacks-required (loop for criterion in criteria
-			     append (if (not (funcall command-exists (first criterion)))
-					(list (second criterion))))))
+	  (lacks-required (loop :for criterion :in criteria
+			     :append (if (not (funcall command-exists (first criterion)))
+					 (list (second criterion))))))
      (if lacks-required
 	 (progn (princ (format nil "~%~%~a ~%~%The browser interface cannot be built because ~a missing. Correct the following problems and try again: ~{~%  ~a~}~%~%"
 			       ,(first failure)

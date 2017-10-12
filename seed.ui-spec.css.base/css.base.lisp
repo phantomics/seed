@@ -731,7 +731,7 @@
 
 (defmacro point-casters (&rest plots)
   "Create the styles for the divs used to cast the scrolling multiple shadows."
-  (loop for index from 0 to (1- (length plots))
+  (loop :for index :from 0 :to (1- (length plots))
      append `((,(intern (format nil "#star-caster-~d" index))
 	       :width ,(format nil "~dpx" (getf (nth index plots) :size))
 	       :height ,(format nil "~dpx" (getf (nth index plots) :size))

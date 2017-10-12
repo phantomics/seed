@@ -42,18 +42,18 @@
   "Build a discrete key UI specification from the given key combinations."
   (cons 'build-key-ui 
 	; if a list of keystrokes is given, create duplicate behavior for each keystroke
-	(loop for combo in combos append (if (listp (first combo))
-					     (mapcar (lambda (combo-element) (cons combo-element (rest combo)))
-						     (first combo))
-					     (list (cons (first combo)
-							 (rest combo)))))))
+	(loop :for combo :in combos :append (if (listp (first combo))
+						(mapcar (lambda (combo-element) (cons combo-element (rest combo)))
+							(first combo))
+						(list (cons (first combo)
+							    (rest combo)))))))
 
 (defmacro nav-key-ui (direction-aliases &rest combos)
   "Build a navigational key UI from the given combinations, combining one or more sets of directional keys
    with each given set of combos."
   (cons 'build-key-ui
-	(loop for combo in combos append
-	     (loop for sub-combo in (mapcar (lambda (combo-element direction)
+	(loop :for combo :in combos :append
+	   (loop :for sub-combo :in (mapcar (lambda (combo-element direction)
 					      (mapcar (lambda (direction-alias)
 					                ; If the combo key string is empty, thus specifying the
 					                ; function of the dirrectional keys when pressed alone,
@@ -65,9 +65,9 @@
 							      combo-element))
 						      direction-aliases))
 					    (rest combo)
-					    (loop for direction from 0 to (1- (length (first direction-aliases)))
-					       collect direction))
-		append sub-combo))))
+					    (loop :for direction :from 0 :to (1- (length (first direction-aliases)))
+					       :collect direction))
+	      append sub-combo))))
 
 (defpsmacro portal-action (action-name &rest params)
   "This macro is used in key definition files to wrap portal actions in functions for use in response to key commands."

@@ -474,9 +474,9 @@
 
 (defmacro reflect (&key (atom nil) (form nil))
   `(progn ,@(if atom (macroexpand (cons 'set-atom-reflection
-					(loop for spec in atom append (macroexpand (list spec))))))
+					(loop :for spec :in atom :append (macroexpand (list spec))))))
 	  ,@(if form (macroexpand (cons 'set-form-reflection
-				        (loop for spec in form append (macroexpand (list spec))))))))
+				        (loop :for spec :in form :append (macroexpand (list spec))))))))
 
 (defmacro specify-atom-reflection (name &rest params)
   "Define (part of) an atom reflection specification to determine the behavior of seed.modulate."
@@ -515,7 +515,7 @@
 		   (value (getf item :vl))
 		   (macros (getf item :am)))
 	       (cond ,@(append '(((not type) item))
-			       (loop for entry in entries append
+			       (loop :for entry :in entries :append
 				    (cond ((eq :type-is (first (getf entry :predicate)))
 					   `(((string= (first type)
 						       ,(string-downcase (getf (getf entry :predicate)
@@ -545,7 +545,7 @@
 	     (setf (of-properties :length ,meta) ; get length of all forms to assign
 		   (1- (length form)))
 	     (cond ,@(append 
-		      (loop for entry in entries append
+		      (loop :for entry :in entries :append
 			   (append (cond ((eq :enclosed-by (first (getf entry :predicate)))
 					  (let ((symbols (getf (getf entry :predicate) :enclosed-by)))
 					    (mapcar (lambda (symbol)
@@ -577,16 +577,16 @@
 		   form 
 		   (decode-form 
 		    (cond ,@(append 
-			     (loop for entry in entries append
-				  (append (cond ((eq :enclosed-by (first (getf entry :predicate)))
-						 (let ((symbols (getf (getf entry :predicate) :enclosed-by)))
-						   (mapcar (lambda (symbol)
-							     `((string= ,macro ,(string-downcase symbol))
-							       ,@(if (getf entry :decode)
-								     (getf entry :decode)
-								     `((list (intern (string-upcase ,macro))
-									     form)))))
-							   symbols))))))
+			     (loop :for entry :in entries :append
+				(append (cond ((eq :enclosed-by (first (getf entry :predicate)))
+					       (let ((symbols (getf (getf entry :predicate) :enclosed-by)))
+						 (mapcar (lambda (symbol)
+							   `((string= ,macro ,(string-downcase symbol))
+							     ,@(if (getf entry :decode)
+								   (getf entry :decode)
+								   `((list (intern (string-upcase ,macro))
+									   form)))))
+							 symbols))))))
 			     '((t form))))
 		    (rest ,macros)
 		    original-form)))))))
