@@ -1511,14 +1511,14 @@
 				      ;(chain console (log "DAT1" data))
 				      (callback data))
 			    error (lambda (data err) (chain console (log 11 data err))))))))
-	  :should-component-update
-	  (lambda (next-props next-state)
-	    (or t;(@ next-state just-updated)
-	    	(and (@ this state context in-focus)
-		     ; don't update if an action was received, since the
-		     ; props are always repropagated after the action is completed and nullified
-	    	     (and (not (@ this state action))
-			  (@ this state context is-point)))))
+	  ;; :should-component-update
+	  ;; (lambda (next-props next-state)
+	  ;;   (or (@ next-state just-updated)
+	  ;;   	(and (@ this state context in-focus)
+	  ;; 	     ; don't update if an action was received, since the
+	  ;; 	     ; props are always repropagated after the action is completed and nullified
+	  ;;   	     (and (not (@ this state action))
+	  ;; 		  (@ this state context is-point)))))
 	  :component-did-update
 	  (lambda ()
 	    (defvar self this)
@@ -2847,20 +2847,24 @@
 		     (new-item (create vl "" ty (list "symbol")) ))
 		 (chain this (seek (@ this state point) (@ this state point-attrs depth) new-space
 				   (lambda (target target-list target-parent target-index path)
-				     (if (= 0 (@ params to 0)) ; if this is top level...
-					 (chain target-parent (splice (+ (@ params to 1) target-index)
+				     (if (= 0 (@ params vector 0)) ; if this is top level...
+					 (chain target-parent (splice (+ (@ params vector 1) target-index)
 								      0 new-item))
-					 (if (and target-list (< 0 (@ params to 0)))
+					 (if (and target-list (< 0 (@ params vector 0)))
 					     (chain target-list (push new-item))
 					     (chain target-parent (splice target-index 1
 									  (list (if (and target-list
-											 (> 0 (@ params to 0)))
+											 (> 0 (@ params vector 0)))
 										    target-list target)))))))))
-		 (chain self (set-state (create action-registered nil)))
+		 ;(chain self (set-state (create action-registered nil)))
 		 ;; TODO: this action is not registered, therefore no rendering happens before the grow
+		 ;; AND figure out why movement can't be delayed until after refresh
 		 (chain self state context methods
 			(grow-branch new-space (create)
-				     (lambda () (chain self (move (list 0 (- (@ params to 1))))))))))
+				     ;; (lambda () 
+				     ;;   (cl :sta (@ self state))
+				     ;;   (chain self (move (list 0 (- (@ params to 1))))))
+				     ))))
 	      ("triggerSecondary"
 	       (if (not (= true (@ next-props data meta locked)))
 		   (progn (chain self (set-state (create action-registered nil)))
@@ -3003,12 +3007,6 @@
 				   (lambda (d) (chain j-query (extend (@ props data) (@ d data))))
 				   (lambda (pd) (@ pd data data)))))
 	      state))
-	  ;; :modulate-methods
-	  ;; (lambda (methods)
-	  ;;   (let ((self this))
-	  ;;     (chain j-query (extend (create set-delta
-	  ;; 				     (lambda (value) (extend-state point-attrs (create delta value))))
-	  ;; 			     methods))))
 	  :modulate-methods
 	  (lambda (methods)
 	    (let ((self this))
@@ -3032,11 +3030,6 @@
 				     (lambda (space meta callback)
 				       (chain methods (grow (@ self state data id) 
 							    space meta callback))))))))
-	  ;; :derive-metadata
-	  ;; (lambda ()
-	  ;;   (let ((self this))
-	  ;;     (create point-to (if (@ self state point)
-	  ;; 			   (@ self state point)))))
 	  :set-confirmed-value
 	  (lambda (value)
 	    (chain this (set-state (create confirmed-value value))))
@@ -3106,7 +3099,9 @@
 	      (setf (getprop matrix y x)
 		    (if (= "[object Array]" (chain -object prototype to-string (call original-value)))
 			(if (not (null value))
-			    (create type "__number"
+			    ; assign the unknown type for now; 
+			    ; an accurate type will be assigned server-side
+			    (create type "__unknown"
 				    data-inp value))
 			(if (null value)
 			    (list)

@@ -236,7 +236,8 @@
 			     ; the initial atom marker is now set to nil
 			     (if (and (getf object :vl)
 				      (of-meta :package)
-				      (string= "symbol" (first (getf object :ty)))
+				      (or (string= "symbol" (first (getf object :ty)))
+					  (string= "keyword" (first (getf object :ty))))
 				      ; check that value is not nil
 				      ; also check that value is not blank
 				      (not (= 0 (length (getf object :vl))))
@@ -244,12 +245,12 @@
 				      ; the # character causes problems - TODO: a better way to do this?
 				 (let ((sym (intern (string-upcase (getf object :vl))
 						    (package-name (find-package (of-meta :package))))))
-				   (list (if (macro-function sym)
-					     "form-macro"
-					     (if (fboundp sym)
-						 "form-function"
-						 (if (keywordp sym)
-						     "form-keyword-list" "form-list"))))))))
+				   (list (if (string= "keyword" (first (getf object :ty)))
+					     "form-keyword-list"
+					     (if (macro-function sym)
+						 "form-macro"
+						 (if (fboundp sym)
+						     "form-function" "form-list"))))))))
 		  (getf object :ty)))
 
     (if (not (of-meta :glyphs))

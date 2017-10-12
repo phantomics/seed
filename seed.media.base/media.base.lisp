@@ -2,6 +2,8 @@
 
 (in-package #:seed.generate)
 
+(use-package 'seed.model.sheet)
+
 (specify-media
  media-spec-base
  ; read data from a file
@@ -240,7 +242,7 @@
 				     :data-inp cb-data))
 			      (t cb-data))))
 		(branch-image branch))
-	      (array-map #'postprocess-structure (list-to-array data 2))))
+	      (array-map #'interpret-cell (array-map #'postprocess-structure (list-to-array data 2)))))
 	`((if (get-param :from-clipboard)
 	      (apply #'aref (cons data (reverse (get-param :point))))
 	      (array-to-list (array-map #'preprocess-structure data)))))
@@ -248,7 +250,6 @@
  ; format/unformat the matrix content of a spreadsheet for processing
  (sheet-content (follows reagent)
 		 `((funcall (lambda (content)
-			      (print (list :con content))
 			      (append (list (first content) (second content)
 					    (funcall (lambda (c) (list (first c) (second c) data))
 						     (third content)))

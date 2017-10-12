@@ -5,6 +5,7 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
+  :depends-on (#:seed.model.sheet)
   :components ((:file "extension")
                (:file "media.base")))
 

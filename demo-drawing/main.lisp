@@ -22,6 +22,12 @@
      (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
       :IF (:TYPE :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
      (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+      :IF (:REMOVABLE T :TITLE "Big Blue Circle" :TYPE :ITEM))
+     (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+      :IF (:REMOVABLE T :TITLE "Small Green Circle" :TYPE :ITEM))
+     (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+      :IF (:TYPE :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
+     (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
       :IF (:REMOVABLE T :TITLE "Big Blue Circle" :TYPE :ITEM)))
     :IF
     (:OPTIONS
@@ -37,4 +43,4 @@
   :FORMAT SPIRAL-POINTS-EXPAND))
 (LET ((A 1) (B 2))
   (+ (* A 3) (+ B 1)))
-(LIST #\a #\e NIL (CAR (CDR (LIST 1 2))))
+(LIST #\a t NIL (CAR (CDR (LIST 1 2))))

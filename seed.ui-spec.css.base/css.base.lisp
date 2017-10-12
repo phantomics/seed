@@ -96,7 +96,7 @@
 	 (.content.type-string
 	  (.text :color "#2aa198")
 	  ((:and .text :before)
-	   :content "\\\"")))))
+	   :content "\"")))))
 
       ; styles for the overview pane
       (.overview
@@ -918,8 +918,8 @@
 			  :animation (anim-sky4 320s linear infinite))
 			 (:plot
 			  ,(scatter-stars 
-			    200 :x-range (lambda () (random 3000))
-			    :y-range (lambda () (+ 200 (random 160) (random 160)))
+			    400 :x-range (lambda () (random 3000))
+			    :y-range (lambda () (+ 200 (random 240) (random 240)))
 			    :array (list :block-width (lambda () (+ 3 (random 12) (random 12)))
 					 :block-height (lambda () (+ 2 (random 8) (random 8)))
 					 :block-chance (lambda () (= 0 (+ (random 2))))
