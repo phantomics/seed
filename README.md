@@ -21,7 +21,7 @@ These ideas have been the foundation of Seed. Your experience with this system w
 Seed can be seen as a type of IDE. It integrates ASDF, the standard Common Lisp build system, and the software systems it's used to develop are often expressed as ASDF systems. These systems are divided into branches, each of which expresses input to and output from the system. In a given Seed system, there is typically a .seed file located in the package directory that specifies the system and the behavior of each branch.
 
 
-## The First Step: Building and Running Seed
+## The First Step: Installing and Running Seed
 
 Seed depends on Common Lisp, ASDF and Quicklisp. The only Common Lisp implementation tested so far has been Steel Bank Common Lisp (SBCL). Seed also requires Node.js, NPM and Gulp to build the Javascript that runs its Web interface. Install the required software if you don't have it, then clone this repository.
 
