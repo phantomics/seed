@@ -1,0 +1,22 @@
+{
+  "name": "seed-browserSpec-style-base",
+  "version": "1.0.0",
+  "description": "Foundational CSS modules for Seed's user interface.",
+  "main": "style.base.lisp",
+  "dependencies": {
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "react-select": "^1.0.0-rc.10"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "lisp",
+    "common",
+    "lisp",
+    "seed",
+    "repl",
+    "react"
+  ],
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0"
+}

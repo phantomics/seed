@@ -1,0 +1,31 @@
+;;;; ui-model.stage.lisp
+
+(in-package #:seed.ui-model.stage)
+
+(defmacro stage (&key (systems nil) (arch nil) (thrust nil))
+  (labels ((nest (media-list &optional output)
+	     (if media-list
+		 (nest (rest media-list)
+		       (macroexpand (if (not output)
+					(cons (first media-list)
+					      (cons nil systems))
+					(list (first media-list)
+					      output))))
+		 output))
+	   (nest-br (media-list &optional output)
+	     (if media-list
+		 (nest (rest media-list)
+		       (macroexpand (append (if (listp (first media-list))
+						(first media-list)
+						(list (first media-list)))
+					    (list (if (not output)
+						      (intern "BRANCHES" (package-name *package*))
+						      output)))))
+		 output)))
+    `(progn (defvar ,(intern "*STAGE-ARCH*" (package-name *package*)))
+	    (defvar ,(intern "*STAGE-THRUST*" (package-name *package*)))
+	    (setq ,(intern "*STAGE-ARCH*" (package-name *package*))
+		  (quote ,(macroexpand (nest arch)))
+		  ,(intern "*STAGE-THRUST*" (package-name *package*))
+		  (lambda (,(intern "BRANCHES" (package-name *package*)))
+		    ,(macroexpand (nest-br thrust)))))))
