@@ -242,7 +242,8 @@
 				     :data-inp cb-data))
 			      (t cb-data))))
 		(branch-image branch))
-	      (array-map #'interpret-cell (array-map #'postprocess-structure (list-to-array data 2)))))
+	      (array-map #'seed.model.sheet:interpret-cell
+			 (array-map #'postprocess-structure (list-to-array data 2)))))
 	`((if (get-param :from-clipboard)
 	      (apply #'aref (cons data (reverse (get-param :point))))
 	      (array-to-list (array-map #'preprocess-structure data)))))
