@@ -196,7 +196,7 @@
 								     		 :id "package-info"
 								     		 (:span "package: ")
 								     		 (:-seed-symbol
-								     		  :symbol (@ self props data
+								     		  :symbol (@ self props data 
 												  content
 								     				  pr pkd))))
 								      (:span :class-name
@@ -240,17 +240,18 @@
     					(< 1 (@ content-meta breadth)))
     				   (panic:jsl (:-overlay-trigger
     					       :placement "right"
-    					       :overlay (panic:jsl (:-tooltip
+    					       :overlay (panic:jsl (:-tooltip 
 								    :id "package-name-display"
 								    (:span "package: ")
 								    (:-seed-symbol :symbol (@ content pr pkd))))
-    					       (:span :class-name
-						      (+ "package-tag"
-							 (if (and (@ self props data content pr)
-								  (= (@ self props data content pr pkg)
-								     (@ self props context working-system)))
-							     " native" ""))
-    						      (:span
+    					       (:span :class-name (+ "package-tag"
+								     (if (and
+									  (@ self props data content pr)
+									  (= (@ self props data content pr pkg)
+									     (@ self props context working-system)))
+									 " native" ""))
+    						      (:span ;(chain (@ content pr pkg)
+				                       ;    (map (lambda (item) (@ item 0))))
 						       (:-seed-symbol
 							:symbol (@ content pr pkd)
 							:common (and (@ self props data content pr)
@@ -1351,6 +1352,7 @@
 				     (if (not (@ self state space)) 0
 					 (chain self state space (slice 1)
 						(map (lambda (item index)
+						       (cl :ii item)
 						       (let ((index-item (if (= "[object Array]" 
 										(chain -object prototype to-string 
 										       (call item)))
@@ -1625,6 +1627,7 @@
 		(@ this props data element-specs))
 	   (let ((display #()))
 	     ;(cl :scc (@ this state data succession))
+	     ;(cl :sp (@ this props data element-specs))
 	     (loop for glix from 0 to (1- (@ self state space length))
 		do (if (getprop (@ self props data element-specs) glix)
 		       (let* ((origin (getprop (@ self props data element-specs) glix))
@@ -1652,8 +1655,7 @@
 									   (= index
 									      (1- (@ (getprop (@ self state space) 
 											      glix) length)))
-									   (= glix
-									      (@ self props data base-atom))
+									   (= glix (@ self props context base-atom))
 									   )))))))))))
 			 ;; (chain console (log 100 glix origin (chain (j-query (getprop (@ self props table-refs) 
 			 ;; 				       (+ "a" glix))) (offset-parent) (attr "class"))
@@ -1833,6 +1835,7 @@
 	  :set-point
 	  (lambda (target path)
 	    ;(if (= nil target) (cl :nil (@ this state) (@ this props)))
+	    ;(cl :tg target)
 	    (let ((self this)
 		  (path (if path path (list (@ target ly) (@ target ct)))))
 	      ;(cl :set (list (@ target ly) (@ target ct) (@ target dp)) target)
@@ -1850,7 +1853,7 @@
 									       (@ self state point-attrs)
 									       (create index (@ target ix)
 										       fresh false
-										       props
+										       props 
 										       (chain
 											j-query
 											(extend t (create)
@@ -1895,46 +1898,30 @@
 	  	   (to-seek (@ this state point)))
 	      ;(cl :ss (@ self state point) (@ self state point-attrs))
 	      (if (= "full" (@ this props context view-scope))
-	  	  (progn (setf (@ to-seek 0) (max 0 (if (= 0 (@ motion 0))
-							(@ self state point-attrs depth)
-							(if (< 0 (@ motion 0))
-							    (+ (@ to-seek 0) (@ motion 0))
-							    (+ (@ self state point 0) (@ motion 0))))))
+	  	  (progn (setf (@ to-seek 0) (max 0 (if (>= (@ motion 0) 0)
+	  						(+ (@ to-seek 0) (@ motion 0))
+	  						(+ (@ self state point 0) (@ motion 0)))))
 	  		 (loop for mix from 0 to (1- (abs (@ motion 1)))
-  		            ; axis is inverted, hence < instead of >
-	  		    do (setf (@ to-seek 1) (max 0 (if (> 0 (@ motion 1))
-							      (+ (@ self state point-attrs start)
-								 (@ self state point-attrs breadth))
-							      (1- (@ self state point-attrs start))))))
-			 ;(cl :m0 (@ to-seek 0) (@ self state point-attrs depth) (@ self state point 0))
-			 ;(cl :tos to-seek)
+	  		    do (setf (@ to-seek 1)
+	  			     (max 0 (if (< (@ motion 1) 0) ; axis is inverted, hence < instead of >
+	  					(+ (@ self state point-attrs start)
+	  					   (@ self state point-attrs breadth))
+	  					(1- (@ self state point-attrs start))))))
 			 (chain self (seek to-seek (@ to-seek 0) nil
 					   (lambda (target list parent index path)
-					     ;; (cl :ta (if (= 0 (@ motion 0))
-					     ;; 		 (@ self state point-attrs depth)
-					     ;; 		 (if (> 0 (@ motion 0))
-					     ;; 		     (+ (@ motion 0)
-					     ;; 			(@ target ly))
-					     ;; 		     (+ (@ motion 0)
-					     ;; 			(@ self state point-attrs
-					     ;; 				depth)))))
+					     ;(cl :ts to-seek (@ target ly))
 					     (let ((new-target
 						    (chain j-query
 							   (extend (create)
-								   target
-								   (create dp (if (= 0 (@ motion 0))
+								   target 
+								   (create dp (+ (@ self state point-attrs depth)
+										 (@ motion 0))
+									   ly (if (= 0 (@ motion 0))
 										  (@ self state point-attrs depth)
-										  (if (> 0 (@ motion 0))
-										      (+ (@ motion 0)
-											 (@ target ly))
-										      (max (+ (@ motion 0)
-											      (@ self state 
-												      point-attrs
-												      depth))
-											   (@ target ly)))))))))
+										  (@ target ly)))))))
 					       ;(cl :tr motion (@ new-target dp) (@ new-target ly) new-target)
 					       ; extend the target data so that the layer is set as the sought
-					       ; x-coordinate as long as the point is moving vertically or inward. x
+					       ; x-coordinate as long as the point is moving vertically or inward.x
 					       ; thus, the layer will remain the same when moving vertically,
 					       ; preventing it from being knocked down to a low level when
 					       ; traversing shallow lists, and the point will always decrement
@@ -1942,8 +1929,7 @@
 					       (chain self (set-point new-target path)))))))
 		  (let ((target-index (+ (getprop (@ self state point) (1- (@ self state point length)))
 					 (- (@ motion 1)))))
-		    ; don't seek if the target index is less than 0
-		    ; this is impossible and causes an infinite loop
+		    ; don't seek if the target index is less than 0; this is impossible and causes an infinite loop
 		    (if (<= 0 target-index)
 			(chain self (seek (list target-index)
 					  -1 nil (lambda (target list parent index path)
@@ -1975,7 +1961,9 @@
 				 (setq found-form (getprop form fix)
 				       at-end this-end
 				       form-index fix)))
-			;(cl :ff coords found-form index form-index (not at-end) (= -1 layer) (< 0 layer))
+			;; (cl :ff coords found-form index form-index (not at-end)
+			;;     (= -1 layer)
+			;;     (< 0 layer))
 			(chain path (push (- form-index (if (and (not (= "undefined" (typeof (@ form 0 ty))))
 								 (= "plain" (@ form 0 ty 0)))
 							    1 0))))
@@ -2019,25 +2007,51 @@
 	  :build
 	  (lambda (state)
 	    (defvar self this)
-	    (let* ((new-space (chain j-query (extend #() (@ state space)))))
+	    (let* ((new-space (chain j-query (extend #() (@ state space))))
+		   (new-space2 (chain j-query (extend #() new-space)))
+		   )
 	      ; the element-specs are set to nil whenever the table is rebuilt
 	      ; so that new coordinates may be sent to the glyph-drawing component
 	      ;(cl :aa (@ self state point-attrs index))
 	      (setf (@ self element-specs) #())
+	      ;; (chain self
+	      ;; 	     (build-form2 new-space2
+	      ;; 			  (lambda (meta state)
+	      ;; 			    (cl :out9 meta)
+	      ;; 			    (chain self (set-state (chain j-query
+	      ;; 			    				 (extend state
+	      ;; 			    					 (create space new-space
+	      ;; 			    						 rendered-content (@ meta output)
+	      ;; 			    						 point-attrs (@ state point-attrs)
+	      ;; 			    						 meta (chain
+	      ;; 									       j-query
+	      ;; 									       (extend t
+	      ;; 										       (create)
+	      ;; 										       (@ self state 
+	      ;; 											       data meta)
+	      ;; 										       meta)))))))
+	      ;; 			    )))
+	      ;; (cl :ns2 new-space2)
 	      (chain self
-	      	     (build-form2 new-space
-	      			  (lambda (meta state)
-	      			    (chain self (set-state (chain j-query
-	      			    				 (extend state
-	      			    					 (create space new-space
-	      			    						 rendered-content2 (@ meta output)
-	      			    						 point-attrs (@ state point-attrs)
-	      			    						 meta (chain
-	      			    						       j-query
-	      			    						       (extend t (create)
-	      			    							       (@ self state 
-	      			    								       data meta)
-	      			    							       meta))))))))))))
+	      	     (build-form new-space
+	      			 (lambda (meta table-output)
+	      			   ;; (cl :tabo table-output (@ self state point-attrs))
+	      			   ;; (if t (cl :ns new-space (jstr new-space)))
+	      			   ;; (cl :bb (@ self state point-attrs index))
+	      			   (chain self 
+	      			   	  (set-state 
+	      				   (chain j-query
+	      					  (extend state
+	      						  (create space new-space
+	      							  rendered-content table-output
+	      							  point-attrs (@ state point-attrs)
+	      							  meta
+	      							  (chain j-query
+	      								 (extend t 
+	      									 (@ state data meta)
+	      									 meta)))))))
+	      			   )))
+	      ))
 	  :build-form2
 	  (lambda (data callback meta state)
 	    (let ((self this)
@@ -2052,15 +2066,14 @@
 	  	  (increment-breadth (lambda (number) (setf (@ data 0 br) (+ (if number number 1)
 									     (@ data 0 br))))))
 	      (if (@ data 0)
-	  	  (progn (setf (@ data 0 br) 0
-			       (@ data 0 sl) 0)
-			 ; breadth is initially 0, as is the list of sub-lists
-			 (if (and (@ data 0 fm) (< 0 (@ data 0 fm length)))
+	  	  (progn (setf (@ data 0 br) 0)
+			 ; breadth is initially 0
+			 (if (and (@ data 0 fm) (> (@ data 0 fm length) 0))
 	  		     (setf (@ state reader-context) (chain data 0 fm)
 	  			   (@ meta context-start) (@ data 0 ix)
 	  			   context-begins true))
 			 ; handle reader macros for forms
-	  		 (if (and (@ data 0 am) (< 0 (@ data 0 am length)))
+	  		 (if (and (@ data 0 am) (> (@ data 0 am length) 0))
 	  		     (setf (@ state reader-context) (@ data 0 am)
 	  			   (@ meta context-start) (@ data 0 ix)
 	  			   context-begins true))
@@ -2082,7 +2095,12 @@
 	  		       			 (chain state reader-context (concat (list "start")))
 	  		       			 (@ state reader-context)))
 			 ; assign column, row and reader macro content
-	  		 (chain data
+	  		 (if (and is-plain-list (= 0 (@ meta output length)))
+	  		     (setf (@ meta output 0) (@ data 0)))
+	  		 ; assign first data item to output if there's no output, it must be of "plain" type
+	  		 (chain (if (and is-start is-plain-list)
+	  			    (chain data (slice 1))
+	  			    data)
 	  			(map (lambda (datum index)
 	  			       (if (and (= 1 index)
 						(not is-plain-list))
@@ -2094,17 +2112,13 @@
 				       ; increment the maximum depth
 	  			       (if (= "[object Array]" (chain -object prototype to-string (call datum)))
 					   ; if this item is a list
-	  				   (progn
-					     (if (= "plain" (@ datum 0 ty 0))
-					         ; add the length of the sub-list, minus the first element,
-					         ; to the total length of this list's sub-lists
-						 (setf (@ data 0 sl) (+ (@ data 0 sl)
-									(- (@ datum length) 2))))
+	  				   (let ((new-state (create)))
 	  				     (if (and (or (and is-plain-list (< 0 index))
 							  ; start incrementing right away in plain lists,
 							  ; like the main form list
 							  (< 1 index))
-						      (not (and is-plain-list (= 1 index))))
+						      (not (and is-plain-list (not is-start)
+								(= 1 index))))
 	  					 (setf (@ state row) (1+ (@ state row))))
 					     ; increment the row, but not if this is the form at the beginning of
 					     ; a plain list and this is not the plain list that encloses the
@@ -2114,6 +2128,7 @@
 						       (@ datum 0 ix)))
 					     (setf last-index (@ datum 0 ix))
 					     ; set succession data for drawing glyphs
+
 	  				     (chain self (build-form2
 	  						  datum (lambda (output sub-state)
 	  							  (increment-breadth  (1+ (- (@ sub-state row)
@@ -2121,12 +2136,9 @@
 								  ; increment the breadth based on the difference
 								  ; between the current row and the row reached
 								  ; within the sub-list
-	  							  (setf (@ state row) (+ (@ sub-state row))))
-	  						  meta (chain j-query (extend (create) 
-										      state
-										      (if is-plain-list
-											  (create)
-											  (create)))))))
+	  							  (setf (@ state row)
+	  								(+ (@ sub-state row))))
+	  						  meta (chain j-query (extend new-state state)))))
 					   ; if this item is an atom
 	  				   (let ((pr (chain j-query 
 	  						    (extend t (create)
@@ -2140,8 +2152,11 @@
 							    (setf (getprop meta "succession" last-index)
 								  (@ datum ix)))
 							(setf last-index (@ datum ix))))
+	  				     ;(cl :dx datum (jstr (@ state row)))
 					     (if (< 0 index) (increment-breadth))
-	  				     (if (or (and is-plain-list (< 0 index))
+	  				     (if (or (and is-plain-list
+							  ;(not is-start)
+							  (< 0 index))
 						     (< 1 index))
 	  					 (setf (@ state row) (1+ (@ state row))))
 	  				     (setf (@ datum ct) (@ state row)
@@ -2156,21 +2171,196 @@
 	  										     "start")))
 	  								(list (@ datum am) "start"))
 	  							    (@ state reader-context)))
-					     ; increment the column if the list head is a plain list marker
-					     ; and this is not the plain list that encloses the form;
-					     ; this ensures that the elements within the plain list will have
-					     ; their layers correctly marked. x
-					     (if (and (not is-start)
-						      (= "plain" (@ datum ty 0)))
-					     	 (setf (@ state column) (1+ (@ state column))))
 					     ; push datum to output array; the index is incremented because
 					     ; the indices start with 0 but the array indices start with 1
-	  				     (if (= "undefined" (typeof (getprop meta "output" (@ state row))))
-	  					 (setf (getprop meta "output" (@ state row))
+	  				     (if (= "undefined" (typeof (getprop meta "output" (1+ (@ state row)))))
+	  					 (setf (getprop meta "output" (1+ (@ state row)))
 	  					       #()))
-	  				     (chain (getprop meta "output" (@ state row))
+	  				     (chain (getprop meta "output" (1+ (@ state row)))
 	  					    (push datum)))))))
 	  		 (funcall callback meta state)))))
+
+	  :build-form
+	  (lambda (data callback output state meta row column)
+	    ; TODO: check if data is a list
+	    ;(cl :D (@ data 0 vl) column)
+	    (let ((self this)
+		  (output (if output output (list (list))))
+		  (meta (if meta meta (create succession #() max-depth 0)))
+		  (state (if state state (create)))
+		  (row (if row row 0))
+		  (column (if column column 0))
+		  (initial-row row)
+		  (last-index null)
+		  (breadth 0)
+		  (each-meta (create))
+		  (context-begins false)
+		  (this-context #()))
+	      (if (not (@ data 0))
+		  (funcall callback meta #())
+		  (progn
+		    ; concatenate atom and form macros into macro context
+		    (if (@ data 0) (progn (if (and (@ data 0 fm)
+						   (> (@ data 0 fm length) 0))
+					      (setf (@ state reader-context) (chain data 0 fm)
+						    this-context (chain data 0 fm)
+						    (@ meta context-start) (@ data 0 ix)
+						    context-begins true))
+					  (if (and (@ data 0 am)
+						   (> (@ data 0 am length) 0))
+					      (setf (@ state reader-context) (@ data 0 am)
+						    this-context (chain data 0 am)
+						    (@ meta context-start) (@ data 0 ix)
+						    context-begins true))
+					  (if (@ data 0 mt)
+					      (progn (setf (@ data 0 pr)
+							   (create meta (@ data 0 mt)))
+						     (if (@ data 0 mt if)
+							 (setf (@ data 0 md)
+							       (lambda (fn) (setf data (funcall fn data)))
+							       (@ data 0 pr count) (1- (@ data length))))
+						     (if (@ data 0 mt each)
+							 (setf each-meta
+							       (@ data 0 mt each)
+							       (@ data 0 pr meta)
+							       (chain j-query (extend t (create)
+										      (@ data 0 mt each)
+										      (@ data 0 pr meta)))))))
+					  (setf (@ data 0 ct) row
+						(@ data 0 ly) (max 0 (1- column))
+						(@ data 0 cx) (if context-begins
+								  (chain state reader-context 
+									 (concat (list "start")))
+								  (@ state reader-context)))))
+		    ;(cl :hh (@ data 0 vl) row)
+		    ;; (if (= "short" (@ self props context view-scope))
+		    ;; 	(cl 29 (@ data 0)))
+		    ;; (if (= "special" (@ data 0 ty 0))
+		    ;; 	  ; TODO: special forms are no longer used, fix this!
+		    ;; 	  ; if this is a special form, assign the data in the form to the "dt" property
+		    ;; 	  ; of the first datum, and set the br(eadth) to 0 since special interfaces
+		    ;; 	  ; are self-contained
+		    ;; 	  (setf (@ data 0 md) (lambda (fn) (setf data (funcall fn data)))
+		    ;; 		(@ data 0 pr count) (1- (@ data length))))
+
+		    ;; (if (and (not (= "full" (@ self props context view-scope)))
+		    ;; 	     (= "plain" (@ data 0 ty 0)))
+		    ;; 	(setq row (max 0 (1- row))))
+		    (let ((built (chain self
+					(build-list (chain data (slice 1))
+						    (lambda (datum index last-output)
+						      (let ((pr (chain j-query 
+								       (extend t (create)
+									       (create meta
+										       (chain j-query 
+											      (extend 
+											       (create)
+											       each-meta
+											       (@ datum mt))))
+									       (@ datum pr)))))
+							(setf (@ datum ct) (+ index row)
+							      (@ datum ly) column
+							      (@ datum pr) pr
+					                      ; concatenate macro styles if the atom
+					                      ; is within an existing macro
+							      (@ datum cx) 
+							      (if (@ datum am)
+								  (if (@ state reader-context)
+								      (chain state reader-context
+									     (concat (list (@ datum am) "start")))
+								      (list (@ datum am) "start"))
+								  (@ state reader-context)))
+							(setq breadth (1+ breadth))
+							;(cl :dd breadth (@ datum vl) (@ data 0 vl))
+							;; (if (= "let" (@ data 0 vl)) 
+							;;     (cl :br1 breadth))
+							(if (or last-index (= 0 last-index))
+							    (setf (getprop meta "succession" last-index)
+								  (@ datum ix)))
+							(setq last-index (@ datum ix))
+							(list (list datum))))
+						    (lambda (datum index last-output)
+						      (if (and (or last-index (= 0 last-index)))
+							  (setf (getprop meta "succession" last-index)
+								(@ datum 0 ix)))
+						      (setq last-index (@ datum 0 ix))
+					              ; the passthrough row value must be set here because if the
+						      ; first value in the list is a plain list object, that plain
+						      ; object is not represented in a separate row in the output
+						      ; and its presence causes the row numbers to be off by one. x
+						      ; The passthrough value ensures that the rows within the
+						      ; sub-table and without are consistently numbered. x
+						      (let ((passthrough-row row))
+							(chain self (build-form 
+								     datum 
+								     (lambda (unused-meta list-output)
+								       ;; (cl :pr (@ datum 0 vl) index passthrough-row 
+								       ;; 	   row breadth :lo (@ list-output length)
+								       ;; 	   list-output data)
+								       (setq breadth 
+									     (+ breadth 
+										(- (@ list-output length)
+										   (if (= "plain" (@ list-output
+												     0 0 ty 0))
+										       0 0))))
+								       ;; (if (= "let" (@ data 0 vl)) 
+								       ;; 	   (cl :br2 breadth list-output))
+								       ;; TODO: WHY IS THIS NECESSARY HERE? x
+								       list-output)
+								     output 
+								     (chain j-query (extend (create) state))
+								     meta (+ passthrough-row index)
+								     (1+ column)))))
+						    (lambda (list-tail)
+						      (setf (@ data 0 br) breadth)
+						      ;(cl :cb (@ data 0 vl) breadth)
+						      ;(if (= "let" (@ data 0 vl)) (cl :br3 breadth))
+						      (if (and (@ state reader-context)
+							       (> (@ state reader-context length) 0)
+							       (= (@ meta context-start) (@ data 0 ix)))
+							  (setf (@ state reader-context) nil
+								(@ meta context-start) nil))
+						      (let ((depth (1+ (if (< 0 (@ output length))
+									   column (1- column)))))
+					                ; set the depth as 1- column if there is no list tail,
+					                ; since that means there is no indented tail and the 
+							; 1- column used at the beginning of the function is 
+							; the depth
+							(if (> depth (@ meta max-depth))
+							    (setf (@ meta max-depth) depth)))
+						      ;(cl :dd (@ data 0))
+						      (if (not (= "plain" (@ data 0 ty 0)))
+							  (setf output
+								(chain 
+								 output (slice 1)
+								 (concat (list (chain (getprop 
+										       output 
+										       (1- (@ output length)))
+										      (concat (@ data 0))))))))
+						      (setq output 
+							    (chain output (slice 1)
+								   (concat (list (chain (getprop output 
+												 (1- (@ output 
+													length)))
+					                                                ; don't add null to the end
+					                                                ; if there's no tail
+											(concat (if (@ list-tail 0)
+												    (@ list-tail 0)
+												    #())))))))
+						      (if (not (or (= "plain" (@ data 0 ty 0))
+								   (= "special" (@ data 0 ty 0))))
+							  (chain output (concat (chain list-tail (slice 1))))
+							  (progn
+							    ;; TODO: FIGURE OUT WHY THE LIST MUST BE 
+							    ;; DOUBLED ON LAYERS OTHER THAN THE FIRST 
+							    ;; - IF NOT DOUBLED, THE OUTPUT IS
+							    ;; A BARE OBJECT NOT ENCLOSED IN AN ARRAY
+							    (chain (if (= 0 (@ data 0 ly))
+								       (list (@ data 0))
+								       (list (list (@ data 0))))
+								   (concat output (chain list-tail 
+											 (slice 1)))))))))))
+		      (funcall callback meta built))))))
 	  :build-list
 	  (lambda (data atom-builder form-builder callback output)
 	    (let ((self this)
@@ -2216,10 +2406,7 @@
 									 "click"))))
 			     		   (if interaction
 			     		       (funcall interaction self datum)
-			     		       (let ((datum (chain j-query
-								   (extend (create)
-									   datum (create dp (@ datum ly))))))
-						 (chain self (set-point datum))))))
+			     		       (chain self (set-point datum)))))
 			     :id (+ (@ self state data id)
 				    "-atom-" (@ datum ix))
 			     :class-name (+ "atom-inner"
@@ -2341,8 +2528,8 @@
 		(funcall callback
 			 (panic:jsl (:ul :class-name (+ "form-view " (@ self props context view-scope))
 					 (process-list rows-input)))))))
-	  :render-sub-list2
-	  (lambda (datum content)
+	  :render-sub-list
+	  (lambda (datum content rows)
 	    (defvar self this)
 	    ;(cl 9909 datum content)
 	    (panic:jsl (:td :key (+ "form-view-td-" (@ datum ix))
@@ -2383,7 +2570,7 @@
 			    :col-span (- (@ self state meta max-depth) ;(@ self state dims 1)
 					 (@ datum ly))
 			    ; get the number of rows in the sub-list for the container rowspan
-			    ;:row-span 1(1- (@ content props children props children length))
+			    :row-span (@ content props children props children length)
 			    (:div :class-name "spacer")
 			    (cond ((and (@ datum mt)
 					(@ datum mt if)
@@ -2399,128 +2586,6 @@
 						 (create content content
 							 params datum)))
 				  (t content)))))
-	  :render-table2
-	  (lambda (rows-input callback)
-	    (defvar self this)
-	    ;; (defvar is-root (and (= "[object Object]" 
-	    ;; 			    (chain -object prototype to-string (call (@ rows-input 0))))
-	    ;; 			 (= 0 (@ rows-input 0 ly))))
-	    ;(defvar is-root nil)
-	    (labels ((generate-table (rows is-root)
-		       (panic:jsl (:table :class-name (+ "form" (if is-root " root" ""))
-		     			  :ref (lambda (ref)
-		     			  	 (if ref (let ((elem (j-query ref)))
-							   (if is-root
-							       (setf (@ self root-params)
-								     (create left (@ elem 0 offset-left)
-									     top (@ elem 0 offset-top)
-									     width (@ elem 0 client-width)
-									     height (@ elem 0 client-height)
-									     parent-height
-									     (@ elem 0 offset-parent 
-										     client-height)))))))
-		     			  (:tbody (chain rows
-		     				  	 (map (lambda (row-data index)
-								(panic:jsl (:tr :key (+ "tr-" index)
-										row-data)))))))))
-		     (generate-cell (datum)
-		       (panic:jsl (:td :key (+ "table-" (@ datum ix))
-				       :col-span (if (not (@ datum br))
-						     (- (@ self state meta max-depth) (@ datum ly))
-						     1)
-				       :row-span (if (@ datum br)
-						     (- (@ datum br) (@ datum sl))
-						     1)
-				       :ref (lambda (ref)
-					      (if ref
-						  (let ((in-special-form false))
-						    (labels ((pos (element offset)
-							       (let* ((offset (if offset offset 
-										  (create left 0 top 0)))
-								      (this-offset 
-								       (create left (+ (@ offset left)
-										       (@ element 0 offset-left))
-									       top (+ (@ offset top)
-										      (@ element 0 offset-top))
-									       height 
-									       (if (@ offset height)
-										   (@ offset height)
-										   (@ element 0 client-height))
-									       width (@ element 0 client-width))))
-					                         ; return the offset if the measurement
-							         ; reaches the container
-							         ;; TODO: STRANGE SOLUTION - IS THERE 
-							         ;; A SIMPLER WAY THAN
-							         ;; CHECKING THE TYPE OF CONTAINER? x
-								 (if (= "pane" (chain (j-query element)
-										      (offset-parent)
-										      (attr "class")))
-								     (setf (getprop (@ self element-specs) 
-										    (@ datum ix))
-									   this-offset)
-								     (pos (chain (j-query element) 
-										 (offset-parent))
-									  this-offset)))))
-						      (pos (j-query ref))))))
-				       :class-name (+ "atom"
-						      (+ " mode-" (@ self state context mode))
-						      (+ " row-" (@ datum ct))
-						      (if (= (@ self state point-attrs index)
-							     (@ datum ix))
-							  " point" "")
-						      (if (and (not (= "undefined" (typeof (@ datum br))))
-							       (= 0 (@ datum br)))
-							  " singleton" "")
-						      (if (@ datum cx)
-							  (chain datum cx (map (lambda (item index)
-										 (+ " reader-context-" item)))
-								 (join ""))
-							  "")
-						      (if (and (@ datum mt) (@ datum mt if)
-							       (= "list" (@ datum mt if type)))
-							  " special-table" ""))
-		       (chain self (render-atom datum)))))
-		     (process-rows (rows output)
-		       (let ((cells (@ rows 0))
-			     (output (if output output (list #()))))
-			 (if (= 0 (@ rows length))
-			     (chain output (slice 0 (1- (@ output length))))
-			     ; remove final empty list that gets appended to output before returning it
-			     (if (= 0 (@ cells length))
-				 (process-rows (chain rows (slice 1))
-					       (chain output (concat (list #()))))
-				 (if (= "plain" (@ cells 0 ty 0))
-				     ; create a sub-table for plain lists
-				     (process-rows
-				      (chain rows (slice (@ cells 0 br)))
-				      (let ((empty-rows #())
-					    (enclose-table (if (and (= 1 (@ output length))
-								    (= 0 (@ output 0 length)))
-							       (lambda (input) (generate-table input t))
-							       (lambda (input)
-								 (chain self (render-sub-list2 
-									      (@ cells 0)
-									      (generate-table input)))))))
-					(chain output (slice 0 (1- (@ output length)))
-					       (concat (list (chain
-							      (getprop output (1- (@ output length)))
-							      (concat
-							       (enclose-table
-								(process-rows
-								 (chain (list (chain cells (slice 1)))
-									(concat
-									 (chain rows
-										(slice 1 (@ cells 0 br)))))))))))
-					       (concat (list #())))))
-				     (process-rows (chain (list (chain cells (slice 1)))
-							  (concat (chain rows (slice 1))))
-						   (chain output (slice 0 (1- (@ output length)))
-							  (concat
-							   (list (chain (getprop output (1- (@ output length)))
-									(concat 
-									 (generate-cell (@ cells 0))))))))))))))
-	      (funcall callback (process-rows rows-input))))
-
 	  :render-table
 	  (lambda (rows-input callback)
 	    (defvar self this)
@@ -2894,32 +2959,29 @@
        ;(cl :ax (chain self props context (tracer #(1 0))))
        ;; (if (@ self props context ii) (cl :aa (@ self state) (@ self state context trace)
        ;; 					 (@ self state context path)))
+       ;(cl :ren (@ self state))
+       ;; (if (= "main" (@ self state data id))
+       ;; 	   (cl :ren (@ self state) (@ self element-specs)))
 
-       (if (or (not (= "undefined" (typeof (@ this state rendered-content2))))
-	       (and (= "[object Array]" (chain -object prototype to-string (call (@ this state rendered-content2))))
-		    (= 0 (@ this state rendered-content2 length))))
+       (if (or (not (= "undefined" (typeof (@ this state rendered-content))))
+	       (and (= "[object Array]" (chain -object prototype to-string (call (@ this state rendered-content))))
+		    (= 0 (@ this state rendered-content length))))
 	   (cond ((= "full" (@ this props context view-scope))
-		  (let* ((root-index (labels ((find-index (item)
-						(if (= "[object Object]"
-						       (chain -object prototype to-string (call item)))
-						    (@ item ix)
-						    (find-index (@ item 0)))))
-				       (find-index (getprop (@ this state space)
-							    (1- (@ this state space length))))))
-			 (glyph-content (chain j-query (extend (create branch-id (@ self state data id)
-								       base-atom root-index
-								       branch-index (@ self props context 
-											    branch-index)
-								       root-params (@ self root-params)
-								       point-index (@ self state point-attrs index))
-							       (@ self state meta)))))
-		    (chain self (render-table2 (@ this state rendered-content2)
-					       (lambda (rendered)
+		  (let ((glyph-content (chain j-query (extend (create branch-id (@ self state data id)
+								      branch-index (@ self props context 
+											   branch-index)
+								      root-params (@ self root-params)
+								      point-index (@ self state point-attrs index))
+							      (@ self state meta)))))
+		    (chain self (render-table (@ this state rendered-content)
+					      (lambda (rendered depth base-atom)
 						; send the base-atom to the glyph-display so that the stem
 						; at the bottom of the glyph pattern can be drawn
 						(panic:jsl (:div :class-name "matrix-view form-view"
 								 :id (+ "form-view-" (@ self state data id))
-								 (subcomponent -glyph-display glyph-content)
+								 (subcomponent -glyph-display glyph-content
+									       ((setf (@ sub-con base-atom)
+										      base-atom)))
 								 rendered)))))))
 		 (t (chain self (render-list (@ this state space)
 					     (lambda (rendered depth base-atom)

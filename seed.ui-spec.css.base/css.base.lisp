@@ -236,17 +236,17 @@
 	    ;:background "repeating-linear-gradient(0deg, #93a1a1, #93a1a1 2px, #073642 2px, #073642 40px)"
 	    :background "linear-gradient(0deg, #93a1a1 2px, #073642 2px)"
 	    :height 38px
-	    :font-weight bold
 	    :font-family monospace
 	    :padding 0 6px
 	    :border-left "8px solid #D9D4C5"
 	    :border-right "8px solid #D9D4C5"
 	    (.locked-indicator
 	     :float right
+	     :font-weight bold
 	     :color "#dc322f"))
 
 	   (span.id
-	    :font-size 1.1em
+	    :font-size 1.25em
 	    :line-height 48px)
 
 	   (.header.point
@@ -533,7 +533,7 @@
 	    (.atom.singleton
 	     (.content
 	      (span.title :padding-right 4px
-			  :border-right "2px solid #93a1a1")))
+			  :border-right "1.6px solid #93a1a1")))
 
 	    ;; ((:or .atom.mode-set.point .cell.mode-set.point)
 	    ;;  (.text :opacity 0)

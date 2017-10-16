@@ -11,7 +11,7 @@
 
 (test-core-systems)
 
-(browser-interface :markup ((html-index-header "Seed: Test Portal")
+(browser-interface :markup ((html-index-header "Seed: Demo Portal")
 			    (html-index-body))
 		   :script ((key-ui keystroke-maps
 				    key-ui-base)
