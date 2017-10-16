@@ -1925,8 +1925,7 @@
 								   (create dp (if (= 0 (@ motion 0))
 										  (@ self state point-attrs depth)
 										  (if (> 0 (@ motion 0))
-										      (+ (@ motion 0)
-											 (@ target ly))
+										      (@ target ly)
 										      (max (+ (@ motion 0)
 											      (@ self state 
 												      point-attrs
