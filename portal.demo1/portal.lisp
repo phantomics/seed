@@ -18,9 +18,9 @@
 			    (react-ui (extend-rcomps-base)
 				      :url "portal"
 				      :component :-portal))
-		   ;; :style (css-base
-		   ;; 	   css-symbol-style-camel-case
-		   ;; 	   css-animation-silicon-sky)
+		   :style (css-base
+		   	   css-symbol-style-camel-case
+		   	   css-animation-silicon-sky)
 		   :foundation (:script (seed.foreign.browser-spec.script.base)
 				:style (seed.foreign.browser-spec.style.base)))
 

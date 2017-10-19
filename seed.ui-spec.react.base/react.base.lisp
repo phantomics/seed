@@ -1012,19 +1012,11 @@
 					          ; GLYPH RENDERING BREAKS BECAUSE
 					          ; THE FIRST TERMINAL TD CAN'T BE FOUND!
 					          ; FIGURE OUT WHY
-						  :id (+ "branch-" index "-main")
+						  :id (+ "branch-" index "-" (@ branch id))
 						  :ref (lambda (ref)
 							 (let ((element (j-query ref)))
-
 							   (if (@ element 0)
-							       ;; (setf (@ self element-specs)
-							       ;; 	     (create height (@ element 0 client-height)
-							       ;; 		     width (@ element 0 client-width))
-							       ;; 	     ;(@ self pane-element) element
-							       ;; 	     )
-							       (fetch-pane-element element)
-							       ))
-							 )
+							       (fetch-pane-element element))))
 						  element)
 					    (:div :class-name (+ "footer horizontal-view" (if (= 1 this-index)
 											      " point" ""))
@@ -1689,6 +1681,7 @@
 					   point-data nil
 					   index -1
 					   focus (create meta 0 macro 0)
+					   ; TODO: glyphs are only assigned here
 					   meta (chain j-query (extend t (create)
 								       (@ this props data meta)
 								       (create max-depth 0
@@ -2512,6 +2505,7 @@
 	    ;; 	(not (@ next-props context current)))
 
 	    (let ((new-state (chain this (initialize next-props))))
+	      ;(cl :nws new-state next-props) ; TODO: glyphs don't get assigned here
 	      (if (@ self state context is-point)
 		  (setf (@ new-state action-registered)
 			(@ next-props action)))
@@ -2724,13 +2718,6 @@
 		    (chain input-ref (val temp-val))))))
 	  )
        (defvar self this)
-       ;; (if (or (= (@ self state data id) "clipboard")
-       ;; 	       (= (@ self state data id) "history"))
-       ;; 	   (cl :ren (@ self state data) (@ self props context) (@ self state context)
-       ;; 	       (@ self state point-attrs)))
-       ;(cl :ax (chain self props context (tracer #(1 0))))
-       ;; (if (@ self props context ii) (cl :aa (@ self state) (@ self state context trace)
-       ;; 					 (@ self state context path)))
 
        (if (or (not (= "undefined" (typeof (@ this state rendered-content))))
 	       (and (= "[object Array]" (chain -object prototype to-string (call (@ this state rendered-content))))
@@ -2750,10 +2737,10 @@
 								       root-params (@ self root-params)
 								       point-index (@ self state point-attrs index))
 							       (@ self state meta)
-							       ; TODO: assigning the glyphs straight from props
-							       ; shouldn't be necessary - or the state meta property
-							       ; shouldn't be necessary. Without this, the glyphs
-							       ; do not refresh when changing systems
+							       ; TODO: this is a hack. assigning the glyphs straight
+							       ; from props shouldn't be necessary - or the state 
+							       ; meta property shouldn't be necessary. Without this,
+							       ; the glyphs do not refresh when changing systems
 							       (create glyphs (@ self props data meta glyphs))))))
 		    (chain self (render-table (@ this state rendered-content)
 					      (lambda (rendered)
@@ -2787,6 +2774,7 @@
 				   (lambda (d) (chain j-query (extend (@ props data) (@ d data))))
 				   (lambda (pd) (@ pd data data)))))
 	      state))
+	  :element-specs #()
 	  :modulate-methods
 	  (lambda (methods)
 	    (let ((self this))
@@ -2827,17 +2815,30 @@
 		  (this-row #())
 		  (row-index 0))
 	      (loop for row from 0 to (1- (@ data length))
-		 do (funcall 
+		 do (funcall
 		     (lambda (row-index)
-		       (setq this-row (list (panic:jsl (:th :key (+ "row-label-" row) 
+		       (setq this-row (list (panic:jsl (:th :key (+ "row-label-" row)
 							    (1+ row)))))
 		       (loop for col from 0 to (1- (@ (getprop data row) length))
 			  do (let ((cell-click (lambda () (chain self (set-state (create point (list col row))))))
 				   (is-point (and (= (@ self state point 1) row)
 						  (= (@ self state point 0) col))))
-			       (chain this-row 
+			       (chain this-row
 				      (push (panic:jsl (:td :key (+ "cell-" col "-" row)
 							    :on-click cell-click
+							    :ref 
+							    (lambda (ref)
+							      (let ((element (j-query ref)))
+								(if (= "undefined" 
+								       (typeof (getprop self "elementSpecs" row)))
+								    (setf (getprop self "elementSpecs" row) #()))
+								(if (not (= "undefined" (typeof (@ element 0))))
+								    (setf (getprop self "elementSpecs" row col)
+									  (create left (@ element 0 offset-left)
+										  top (@ element 0 offset-top)
+										  width (@ element 0 client-width)
+										  height 
+										  (@ element 0 client-height))))))
 							    :class-name (+ "atom"
 									   (+ " mode-" (@ self state context mode))
 									   (if is-point " point" ""))
@@ -2847,8 +2848,8 @@
 									  (create content (getprop data row col)
 										  meta (create is-point is-point
 											       is-parent-point
-											       (@ self state 
-												       context 
+											       (@ self state
+												       context
 												       is-point)))))
 						       ))))))
 		     row)
@@ -2860,17 +2861,41 @@
             (let* ((self this)
                    (mo (chain motion (map (lambda (axis index)
 					    (* axis (if (getprop (@ self state meta invert-axis) index)
-							-1 1)))))))
-              (chain this (set-state (create point (list (if (< -1
-								(+ (@ mo 0) (@ this state point 0))
-								(@ this state space 0 length))
-							     (+ (@ mo 0) (@ this state point 0))
-							     (@ this state point 0))
-							 (if (< -1
-								(+ (@ mo 1) (@ this state point 1))
-								(@ this state space length))
-							     (+ (@ mo 1) (@ this state point 1))
-							     (@ this state point 0))))))))
+							-1 1))))))
+		   (new-point (list (if (< -1 (+ (@ mo 0) (@ this state point 0))
+					   (@ this state space 0 length))
+					(+ (@ mo 0) (@ this state point 0))
+					(@ this state point 0))
+				    (if (< -1 (+ (@ mo 1) (@ this state point 1))
+					   (@ this state space length))
+					(+ (@ mo 1) (@ this state point 1))
+					(@ this state point 0)))))
+	      ; adjust scroll position of pane if cursor is moved out of view
+	      (if (and (not (= "undefined" (typeof (@ self state pane-element))))
+	      	       (< 0 (@ self element-specs length)))
+	      	  (progn (if (< (+ (@ self state pane-element 0 client-height)
+	      			   (@ self state pane-element 0 scroll-top))
+	      			(getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top"))
+	      		     (setf (@ self state pane-element 0 scroll-top)
+	      			   (+ (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top")
+	      			      (/ (@ self state pane-element 0 client-height) 2)))
+	      		     (if (> (@ self state pane-element 0 scroll-top)
+	      			    (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top"))
+	      			 (setf (@ self state pane-element 0 scroll-top)
+	      			       (- (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top")
+	      				  (/ (@ self state pane-element 0 client-height) 2)))))
+			 (if (< (+ (@ self state pane-element 0 client-width)
+	      			   (@ self state pane-element 0 scroll-left))
+	      			(getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left"))
+	      		     (setf (@ self state pane-element 0 scroll-left)
+	      			   (+ (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left")
+	      			      (/ (@ self state pane-element 0 client-height) 2)))
+	      		     (if (> (@ self state pane-element 0 scroll-left)
+	      			    (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left"))
+	      			 (setf (@ self state pane-element 0 scroll-left)
+	      			       (- (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left")
+	      				  (/ (@ self state pane-element 0 client-width) 2)))))))
+	      (chain this (set-state (create point new-point)))))
 	  :assign
 	  (lambda (value matrix)
 	    (let* ((x (@ this state point 0))
@@ -2897,6 +2922,12 @@
 		  (setf (@ new-state action-registered)
 			(@ next-props action)))
 	      (chain this (set-state new-state)))
+
+	    (if (and (not (@ self state pane-element))
+		     (not (= "undefined" (typeof (@ self props context fetch-pane-element)))))
+		(setf (@ new-state pane-element)
+		      (chain (j-query (+ "#branch-" (@ self props context index)
+					 "-" (@ self props data id))))))
 
 	    ;(cl :nxm (@ self state context))
 

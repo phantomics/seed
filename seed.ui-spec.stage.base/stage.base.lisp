@@ -13,7 +13,7 @@
     (meta nil :if (:type :vista :fill :fill-main-stage :transparent t))))
 
 (defmacro simple-branch-layout (branch-specs-symbol)
-  (let ((specs (gensym)) (prospec-main (gensym)) (prospec-adj (gensym)) (name (gensym))
+  (let ((specs (gensym)) (prospec-main (gensym)) (prospec-adj (gensym)) (name (gensym)) (index (gensym))
 	(param-checks (gensym)) (stage-params (gensym)) (secondary-controls (gensym))
 	(meta (intern "META" (package-name *package*))))
     `(labels ((,prospec-main (,specs &optional output)
@@ -50,13 +50,13 @@
 			      (eq ,name :history))
 			  (,prospec-main (rest ,specs)
 					 output)
-			  (,prospec-main 
+			  (,prospec-main
 			   (rest ,specs)
 			   (cons `(,',meta (:body ,@(if ,secondary-controls (list :sub-controls)))
 					   :if (:type :vista :ct 0 :fill :fill-branch :branch ,,name
 						      :extend-response :respond-branches-main :axis :y
 						      :secondary-controls (:format (,,secondary-controls))
-						      :contextual-menu 
+						      :contextual-menu
 						      (:format
 						       ,(list
 							 (mapcar (lambda (item)
@@ -67,7 +67,7 @@
 									 ((eq :insert-circle item)
 									  `(,',meta :insert-circle
 										    :if (:interaction :insert)
-										    :format (:circle :cx 100 
+										    :format (:circle :cx 100
 												     :cy 100
 												     :r 25)))
 									 ((eq :insert-rect item)
