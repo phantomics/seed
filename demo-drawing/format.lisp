@@ -5,12 +5,12 @@
 (defmacro define-stream (symbol)
   `(defvar ,symbol (make-string-output-stream)))
 
-(defmacro gen-svg (&rest form)
-  (let ((stream-symbol (gensym)))
-    `(progn (defvar ,stream-symbol (make-string-output-stream))
-	    (cl-who:with-html-output (,stream-symbol)
-	      (:svg ,@form))
-	    (setq svg-content (get-output-stream-string ,stream-symbol)))))
+;; (defmacro gen-svg (&rest form)
+;;   (let ((stream-symbol (gensym)))
+;;     `(progn (defvar ,stream-symbol (make-string-output-stream))
+;; 	    (cl-who:with-html-output (,stream-symbol)
+;; 	      (:svg ,@form))
+;; 	    (setq svg-content (get-output-stream-string ,stream-symbol)))))
 
 (defmacro rgb-hex-string (color-string) color-string)
 

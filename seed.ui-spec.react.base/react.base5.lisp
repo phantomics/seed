@@ -599,6 +599,7 @@
     		  ;(if (not (= "set" (@ next-props context mode)))
     		  (chain this (set-state (chain this (initialize next-props))))))
     	     (let ((self this))
+    	       (cl 919 (@ self state data))
     	       (panic:jsl (:div :class-name "list-interface-holder"
     				((@ -react-bootstrap -panel)
     				 (:div :class-name "panel-heading"
@@ -1621,7 +1622,7 @@
 		(@ this props data root-params top)
 		(@ this props data element-specs))
 	   (let ((display #()))
-	     ;(cl :scc (@ this state space))
+	     ;(cl :scc (@ this state data succession))
 	     (loop for glix from 0 to (1- (@ self state space length))
 		do (if (getprop (@ self props data element-specs) glix)
 		       (let* ((origin (getprop (@ self props data element-specs) glix))
@@ -1702,10 +1703,7 @@
 	    (let* ((self this)
 		   (state (funcall inherit self props
 				   (lambda (d)
-				     ;; (if (@ props data meta) (cl :gg (@ props data meta glyphs)
-				     ;; 				 (chain j-query (extend t (create) (@ d data) 
-				     ;; 							(@ props data)))))
-				     (chain j-query (extend t (create) (@ d data) (@ props data))))
+				     (chain j-query (extend (@ props data) (@ d data))))
 				   (lambda (pd) (@ pd data data)))))
 	      ;; (if (and (@ props data meta)
 	      ;; 	       (@ self state)
@@ -2023,14 +2021,13 @@
 	      ; so that new coordinates may be sent to the glyph-drawing component
 	      ;(cl :aa (@ self state point-attrs index))
 	      (setf (@ self element-specs) #())
-	      ;(cl :nw new-space)
 	      (chain self
 	      	     (build-form new-space
 				 (lambda (meta state)
 				   (chain self (set-state (chain j-query
 	      			    				 (extend state
 	      			    					 (create space new-space
-	      			    						 rendered-content (@ meta output)
+	      			    						 rendered-content2 (@ meta output)
 	      			    						 point-attrs (@ state point-attrs)
 	      			    						 meta (chain
 	      			    						       j-query
@@ -2053,7 +2050,8 @@
 										 number 1)
 									     (@ data 0 br))))))
 	      (if (@ data 0)
-	  	  (progn (setf (@ data 0 br) 0)
+	  	  (progn (setf (@ data 0 br) 0
+			       (@ data 0 sl) 0)
 			 ; breadth is initially 0, as is the list of sub-lists
 			 (if (and (@ data 0 fm) (< 0 (@ data 0 fm length)))
 	  		     (setf (@ state reader-context) (chain data 0 fm)
@@ -2095,6 +2093,13 @@
 	  			       (if (= "[object Array]" (chain -object prototype to-string (call datum)))
 					   ; if this item is a list
 	  				   (progn
+					     (if (= "plain" (@ datum 0 ty 0))
+					         ; add the length of the sub-list, minus the first element,
+					         ; to the total length of this list's sub-lists
+						 (progn
+						   (cl :plt datum)
+						   (setf (@ data 0 sl) (+ (@ data 0 sl)
+									(- (@ datum length) 2)))))
 	  				     (if (and (or (and is-plain-list (< 0 index))
 							  ; start incrementing right away in plain lists,
 							  ; like the main form list
@@ -2111,17 +2116,26 @@
 					     ; set succession data for drawing glyphs
 	  				     (chain self (build-form
 							  datum (lambda (output sub-state)
-								  (increment-breadth (1+ (- (@ sub-state row)
-											    (@ state row))))
+								  ;; (cl :io (@ data 0) ;state sub-state
+								  ;;     datum
+								  ;;     (@ data 0 br)
+								  ;;     (and (not is-start)
+								  ;; 	   (= "plain" (@ datum 0 ty 0))))
+								  (if (and (not is-start)
+									   (= "plain" (@ datum 0 ty 0)))
+								      ;(setf (@ data 0 br) 1)
+								      (increment-breadth)
+								      (increment-breadth (1+ (- (@ sub-state row)
+												(@ state row)))))
 								  ; increment the breadth based on the difference
 								  ; between the current row and the row reached
 								  ; within the sub-list
 								  (setf (@ state row) (+ (@ sub-state row))))
-							  meta (chain j-query (extend (create)
+							  meta (chain j-query (extend (create) 
 										      state (if is-plain-list
 												(create)
 												(create)))))))
-					   ; if this item is an atom
+					; if this item is an atom
 	  				   (let ((pr (chain j-query 
 	  						    (extend t (create)
 	  							    (create meta (chain j-query 
@@ -2146,7 +2160,8 @@
 	  					   (@ datum cx) (if (@ datum am)
 	  							    (if (@ state reader-context)
 	  								(chain state reader-context
-	  								       (concat (list (@ datum am) "start")))
+	  								       (concat (list (@ datum am) 
+	  										     "start")))
 	  								(list (@ datum am) "start"))
 	  							    (@ state reader-context)))
 					     ; increment the column if the list head is a plain list marker
@@ -2334,18 +2349,18 @@
 		(funcall callback
 			 (panic:jsl (:ul :class-name (+ "form-view " (@ self props context view-scope))
 					 (process-list rows-input)))))))
-	  :render-sub-list
+	  :render-sub-list2
 	  (lambda (datum content)
 	    (let ((self this))
 	      (panic:jsl (:td :key (+ "form-view-td-" (@ datum ix))
 			      :ref (lambda (ref)
 				     (if (and ref (not (and (@ datum mt) (@ datum mt if)
 							    (= "__item" (@ datum mt if type)))))
-				         ; don't assign element spec locations to items
-				         ; within specially-rendered sub-lists
+				         ; don't assign element spec locations to items within specially-rendered
+				         ; sub-lists
 					 (labels ((pos (element offset)
 						    (let* ((offset (if offset offset (create left 0 top 0)))
-							   (this-offset (create
+							   (this-offset (create 
 									 left (+ (@ offset left)
 										 (@ element 0 offset-left))
 									 top (+ (@ offset top)
@@ -2369,7 +2384,6 @@
 			      :id (+ (@ self state data id) "-atom-"
 				     (@ datum ix))
 			      :col-span (- (@ self state meta max-depth) (@ datum ly))
-			      :row-span (@ datum br)
  			      ; get the number of rows in the sub-list for the container rowspan
 			      (:div :class-name "spacer")
 			      (cond ((and (@ datum mt) (@ datum mt if)
@@ -2410,7 +2424,9 @@
 				       :col-span (if (not (@ datum br))
 						     (- (@ self state meta max-depth) (@ datum ly))
 						     1)
-				       :row-span (if (@ datum br) (@ datum br) 1)
+				       :row-span (if (@ datum br) (@ datum br)
+						     ;(- (@ datum br) (@ datum sl))
+						     1)
 				       :ref (lambda (ref)
 					      (if ref
 						  (let ((in-special-form false))
@@ -2462,7 +2478,6 @@
 		       (chain self (render-atom datum)))))
 		     (process-rows (rows output)
 		       (let ((cells (@ rows 0))
-			     (empty-rows #())
 			     (is-outer-form (if (not output)
 						t false))
 			     (output (if output output (list #()))))
@@ -2476,14 +2491,15 @@
 				     ; create a sub-table for plain lists
 				     (process-rows
 				      (chain rows (slice (@ cells 0 br)))
-				      (let ((enclose-table (if is-outer-form
+				      (let ((empty-rows #())
+					    (enclose-table (if is-outer-form
 							       (lambda (input) (chain self
 										      (render-table-body input t)))
 							       (lambda (input)
-								 (chain self (render-sub-list (@ cells 0)
-											      input))))))
-					(loop for ix from 0 to (1- (@ cells 0 br))
-					   do (chain empty-rows (push #())))
+								 ;(cl :cells cells)
+								 ;(cl :inp cells)
+								 (chain self (render-sub-list2 (@ cells 0)
+											       input))))))
 					(chain output (slice 0 (1- (@ output length)))
 					       (concat (list (chain
 							      (getprop output (1- (@ output length)))
@@ -2498,8 +2514,7 @@
 								 ; process-rows function knows that it is not
 								 ; the outer form
 								 (list #())))))))
-					       (concat empty-rows))))
-				     ; TODO: why are empty rows needed? If not appended, table is uneven
+					       (concat (list #())))))
 				     (process-rows (chain (list (chain cells (slice 1)))
 							  (concat (chain rows (slice 1))))
 						   (chain output (slice 0 (1- (@ output length)))
@@ -2507,6 +2522,7 @@
 							   (list (chain (getprop output (1- (@ output length)))
 									(concat 
 									 (generate-cell (@ cells 0))))))))))))))
+	      (cl :ri rows-input)
 	      (funcall callback (process-rows rows-input))))
 
 	  :component-will-receive-props
@@ -2737,9 +2753,9 @@
        ;; (if (@ self props context ii) (cl :aa (@ self state) (@ self state context trace)
        ;; 					 (@ self state context path)))
 
-       (if (or (not (= "undefined" (typeof (@ this state rendered-content))))
-	       (and (= "[object Array]" (chain -object prototype to-string (call (@ this state rendered-content))))
-		    (= 0 (@ this state rendered-content length))))
+       (if (or (not (= "undefined" (typeof (@ this state rendered-content2))))
+	       (and (= "[object Array]" (chain -object prototype to-string (call (@ this state rendered-content2))))
+		    (= 0 (@ this state rendered-content2 length))))
 	   (cond ((= "full" (@ this props context view-scope))
 		  (let* ((root-index (labels ((find-index (item)
 						(if (= "[object Object]"
@@ -2755,11 +2771,11 @@
 								       root-params (@ self root-params)
 								       point-index (@ self state point-attrs index))
 							       (@ self state meta)))))
-		    (chain self (render-table (@ this state rendered-content)
+		    (chain self (render-table (@ this state rendered-content2)
 					      (lambda (rendered)
 						; send the base-atom to the glyph-display so that the stem
 						; at the bottom of the glyph pattern can be drawn
-						;(cl :gly glyph-content)
+						(cl :gly glyph-content)
 						(panic:jsl (:div :class-name "matrix-view form-view"
 								 :id (+ "form-view-" (@ self state data id))
 								 (subcomponent -glyph-display glyph-content)
