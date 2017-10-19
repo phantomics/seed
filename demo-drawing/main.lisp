@@ -1,14 +1,4 @@
 (IN-PACKAGE #:DEMO-DRAWING)
-;(DEFVAR SVG-CONTENT)
-(defmacro gen-svg (&rest form)
-  (let ((stream-symbol (gensym)))
-    (fare-quasiquote:quasiquote 
-     (progn (defvar svg-content)
-	    (defvar (fare-quasiquote:unquote stream-symbol)
-	      (make-string-output-stream))
-	    (cl-who:with-html-output ((fare-quasiquote:unquote stream-symbol))
-	      (:svg (fare-quasiquote:unquote-splicing form)))
-	    (setq svg-content (get-output-stream-string (fare-quasiquote:unquote stream-symbol)))))))
 
 (GEN-SVG
  (:G :ID "group1"
