@@ -1688,8 +1688,7 @@
 							       depth 0 breadth 1 path #() props #())
 					   point-data nil
 					   index -1
-					   focus (create meta 0
-							 macro 0)
+					   focus (create meta 0 macro 0)
 					   meta (chain j-query (extend t (create)
 								       (@ this props data meta)
 								       (create max-depth 0
@@ -1701,11 +1700,7 @@
 	  (lambda (props)
 	    (let* ((self this)
 		   (state (funcall inherit self props
-				   (lambda (d)
-				     ;; (if (@ props data meta) (cl :gg (@ props data meta glyphs)
-				     ;; 				 (chain j-query (extend t (create) (@ d data) 
-				     ;; 							(@ props data)))))
-				     (chain j-query (extend t (create) (@ d data) (@ props data))))
+				   (lambda (d) (chain j-query (extend t (create) (@ d data) (@ props data))))
 				   (lambda (pd) (@ pd data data)))))
 	      ;; (if (and (@ props data meta)
 	      ;; 	       (@ self state)
@@ -1718,13 +1713,12 @@
 	      ; TODO: copy of point-to was eliminated here to prevent paradoxes; see if it's not needed
 	      (if (@ self props context set-interaction)
 		  (progn (chain self props context
-				(set-interaction "commit" (lambda ()
-							    (chain state context methods
-								   (grow #() (create save true))))))
+				(set-interaction "commit" (lambda () (chain state context methods
+									    (grow #() (create save true))))))
 			 (chain self props context
-				(set-interaction "revert" (lambda ()
-							    (chain state context methods
-								   (grow #() (create revert true))))))))
+				(set-interaction "revert" (lambda () (chain state context methods
+									    (grow #() (create revert true))))))))
+	      ;(cl :newstate state)
 	      state))
 	  :modulate-methods
 	  (lambda (methods)
@@ -1766,6 +1760,7 @@
 	  (create select-system
 		  (create click (lambda (self datum)
 				  (chain self (set-state (create index (@ datum ix))))
+				  (chain self (set-point datum))
 				  (funcall (@ self props context methods load-branch)
 					   (@ datum vl)))
 			  trigger-primary (lambda (self datum) 
@@ -1931,7 +1926,6 @@
 												      point-attrs
 												      depth))
 											   (@ target ly)))))))))
-					       ;(cl :tr motion (@ new-target dp) (@ new-target ly) new-target)
 					       ; extend the target data so that the layer is set as the sought
 					       ; x-coordinate as long as the point is moving vertically or inward. x
 					       ; thus, the layer will remain the same when moving vertically,
@@ -2027,6 +2021,8 @@
 	      (chain self
 	      	     (build-form new-space
 				 (lambda (meta state)
+				   ;(cl :net meta state (@ self state meta) (@ self state data meta))
+				   ;(setf (@ meta glyphs) nil)
 				   (chain self (set-state (chain j-query
 	      			    				 (extend state
 	      			    					 (create space new-space
@@ -2035,7 +2031,7 @@
 	      			    						 meta (chain
 	      			    						       j-query
 	      			    						       (extend t (create)
-	      			    							       (@ self state 
+	      			    							       (@ self state
 	      			    								       data meta)
 	      			    							       meta))))))))))))
 	  :build-form
@@ -2676,7 +2672,6 @@
 	    ;; 				 (@ this state context mode)))
 	    ;; 			 (@ next-state action-registered)))
 	    ;; 	    (@ next-state context current)))
-
 	    (or (not (@ this state rendered-content))
 		(@ this props context force-render)
 		(= 0 (@ this element-specs length))
@@ -2754,12 +2749,16 @@
 											    branch-index)
 								       root-params (@ self root-params)
 								       point-index (@ self state point-attrs index))
-							       (@ self state meta)))))
+							       (@ self state meta)
+							       ; TODO: assigning the glyphs straight from props
+							       ; shouldn't be necessary - or the state meta property
+							       ; shouldn't be necessary. Without this, the glyphs
+							       ; do not refresh when changing systems
+							       (create glyphs (@ self props data meta glyphs))))))
 		    (chain self (render-table (@ this state rendered-content)
 					      (lambda (rendered)
 						; send the base-atom to the glyph-display so that the stem
 						; at the bottom of the glyph pattern can be drawn
-						;(cl :gly glyph-content)
 						(panic:jsl (:div :class-name "matrix-view form-view"
 								 :id (+ "form-view-" (@ self state data id))
 								 (subcomponent -glyph-display glyph-content)
