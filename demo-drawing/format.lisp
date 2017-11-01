@@ -15,7 +15,7 @@
 
 ;; (defmacro gen-svg (&rest form)
 ;;   (let ((stream-symbol (gensym)))
-;;     (fare-quasiquote:quasiquote 
+;;     (fare-quasiquote:quasiquote
 ;;      (progn (defvar svg-content)
 ;; 	    (defvar (fare-quasiquote:unquote stream-symbol)
 ;; 	      (make-string-output-stream))

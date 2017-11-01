@@ -81,59 +81,10 @@ http://localhost:8055/portal.demo1/index.html
 
 If you create another portal, substitute that portal's name in the URI.
 
+### [Tutorial](https://github.com/phantomics/seed/wiki/Introductory-Tutorial)
 
-## A Seed Tutorial
+[Click here](https://github.com/phantomics/seed/wiki/Introductory-Tutorial) for a tutorial to help you get started using Seed.
 
-Once you load the Web interface, you will be greeted by a banner declaring "portal.demo1" and a list of systems. Once you're tired of watching the introductory animation, you can click on one of the systems to open it. The basis of every Seed instance is a portal, which constitutes an interface to a number of software systems. The portal "demo1" is linked to two systems, demoSheet and demoDrawing.
-
-### Basic movement
-
-If you check out demoSheet, you will see that it implements a spreadsheet with a code window on the left side to control the content of the cells. The demoDrawing system contains code that generates vector graphics. For now, let's try using the demoSheet system. The first thing you'll want to learn how to do is move the cursor and enter code.
-
-The cursor is indicated by a cell in the tree grid that is darker than the others. To move it, you can press the arrow keys on your keyboard, the number pad arrow keys, or the h, j, k and l keys as used by vim and other text editing tools. These three sets of keys can be used interchangeably to navigate.
-
-### Copy and paste
-
-Once you've learned to move, try copying the contents of an atom or form to the clipboard. Simply hold the C key and press right. Seed uses many letter keys in combination with directional keys. This is called a navigational interface; many common editing tasks are represented through navigational metaphors.
-
-In the future, we'll refer to combinations like holding the C key and pressing right to: C+right.
-
-Once you've pressed C+right, you'll notice that a red tick mark has appeared at the far right of the screen. This indicates that there is one item in the clipboard.
-
-Now try moving the cursor to a different location, and press C+left. Watch as whatever was originally present at the cursor's location is replaced by the item you saved to the clipboard.
-
-Try saving some more items to the clipboard by pressing C+right. You'll notice that more marks appear at the far right, and the only one of these marks can be red at one time. The red mark indicates the item that will be copied from the clipboard when you press C+left. Each time you copy an item, it goes to the top of the list and becomes the selected item for pasting.
-
-How can you choose which item to paste from the clipboard? Try pressing C+up and C+down. The red mark at the right will move. Try copying and pasting a few different items to get a hang of it.
-
-### Saving and reverting changes
-
-In the course of all that copying and pasting, you may have damaged the demoSheet program, so press Shift+R or click on the Revert buttom at the bottom right of the code display. This will cancel your changes.
-
-If you wish to save changes that you make and see how they affect the spreadsheet, press Shift+S or click on the Save button at the bottom of the code display.
-
-### Building forms
-
-Now that you know the basics of moving the cursor and moving items to and from the clipboard, let's try creating some new code.
-
-Move the cursor to the upper left-most cell in the grid, labeled "cell" with the "a2" atom to its right.
-
-Now, press F+down to create a new blank atom beneath the "cell" form.
-
-This will be the beginning of a new "cell" form. With the cursor at the blank form, press the Enter key or space bar on your keyboard. A text cursor will appear. Type "cell" and press the Enter key.
-
-You have now created an atom containing the "cell" symbol. Press F+right and this atom will become a form with only one member, equivalent to "(cell)" in textual Lisp code.
-
-Press F+right again and a blank atom will be added to the form. With the cursor occupying this atom, type F+R. This will set the atom's type to a string and create a text cursor for this atom. Type "a1" and press Enter.
-
-The new atom is now a string, "a1". Press F+down again to create another new atom in the form. With the cursor on this empty atom, press F+D, which will change the atom's type to a number and open the atom for editing. Enter whatever number you wish and press enter.
-
-You have now created a new form that specifies the value of a spreadsheet cell. Let's save the program and see the result. Press Shift+S or click on the Save button at the bottom of the code display to see the result of your changes. The number you entered should appear at the top left cell in the spreadsheet.
-
-### More to come
-
-More tutorial material will be coming soon.
-
-#### Credit
+### Credit
 
 Seed contains a modified copy of Panic, a utility for building React components written by Michael J. Forster. Thanks to Michael for creating this tool.

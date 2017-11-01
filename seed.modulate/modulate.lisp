@@ -447,7 +447,6 @@
 
 (defun plot-glyphs (type-list)
   "Plot the points of a glyph."
-  ;(print offset)(print is-start)(print is-end)(print type-list)(print "--");(print height)
   (labels ((place-points (points &optional placed)
 	     (let ((point (first points)))
 	       (if (not point)
