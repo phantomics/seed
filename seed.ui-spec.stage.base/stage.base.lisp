@@ -24,18 +24,18 @@
 			`(,',META
 			  (SPIRAL-POINTS 100 100
 					 (,',META
-					  ((,',META ((:CIRCLE :R 3 :STROKE-WIDTH 2 
-							      :STROKE "#E3DBDB" :FILL "#88AA00"))
+					  ((,',META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB"
+							      :FILL "#88AA00"))
 						    :IF (:REMOVABLE T :TITLE "Small Green Circle" :TYPE :ITEM)))
 					  :IF (:OPTIONS
 					       ((:VALUE
-						 (,',META ((:CIRCLE :R 3 :STROKE-WIDTH 2 
-								 :STROKE "#E3DBDB" :FILL "#88AA00"))
+						 (,',META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB"
+								    :FILL "#88AA00"))
 						       :IF (:TYPE :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
 						 :TITLE "Small Green Circle")
 						(:VALUE
-						 (,',META ((:CIRCLE :R 5 :STROKE-WIDTH 2 
-								 :STROKE "#E3DBDB" :FILL "#87AADE"))
+						 (,',META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB"
+								    :FILL "#87AADE"))
 						       :IF (:TYPE :ITEM :TITLE "Big Blue Circle" :REMOVABLE T))
 						 :TITLE "Big Blue Circle"))
 					       :REMOVABLE NIL :FILL-BY :SELECT :TYPE :LIST)))
@@ -85,11 +85,7 @@
 									  `(,',meta :insert-mult-op
 										    :if (:interaction :insert)
 										    :format (* 3 4)))))
-								 (getf ,stage-params :contextual-menu))))
-						      ;; (:format (((,',meta :item-one :if (:interaction :insert)
-						      ;; 			  :format (+ 1 2))
-						      ;; 		 :item-two :item-three)))
-						      ))
+								 (getf ,stage-params :contextual-menu))))))
 				 output)))
 		      output)))
 	      (,prospec-adj (,specs &optional output)

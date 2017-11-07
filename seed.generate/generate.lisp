@@ -276,9 +276,7 @@
 			       `(let ((dat (if ,condition ,@(funcall ,io-by-medium options))))
 				  (declare (ignorable dat))
 				  ,(if follows follows 'dat))))
-			   ; condition functions do something based on conditions and boolean functions return 
-			   ; true or false based on some condition; if there is an argument such as hash key
-			   ; the true-or-not variable comes afterward
+			   ; condition functions do something based on conditions
 			   ((eq 'true-or-not (first (last args)))
 			    `(,(prepend-args unused &optional)
 			       (declare (ignorable unused true-or-not))
@@ -287,7 +285,8 @@
 					    (lambda (body) body))
 					`(funcall (lambda (data) (declare (ignorable data))
 							  (not (not ,,io-by-medium))) dat))))
-			   ; boolean functions 
+			   ; boolean functions return true or false based on some condition; if there is
+			   ; an argument such as hash key the true-or-not variable comes afterward
 			   (t (list args (third medium)))))))))
   `(defmacro sprout (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
      ; generate list of nested macros from linear pipeline spec

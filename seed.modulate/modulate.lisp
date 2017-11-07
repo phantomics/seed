@@ -165,11 +165,10 @@
 	(encode-array array dims
 		      (append (butlast point)
 			      (mapcar #'1+ (last point)))
-		      (append output
-			      (if (> (length dims)
-				     (length point))
-				  (list (encode-array array dims (append point (list 0))))
-				  (encode-expr (apply #'aref (cons array point))))))
+		      (append output (if (> (length dims)
+					    (length point))
+					 (list (encode-array array dims (append point (list 0))))
+					 (encode-expr (apply #'aref (cons array point))))))
 	(if (> (length point) 1) ; prepend array information object if
 	    output               ; this is the end of the array
 	    (cons (list :ty (list "array")
@@ -463,11 +462,10 @@
 (defun add-array-glyph (glyph-array type-list index)
   "Add a glyph to the array of glyphs to index."
   (if (<= (first (array-dimensions glyph-array))
-	 (1+ index))
-      (setf glyph-array
-	    (adjust-array glyph-array
-			  (list (1+ index))
-			  :initial-element nil)))
+	  (1+ index))
+      (setf glyph-array (adjust-array glyph-array
+				      (list (1+ index))
+				      :initial-element nil)))
   (setf (aref glyph-array index)
 	(plot-glyphs type-list))
   glyph-array)
@@ -484,7 +482,7 @@
      `(,@',params)))
 
 (defmacro specify-form-reflection (name &rest params)
-  "Define (part of) an atom reflection specification to determine the behavior of seed.modulate."
+  "Define (part of) a form reflection specification to determine the behavior of seed.modulate."
   `(defmacro ,name ()
      `(,@',params)))
 
