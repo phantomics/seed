@@ -7,4 +7,3 @@
   :serial t
   :components ((:file "package")
                (:file "stage.base")))
-

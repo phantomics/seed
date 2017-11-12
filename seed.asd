@@ -5,7 +5,7 @@
   :author "Andrew Sengul"
   :license "GPL"
   :serial t
-  :depends-on (#:seed.contact #:portal.demo1)
+  :depends-on (#:seed.contact #:seed.platform-model.router.base #:portal.demo1)
   :components 
   ((:file "package")
    (:file "seed")))

@@ -18,56 +18,74 @@
 	 (style-path (if style (asdf:system-relative-pathname style-package-name "./")))
 	 (output-path (asdf:system-relative-pathname local-package-name "./"))
 	 (script-build-file (if script (asdf:system-relative-pathname script-package-name "./gulpfile.js")))
+	 (style-build-file (if script (asdf:system-relative-pathname style-package-name "./gulpfile.js")))
 	 (root-script (if script (asdf:system-relative-pathname script-package-name "./src.js")))
-	 ;(style-output-path (asdf:system-relative-pathname local-package-name "./main.css"))
+	 (script-output-filename "main")
+	 (script-output-path (format nil "~a/~a.js" output-path script-output-filename))
+	 (style-output-filename "main")
+	 (style-output-path (format nil "~a/~a.js" output-path style-output-filename))
 	 (stream (gensym)))
     (flet ((gulp-build-script ()
 	     (if script `((chain gulp (src ,(namestring root-script))
 				 (pipe (gulp-webpack webpack-config))
-				 (pipe (chain gulp (dest out-path))))))))
+				 (pipe (chain gulp (dest ,(namestring output-path))))))))
+	   (gulp-build-style ()
+	     (if style `((chain gulp (src (list ,@(mapcar #'namestring
+							  (macroexpand `(,(intern "CORNERSTONE"
+										  (string-upcase
+										   (first style))))))))
+				(pipe (concat ,(format nil "~a.css" style-output-filename)))
+				(pipe (chain gulp (dest ,(namestring output-path)))))))))
       `(qualify-build
 	 ((defun ,(intern "FOUND-INTERFACE" (package-name *package*)) ()
 	    (with-open-file (,stream ,(namestring script-build-file)
 				     :direction :output :if-exists :supersede :if-does-not-exist :create)
-	      (format ,stream (ps (let ((fs (require "fs"))
-					(gulp (require "gulp"))
+	      (format ,stream (ps (let ((gulp (require "gulp"))
 					(webpack (require "webpack"))
 					(gulp-webpack (require "gulp-webpack"))
-					(out-path ,(namestring output-path))
 					(webpack-config (create context ,(namestring script-path)
-								entry (create main "./src.js")
+								entry (create ,script-output-filename
+									      "./src.js")
 								resolve (create extensions (list "" ".js"))
 								output (create filename "./[name].js"))))
 				    (chain gulp (task "dev" (lambda () ,@(gulp-build-script))))))))
 				    ; invoke cornerstone macro from script package to create root source file
-	    ,(if script
-		 `(with-open-file (,stream ,(namestring root-script)
-					   :direction :output :if-exists :supersede :if-does-not-exist :create)
-		    (format ,stream (macroexpand (list (quote ,(intern "CORNERSTONE"
-								       (string-upcase (first script)))))))))
+	    ,(if script `(with-open-file (,stream ,(namestring root-script)
+						  :direction :output :if-exists :supersede 
+						  :if-does-not-exist :create)
+			   (format ,stream (macroexpand (list (quote ,(intern "CORNERSTONE"
+									      (string-upcase (first script)))))))))
 	    ,@(if script-path (list `(princ
 				      ,(format nil "~%Synchronizing source files for Javascript generation.~%"))
 				    (macroexpand (list 'synchronize-npm-modules script-path))))
-	    ,@(if style-path (list `(princ ,(format nil "~%Synchronizing source files for CSS generation.~%"))
-				   (macroexpand (list 'synchronize-npm-modules style-path))))
 	    (princ ,(format nil "~%Generating foundational Javascript via Gulp and Webpack.~%"))
 	    ; run Gulp build process
 	    (uiop:run-program ,(format nil "gulp --gulpfile ~agulpfile.js dev" (namestring script-path))
 			      :output *standard-output*)
 	                      ; invoke cornerstone macro from style package to save compiled style file
 			      ; TODO: reenable once character format issue with bootstrap CSS files is figured out
-	    ;; ,(if style
-	    ;;      `(with-open-file (,stream ,(namestring style-output-path)
-	    ;; 			       :direction :output :if-exists :supersede :if-does-not-exist :create)
-	    ;; 	(format ,stream (macroexpand (list (quote ,(intern "CORNERSTONE"
-	    ;; 							   (string-upcase (first style)))))))))
-	    (princ ,(format nil "~%Browser interface foundation build complete.~%~%"))
-	    ; erase gulpfile and root Javascript source file when done
 	    (delete-file ,script-build-file)
-	    (delete-file ,root-script))
+	    (delete-file ,root-script)
+
+	    (with-open-file (,stream ,(namestring style-build-file)
+	    			     :direction :output :if-exists :supersede :if-does-not-exist :create)
+	      (format ,stream (ps (let ((gulp (require "gulp"))
+	    				(concat (require "gulp-concat")))
+	    			    (chain gulp (task "dev" (lambda () ,@(gulp-build-style))))))))
+	    ,@(if style-path (list `(princ ,(format nil "~%Synchronizing source files for CSS generation.~%"))
+				   (macroexpand (list 'synchronize-npm-modules style-path))))
+	    (princ ,(format nil "~%Generating CSS via Gulp and Webpack.~%"))
+	    ; run Gulp build process
+	    (uiop:run-program ,(format nil "gulp --gulpfile ~agulpfile.js dev" (namestring style-path))
+			      :output *standard-output*)
+	    ; erase gulpfile and root Javascript source file when done
+	    (delete-file ,style-build-file)
+	    
+	    (princ ,(format nil "~%Browser interface foundation build complete.~%~%")))
 	  ; automatically invoke foundInterface if the interface files are not present
 	  (if (and (fboundp (quote ,(intern "FOUND-INTERFACE" (package-name *package*))))
-		   (not (probe-file ,(asdf:system-relative-pathname local-package-name "./main.js"))))
+		   (or (not (probe-file ,script-output-path))
+		       (not (probe-file ,style-output-path))))
 	      ,(list (intern "FOUND-INTERFACE" (package-name *package*)))))
 	 ("Foundation provisioning failed.")))))
 

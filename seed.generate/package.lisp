@@ -5,5 +5,5 @@
 	   #:media-spec-base)
 	   ; TODO should not be necessary to include this last
   (:use #:cl #:asdf #:jonathan #:fare-quasiquote #:quickproject
-	#:symbol-munger	#:seed.modulate	#:seed.sublimate))
+	#:symbol-munger #:seed.modulate #:seed.sublimate))
 

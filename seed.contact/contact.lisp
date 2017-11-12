@@ -5,17 +5,24 @@
 (defvar *contact-list* nil)
 
 (define-easy-handler (seed-grow :uri "/portal") ()
-  (setf (hunchentoot:content-type*) "text/plain")
+  (setf (content-type*) "text/plain")
   (let ((request-type (hunchentoot:request-method hunchentoot:*request*)))
     (cond ((eq :get request-type)
 	   "Not available.")
 	  ((eq :post request-type)
-	   (let* ((input (jonathan:parse (hunchentoot:raw-post-data :force-text t)
-					 :keyword-normalizer
-					 (lambda (key) (string-upcase (camel-case->lisp-name key)))
-					 :normalize-all t))
+	   (let* ((input (let ((mime-type (first (split-sequence #\; (rest (assoc :content-type (headers-in*)))))))
+			   (cond ((string= mime-type "application/json")
+				  ; convert JSON Lisp format with jonathan
+				  (jonathan:parse (hunchentoot:raw-post-data :force-text t)
+						  :keyword-normalizer
+						  (lambda (key) (string-upcase (camel-case->lisp-name key)))
+						  :normalize-all t))
+				 ((string= mime-type "application/x-lisp")
+				  ; native Lisp text is passed directly through and read
+				  (read-from-string (hunchentoot:raw-post-data :force-text t))))))
 		  (package-string (string-upcase (first input)))
 		  (function-string (string-upcase (second input))))
+	     ;(print (list :iin input (headers-in*)))
 	     (jonathan:to-json (if (and (or (find-package package-string)
 					    (asdf:load-system (intern package-string)))
 					(find-symbol function-string package-string))

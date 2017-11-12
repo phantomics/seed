@@ -52,6 +52,7 @@
  (set-data (follows reagent)
 	   (list reagent))
 
+ ; set a property of the data's metadata
  (set-meta (follows reagent value)
 	   `((set-branch-meta branch ,(intern (string-upcase reagent) "KEYWORD")
 			      ,value)
@@ -91,11 +92,26 @@
 		     data params (find-branch-by-name ,branch-to sprout)
 		     sprout (lambda (dat par) (declare (ignorable dat par))))
 	    data))
+ 
+ ; transfer current input to a different portal
+ (to-portal (follows reagent)
+	    `(()))
+
+ ; transmit data to a remote portal TODO: this is just a stub
+ (remote (follows reagemt)
+	 `((drakma:http-request (getf reagent :host)
+				:method :post :content-type "application/x-lisp; charset=utf-8"
+				:content
+				(write-to-string (list (intern (string-upcase (getf reagent :name)))
+						       (intern "GROW")
+						       (intern (string-upcase (getf reagent :branch)))
+						       data)))))
 
  ; route the input or output to one of two paths depending whether given conditions are true
  (if-condition (condition &rest options)
 	       ; return the paths, returning the 'dat symbol in the stead of an absent second path
 	       (lambda (paths) (if (second paths)
+				   ; TODO: eliminate use of 'dat here
 				   paths (list (first paths) 'dat))))
 
  ; fetch a branch's image; functions as a check whether said image exists
@@ -178,9 +194,11 @@
  (stage (follows)
 	`((funcall ,(intern "*STAGE-THRUST*" (package-name *package*))
 		   (mapcar #'branch-spec (sprout-branches sprout)))))
+
  ; passthrough function means to wrap stage parameters for use by stage definitions that analyze the branch spec
  (stage-params (follows &rest params)
 	       `(data))
+
  ; format data for use as a common form - in most cases, it actually does nothing since the data
  ; is formatted like that to start with
  (form (follows)

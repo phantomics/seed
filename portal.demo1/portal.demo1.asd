@@ -12,6 +12,7 @@
 	       #:seed.ui-model.react #:seed.ui-spec.stage.base
 	       #:seed.ui-spec.keys.base #:seed.ui-spec.html.base
 	       #:seed.ui-spec.react.base #:seed.ui-spec.css.base
+	       #:seed.ui-spec.stage-menu.base
 	       #:seed.foreign.browser-spec.script.base
 	       #:seed.foreign.browser-spec.style.base
 	       #:quickproject #:prove #:parenscript #:panic #:lass

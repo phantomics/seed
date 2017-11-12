@@ -67,8 +67,7 @@
 (defun exp-string (list output)
   "Convert the given form to a string."
   (if list (exp-string (rest list)
-		       (concatenate 'string output
-				    (write-to-string (first list))
+		       (concatenate 'string output (write-to-string (first list))
 				    (list #\newline)))
       output))
 
@@ -261,7 +260,7 @@
 			   ;; 			       ,dat)))
 			   ;; 	    (declare (ignorable ,dat))
 			   ;; 	    ,(if follows follows dat)))))
-			   
+
 			   ; regular functions may do something to the data and are then followed by another
 			   ((or (eq 'source (first args))
 			   	; the source may be optional or not
@@ -364,15 +363,23 @@
 				    :package (quote ,package) :formats (quote ,formats)
 				    ,@(if contacts
 					  (list :contacts
-						`(mapcar (lambda (name)
+						`(mapcar (lambda (contact)
 							   ; TODO: the below assumes a flat structure for the
 							   ; system file storage, improve the logic
-							   (let ((name-string (string-downcase name)))
-							     (eval (first (load-exp-from-file
-									 ,name
-									 (concatenate 'string "../"
-										      name-string "/" name-string
-										      ".seed"))))))
+							   (if (string= "SPROUT" (string-upcase (type-of contact)))
+							       ; if the item provided is an actual sprout object,
+							       ; simply pass it through, otherwise generate
+					                       ; the sprout as defined by its system's .seed file
+							       contact
+							       (if (handler-case (progn (asdf:find-system ,name) t)
+								     (condition () nil))
+							           ; don't load the .seed file if the contact is
+							           ; not defined as an ASDF system
+								   (let ((name-string (string-downcase contact)))
+								     (eval (first (load-exp-from-file
+										   ,name (format nil "../~a/~a.seed"
+												 name-string 
+												 name-string))))))))
 							 (list ,@contacts))))
 				    :branches (list ,@(mapcar (lambda (branch)
 								`(make-instance 'branch

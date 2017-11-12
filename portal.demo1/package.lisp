@@ -8,6 +8,7 @@
         #:seed.ui-model.keys #:seed.ui-spec.keys.base
 	#:seed.ui-model.html #:seed.ui-spec.html.base
 	#:seed.ui-model.react #:seed.ui-spec.react.base
+	#:seed.ui-spec.stage-menu.base
 	#:seed.foreign.browser-spec.script.base
 	#:seed.foreign.browser-spec.style.base
 	#:quickproject #:prove #:parenscript #:panic))

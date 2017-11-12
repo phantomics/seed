@@ -2,4 +2,4 @@
 
 (defpackage #:seed.contact
   (:export #:contact-create #:contact-remove #:contact-remove-all #:contact-open #:contact-close)
-  (:use #:cl #:jonathan	#:symbol-munger	#:hunchentoot #:seed.modulate))
+  (:use #:cl #:cl-utilities #:jonathan #:symbol-munger #:hunchentoot #:seed.modulate))

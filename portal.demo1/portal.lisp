@@ -26,6 +26,8 @@
 
 (stage :systems (:demo-sheet :demo-drawing)
        :arch (simple-portal-layout)
-       :thrust (simple-branch-layout))
+       :thrust (simple-branch-layout :omit (:stage :clipboard :history)
+				     :adjunct (:clipboard :history)
+				     :extend (:menu (stage-extension-menu-base))))
 
 (portal)
