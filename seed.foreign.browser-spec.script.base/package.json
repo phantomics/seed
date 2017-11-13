@@ -1,17 +1,15 @@
 {
   "name": "seed-browserSpec-script-base",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Foundational Javascript modules for Seed's user interface.",
   "dependencies": {
     "bootstrap": "^3.3.7",
     "classnames": "^2.2.5",
     "create-react-class": "^15.6.2",
     "gulp": "^3.9.1",
-    "gulp-less": "^3.3.2",
     "gulp-webpack": "^1.5.0",
     "jquery": "^3.2.1",
     "keypress.js": "^2.1.4",
-    "less-plugin-clean-css": "^1.5.1",
     "react": "^15.2.0",
     "react-bootstrap": "^0.29.5",
     "react-color": "^2.13.8",

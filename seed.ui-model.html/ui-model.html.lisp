@@ -82,6 +82,7 @@
 	    (delete-file ,style-build-file)
 	    
 	    (princ ,(format nil "~%Browser interface foundation build complete.~%~%")))
+
 	  ; automatically invoke foundInterface if the interface files are not present
 	  (if (and (fboundp (quote ,(intern "FOUND-INTERFACE" (package-name *package*))))
 		   (or (not (probe-file ,script-output-path))
