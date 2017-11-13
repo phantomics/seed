@@ -22,7 +22,6 @@
 				  (read-from-string (hunchentoot:raw-post-data :force-text t))))))
 		  (package-string (string-upcase (first input)))
 		  (function-string (string-upcase (second input))))
-	     ;(print (list :iin input (headers-in*)))
 	     (jonathan:to-json (if (and (or (find-package package-string)
 					    (asdf:load-system (intern package-string)))
 					(find-symbol function-string package-string))

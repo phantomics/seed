@@ -230,7 +230,9 @@
 						    dat ,@(if reagent (list reagent)))))
 				  (declare (ignorable dat))
 				  ,(if follows follows 'dat))))
-			   ; reagent functions transform data
+			   ; reagent functions transform data; note that the 'reagent' argument is evaluated
+			   ; since it is passed to the funcall
+
 			   ((and (eq 'follows (first args))
 				 (eq 'source (second args)))
 			    `(,(prepend-args &optional)
@@ -241,6 +243,7 @@
 				  (declare (ignorable dat))
 				  ,(if follows follows 'dat))))
 			   ; source functions retrieve data from some source
+
 			   ((eq 'follows (first args))
 			    `(,(prepend-args &optional)
 			       ; all arguments after follows are ignorable
@@ -270,12 +273,14 @@
 			       (declare (ignorable unused source))
 			       `(,@,io-by-medium)))
 			   ; terminal source functions retrieve data from some source, with nothing following
+
 			   ((eq 'condition (first args))
 			    `(,(prepend-args follows)
 			       `(let ((dat (if ,condition ,@(funcall ,io-by-medium options))))
 				  (declare (ignorable dat))
 				  ,(if follows follows 'dat))))
 			   ; condition functions do something based on conditions
+
 			   ((eq 'true-or-not (first (last args)))
 			    `(,(prepend-args unused &optional)
 			       (declare (ignorable unused true-or-not))
@@ -286,8 +291,11 @@
 							  (not (not ,,io-by-medium))) dat))))
 			   ; boolean functions return true or false based on some condition; if there is
 			   ; an argument such as hash key the true-or-not variable comes afterward
+
 			   (t (list args (third medium)))))))))
-  `(defmacro sprout (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
+  `(defmacro ,(intern "SPROUT" (package-name *package*))
+       ; declare this sprout macro internal to the package where the till macro is invoked
+       (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
      ; generate list of nested macros from linear pipeline spec
      (labels ((medium-spec (direction params)
 		; perhaps medium-spec should be sublimated into a more general 

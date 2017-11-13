@@ -1,4 +1,4 @@
-;;;; seed.ui-spec.stage-menu.base.lisp
+;;;; stage-menu.base.lisp
 
 (in-package #:seed.ui-spec.stage-menu.base)
 

@@ -11,7 +11,7 @@
   `(progn
      (princ (format nil "~%Tests for seed.generate:~%"))
 
-     (seed.generate::sprout
+     (portal.demo1::sprout
       :test-system :system (:description "This is a test system." :author "Somebody" :license "GPL-3.0")
       :meta (:symbol test-sprout)
       :package ((:use :common-lisp) (:export))

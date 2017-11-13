@@ -98,14 +98,15 @@
 	    `(()))
 
  ; transmit data to a remote portal TODO: this is just a stub
- (remote (follows reagemt)
-	 `((drakma:http-request (getf reagent :host)
-				:method :post :content-type "application/x-lisp; charset=utf-8"
-				:content
-				(write-to-string (list (intern (string-upcase (getf reagent :name)))
-						       (intern "GROW")
-						       (intern (string-upcase (getf reagent :branch)))
-						       data)))))
+ (remote (follows params)
+	 (let ((par (cons 'list params)))
+	   `((drakma:http-request (getf ,par :host)
+				  :method :post :content-type "application/x-lisp; charset=utf-8"
+				  :content
+				  (write-to-string (list (intern (string-upcase (getf ,par :name)))
+							 (intern "GROW")
+							 (intern (string-upcase (getf ,par :branch)))
+							 data))))))
 
  ; route the input or output to one of two paths depending whether given conditions are true
  (if-condition (condition &rest options)
