@@ -7,6 +7,7 @@
     "bootstrap": "^3.3.7",
     "gulp-concat": "^2.6.1",
     "react": "^16.0.0",
+    "react-datasheet": "^1.2.14",
     "react-dom": "^16.0.0",
     "react-select": "^1.0.0-rc.10"
   },

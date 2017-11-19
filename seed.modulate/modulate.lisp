@@ -444,7 +444,7 @@
 		 (,type-list (glyph-find (rest ,type-list)))
 		 (t (quote ,(process (getf categories :default))))))))))
 
-(defun plot-glyphs (type-list)
+(defun plot-glyph (type-list)
   "Plot the points of a glyph."
   (labels ((place-points (points &optional placed)
 	     (let ((point (first points)))
@@ -467,7 +467,7 @@
 				      (list (1+ index))
 				      :initial-element nil)))
   (setf (aref glyph-array index)
-	(plot-glyphs type-list))
+	(plot-glyph type-list))
   glyph-array)
 
 (defmacro reflect (&key (atom nil) (form nil))

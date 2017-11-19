@@ -5,8 +5,7 @@
 (defmacro cornerstone ()
   "Generate the content for the root script source file."
   `(parenscript:ps
-     (let ((j-query (require "jquery/dist/jquery.min.js"))
-	   (class-names (require "classnames")))
+     (let ((j-query (require "jquery/dist/jquery.min.js")))
        (setf (@ window $) j-query
 	     (@ window j-query) j-query
 	     (@ window -react) (require "react")
@@ -25,6 +24,7 @@
 	     (@ window -select) (getprop (require "react-select") "default")
 	     (@ window -sketch-color-picker) (getprop (require "react-color/lib/components/sketch/Sketch")
 						      "default")
+	     (@ window -react-data-sheet) (require "react-datasheet")
 	     ; TODO: keypress package has only this numbered, minified script to include.
 	     ; Fork a version of keypress with a main script file.
 	     (@ window -keypress) (require "keypress.js/keypress-2.1.4.min.js"))

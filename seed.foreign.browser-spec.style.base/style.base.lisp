@@ -4,23 +4,9 @@
 
 (defparameter *local-package* (package-name *package*))
 
-;; (defun file-to-string (path)
-;;   (with-open-file (stream path)
-;;     (let ((data (make-string (file-length stream))))
-;;       (read-sequence data stream)
-;;       data)))
-
-;; (defmacro cornerstone ()
-;;   "Generate the content for the root style source file. This is currently just two lines of less code."
-;;   (format nil "~a~%~%~a"
-;; 	  (file-to-string (asdf:system-relative-pathname (intern *local-package* "KEYWORD")
-;; 							 "./node_modules/bootstrap/dist/css/bootstrap.min.css"))
-;; 	  (file-to-string (asdf:system-relative-pathname (intern *local-package* "KEYWORD")
-;; 							 "./node_modules/react-select/dist/react-select.css"))))
-
 (defmacro cornerstone ()
-  "Generate the content for the root style source file. This is currently just two lines of less code."
-  (list (asdf:system-relative-pathname (intern *local-package* "KEYWORD")
-				       "./node_modules/bootstrap/dist/css/bootstrap.min.css")
-	(asdf:system-relative-pathname (intern *local-package* "KEYWORD")
-				       "./node_modules/react-select/dist/react-select.css")))
+  "Generate the paths for the style source files."
+  (mapcar (lambda (item) (asdf:system-relative-pathname (intern *local-package* "KEYWORD") item))
+	  (list "./node_modules/bootstrap/dist/css/bootstrap.min.css"
+		"./node_modules/react-select/dist/react-select.css"
+		"./node_modules/react-datasheet/lib/react-datasheet.css")))

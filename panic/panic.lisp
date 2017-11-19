@@ -128,34 +128,36 @@ Lifecycle documentation."
              (alexandria:doplist (k v plist new-plist)
                (setf (getf new-plist (alexandria:ensure-symbol k)) v)))))
     `(,(if (consp name) 'setf 'defvar) ,name
-       (ps:chain -react
-		  (create-class
-		   (ps:create 'display-name ,display-name
-			      'render #'(lambda () ,@render-body)
-			      ,@(when get-initial-state `('get-initial-state ,get-initial-state))
-			      ,@(when get-default-props `('get-default-props ,get-default-props))
-			      ,@(when prop-types `('prop-types ,prop-types))
-			      ,@(when mixins `('mixins ,mixins))
-			      ,@(when statics `('statics ,statics))
-			      ,@(when component-will-mount `('component-will-mount ,component-will-mount))
-			      ,@(when component-did-mount `('component-did-mount ,component-did-mount))
-			      ,@(when component-will-receive-props `('component-will-receive-props ,component-will-receive-props))
-			      ,@(when should-component-update `('should-component-update ,should-component-update))
-			      ,@(when component-will-update `('component-will-update ,component-will-update))
-			      ,@(when component-did-update `('component-did-update ,component-did-update))
-			      ,@(when component-will-unmount `('component-will-unmount ,component-will-unmount))
-			      ,@(plist-with-symbols
-				 (alexandria:remove-from-plist args
-							       :display-name
-							       :get-initial-state
-							       :get-default-props
-							       :prop-types
-							       :mixins
-							       :statics
-							       :component-will-mount
-							       :component-did-mount
-							       :component-will-receive-props
-							       :should-component-update
-							       :component-will-update
-							       :component-did-update
-							       :component-will-unmount))))))))
+      (create-react-class
+
+       ;; (ps:chain -react
+       ;; 		 (create-class
+       (ps:create 'display-name ,display-name
+		  'render #'(lambda () ,@render-body)
+		  ,@(when get-initial-state `('get-initial-state ,get-initial-state))
+		  ,@(when get-default-props `('get-default-props ,get-default-props))
+		  ,@(when prop-types `('prop-types ,prop-types))
+		  ,@(when mixins `('mixins ,mixins))
+		  ,@(when statics `('statics ,statics))
+		  ,@(when component-will-mount `('component-will-mount ,component-will-mount))
+		  ,@(when component-did-mount `('component-did-mount ,component-did-mount))
+		  ,@(when component-will-receive-props `('component-will-receive-props ,component-will-receive-props))
+		  ,@(when should-component-update `('should-component-update ,should-component-update))
+		  ,@(when component-will-update `('component-will-update ,component-will-update))
+		  ,@(when component-did-update `('component-did-update ,component-did-update))
+		  ,@(when component-will-unmount `('component-will-unmount ,component-will-unmount))
+		  ,@(plist-with-symbols
+		     (alexandria:remove-from-plist args
+						   :display-name
+						   :get-initial-state
+						   :get-default-props
+						   :prop-types
+						   :mixins
+						   :statics
+						   :component-will-mount
+						   :component-did-mount
+						   :component-will-receive-props
+						   :should-component-update
+						   :component-will-update
+						   :component-did-update
+						   :component-will-unmount))))))) ;)

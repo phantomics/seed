@@ -15,7 +15,10 @@
 			    (html-index-body))
 		   :script ((key-ui keystroke-maps
 				    key-ui-base)
-			    (react-ui (extend-rcomps-base)
+			    (react-ui ((react-portal-core (component-set interface-units interface-units)
+							  (component-set view-modes
+									 form-view-mode
+									 sheet-view-mode)))
 				      :url "portal"
 				      :component :-portal))
 		   :style (css-base

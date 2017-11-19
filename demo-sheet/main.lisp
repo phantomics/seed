@@ -103,7 +103,7 @@
             (NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL
              (:DATA-COM (0) :TYPE :NUMBER) NIL NIL NIL NIL NIL NIL NIL NIL
              NIL)))
-(IN-TABLE MAIN-TABLE (CELL "a2" 31) (CELL "g9" (/ 8 2))
+(IN-TABLE MAIN-TABLE (CELL "a2" 35) (CELL "g9" (/ 8 2))
  (CELL "c1" (+ 8 (META 3 :COMMENT "This is a test comment.") 5)) (CELL "g5" 10)
  (CELL "d12" (- 20 6 (EXPT 2 3) 2)) (CELLS "c5" "e9" (+ 3 VAL-NUMBER))
  (CELL "b7" (LAMBDA (C) (+ 4 C)))

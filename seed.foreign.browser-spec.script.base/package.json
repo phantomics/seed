@@ -10,14 +10,15 @@
     "gulp-webpack": "^1.5.0",
     "jquery": "^3.2.1",
     "keypress.js": "^2.1.4",
-    "react": "^15.2.0",
-    "react-bootstrap": "^0.29.5",
+    "react": "^16.1.1",
+    "react-bootstrap": "^0.31.5",
     "react-color": "^2.13.8",
-    "react-dom": "^15.2.0",
+    "react-datasheet": "^1.2.14",
+    "react-dom": "^16.1.1",
     "react-input-autosize": "^2.0.1",
     "react-select": "^1.0.0-rc.10",
-    "react-textarea-autosize": "^5.1.0",
-    "webpack": "^1.13.1"
+    "react-textarea-autosize": "^5.2.0",
+    "webpack": "^3.8.1"
   },
   "scripts": {},
   "keywords": [

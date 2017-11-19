@@ -2,12 +2,133 @@
 
 (in-package #:seed.ui-model.react)
 
+(defpsmacro handle-actions (action-obj state props &rest pairs)
+  (let ((conditions (list :actions-branch-id
+			  ; actions to be taken when the branch's id matches one specified
+			  (lambda (action-list)
+			    `(cond ,@(mapcar (lambda (action)
+					       (let ((action-id (first action))
+						     (branch-id (second action))
+						     (action-content (cddr action)))
+						 `((and (= action ,action-id) 
+							(= ,branch-id (@ self state data id)))
+						   ,@action-content
+						   (if action-confirm (action-confirm)))))
+					     action-list)))
+			  :actions-point
+			  (lambda (action-list)
+			    `(cond ,@(mapcar (lambda (action)
+					       (let ((action-id (first action))
+						     (action-content (rest action)))
+						 `((and (= action ,action-id) 
+							(or (@ state context is-point)
+							    (and (@ props meta)
+								 (@ props meta is-point))))
+						   ,@action-content
+						   (if action-confirm (action-confirm)))))
+					     action-list)))
+			  :actions-point-and-focus
+			  (lambda (action-list)
+			    `(cond ,@(mapcar (lambda (action)
+					       (let ((action-id (first action))
+						     (action-content (rest action)))
+						 `((and (= action ,action-id)
+							;(@ state context in-focus)
+							(or (@ state context is-point)
+							    (and (@ props meta)
+								 (@ props meta is-point))))
+						   (if (and (@ state point-attrs props)
+							    (@ state point-attrs props meta)
+							    (@ state point-attrs props meta if)
+							    (@ state point-attrs props meta if interaction)
+							    (@ self interactions)
+							    (getprop self "interactions"
+								     (chain state point-attrs props meta if 
+									    interaction (substr 2)))
+							    (getprop self "interactions"
+								     (chain state point-attrs props meta if
+									    interaction (substr 2))
+								     ,action-id))
+						       (funcall (getprop self "interactions"
+									 (chain state point-attrs props meta if 
+										interaction (substr 2))
+									 ,action-id)
+								self (@ state point-data))
+						       (progn ,@action-content))
+						   (if action-confirm (action-confirm)))))
+					     action-list))))))
+    `(if ,action-obj (let ((action (@ ,action-obj id))
+			   (params (@ ,action-obj params))
+			   (action-confirm (@ ,action-obj confirm))
+			   (state ,state) (props ,props))
+		       ,@(loop for item in pairs when (and (keywordp item) (getf conditions item))
+			    collect (funcall (getf conditions item)
+					     (getf pairs item)))))))
+
+(defpsmacro extend-state (&rest items)
+  (let ((deep (eq :deep (first items))))
+    (labels ((process-pairs (items &optional output)
+	       (if items 
+		   (process-pairs (cddr items)
+				  (append output (list (first items)
+						       `(chain j-query (extend ,@(if deep (list t))
+									       (create)
+									       (@ self state ,(first items))
+									       ,(second items))))))
+		   output)))
+      `(chain self (set-state (create ,@(process-pairs (if deep (rest items)
+							   items))))))))
+
+(defpsmacro subcomponent (symbol data &optional &key (context nil) (addendum nil))
+  (declare (ignorable addendum))
+  (labels ((assign-sub-context (pairs &optional output)
+	     (if pairs
+		 (assign-sub-context (cddr pairs)
+				     (append (list `(@ sub-con ,(first pairs)) (second pairs))
+					     output))
+		 output)))
+    `(panic:jsl (,(if (symbolp symbol)
+		      (intern (string-upcase symbol) "KEYWORD")
+		      symbol)
+		  :data ,data
+		  :context (let ((sub-con (chain j-query (extend t (create) (@ self state context)))))
+			     (progn ,(cons 'setf (assign-sub-context context))
+				    sub-con))
+		  :action (if (not (= "undefined" (typeof (@ self act))))
+			      ; the act property is only present at the top-level portal component
+			      (@ self state action)
+			      (@ self props action))))))
+
+(defpsmacro vista (space context fill-by &optional respond-by encloser)
+  `(panic:jsl (:-vista :key (+ "vista-" index)
+		       :fill ,fill-by
+		       :extend-response ,respond-by
+		       :enclose ,(if encloser encloser `(lambda (item) item))
+		       :data (@ self state data)
+		       :space ,space
+		       :context ,context
+		       :action (if (not (= "undefined" (typeof (@ self act))))
+				   ; the act property is only present at the top-level portal component
+				   (@ self state action)
+				   (@ self props action)))))
+
+(defmacro specify-components (name &rest params)
+  "Define (part of) a component set specification to be used in building a React interface."
+  `(defmacro ,name ()
+     `(,@',params)))
+
+(defmacro component-set (name &rest components)
+  "Top-level wrapper for the component specification functions, which turns the list of component definitions into a form ready for conversion to Javascript. The order of the component definitions is reversed so that the components are produced in Javascript in the same order as they are listed."
+  `(setq ,name (funcall (lambda ()
+			  (let ((pairs (create))
+				(self this))
+			    ,@(mapcar (lambda (item) `(defcomponent (@ pairs ,(first item)) ,@(rest item)))
+				      (loop for item in components append (macroexpand (list item))))
+			    pairs)))))
+
 (defmacro react-ui (components &key (url nil) (component nil))
-  (append (apply #'append (mapcar (lambda (component)
-				    (if (listp component)
-					(macroexpand component)
-					(macroexpand (list component))))
-				  components))
+  (append (loop for comp in components append (macroexpand (if (listp comp)
+							       comp (list comp))))
 	  `((chain j-query
 		   (ajax (create url ,(concatenate 'string "../" url)
 				 type "POST"
