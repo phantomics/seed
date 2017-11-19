@@ -227,6 +227,7 @@
 	 ; styles for the top-level branch display elements
 	 (.container 
 	  :max-width 100%
+	  :padding 0
 	  :background "#fff"
 	  (.portal-column 
 	   :padding 0 2px 0 0

@@ -108,9 +108,8 @@
   `(with-open-file (stream (asdf:system-relative-pathname (make-symbol (package-name *package*))
 							  "portal.js")
 			   :direction :output :if-exists :supersede :if-does-not-exist :create)
-     (let ((data (ps ,@(loop :for item :in items :append (if (listp item)
-							     (macroexpand item)
-							     (macroexpand (list item)))))))
+     (let ((data (ps ,@(loop :for item :in items :append (macroexpand (if (listp item)
+									  item (list item)))))))
        (format stream (if (stringp data)
 			  data (write-to-string data))))))
 
@@ -124,10 +123,9 @@
 						      (lass:compile-and-write css-module) 
 						      (if (stringp css-module)
 							  css-module)))
-						(loop :for item :in items :append 
-						   (if (listp item)
-						       (macroexpand item)
-						       (macroexpand (list item))))))))
+						(loop :for item :in items 
+						   :append (macroexpand (if (listp item)
+									    item (list item))))))))
        (format stream (if (stringp data)
 			  data (write-to-string data))))))
 
