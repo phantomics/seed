@@ -1,8 +1,10 @@
-(sprout :portal.demo1 
+(sprout :portal.demo1
         :system (:description "This is a test portal.")
         :package ((:use :cl))
         :contacts (:demo-sheet :demo-drawing)
         :branches ((systems (in (put-image (portal (get-image)))
                                 (put-file (get-image) :-self))
-                            (out (set-type :form) (put-image (get-value :*stage-arch*)) (codec)))))
+                            (out (set-type :form) (put-image ;(get-value :*stage-arch*)
+							     (build-stage)
+							     ) (codec)))))
 

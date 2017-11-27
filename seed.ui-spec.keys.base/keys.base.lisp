@@ -7,8 +7,8 @@
  :discrete
  ((move ("space" on-keydown (portal-action trigger-secondary))
 	("enter" on-keyup (portal-action trigger-primary))
-	; this must be on-keyup, not on-keydown, or else the enter action in the specify-keys
-	; keyset will also be executed right after the swap happens. x
+	;; this must be on-keyup, not on-keydown, or else the enter action in the specify-keys
+	;; keyset will also be executed right after the swap happens. x
 	(("f s" ",") on-keydown (portal-action set-point-type default "" type (list "symbol")))
 	(("f d" ".") on-keydown (portal-action set-point-type default "0" type (list "number"))
 	 is-exclusive false)
@@ -18,9 +18,9 @@
 	(("f r" "'") on-keydown (portal-action set-point-type default "" type (list "string")))
 	("delete" on-keydown (portal-action delete-point))
 	("control c" is-exclusive false on-keyup (portal-action record vector #(1 0)))
-	; control-c copies the item at point
+	;; control-c copies the item at point
 	("control v" is-exclusive false on-keyup (portal-action record vector #(-1 0)))
-	; control-v pastes the item at point
+	;; control-v pastes the item at point
 	(("control s" "shift s") on-keydown (portal-action commit))
 	(("control r" "shift r") on-keydown (portal-action revert)))
   (set ("esc" on-keydown (portal-action trigger-anti))

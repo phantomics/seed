@@ -3,7 +3,7 @@
 					    :license "GPL-3.0") 
 	:package ((:use :common-lisp :cl-who)(:export))
         :branches ((stage (in (set-time))
-                          (out (set-type :stage) (stage) (codec)))
+                          (out (set-type :stage) (codec)))
                    (main (in (set-time)
                              (if-condition (is-display-format) (:then (codec)))
                              (fork-to :history) (put-image)

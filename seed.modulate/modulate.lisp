@@ -103,16 +103,16 @@
 
 (defun encode-expr (form &optional meta output)
   "Convert a given form to the display format."
-  (let ((point (if (listp form) ; this condition should only go into effect when an atom is
-		   (first form) ; passed directly from an output function
+  (let ((point (if (listp form) ;; this condition should only go into effect when an atom is
+		   (first form) ;; passed directly from an output function
 		   form))
 	(meta (if meta meta (create-meta))))
 
-    ; set initial element flag to true so that the atom heading a form can be correctly marked
+    ;; set initial element flag to true so that the atom heading a form can be correctly marked
     (if (not output)
 	(setf (of-meta :initial) t))
 
-    (if (or (and point (atom point)) ; if the point is an atom or nil
+    (if (or (and point (atom point)) ;; if the point is an atom or nil
 	    (and (not point) form))
 	(multiple-value-bind (output-form output-meta)
 	    (atom-to-jsform point meta)
@@ -121,9 +121,9 @@
 								 (not (stringp point)))
 							    (encode-array point)
 							    output-form)))))
-	(if point ; if the point is a non-nil list
+	(if point ;; if the point is a non-nil list
 	    (multiple-value-bind (result-output result-meta)
-		; encodeExpr for processing forms, atomToJsform for processing forms converted to atoms
+		;; encodeExpr for processing forms, atomToJsform for processing forms converted to atoms
 		(encode-form point #'encode-expr #'atom-to-jsform meta output)
 	      (let ((new-meta result-meta))
 		(if (and (not output)
@@ -131,19 +131,19 @@
 		    (setf (of-properties :to-enclose result-meta) t
 			  (of-properties :enclosed new-meta) t))
 		(encode-expr (rest form)
-			     new-meta ; begin the list with a plain list object if the list is nested
-			     ; the enclosed property marks whether or not the form has been enclosed
-			     ; in its outermost list. Because of the way the indexing works, a special
-			     ; provision is made to correctly number the outermost list with the 0 index. x
+			     new-meta ;; begin the list with a plain list object if the list is nested
+			     ;; the enclosed property marks whether or not the form has been enclosed
+			     ;; in its outermost list. Because of the way the indexing works, a special
+			     ;; provision is made to correctly number the outermost list with the 0 index. x
 			     (append (if output output (list (atom-to-jsform (list :ty (list "plain"))
 									     result-meta)))
 				     (list result-output)))))
 	    (progn (setf (of-meta :initial) nil)
-		   ; strip away plain list header if the head of the list has an atom macro - i.e. if the first
-		   ; element is not a true list but an atom with a macro applied - and if the head of the list
-		   ; does _not_ have a form macro, meaning that it is also the head of a sub-form.
-		   ; the double application is rare but occurs on the first element in a portal specification,
-		   ; thus its quick discovery
+		   ;; strip away plain list header if the head of the list has an atom macro - i.e. if the first
+		   ;; element is not a true list but an atom with a macro applied - and if the head of the list
+		   ;; does _not_ have a form macro, meaning that it is also the head of a sub-form.
+		   ;; the double application is rare but occurs on the first element in a portal specification,
+		   ;; thus its quick discovery
 		   (values (if (and (eq :ty (caar output))
 				    (string= "plain" (caadar output))
 				    (keywordp (caadr output))
@@ -151,7 +151,7 @@
 				    (not (getf (first output) :fm))
 				    (not (getf (second output) :fm)))
 			       ;(progn (print (list :mm meta))
-				;      output)
+				;;      output)
 			       (rest output)
 			       output)
 			   meta))))))
@@ -169,8 +169,8 @@
 					    (length point))
 					 (list (encode-array array dims (append point (list 0))))
 					 (encode-expr (apply #'aref (cons array point))))))
-	(if (> (length point) 1) ; prepend array information object if
-	    output               ; this is the end of the array
+	(if (> (length point) 1) ;; prepend array information object if
+	    output               ;; this is the end of the array
 	    (cons (list :ty (list "array")
 			:dm dims)
 		  output)))))
@@ -178,11 +178,11 @@
 (defun decode-expr (form &optional output macros)
   "Convert a display-formatted form back to a standard Lisp form."
   (let ((point (first form)))
-    (if (keywordp (first point)) ; if the point is a JSON object
+    (if (keywordp (first point)) ;; if the point is a JSON object
 	(let ((point-macros (if (getf point :fm)
 				(append (getf point :fm) macros)
 				macros)))
-	  (if (string= "plain" (first (getf point :ty))) ; if this is the head of a plain list
+	  (if (string= "plain" (first (getf point :ty))) ;; if this is the head of a plain list
 	      (decode-expr (rest form)
 			   output point-macros)
 	      (if (string= "array" (first (getf point :ty)))
@@ -208,7 +208,7 @@
 				 (not (stringp obj)))
 			    (let ((base-ct (of-meta :ct))
 				  (base-ly (of-meta :ly)))
-			      (list :ty (list "array") ; *** TODO: array-handling needs much more work
+			      (list :ty (list "array") ;; TODO: array-handling needs much more work
 				    :vl (array-map (lambda (member coords)
 						     (list :vl (encode-expr member meta)
 							   :ct (+ (if base-ct base-ct 0)
@@ -228,20 +228,20 @@
 				    (if enclosing 0 (setf (of-meta :ix) (if index (1+ index) 1))))))))
 
     (setf (getf jsform :ty)
-	  ; prepend a form-describing type to the type list if this atom is at the start of a list
+	  ;; prepend a form-describing type to the type list if this atom is at the start of a list
 	  (append (if (of-meta :initial)
-		      ; check that this is marked as the initial atom in the list
+		      ;; check that this is marked as the initial atom in the list
 		      (progn (setf (of-meta :initial) nil)
-			     ; the initial atom marker is now set to nil
+			     ;; the initial atom marker is now set to nil
 			     (if (and (getf object :vl)
 				      (of-meta :package)
 				      (or (string= "symbol" (first (getf object :ty)))
 					  (string= "keyword" (first (getf object :ty))))
-				      ; check that value is not nil
-				      ; also check that value is not blank
+				      ;; check that value is not nil
+				      ;; also check that value is not blank
 				      (not (= 0 (length (getf object :vl))))
 				      (not (char= #\# (aref (getf object :vl) 0))))
-				      ; the # character causes problems - TODO: a better way to do this?
+				      ;; the # character causes problems - TODO: a better way to do this?
 				 (let ((sym (intern (string-upcase (getf object :vl))
 						    (package-name (find-package (of-meta :package))))))
 				   (list (if (string= "keyword" (first (getf object :ty)))
@@ -260,8 +260,8 @@
 	  (add-array-glyph (of-meta :glyphs)
 			   (if (and (getf jsform :vl)
 				    (stringp (getf jsform :vl)))
-			       ; add the atom's value to the type list, if said value is a string, indicating
-			       ; the atom is of type symbol, keyword or string
+			       ;; add the atom's value to the type list, if said value is a string, indicating
+			       ;; the atom is of type symbol, keyword or string
 			       (cons (getf jsform :vl)
 				     (getf jsform :ty))
 			       (getf jsform :ty))
@@ -310,8 +310,8 @@
 							 (downcase-jsform (encode-expr (second list))))
 							((eq t (second list))
 							 t)
-							; TODO: figure better heuristic for handling
-							; nil/empty array conversion between Lisp and JSON
+							;; TODO: figure better heuristic for handling
+							;; nil/empty array conversion between Lisp and JSON
 							((null (second list))
 							 "_nil")
 							((symbolp (second list))
@@ -338,9 +338,9 @@
 							      (eq :data (first list))
 							      (eq :format (first list))
 							      (eq :value (first list)))
-							      ; if the decoded expression is just an atom,
-							      ; pull it out of the list it comes in,
-							      ; otherwise pass the decoded expression back
+							      ;; if the decoded expression is just an atom,
+							      ;; pull it out of the list it comes in,
+							      ;; otherwise pass the decoded expression back
 							  (let ((decoded (decode-expr (second list))))
 							    (if (and (= 1 (length decoded))
 								     (atom (first decoded)))
@@ -349,8 +349,8 @@
 							 ((and (stringp (second list))
 							       (< 0 (length (second list)))
 							       (char= #\_ (aref (second list) 0)))
-							       ; convert keywords and symbols according to
-							       ; the leading underscores
+							       ;; convert keywords and symbols according to
+							       ;; the leading underscores
 							  (if (char= #\_ (aref (second list) 1))
 							      (intern (string-upcase (camel-case->lisp-symbol
 										      (subseq (second list) 2)))
@@ -400,7 +400,7 @@
 	     (if (or segments points)
 		 (if points
 		     (let ((point (first points)) (ratios (list 4/3 1)) (resolution 16))
-		       (if (third point) ; if an inverted segment begins here
+		       (if (third point) ;; if an inverted segment begins here
 			   (process segments (rest points) seg-out points-out (first point) (rest point))
 			   (if point
 			       (process segments (rest points) seg-out
@@ -419,7 +419,7 @@
 								   (list (first point)
 									 (- resolution (second point)))))))
 					inverted-offset inverted-endpoint)
-			       (process segments (rest points) ; if point is nil, end inverted segment
+			       (process segments (rest points) ;; if point is nil, end inverted segment
 					seg-out
 					(append points-out 
 						(if inverted-offset
@@ -450,7 +450,7 @@
 	     (let ((point (first points)))
 	       (if (not point)
 		   placed
-		   (place-points (rest points) ; TODO; is this still needed?
+		   (place-points (rest points) ;; TODO; is this still needed?
 				 (append placed (list (list (first point)
 							    (second point))))))))
 	   (format-set (glyph-lines)
@@ -489,7 +489,7 @@
 (defmacro set-atom-reflection (&rest entries)
   "Define encoding and decoding processes for individual atoms, according to their type and other qualities."
   (list `(defun encode-atom (item meta)
-	   (cond ((eq item :seed-constant-blank) ; handle the blank symbol
+	   (cond ((eq item :seed-constant-blank) ;; handle the blank symbol
 		  (list :vl "" :ty (list "symbol")))
 		 ,@(mapcar (lambda (entry) 
 			     `((typep item (quote ,(getf (getf entry :predicate) :type-is)))
@@ -540,7 +540,7 @@
   (let ((form-process (gensym)) (atom-process (gensym)) (meta (gensym))
 	(output (gensym)) (macros (gensym)) (macro (gensym)))
     (list `(defun encode-form (form ,form-process ,atom-process ,meta ,output)
-	     (setf (of-properties :length ,meta) ; get length of all forms to assign
+	     (setf (of-properties :length ,meta) ;; get length of all forms to assign
 		   (1- (length form)))
 	     (cond ,@(append 
 		      (loop :for entry :in entries :append

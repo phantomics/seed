@@ -27,10 +27,9 @@
 		   :foundation (:script (seed.foreign.browser-spec.script.base)
 				:style (seed.foreign.browser-spec.style.base)))
 
-(stage :systems (:demo-sheet :demo-drawing)
-       :arch (simple-portal-layout)
-       :thrust (simple-branch-layout :omit (:stage :clipboard :history)
-				     :adjunct (:clipboard :history)
-				     :extend (:menu (stage-extension-menu-base))))
-
 (portal)
+
+(stage :branches (simple-branch-layout :omit (:stage :clipboard :history)
+				       :adjunct (:clipboard :history)
+				       :extend (:menu (stage-extension-menu-base)))
+       :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history)))

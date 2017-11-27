@@ -23,10 +23,10 @@
 
 (defun numeric-string-p (string)
   (handler-case (progn (parse-number:parse-number string) t)
-    ; parse succeeded, discard it and return true (t)
+    ;; parse succeeded, discard it and return true (t)
     (parse-number::invalid-number ()
       nil)
-    ; TODO: the above invalid-number condition should work instead of the condition below - why not?
+    ;; TODO: the above invalid-number condition should work instead of the condition below - why not?
     (condition () nil)))
 
 (defun prepare-cell (cell-data)
@@ -94,7 +94,7 @@
 	  (let* ((original-length (if original-length original-length (length coord-string)))
 		 (current-char (char-upcase (char coord-string 0))))
 	    (labels ((char-to-colnum (char number)
-		       (let ((char-index-offset 65)) ; index of the character 'A'
+		       (let ((char-index-offset 65)) ;; index of the character 'A'
 			 (+ (* number 26)
 			    (- (char-int (character (string-upcase char)))
 			       char-index-offset))))

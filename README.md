@@ -60,7 +60,7 @@ This will build Seed and install the software it needs to run. As long as you ha
 
 ### Starting Seed automatically
 
-From now on, if you'd like to automatically start Seed whenever you run SBCL, you can open your .sbclrc file (usually located at ~/.sbclrc) and add the lines:
+From now on, if you'd like to automatically start Seed whenever you run SBCL, you can edit your .sbclrc file (usually located at ~/.sbclrc) and add the lines:
 
 ```
 (asdf:load-system 'seed)

@@ -8,5 +8,4 @@
   "Generate the paths for the style source files."
   (mapcar (lambda (item) (asdf:system-relative-pathname (intern *local-package* "KEYWORD") item))
 	  (list "./node_modules/bootstrap/dist/css/bootstrap.min.css"
-		"./node_modules/react-select/dist/react-select.css"
-		"./node_modules/react-datasheet/lib/react-datasheet.css")))
+		"./node_modules/react-select/dist/react-select.css")))

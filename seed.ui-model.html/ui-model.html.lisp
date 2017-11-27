@@ -49,7 +49,7 @@
 								resolve (create extensions (list "" ".js"))
 								output (create filename "./[name].js"))))
 				    (chain gulp (task "dev" (lambda () ,@(gulp-build-script))))))))
-				    ; invoke cornerstone macro from script package to create root source file
+				    ;; invoke cornerstone macro from script package to create root source file
 	    ,(if script `(with-open-file (,stream ,(namestring root-script)
 						  :direction :output :if-exists :supersede 
 						  :if-does-not-exist :create)
@@ -59,11 +59,11 @@
 				      ,(format nil "~%Synchronizing source files for Javascript generation.~%"))
 				    (macroexpand (list 'synchronize-npm-modules script-path))))
 	    (princ ,(format nil "~%Generating foundational Javascript via Gulp and Webpack.~%"))
-	    ; run Gulp build process
+	    ;; run Gulp build process
 	    (uiop:run-program ,(format nil "gulp --gulpfile ~agulpfile.js dev" (namestring script-path))
 			      :output *standard-output*)
-	                      ; invoke cornerstone macro from style package to save compiled style file
-			      ; TODO: reenable once character format issue with bootstrap CSS files is figured out
+	                      ;; invoke cornerstone macro from style package to save compiled style file
+			      ;; TODO: reenable once character format issue with bootstrap CSS files is figured out
 	    (delete-file ,script-build-file)
 	    (delete-file ,root-script)
 
@@ -75,15 +75,15 @@
 	    ,@(if style-path (list `(princ ,(format nil "~%Synchronizing source files for CSS generation.~%"))
 				   (macroexpand (list 'synchronize-npm-modules style-path))))
 	    (princ ,(format nil "~%Generating CSS via Gulp and Webpack.~%"))
-	    ; run Gulp build process
+	    ;; run Gulp build process
 	    (uiop:run-program ,(format nil "gulp --gulpfile ~agulpfile.js dev" (namestring style-path))
 			      :output *standard-output*)
-	    ; erase gulpfile and root Javascript source file when done
+	    ;; erase gulpfile and root Javascript source file when done
 	    (delete-file ,style-build-file)
 	    
 	    (princ ,(format nil "~%Browser interface foundation build complete.~%~%")))
 
-	  ; automatically invoke foundInterface if the interface files are not present
+	  ;; automatically invoke foundInterface if the interface files are not present
 	  (if (and (fboundp (quote ,(intern "FOUND-INTERFACE" (package-name *package*))))
 		   (or (not (probe-file ,script-output-path))
 		       (not (probe-file ,style-output-path))))

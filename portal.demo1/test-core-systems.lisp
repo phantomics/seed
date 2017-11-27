@@ -2,8 +2,8 @@
 
 (in-package #:portal.demo1)
 
-; tests of the seed.generate and seed.modulate systems are run in the portal, 
-; because these systems are extended as part of the portal's build process.
+;; tests of the seed.generate and seed.modulate systems are run in the portal, 
+;; because these systems are extended as part of the portal's build process.
 
 (defvar test-sprout)
 
@@ -64,7 +64,7 @@
 
        (princ (format nil "~%  Format predicate:~%"))
        (ok (seed.modulate::display-format-predicate (list encoded)))
-       ; atom must be within a list to pass the displayFormatPredicate
+       ;; atom must be within a list to pass the displayFormatPredicate
 
        (princ (format nil "~%  Structural transformation:~%"))
        (is (seed.modulate::downcase-jsform encoded)

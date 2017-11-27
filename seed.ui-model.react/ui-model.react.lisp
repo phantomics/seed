@@ -3,14 +3,16 @@
 (in-package #:seed.ui-model.react)
 
 (defpsmacro handle-actions (action-obj state props &rest pairs)
+  ;; Handle actions that propagate to a component according to the component's properties, 
+  ;; such as whether it is currently the point or along the path of the point trace.
   (let ((conditions (list :actions-branch-id
-			  ; actions to be taken when the branch's id matches one specified
+			  ;; actions to be taken when the branch's id matches one specified
 			  (lambda (action-list)
 			    `(cond ,@(mapcar (lambda (action)
 					       (let ((action-id (first action))
 						     (branch-id (second action))
 						     (action-content (cddr action)))
-						 `((and (= action ,action-id) 
+						 `((and (= action ,(lisp->camel-case action-id))
 							(= ,branch-id (@ self state data id)))
 						   ,@action-content
 						   (if action-confirm (action-confirm)))))
@@ -20,7 +22,7 @@
 			    `(cond ,@(mapcar (lambda (action)
 					       (let ((action-id (first action))
 						     (action-content (rest action)))
-						 `((and (= action ,action-id) 
+						 `((and (= action ,(lisp->camel-case action-id))
 							(or (@ state context is-point)
 							    (and (@ props meta)
 								 (@ props meta is-point))))
@@ -32,27 +34,28 @@
 			    `(cond ,@(mapcar (lambda (action)
 					       (let ((action-id (first action))
 						     (action-content (rest action)))
-						 `((and (= action ,action-id)
+						 `((and (= action ,(lisp->camel-case action-id))
 							;(@ state context in-focus)
 							(or (@ state context is-point)
 							    (and (@ props meta)
 								 (@ props meta is-point))))
+						   ;(chain console (log 33 (@ state context)))
 						   (if (and (@ state point-attrs props)
 							    (@ state point-attrs props meta)
 							    (@ state point-attrs props meta if)
 							    (@ state point-attrs props meta if interaction)
 							    (@ self interactions)
 							    (getprop self "interactions"
-								     (chain state point-attrs props meta if 
+								     (chain state point-attrs props meta if
 									    interaction (substr 2)))
 							    (getprop self "interactions"
 								     (chain state point-attrs props meta if
 									    interaction (substr 2))
-								     ,action-id))
+								     ,(lisp->camel-case action-id)))
 						       (funcall (getprop self "interactions"
-									 (chain state point-attrs props meta if 
+									 (chain state point-attrs props meta if
 										interaction (substr 2))
-									 ,action-id)
+									 ,(lisp->camel-case action-id))
 								self (@ state point-data))
 						       (progn ,@action-content))
 						   (if action-confirm (action-confirm)))))
@@ -66,6 +69,7 @@
 					     (getf pairs item)))))))
 
 (defpsmacro extend-state (&rest items)
+  "Extend the state of a component using an object or array."
   (let ((deep (eq :deep (first items))))
     (labels ((process-pairs (items &optional output)
 	       (if items 
@@ -80,6 +84,7 @@
 							   items))))))))
 
 (defpsmacro subcomponent (symbol data &optional &key (context nil) (addendum nil))
+  ;; Create a subcomponent for use within a Seed interface.
   (declare (ignorable addendum))
   (labels ((assign-sub-context (pairs &optional output)
 	     (if pairs
@@ -95,11 +100,12 @@
 			     (progn ,(cons 'setf (assign-sub-context context))
 				    sub-con))
 		  :action (if (not (= "undefined" (typeof (@ self act))))
-			      ; the act property is only present at the top-level portal component
+			      ;; the act property is only present at the top-level portal component
 			      (@ self state action)
 			      (@ self props action))))))
 
 (defpsmacro vista (space context fill-by &optional respond-by encloser)
+  ;; Create a vista, which contains components or sub-vistas within a Seed interface.
   `(panic:jsl (:-vista :key (+ "vista-" index)
 		       :fill ,fill-by
 		       :extend-response ,respond-by
@@ -108,7 +114,7 @@
 		       :space ,space
 		       :context ,context
 		       :action (if (not (= "undefined" (typeof (@ self act))))
-				   ; the act property is only present at the top-level portal component
+				   ;; the act property is only present at the top-level portal component
 				   (@ self state action)
 				   (@ self props action)))))
 
@@ -127,6 +133,7 @@
 			    pairs)))))
 
 (defmacro react-ui (components &key (url nil) (component nil))
+  "Generate a React-based Seed user interface."
   (append (loop for comp in components append (macroexpand (if (listp comp)
 							       comp (list comp))))
 	  `((chain j-query
@@ -136,7 +143,7 @@
 				 content-type "application/json; charset=utf-8"
 				 data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow")))
 				 success (lambda (data)
-					   ;(chain console (log "DAT" data))
+					   (chain console (log "DAT" data))
 					   (chain -react-d-o-m
 						  (render (panic:jsl (,component :data data))
 							  (chain document (get-element-by-id "main")))))))))))

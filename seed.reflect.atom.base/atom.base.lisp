@@ -39,8 +39,8 @@
   :type-extension (let ((type (type-of item)))
 		    (if (listp type)
 			type (list type)))
-  ; if the type-of function returns a single atom (not a list), push that atom onto an empty list 
-  ; so it can be appended
+  ;; if the type-of function returns a single atom (not a list), push that atom onto an empty list 
+  ;; so it can be appended
   :view (write-to-string item)
   :eval (process (parse-number value)))
  (:predicate

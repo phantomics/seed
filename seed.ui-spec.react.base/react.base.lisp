@@ -9,14 +9,15 @@
   `(chain -j-s-o-n (stringify ,item)))
 
 (defpsmacro for-data-branch (id branches-list action)
+  "Perform an operation on the Javascript representation of each data branch within a Seed system."
   (let ((val (gensym)) (index (gensym)))
     `(let ((,val nil))
-       (loop for ,index in ,branches-list
-	  do (if (= (@ ,index id) ,id)
-		 (setf ,val (funcall ,action ,index))))
+       (loop for ,index in ,branches-list do (if (= (@ ,index id) ,id)
+						 (setf ,val (funcall ,action ,index))))
        ,val)))
 
 (defmacro react-portal-core (&rest content)
+  "Specify a React portal interface implementing different interfaces for Lisp forms and other data types."
   `(,@(loop for item in content append (list (macroexpand (if (listp item)
 							      item (list item)))))
      (defun inherit (self prop-data process-data map-data)
@@ -27,24 +28,27 @@
 	      (display-vertical (or (and (@ c meta) (= "__y" (@ c meta axis)))
 				    (or (= "short" (@ c breadth))
 					(= "brief" (@ c breadth)))))
-	      (this-index (if (@ c index) (@ c index) 0)) ; add 0 if there's no explicit index 
+	      (this-index (if (@ c index) (@ c index) 0)) ;; add 0 if there's no explicit index 
 	      (path (chain c path (concat (list this-index))))
 	      (trace (if (< (@ c trace) (@ path length))
 			 (chain c trace (concat (list 0)))
 			 (@ c trace)))
-	      (on-trace (and (@ c on-trace)
+	      (on-trace (progn
+			  ;; (if (= 4 (@ c path length))
+			  ;;     (cl :ac (@ c on-trace) prop-data))
+			  (and (@ c on-trace)
 			     (or (= (getprop (@ c trace) (1- (@ path length)))
 				    (getprop path (1- (@ path length))))
-				 ; if no trace information exists beyond the
-				 ; path length, presume that the 0-index branch
-				 ; is the one to follow to the point
+				 ;; if no trace information exists beyond the
+				 ;; path length, presume that the 0-index branch
+				 ;; is the one to follow to the point
 				 (and (< (@ c trace length) (@ path length))
-					; make sure trace and path match up to the
-					; point where path goes further
-					; TODO: ACTUALLY, NOT VALID
+				      ;; make sure trace and path match up to the
+				      ;; point where path goes further
+				      ;; TODO: ACTUALLY, NOT VALID
 				      ;; (= (getprop trace (1- (@ trace length)))
 				      ;;    (getprop path (1- (@ trace length))))
-					;(= 0 (if (@ c index) (@ c index) 0))
+				      ;;(= 0 (if (@ c index) (@ c index) 0))
 				      ;; (let ((matched true))
 				      ;;   (loop for x from (@ c trace length)
 				      ;; 	to (1- (@ path length)) do
@@ -63,7 +67,7 @@
 				      ;; 	     (1- (@ path length))
 				      ;; 	     ))
 				      ;;   matched)
-				      (= 0 (getprop path (1- (@ path length))))))))
+				      (= 0 (getprop path (1- (@ path length)))))))))
 	      (is-point (and on-trace (or (= (@ path length) (@ trace length))
 					  (not is-vista))))
 	      (retracers (if (@ self props enclose)
@@ -90,8 +94,8 @@
 			       (= "retrace" (@ prop-data action id)))
 			  (progn ;(cl :rr retracers orientations)
 				 (loop for x from (1- (@ retracers length)) downto 0 do
-					; prevent motion vector from propagating if the orientation
-					; switches from vertical to horizontal
+				      ;; prevent motion vector from propagating if the orientation
+				      ;; switches from vertical to horizontal
 				      (if (and (getprop orientations x)
 					       (not (= 0 (@ prop-data action params vector 1))))
 					  (setq vertical-sequence-matched true))
@@ -105,12 +109,12 @@
 								      path)))
 					    (if (or shift-value (= 0 shift-value))
 						(setf new-trace (chain path (slice 0 x) (concat shift-value)))))))
-					    ; if the movement vector is negative, once a valid branch has been
-					    ; found, run the trace along the highest-numbered downstream branches.
-					    ; the indices of the highest-numbered branches are found by running
-					    ; the retracers functions from those branches with no argument,
-					    ; which should cause them to return the breadth of their rendered
-					    ; elements.
+					    ;; if the movement vector is negative, once a valid branch has been
+					    ;; found, run the trace along the highest-numbered downstream branches.
+					    ;; the indices of the highest-numbered branches are found by running
+					    ;; the retracers functions from those branches with no argument,
+					    ;; which should cause them to return the breadth of their rendered
+					    ;; elements.
 				 ;; (if (and (< (@ new-trace length) (@ retracers length))
 				 ;; 	     (> 0 (@ prop-data action params vector 0)))
 				 ;; 	(chain new-trace (push nil)))
@@ -169,6 +173,7 @@
 		   (chain space (map (generate-vistas self))))))
 	     (respond-standard (sub-space) (lambda (self space))))
 	(lambda (sector index)
+	  ;(cl :ssc sector)
 	  (let* ((self parent)
 		 (initial-sector (if (@ sector 0)
 				     (if (@ sector 0 mt)
@@ -191,8 +196,11 @@
 	    ;(cl :sc sector initial-sector sector-data)
 	    ;(cl :sec sector); sector-space)
 	    ;(if transparent (cl 554 index :sec sector (@ parent state context)))
-	    (if (and (= "__vista" (@ sector-data if type)))
-		(vista sector;-space
+	    (if (and sector-data (= "__vista" (@ sector-data if type))
+		     ;; don't render the vista if the value inside is nil
+		     (or (not (@ sector vl))
+			 (not (= "nil" (@ sector vl)))))
+		(vista sector
 		       (let ((ex (create breadth 
 					 (if (@ sector-data if breadth)
 					     (chain sector-data if breadth (slice 2))
@@ -211,8 +219,7 @@
 		       (if (@ sector-data if extend-response)
 			   (getprop window (chain sector-data if extend-response (slice 2)))
 			   ;(respond-standard (chain sector (slice 1)))
-			   (respond-standard sector)
-			   )
+			   (respond-standard sector))
 		       (if (@ sector-data if enclose)
 			   (getprop window (chain sector-data if enclose (slice 2)))
 			   enclose-blank)))))))
@@ -247,6 +254,7 @@
 				       (lambda (index) (chain self (set-state (create control-target index))))))))
      
     (defun enclose-overview (self body)
+      ;(cl :ixd (@ self state data) (@ self props))
       (panic:jsl (:div :class-name (+ "overview" (if (@ self state context on-trace)
 						     " point" ""))
 		       body (:div :class-name "footer"
@@ -254,16 +262,16 @@
 				      (panic:jsl (:div :class-name "title-container"
 						       (:h3 :class-name "title" "seed"))))))))
 
-    (defun fill-main-stage (self space)
-      (defvar stuff nil)
-      (setf (@ self size) 0)
-      (if (< 0 (@ self state data branches length))
-	  (chain self state data branches (map (lambda (branch index)
-						 (if (= "stage" (@ branch id))
-						     (panic:jsl (:div :class-name "stage-content"
-								      (funcall (generate-vistas self)
-									       ; 0 for the first item in the space
-									       (@ branch data 1) 0)))))))))
+    ;; (defun fill-main-stage (self space)
+    ;;   (defvar stuff nil)
+    ;;   (setf (@ self size) 0)
+    ;;   (if (< 0 (@ self state data branches length))
+    ;; 	  (chain self state data branches (map (lambda (branch index)
+    ;; 						 (if (= "stage" (@ branch id))
+    ;; 						     (panic:jsl (:div :class-name "stage-content"
+    ;; 								      (funcall (generate-vistas self)
+    ;; 									       ;; 0 for the first item in the space
+    ;; 									       (@ branch data 1) 0)))))))))
 
     (defun fill-branch (self space)
       ;(cl 22 self space)
@@ -332,10 +340,10 @@
 					   (index 
 					    0
 					    branch-index index
-						  ; TODO: the above only needed for glyph rendering -
-						  ; is there a way to obviate?
+					    ;; TODO: the above only needed for glyph rendering -
+					    ;; is there a way to obviate?
 					    force-render t
-						  ;(@ sub-con pane-specs) (@ self element-specs)
+					    ;(@ sub-con pane-specs) (@ self element-specs)
 					    fetch-pane-element fetch-pane-element
 					    parent-meta (@ self props context meta)
 					    retracer (@ self retrace)
@@ -344,32 +352,23 @@
 					    (if (and (@ self state branch-modes)
 						     (= "menu" (getprop (@ self state branch-modes) index)))
 						(@ self props space 0 mt if contextual-menu format))
-					    history-id
-					    (if (@ element-ids history-index)
-						"history" nil)
-					    clipboard-id
-					    (if (@ element-ids cboard-index)
-						"clipboard" nil)
-					    on-trace 
-					    (if (and (not (= "undefined" 
-							     (typeof (@ self state branch-modes))))
-						     (= "menu" (@ self state branch-modes 0)))
-						false (@ self props context on-trace)))))
-					    ; cut the trace if the menu is active - prevents
-					    ; movement commands from registering in form area
-					    ; and menu at the same time
-					    ;; (if (and (not (= "undefined" (typeof (@ self state branch-modes))))
-					    ;; 	     (= "menu" (@ self state branch-modes 0)))
-					    ;; 	(setf (@ sub-con on-trace) false)))))
+					    history-id (if (@ element-ids history-index) "history" nil)
+					    clipboard-id (if (@ element-ids cboard-index) "clipboard" nil)
+					    ;; cut the trace if the menu is active - prevents
+					    ;; movement commands from registering in form area
+					    ;; and menu at the same time
+					    on-trace (if (and (not (= "undefined" 
+								      (typeof (@ self state branch-modes))))
+							      (= "menu" (@ self state branch-modes 0)))
+							 false (@ self state context on-trace)))))
 			    ((and (= (@ branch type 0) "matrix")
 				  (= (@ branch type 1) "spreadsheet"))
-			     (subcomponent ;-sheet-view
-					   (@ view-modes sheet-view)
+			     (subcomponent (@ view-modes sheet-view)
 					   branch :context (index
 							    0
 							    parent-meta (@ self props context meta)
 							    pane-specs (@ self element-specs)
-					                    ;(@ sub-con pane-element) (@ self pane-element)
+					                    ;;pane-element (@ self pane-element)
 							    fetch-pane-element fetch-pane-element
 							    retracer (@ self retrace)
 							    set-interaction set-interaction
@@ -385,7 +384,7 @@
 			     (subcomponent -html-display (@ branch data)
 					    :context (index index)))))
 	     (sub-controls (if (not (= "nil" (@ self props context meta secondary-controls format 0 vl)))
-			       ; don't display the sub-controls if the value is 'nil', i.e. there's nothing to show
+			       ;; don't display the sub-controls if the value is 'nil', i.e. there's nothing to show
 			       (subcomponent (@ view-modes form-view)
 					      (create id "sub-controls"
 						      data (@ self props context meta secondary-controls format))
@@ -408,10 +407,10 @@
 									"locked")))))
 				      (:div :class-name "holder"
 					    (:div :class-name "pane"
-					          ; TODO: WARNING: CHANGE THIS AND THE
-					          ; GLYPH RENDERING BREAKS BECAUSE
-					          ; THE FIRST TERMINAL TD CAN'T BE FOUND!
-					          ; FIGURE OUT WHY
+					          ;; TODO: WARNING: CHANGE THIS AND THE
+					          ;; GLYPH RENDERING BREAKS BECAUSE
+					          ;; THE FIRST TERMINAL TD CAN'T BE FOUND!
+					          ;; FIGURE OUT WHY
 						  :id (+ "branch-" index "-" (@ branch id))
 						  :ref (lambda (ref)
 							 (let ((element (j-query ref)))
@@ -423,8 +422,8 @@
 						  (:div :class-name "inner" sub-controls))))))))
 
     (defun respond-branches-main (self next-props)
-      ; toggle the activation of the contextual menu in a branch
-      ; the controlShiftMenu action is intercepted here
+      ;; toggle the activation of the contextual menu in a branch
+      ;; the controlShiftMenu action is intercepted here
       ;(cl :space (@ self props data) space rendered)
       ;(cl :resp self)
       (flet ((set-control-target (index)
@@ -438,14 +437,14 @@
 	(let ((new-modes (chain j-query (extend #() (@ self state branch-modes)))))
 	  (chain next-props data branches
 		 (map (lambda (branch index)
-			;; ; dismiss the menu when the user interacts with an entry
-			;; ; TODO: this logic needs to encompass a lot more use cases
+			;; ;; dismiss the menu when the user interacts with an entry
+			;; ;; TODO: this logic needs to encompass a lot more use cases
 			;; (if (and (= index (@ next-props context index))
 			;; 	 (@ next-props action)
 			;; 	 (or (= "triggerPrimary" (@ next-props action id))
 			;; 	     (= "triggerSecondary" (@ next-props action id))))
 			;;     (setf (getprop new-modes index) "normal"))
-			; set the branch-mode to menu if the movement vector is rightward
+			;; set the branch-mode to menu if the movement vector is rightward
 			(if (and (= index (@ next-props context index))
 				 (@ next-props action)
 				 (= "controlShiftMenu" (@ next-props action id)))
@@ -457,42 +456,43 @@
     (defun fill-branches-adjunct (self space)
       ;(cl :fla self space (@ self state context index))
       ;(cl :fl space)
-      (chain space;(@ space 1)
-	     (filter (lambda (sector)
-		       (let ((branch (chain self state data branches
-					    (find (lambda (branch) (= (@ branch id) (@ sector vl)))))))
-			 (< 0 (@ branch data length)))))
-	     (map (lambda (sector index)
-		    (setf (@ self size) (1+ (@ self size)))
-		    (let ((branch (chain self state data branches
-					 (find (lambda (branch) (= (@ branch id) (@ sector vl))))))
-			  (active-index (if (@ self state context on-trace)
-					    (if (= (@ self state context path length)
-						   (@ self state context trace length))
-						0 (getprop (@ self state context trace)
-							   (@ self state context path length)))
-					    -1)))
-		      (chain branch data
-			     (map (lambda (item index)
-				    (if (= "[object Array]" (chain -object prototype to-string (call item)))
-					(chain item (map (lambda (sub index)
-							   (if (not (= "undefined" (typeof (@ sub mt))))
-							       (setf (@ sub mt if) (create type "__bar"))
-							       (progn (setf (@ sub mt) 
-									    (create if (create type "__bar")))
-								      sub))))))
-				    item)))
-		      (panic:jsl (:div :class-name (+ "display-" (@ branch id) " view-section"
-						      (if (= index active-index) " point" ""))
-				       :key (+ "display-" index)
-				       (:div :class-name "header"
-					     (:div :class-name "branch-info"
-						   (:span :class-name "id-char" 
-							  (cond ((= "history" (@ branch id)) "●")
-								((= "clipboard" (@ branch id)) "■")))))
-				       (:div :class-name "content"
-					     (subcomponent (@ view-modes form-view)
-							   branch :context (index index))))))))))
+      (if (< 0 (@ self state data branches length))
+	  (chain space
+		 (filter (lambda (sector)
+			   (let ((branch (chain self state data branches
+						(find (lambda (branch) (= (@ branch id) (@ sector vl)))))))
+			     (< 0 (@ branch data length)))))
+		 (map (lambda (sector index)
+			(setf (@ self size) (1+ (@ self size)))
+			(let ((branch (chain self state data branches
+					     (find (lambda (branch) (= (@ branch id) (@ sector vl))))))
+			      (active-index (if (@ self state context on-trace)
+						(if (= (@ self state context path length)
+						       (@ self state context trace length))
+						    0 (getprop (@ self state context trace)
+							       (@ self state context path length)))
+						-1)))
+			  (chain branch data
+				 (map (lambda (item index)
+					(if (= "[object Array]" (chain -object prototype to-string (call item)))
+					    (chain item (map (lambda (sub index)
+							       (if (not (= "undefined" (typeof (@ sub mt))))
+								   (setf (@ sub mt if) (create type "__bar"))
+								   (progn (setf (@ sub mt)
+										(create if (create type "__bar")))
+									  sub))))))
+					item)))
+			  (panic:jsl (:div :class-name (+ "display-" (@ branch id) " view-section"
+							  (if (= index active-index) " point" ""))
+					   :key (+ "display-" index)
+					   (:div :class-name "header"
+						 (:div :class-name "branch-info"
+						       (:span :class-name "id-char"
+							      (cond ((= "history" (@ branch id)) "●")
+								    ((= "clipboard" (@ branch id)) "■")))))
+					   (:div :class-name "content"
+						 (subcomponent (@ view-modes form-view)
+							       branch :context (index index)))))))))))
 
     (defun -seed-symbol (props)
       (let ((segments (@ props symbol)))
@@ -513,9 +513,8 @@
 								    (panic:jsl (:span :class-name "divider")))
 								(:span :class-name "fl" fl)
 								(:span :class-name "m"
-								       (chain item 
-									      (substr 1 (- (@ item length) 
-											   2))))
+								       (chain item (substr 1 (- (@ item length) 
+												2))))
 								(:span :class-name "ll" ll))))))))))))))
 
     (defvar -vista
@@ -637,13 +636,14 @@
      (panic:defcomponent -portal
 	 (:get-initial-state
 	  (lambda ()
-	    ;(cl :abc (@ this props data))
+	    (cl :abc (@ this props data))
 	    (let* ((self this)
 		   (this-date (new (-date)))
 		   (modes (list "move" "set"))
 		   (data (for-data-branch "systems" (@ self props data)
 					  (lambda (item)
 					    (let ((systems nil))
+					      ;(cl 89 (@ item data 1))
 					      (loop for datum in (@ item data 1)
 						 do (if (and (= "[object Array]" (chain -object prototype to-string 
 											(call datum)))
@@ -661,9 +661,10 @@
 		   (gen-methods
 		    (funcall 
 		     (lambda (self)
+		       ;(cl :dat data)
 		       (lambda ()
 			 (create grow (lambda (branch-id data params callback)
-					(chain self (transact "grow" 
+					(chain self (transact "grow"
 							      (list (@ self state context working-system)
 								    branch-id data params)
 							      (if (not (= "undefined" (typeof callback)))
@@ -725,10 +726,10 @@
 		
 		(if (and (= 0 (@ vector 1))
 			 (not (= 0 (@ vector 0)))
-			 ; check whether space is subdivided into plain lists; if so, one should be subtracted
-			 ; from the space length since the space will have a plain list at its beginning that
-			 ; pads its length by one. TODO: this is clumsy, is there a better way to determine the
-			 ; navigable area within vistas?
+			 ;; check whether space is subdivided into plain lists; if so, one should be subtracted
+			 ;; from the space length since the space will have a plain list at its beginning that
+			 ;; pads its length by one. TODO: this is clumsy, is there a better way to determine the
+			 ;; navigable area within vistas?
 			 (< -1 new-point (@ self size)))
 			    ;; (+ (if (and (@ self state space 1)
 			    ;; 		(@ self state space 1 0)
@@ -738,12 +739,12 @@
 			    ;;    (@ self state space length))
 			    ;(count-vistas)
 					;))
-		    ; set the upper bound to the space length - 1, since one member of the space is always a
-		    ; plain-list initial marker
+		    ;; set the upper bound to the space length - 1, since one member of the space is always a
+		    ;; plain-list initial marker
 		    new-point false))))
 	  :retrace
 	  (lambda (vector)
-	    ; in this retrace function, the point is *** SOMETHING
+	    ;; in this retrace function, the point is *** SOMETHING
 	    (let* ((self this)
 	    	   (path (chain self state context path (concat (list (@ self state context index)))))
 	    	   (current-point (if (getprop (@ self state context trace)
@@ -752,7 +753,7 @@
 	    				       (1- (@ path length)))
 	    			      0))
 	    	   (new-point (+ current-point (@ vector 0))))
-	      ;(cl :ccr current-point new-point (@ self state space) (@ self rendered))
+	      ;; (cl :ccr current-point new-point (@ self state space) (@ self rendered))
 	      (if (< -1 new-point (@ self state space length))
 	    	  new-point false)))
 	  :component-did-mount
@@ -764,12 +765,12 @@
 		 (chain (getprop (@ this state ui listeners) (getprop (@ this state ui modes) mix))
 			(stop_listening)))
 	    (setf (@ window kls) (@ this state ui listeners))
-	    ; activate the "move" mode by default
+	    ;; activate the "move" mode by default
 	    (chain (@ this state ui listeners move)
 		   (listen)))
 	  :set-trace
 	  (lambda (new-trace)
-	    ;(cl :newtrace (@ this state context trace) new-trace)
+	    ;; (cl :newtrace (@ this state context trace) new-trace)
 	    (let ((self this))
 	      (chain self (set-state (create action nil
 					     context (chain j-query (extend (create) (@ self state context)
@@ -778,8 +779,8 @@
 	  (lambda (mode)
 	    (defvar self this)
 	    (defvar this-date (new (-date)))
-	    ; TODO: the set-state must be done with a function so that the mode and action are set
-	    ; at the same time
+	    ;; TODO: the set-state must be done with a function so that the mode and action are set
+	    ;; at the same time
 	    (chain this (set-state (lambda (previous-state current-props)
 				     (let ((found false)
 					   (new-state
@@ -826,7 +827,7 @@
 			    ;(chain console (log "DAT2" (chain -j-s-o-n (stringify data))))
 			    (chain self (set-state (lambda (previous-state current-props)
 						     (create data 
-					                     ; TODO: REPLACE SELF STATE BELOW WITH PREVIOUS-STATE
+					                     ;; TODO: REPLACE SELF STATE BELOW WITH PREVIOUS-STATE
 							     (chain j-query (extend (create) (@ self state data)
 										    (create branches data)))
 						      action nil
@@ -843,11 +844,15 @@
 	    (chain this (set-mode "move"))
 	    (chain this (load-branch-data
 			 system-id
-			 (lambda (data)
-			   (let ((this-date (new (-date))))
-			     ; when the system is loaded, set the trace to #(1), pointing to the first branch
+			 (lambda (stage-data data)
+			   (let ((this-date (new (-date)))
+				 (new-space (chain j-query (extend #() (@ self state space)))))
+			     ;; when the system is loaded, set the trace to #(1), pointing to the first branch
 			     (chain self (set-state (create data (chain j-query (extend (create) (@ self state data)
 											(create branches data)))
+							    space (for-data-branch
+								   "systems" stage-data
+								   (lambda (item) (chain item data (slice 1))))
 							    context
 							    (chain j-query
 								   (extend (create) (@ self state context)
@@ -859,16 +864,30 @@
 	    (let ((self this))
 	      (extend-state context (create working-system system-id))
 	      (chain j-query
-		     (ajax (create
-			    url "../portal"
-			    type "POST"
-			    data-type "json"
-			    content-type "application/json; charset=utf-8"
-			    data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" system-id)))
-			    success (lambda (data)
-				      ;(chain console (log "DAT1" data))
-				      (callback data))
-			    error (lambda (data err) (chain console (log 11 data err))))))))
+		     (ajax (create url "../portal"
+				   type "POST"
+				   data-type "json"
+				   content-type "application/json; charset=utf-8"
+				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" null null null
+									 (create active-system system-id))))
+				   success (lambda (data)
+					     ;(chain console (log 515 data))
+					     (chain self (load-b-data data system-id callback)))
+				   error (lambda (data err) (chain console (log 11 data err))))))))
+	  :load-b-data
+	  (lambda (stage-data system-id callback)
+	    (let ((self this))
+	      (extend-state context (create working-system system-id))
+	      (chain j-query
+		     (ajax (create url "../portal"
+				   type "POST"
+				   data-type "json"
+				   content-type "application/json; charset=utf-8"
+				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" system-id)))
+				   success (lambda (data)
+					     ;(chain console (log "DAT1" data))
+					     (callback stage-data data))
+				   error (lambda (data err) (chain console (log 11 data err))))))))
 	  ;; :should-component-update
 	  ;; (lambda (next-props next-state)
 	  ;;   (or (@ next-state just-updated)
@@ -880,12 +899,12 @@
 	  :component-did-update
 	  (lambda ()
 	    (defvar self this)
-	    ; actions at the portal level are handled with the did-update method
-	    ; since it does not receive a props update upon command execution
+	    ;; actions at the portal level are handled with the did-update method
+	    ;; since it does not receive a props update upon command execution
 	    (handle-actions (@ self state action) (@ self state) (@ self props)
 	  		    :actions-point-and-focus
-	  		    (("move" (chain self (set-state (create action nil)))
-				     (chain self (move (@ params vector))))))))
+	  		    ((move (chain self (set-state (create action nil)))
+				   (chain self (move (@ params vector))))))))
        ;(cl 234 (jstr (@ this state context)) (@ this state context))
        ;(chain this (build-retracer 0 (create breadth "full") (@ this state space)))
        ;(cl 888 (@ this state) (chain this (build-retracer 0 (create breadth "full") (@ this state space))))

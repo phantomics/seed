@@ -14,7 +14,7 @@
 				    point-data nil
 				    index -1
 				    focus (create meta 0 macro 0)
-				    ; TODO: glyphs are only assigned here
+				    ;; TODO: glyphs are only assigned here
 				    meta (chain j-query (extend t (create)
 								(@ this props data meta)
 								(create max-depth 0
@@ -36,7 +36,7 @@
        ;; 	  (setf (@ state point-attrs)
        ;; 		(chain j-query (extend (@ self state point-attrs)
        ;; 				       (create index (@ props data meta point-to))))))
-       ; TODO: copy of point-to was eliminated here to prevent paradoxes; see if it's not needed
+       ;; TODO: copy of point-to was eliminated here to prevent paradoxes; see if it's not needed
        (if (@ self props context set-interaction)
 	   (progn (chain self props context
 			 (set-interaction "commit" (lambda () (chain state context methods
@@ -62,9 +62,9 @@
 					 (grow (if (= "undefined" (typeof alternate-branch))
 						   (@ self state data id)
 						   alternate-branch)
-					       ; TODO: it may be desirable to add certain metadata to
-					       ; the meta for each grow request, that's what the
-					       ; derive-metadata function below may later be used for
+					       ;; TODO: it may be desirable to add certain metadata to
+					       ;; the meta for each grow request, that's what the
+					       ;; derive-metadata function below may later be used for
 					       space meta))))
 			      grow-branch
 			      (lambda (space meta callback)
@@ -145,15 +145,15 @@
    (lambda (target path)
      (let ((self this)
 	   (path (if path path (list (@ target ly) (@ target ct)))))
-       (if target ; just in case a null target is passed, which shouldn't happen
+       (if target ;; just in case a null target is passed, which shouldn't happen
 	   (progn (chain self (set-state (create point (if (= 2 (@ self state point length))
-					                   ; assign the point depending on this form's
-					                   ; spatial dimensions
+					                   ;; assign the point depending on this form's
+					                   ;; spatial dimensions
 							   (list (@ target ly) (@ target ct))
 							   (list (@ target ct)))
 						 point-data target
 						 action-registered t
-					         ; need to set this so that component updates
+					         ;; need to set this so that component updates
 						 point-attrs
 						 (chain j-query (extend (create)
 									(@ self state point-attrs)
@@ -204,7 +204,7 @@
 						     (+ (@ to-seek 0) (@ motion 0))
 						     (+ (@ self state point 0) (@ motion 0))))))
 		  (loop for mix from 0 to (1- (abs (@ motion 1)))
-		     ; axis is inverted, hence < instead of >
+		     ;; axis is inverted, hence < instead of >
 		     do (setf (@ to-seek 1) (max 0 (if (> 0 (@ motion 1))
 						       (+ (@ self state point-attrs start)
 							  (@ self state point-attrs breadth))
@@ -225,17 +225,17 @@
 										       (@ self state point-attrs
 											       depth))
 										    (@ target ly)))))))))
-					; extend the target data so that the layer is set as the sought
-					; x-coordinate as long as the point is moving vertically or inward. x
-					; thus, the layer will remain the same when moving vertically,
-					; preventing it from being knocked down to a low level when
-					; traversing shallow lists, and the point will always decrement
-					; to the layer previous to the visible point. x
+					;; extend the target data so that the layer is set as the sought
+					;; x-coordinate as long as the point is moving vertically or inward. x
+					;; thus, the layer will remain the same when moving vertically,
+					;; preventing it from being knocked down to a low level when
+					;; traversing shallow lists, and the point will always decrement
+					;; to the layer previous to the visible point. x
 					(chain self (set-point new-target path)))))))
 	   (let ((target-index (+ (getprop (@ self state point) (1- (@ self state point length)))
 				  (- (@ motion 1)))))
-				  ; don't seek if the target index is less than 0
-				  ; this is impossible and causes an infinite loop
+				  ;; don't seek if the target index is less than 0
+				  ;; this is impossible and causes an infinite loop
 	     (if (<= 0 target-index)
 		 (chain self (seek (list target-index)
 				   -1 nil (lambda (target list parent index path)
@@ -247,7 +247,7 @@
 	   (form (if form form (chain this state space (slice 1))))
 	   (index (getprop coords (1- (@ coords length))))
 	   (found-form nil) (member-start 0) (form-index 0) (at-end false) (this-end false))
-       ; don't seek if there's nothing in the form
+       ;; don't seek if there's nothing in the form
        (if (not (= "undefined" (typeof (@ form 0))))
 	   (progn
 	     (loop for fix from 0 to (1- (@ form length))
@@ -269,8 +269,8 @@
 						 1 0))))
 	     (if (and (not at-end)
 		      (not (= 0 layer)))
-		 ; if the layer > 0, this is a 2D form and there may be more layers below this one
-		 ; if the layer < 0, this is a 1D form with a starting layer of -1
+		 ;; if the layer > 0, this is a 2D form and there may be more layers below this one
+		 ;; if the layer < 0, this is a 1D form with a starting layer of -1
 		 (chain this (seek coords (1- layer) found-form callback path))
 		 (if found-form
 		     (funcall callback
@@ -295,7 +295,7 @@
    (lambda (value) (extend-state data (create confirmed-value value)))
    :assign
    (lambda (index form changed)
-     ; TODO: the property and sub-property system is convoluted, try to simplify it...
+     ;; TODO: the property and sub-property system is convoluted, try to simplify it...
      (loop for fix from 0 to (1- (@ form length))
 	do (if (= "[object Array]" (chain -object prototype to-string (call (getprop form fix))))
 	       (chain this (assign index (getprop form fix) changed))
@@ -307,8 +307,8 @@
    (lambda (state)
      (let* ((self this)
 	    (new-space (chain j-query (extend #() (@ state space)))))
-       ; the element-specs are set to nil whenever the table is rebuilt
-       ; so that new coordinates may be sent to the glyph-drawing component
+       ;; the element-specs are set to nil whenever the table is rebuilt
+       ;; so that new coordinates may be sent to the glyph-drawing component
        (setf (@ self element-specs) #())
        (chain self
 	      (build-form new-space
@@ -328,7 +328,7 @@
      (let ((self this)
 	   (each-meta (create))
 	   (is-start (= "undefined" (typeof meta)))
-	   ; is this the beginning of the form?
+	   ;; is this the beginning of the form?
 	   (meta (if meta meta (create succession #() max-depth 0 output #())))
 	   (state (if state state (create row 0 column 0)))
 	   (last-index nil)
@@ -339,17 +339,17 @@
 								      (@ data 0 br))))))
        (if (@ data 0)
 	   (progn (setf (@ data 0 br) 0)
-		  ; breadth is initially 0, as is the list of sub-lists
+		  ;; breadth is initially 0, as is the list of sub-lists
 		  (if (and (@ data 0 fm) (< 0 (@ data 0 fm length)))
 		      (setf (@ state reader-context) (chain data 0 fm)
 			    (@ meta context-start) (@ data 0 ix)
 			    context-begins true))
-		  ; handle reader macros for forms
+		  ;; handle reader macros for forms
 		  (if (and (@ data 0 am) (< 0 (@ data 0 am length)))
 		      (setf (@ state reader-context) (@ data 0 am)
 			    (@ meta context-start) (@ data 0 ix)
 			    context-begins true))
-		  ; handle reader macros for atoms
+		  ;; handle reader macros for atoms
 		  (if (@ data 0 mt)
 		      (progn (setf (@ data 0 pr) (create meta (@ data 0 mt)))
 			     (if (@ data 0 mt if)
@@ -360,53 +360,53 @@
 				       (@ data 0 pr meta) (chain j-query (extend t (create)
 										 (@ data 0 mt each)
 										 (@ data 0 pr meta)))))))
-		  ; assign atom properties from metadata
+		  ;; assign atom properties from metadata
 		  (setf (@ data 0 ct) (@ state row)
 			(@ data 0 ly) (max 0 (1- (@ state column)))
 			(@ data 0 cx) (if context-begins
 					  (chain state reader-context (concat (list "start")))
 					  (@ state reader-context)))
-					  ; assign column, row and reader macro content
+					  ;; assign column, row and reader macro content
 		  (chain data
 			 (map (lambda (datum index)
 				(if (and (= 1 index)
 					 (not is-plain-list))
 				    (setf (@ state column) (1+ (@ state column))))
-				    ; increment the column, but not for plain lists
+				    ;; increment the column, but not for plain lists
 				(if (> (1+ (@ state column))
 				       (@ meta max-depth))
 				    (setf (@ meta max-depth) (1+ (@ state column))))
-				    ; increment the maximum depth
+				    ;; increment the maximum depth
 				(if (= "[object Array]" (chain -object prototype to-string (call datum)))
-				    ; if this item is a list
+				    ;; if this item is a list
 				    (progn
 				      (if (and (or (and is-plain-list (< 0 index))
-					           ; start incrementing right away in plain lists,
-					           ; like the main form list
+					           ;; start incrementing right away in plain lists,
+					           ;; like the main form list
 						   (< 1 index))
 					       (not (and is-plain-list (= 1 index))))
 					  (setf (@ state row) (1+ (@ state row))))
-				      ; increment the row, but not if this is the form at the beginning of
-				      ; a plain list and this is not the plain list that encloses the
-				      ; whole form; i.e. isStart is not true
+				      ;; increment the row, but not if this is the form at the beginning of
+				      ;; a plain list and this is not the plain list that encloses the
+				      ;; whole form; i.e. isStart is not true
 				      (if (or last-index (= 0 last-index))
 					  (setf (getprop meta "succession" last-index)
 						(@ datum 0 ix)))
 				      (setf last-index (@ datum 0 ix))
-				      ; set succession data for drawing glyphs
+				      ;; set succession data for drawing glyphs
 				      (chain self (build-form
 						   datum (lambda (output sub-state)
 							   (increment-breadth (1+ (- (@ sub-state row)
 										     (@ state row))))
-					                   ; increment the breadth based on the difference
-					                   ; between the current row and the row reached
-					                   ; within the sub-list
+					                   ;; increment the breadth based on the difference
+					                   ;; between the current row and the row reached
+					                   ;; within the sub-list
 							   (setf (@ state row) (+ (@ sub-state row))))
 						   meta (chain j-query (extend (create)
 									       state (if is-plain-list
 											 (create)
 											 (create)))))))
-				    ; if this item is an atom
+				    ;; if this item is an atom
 				    (let ((pr (chain j-query 
 						     (extend t (create)
 							     (create meta (chain j-query 
@@ -426,23 +426,23 @@
 				      (setf (@ datum ct) (@ state row)
 					    (@ datum ly) (@ state column)
 					    (@ datum pr) pr
-					    ; concatenate macro styles if the atom
-					    ; is within an existing macro
+					    ;; concatenate macro styles if the atom
+					    ;; is within an existing macro
 					    (@ datum cx) (if (@ datum am)
 							     (if (@ state reader-context)
 								 (chain state reader-context
 									(concat (list (@ datum am) "start")))
 								 (list (@ datum am) "start"))
 							     (@ state reader-context)))
-				      ; increment the column if the list head is a plain list marker
-				      ; and this is not the plain list that encloses the form;
-				      ; this ensures that the elements within the plain list will have
-				      ; their layers correctly marked. x
+				      ;; increment the column if the list head is a plain list marker
+				      ;; and this is not the plain list that encloses the form;
+				      ;; this ensures that the elements within the plain list will have
+				      ;; their layers correctly marked. x
 				      (if (and (not is-start)
 					       (= "plain" (@ datum ty 0)))
 					  (setf (@ state column) (1+ (@ state column))))
-				      ; push datum to output array; the index is incremented because
-				      ; the indices start with 0 but the array indices start with 1
+				      ;; push datum to output array; the index is incremented because
+				      ;; the indices start with 0 but the array indices start with 1
 				      (if (= "undefined" (typeof (getprop meta "output" (@ state row))))
 					  (setf (getprop meta "output" (@ state row))
 						#()))
@@ -474,10 +474,10 @@
      (defvar self this)
      (panic:jsl (:div :key (+ "form-view-td-" (@ datum ix))
 		      :on-click (lambda ()
-				  ; if this cell does not have a custom interface, set it as point
-				  ; when clicked, cells with custom interfaces have unique behaviors
-				  ; implemented using the set-point method as passed through
-				  ; the modulate-methods function in this component
+				  ;; if this cell does not have a custom interface, set it as point
+				  ;; when clicked, cells with custom interfaces have unique behaviors
+				  ;; implemented using the set-point method as passed through
+				  ;; the modulate-methods function in this component
 				  (let ((interaction (if (and (@ datum pr)
 							      (@ datum pr meta)
 							      (@ datum pr meta if)
@@ -497,9 +497,9 @@
 		      :class-name (+ "atom-inner"
 				     ;; (+ " mode-" (@ self state context mode))
 				     ;; (+ " row-" (@ datum ct))
-				     ; TODO: IS THERE A BETTER WAY TO HANDLE POINTS IN LISTS VS. FORMS?
-				     ; SUCH AS HAVING THE POINT DESIGNATION WORK IN A MORE SIMILIAR WAY FOR
-				     ; BOTH TYPES
+				     ;; TODO: IS THERE A BETTER WAY TO HANDLE POINTS IN LISTS VS. FORMS?
+				     ;; SUCH AS HAVING THE POINT DESIGNATION WORK IN A MORE SIMILIAR WAY FOR
+				     ;; BOTH TYPES
 				     (+ " ot-" (@ self state point-attrs index))
 				     (if (= (@ self state point-attrs index)
 					    (@ datum ix))
@@ -528,11 +528,11 @@
 							;;     (not (= "recall"
 							;; 	     (@ self state action id))))
 							(= "set" (@ self state context mode))
-					                ; only use the delta value if the state is
-					                ; "set"
-					                ; TODO: this causes flickering
-					                ; HOW TO PREVENT FLICKERING
-					                ; make sure the action is "recall"
+					                ;; only use the delta value if the state is
+					                ;; "set"
+					                ;; TODO: this causes flickering
+					                ;; HOW TO PREVENT FLICKERING
+					                ;; make sure the action is "recall"
 							(= (@ self state point-attrs index)
 							   (@ datum ix)))
 						   (@ self state point-attrs delta)
@@ -620,8 +620,8 @@
 		       :ref (lambda (ref)
 			      (if (and ref (not (and (@ datum mt) (@ datum mt if)
 						     (= "__item" (@ datum mt if type)))))
-					; don't assign element spec locations to items
-					; within specially-rendered sub-lists
+					;; don't assign element spec locations to items
+					;; within specially-rendered sub-lists
 				  (labels ((pos (element offset)
 					     (let* ((offset (if offset offset (create left 0 top 0)))
 						    (this-offset (create left (+ (@ offset left)
@@ -630,7 +630,7 @@
 										(@ element 0 offset-top))
 									 height (@ element 0 client-height)
 									 width (@ element 0 client-width))))
-					; return the offset if the measurement reaches the container
+					;; return the offset if the measurement reaches the container
 					       (if (= "pane" (chain (j-query element) (offset-parent) 
 								    (attr "class")))
 						   (setf (getprop (@ self element-specs) (@ datum ix))
@@ -648,14 +648,14 @@
 			      (@ datum ix))
 		       :col-span (- (@ self state meta max-depth) (@ datum ly))
 		       :row-span (@ datum br)
-					; get the number of rows in the sub-list for the container rowspan
+					;; get the number of rows in the sub-list for the container rowspan
 		       (:div :class-name "spacer")
 		       (cond ((and (@ datum mt) (@ datum mt if)
 				   (= "__list" (@ datum mt if type)))
 			      (subcomponent (@ interface-units list)
-					    ; remove the first element from the content,
-					    ; since this element usually comes from after
-					    ; the plain list marker
+					    ;; remove the first element from the content,
+					    ;; since this element usually comes from after
+					    ;; the plain list marker
 					    (create content (chain self (render-table-body content))
 						    params datum)))
 			     ((and (@ datum mt) (@ datum mt if)
@@ -703,8 +703,8 @@
 										   (@ offset height)
 										   (@ element 0 client-height))
 									width (@ element 0 client-width))))
-					                  ; return the offset if the measurement
-					                  ; reaches the container
+					                  ;; return the offset if the measurement
+					                  ;; reaches the container
 							  ;; TODO: STRANGE SOLUTION - IS THERE 
 							  ;; A SIMPLER WAY THAN
 							  ;; CHECKING THE TYPE OF CONTAINER? x
@@ -744,12 +744,12 @@
 		      (output (if output output (list #()))))
 		  (if (= 0 (@ rows length))
 		      (chain output (slice 0 (1- (@ output length))))
-		      ; remove final empty list that gets appended to output before returning it
+		      ;; remove final empty list that gets appended to output before returning it
 		      (if (= 0 (@ cells length))
 			  (process-rows (chain rows (slice 1))
 					(chain output (concat (list #()))))
 			  (if (= "plain" (@ cells 0 ty 0))
-			      ; create a sub-table for plain lists
+			      ;; create a sub-table for plain lists
 			      (process-rows
 			       (chain rows (slice (@ cells 0 br)))
 			       (let ((enclose-table (if is-outer-form
@@ -767,12 +767,12 @@
 								 (chain (list (chain cells (slice 1)))
 									(concat
 									 (chain rows (slice 1 (@ cells 0 br)))))
-					                         ; add the blank output array so that the
-					                         ; process-rows function knows that it is not
-					                         ; the outer form
+					                         ;; add the blank output array so that the
+					                         ;; process-rows function knows that it is not
+					                         ;; the outer form
 								 (list #())))))))
 					(concat empty-rows))))
-					; TODO: why are empty rows needed? If not appended, table is uneven
+					;; TODO: why are empty rows needed? If not appended, table is uneven
 			      (process-rows (chain (list (chain cells (slice 1)))
 						   (concat (chain rows (slice 1))))
 					    (chain output (slice 0 (1- (@ output length)))
@@ -806,7 +806,7 @@
        ;; 	  (progn (cl :ffe (@ self props context))
        ;; 		 (cl :ffe (chain self props context (fetch-pane-element)))))
        (if (not (@ next-props context current))
-	   ; only build the form display object if the form is in "full" display mode
+	   ;; only build the form display object if the form is in "full" display mode
 	   ;(if (= "full" (@ this props context view-scope))
 	   (chain self (build new-state))
 					;)
@@ -823,20 +823,20 @@
      (handle-actions
       (@ next-props action) (@ self state) next-props
       :actions-branch-id
-      (("recordMove"
+      ((record-move
 	"clipboard"
 	(chain self (move (@ params vector)))
 	(chain self state context methods (grow (create) (create vector (@ params vector))))))
       :actions-point-and-focus
-      (("move"
+      ((move
 	(chain self (move (chain self state context (movement-transform (@ params vector))))))
-       ("controlShiftMeta"
+       (control-shift-meta
 	(if (and (= "undefined" (typeof (@ self state point-attrs props meta comment)))
 		 (< 0 (@ params vector 0)))
 	    (chain self state context methods (grow (create mt (create comment "")
 							    am (list "meta")))))
 	(chain self (shift-focus "meta" (@ params vector))))
-       ("record"
+       (record
 	(if (@ self props context clipboard-id)
 	    (chain self state context methods
 		   (grow (create)
@@ -844,25 +844,25 @@
 				 point-to (@ self state point-attrs path)
 				 branch (@ self state data id))
 			 (@ self props context clipboard-id)))))
-       ("recall"
+       (recall
 	(if (and (@ self props context history-id)
 		 (not (= true (@ next-props data meta locked))))
 	    (chain self state context methods (grow (create)
 						    (create vector (@ params vector)
 							    "recall-branch" (@ self state data id))
 						    (@ self props context history-id)))))
-       ("commit"
+       (commit
 	(if (not (= true (@ next-props data meta locked)))
 	    (chain self state context methods (grow #() (create save true)))))
-       ("revert"
+       (revert
 	(chain self state context methods (grow #() (create revert true))))
-       ("setPointType"
+       (set-point-type
 	(if (not (= true (@ next-props data meta locked)))
 	    (progn (chain self state context methods (set-mode "set"))
 		   (chain self (set-state (create action-registered nil)))
 		   (chain self state context methods
 			  (grow (create ty (@ params type) vl (@ params default)))))))
-       ("addReaderMacro"
+       (add-reader-macro
 	(if (not (= true (@ next-props data meta locked)))
 	    (progn (chain self (set-state (create action-registered nil)))
 		   (chain self state context methods
@@ -872,7 +872,7 @@
 				    (create fm (chain (list (@ params name))
 						      (concat (@ self state point-attrs
 								      form-macros))))))))))
-       ("removeReaderMacro"
+       (remove-reader-macro
 	(if (not (= true (@ next-props data meta locked)))
 	    (progn (chain self (set-state (create action-registered nil)))
 		   (chain self state context methods 
@@ -882,15 +882,15 @@
 					(create am (chain self state point-attrs atom-macros (slice 1)))
 					(create fm (chain self state point-attrs form-macros
 							  (slice 1))))))))))
-       ("deletePoint"
+       (delete-point
 	(if (not (= true (@ next-props data meta locked)))
 	    (chain this (delete-point (@ this state point)))))
-       ("insert"
+       (insert
 	(let ((new-space (chain j-query (extend #() (@ self state space))))
 	      (new-item (create vl "" ty (list "symbol")) ))
 	  (chain this (seek (@ this state point) (@ this state point-attrs depth) new-space
 			    (lambda (target target-list target-parent target-index path)
-			      (if (= 0 (@ params vector 0)) ; if this is top level...
+			      (if (= 0 (@ params vector 0)) ;; if this is top level...
 				  (chain target-parent (splice (+ (@ params vector 1) target-index)
 							       0 new-item))
 				  (if (and target-list (< 0 (@ params vector 0)))
@@ -908,11 +908,11 @@
 			      ;;   (cl :sta (@ self state))
 			      ;;   (chain self (move (list 0 (- (@ params to 1))))))
 			      ))))
-       ("triggerSecondary"
+       (trigger-secondary
 	(if (not (= true (@ next-props data meta locked)))
 	    (progn (chain self (set-state (create action-registered nil)))
 		   (chain self state context methods (set-mode "set")))))
-       ("triggerPrimary"
+       (trigger-primary
 	(cond ((= "move" (@ self state context mode))
 	       (if (not (= true (@ next-props data meta locked)))
 		   (chain self state context methods (set-mode "set"))))
@@ -922,7 +922,7 @@
 	       (chain self (set-focus "meta" 0))
 	       (chain self state context methods (set-delta nil))
 	       (chain self state context methods (set-mode "move")))))
-       ("triggerAnti"
+       (trigger-anti
 	(chain self (set-state (create action-registered nil)))
 	(chain self (set-focus "meta" 0))
 	(chain self state context methods (set-delta nil))
@@ -956,12 +956,12 @@
        ;; (if (= "short" (@ self props context view-scope))
        ;; 	  (cl :upd (@ self state point-attrs value) (jstr (@ self state point-attrs props))
        ;; 	      (@ self state point-attrs)))
-       ; if the point-attrs are marked as fresh, i.e. the form view has just been created,
-       ; perform a point movement to correctly set the point-attrs
+       ;; if the point-attrs are marked as fresh, i.e. the form view has just been created,
+       ;; perform a point movement to correctly set the point-attrs
        (if (and (@ self state point-attrs fresh)
 		(< 0 (@ self state space length)))
-		; only do the movement if there's something in the form's space
-		; i.e. it isn't an empty form
+		;; only do the movement if there's something in the form's space
+		;; i.e. it isn't an empty form
 	   (chain self (move (if (@ self props context initial-motion)
 				 (@ self props context initial-motion)
 				 #(0 0)))))
@@ -979,7 +979,7 @@
 	   (let* ((input-ref (chain (j-query (+ "#form-view-" (@ this state data id)
 						" .atom.mode-set.point .editor input"))))
 		  (temp-val (chain input-ref (val))))
-		  ; need to momentarily blank the value so the cursor goes to the end on all browsers
+		  ;; need to momentarily blank the value so the cursor goes to the end on all browsers
 	     (chain input-ref (focus))
 	     (chain input-ref (val ""))
 	     (chain input-ref (val temp-val))))
@@ -1010,15 +1010,15 @@
 								  root-params (@ self root-params)
 								  point-index (@ self state point-attrs index))
 							  (@ self state meta)
-					                  ; TODO: this is a hack. assigning the glyphs straight
-					                  ; from props shouldn't be necessary - or the state
-					                  ; meta property shouldn't be necessary. Without this,
-					                  ; the glyphs do not refresh when changing systems
+					                  ;; TODO: this is a hack. assigning the glyphs straight
+					                  ;; from props shouldn't be necessary - or the state
+					                  ;; meta property shouldn't be necessary. Without this,
+					                  ;; the glyphs do not refresh when changing systems
 							  (create glyphs (@ self props data meta glyphs))))))
 	       (chain self (render-table (@ this state rendered-content)
 					 (lambda (rendered)
-					   ; send the base-atom to the glyph-display so that the stem
-					   ; at the bottom of the glyph pattern can be drawn
+					   ;; send the base-atom to the glyph-display so that the stem
+					   ;; at the bottom of the glyph pattern can be drawn
 					   (panic:jsl (:div :class-name "matrix-view form-view"
 							    :id (+ "form-view-" (@ self state data id))
 							    (subcomponent (@ view-modes glyph-display)
@@ -1047,7 +1047,7 @@
      (let ((new-state (chain this (initialize next-props))))
        (if (@ next-props data root-params width)
 	   (let ((params (@ next-props data root-params)))
-	     ; add 3 or subtract 3 for the margin beneath the table TODO a more elegant way to do this? x
+	     ;; add 3 or subtract 3 for the margin beneath the table TODO a more elegant way to do this? x
 	     (chain this (set-state (chain j-query (extend
 						    new-state
 						    (create dims (list (@ params width)
@@ -1080,8 +1080,8 @@
 					      "-" (@ self props data branch-id)
 					      " table.form tbody tr:first-child td:last-child"))
 				  0 client-height)))
-				  ; take the height factor from the first single-height cell
-				  ; TODO a better way to find it? search for first cell with rowspan=1? x
+				  ;; take the height factor from the first single-height cell
+				  ;; TODO: a better way to find it? search for first cell with rowspan=1? x
 	   (x-offset (- xos 3))
 	   (y-offset (+ 0 yos (- con-height height-factor)))
 	   (next-y-offset (+ 1 next-yos (- nexcon-height height-factor)))
@@ -1093,9 +1093,9 @@
 		    (and is-last is-root (not next-line))
 		    (and is-last (not next-line)
 			 (not (= pix (1- (@ points length))))))
-			 ; don't plot the last point if this is the last line in the glyph and isn't connected
-			 ; to a glyph below it, so the "tail" is not left hanging. The only exception is for
-			 ; the root glyph, whose tail extends to the edge of the pane
+			 ;; don't plot the last point if this is the last line in the glyph and isn't connected
+			 ;; to a glyph below it, so the "tail" is not left hanging. The only exception is for
+			 ;; the root glyph, whose tail extends to the bottom of the pane
 		(setq output (+ output (if (equal output "") "M " "L ")
 				(+ x-offset (* y-int (getprop points pix 0)))
 				" " (+ y-offset (* y-int (getprop points pix 1)))

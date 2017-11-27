@@ -17,13 +17,13 @@
      :height 100%
      :width 100%
 
-     ; high-level portal styles
+     ;; high-level portal styles
      (.portal
       :height 100%
       :width 100%
       :position relative
 
-       ; universal form styles go here
+       ;; universal form styles go here
       ((:or ul.form-view.short ul.form-view.brief)
        :list-style-type none
        :padding 0
@@ -57,16 +57,16 @@
 	(li :display inline
 	    :margin-left 4px
 	    (div :display inline)
-	    ; don't display editor divs in the footer view, 
-	    ; since items there are meant as interface elements
-	    ; TODO: this logic should be less tightly coupled
+	    ;; don't display editor divs in the footer view, 
+	    ;; since items there are meant as interface elements
+	    ;; TODO: this logic should be less tightly coupled
 	    (div.editor :display none))
 	(.breaker :display none
 		  :clear none))
        ((:or |ul.form-view.short > li| |ul.form-view.brief > li|)
 	:display block))
 
-      ; styles for common form and atom types
+      ;; styles for common form and atom types
       (.form-view
        :padding 0
        ;(.editor :display none)
@@ -98,7 +98,7 @@
 	  ((:and .text :before)
 	   :content "\"")))))
 
-      ; styles for the overview pane
+      ;; styles for the overview pane
       (.overview
        :font-family monospace
        :position absolute
@@ -125,7 +125,7 @@
 		  :font-size 1.2em
 		  :line-height 1em)))))
        
-       ; styles for the overview footer
+       ;; styles for the overview footer
        (.footer
 	:position absolute
 	:bottom 0
@@ -147,7 +147,7 @@
       (.overview.point
        (.form-view (.point :color "#cc5c4b")))
 
-      ; styles for the main adjunct view pane
+      ;; styles for the main adjunct view pane
       (.adjunct-view
        :position absolute
        :top 0
@@ -224,10 +224,9 @@
 	(.branches
 	 :position relative
 
-	 ; styles for the top-level branch display elements
+	 ;; styles for the top-level branch display elements
 	 (.container 
-	  :max-width 100%
-	  :padding 0
+	  :width 100%
 	  :background "#fff"
 	  (.portal-column 
 	   :padding 0 2px 0 0
@@ -297,7 +296,7 @@
 		      :padding 2px 0
 		      (table.form.root :margin-bottom 2px))
 
-	  ; styles for popover menus
+	  ;; styles for popover menus
 	  (.form-view.menu-popover 
 	   :height auto
 	   :border "2px solid rgba(0, 0, 0, 0.2)"
@@ -318,7 +317,7 @@
 			  (.title
 			   :color red))))))))
 
-	  ; form view styles
+	  ;; form view styles
 	  (.matrix-view
 	   (table.form
 	    (td
@@ -345,7 +344,7 @@
 	    (tr (.atom :border-bottom 1px solid "#eee8d5")
 		(.atom.last :border-bottom none))
 
-	    ; styles for areas affected by macros
+	    ;; styles for areas affected by macros
 	    (.reader-context-quasiquote
 	     :background "rgba(200,99,99,0.065)")
 
@@ -574,7 +573,7 @@
 
 	    ))
 
-	  ; spreadsheet view styles
+	  ;; spreadsheet view styles
 	  (.spreadsheet-view
 	   :margin 3px 6px 0 2px
 	   (table.form
@@ -756,7 +755,7 @@
 	     (let ((mode-data nil)
 		   (spread-points nil))
 	       (labels ((plot-dots (count &optional output)
-			  ; plot dots, either randomly or in an array pattern
+			  ;; plot dots, either randomly or in an array pattern
 			  (if (< 0 count)
 			      (let* ((gen-params (getf params :array))
 				     (coords (if spread-points
@@ -788,8 +787,8 @@
 						  (space (funcall (getf gen-params :block-space)))
 						  (x-origin (funcall (getf params :x-range)))
 						  (y-origin (funcall (getf params :y-range))))
-					          ; don't generate a block if there aren't enough points left 
-					          ; in the count to fill it completely
+					          ;; don't generate a block if there aren't enough points left 
+					          ;; in the count to fill it completely
 					      (if (> count (1+ (* width height)))
 						  (setq mode-data
 							(cons (list :mode :array

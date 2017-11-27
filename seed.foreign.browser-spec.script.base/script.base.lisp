@@ -24,9 +24,8 @@
 	     (@ window -select) (getprop (require "react-select") "default")
 	     (@ window -sketch-color-picker) (getprop (require "react-color/lib/components/sketch/Sketch")
 						      "default")
-	     (@ window -react-data-sheet) (require "react-datasheet")
-	     ; TODO: keypress package has only this numbered, minified script to include.
-	     ; Fork a version of keypress with a main script file.
+	     ;; TODO: keypress package has only this numbered, minified script to include.
+	     ;; Fork a version of keypress with a main script file.
 	     (@ window -keypress) (require "keypress.js/keypress-2.1.4.min.js"))
        (require "bootstrap/js/tooltip")
        t)))

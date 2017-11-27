@@ -14,10 +14,10 @@
 	   	     (cons "meta" (getf (first result-output) :fm))
 	   	     (getf (first result-output) :mt)
 	   	     (if (getf (first result-output) :mt)
-			 ; if the form macro metadata is being imprinted over existing atom macro metadata
-			 ; i.e. the list is subject to a form macro and the atom at the head of the list is also
-			 ; subject to an atom macro, put the atom macro metadata into an "atom" property
-			 ; prepended to the form metadata
+			 ;; if the form macro metadata is being imprinted over existing atom macro metadata
+			 ;; i.e. the list is subject to a form macro and the atom at the head of the list is also
+			 ;; subject to an atom macro, put the atom macro metadata into an "atom" property
+			 ;; prepended to the form metadata
 			 (if (getf (first result-output) :am)
 			     (append (list :|atom| (getf (first result-output) :mt))
 				     (preprocess-structure (cddr form)))

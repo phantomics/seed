@@ -44,7 +44,7 @@
 							     :value (@ content vl)
 							     :on-change
 							     (lambda (event)
-					; assign both the local and parent state
+							       ;; assign both the local and parent state
 							       (let ((new-val (create vl (@ event
 											    target
 											    value))))
@@ -150,7 +150,7 @@
 						  (let ((new-val 
 							 (create mt (create comment 
 									    (@ event target value)))))
-					;(extend-state :deep data (create content new-val))
+					            ;;(extend-state :deep data (create content new-val))
 						    (chain j-query (extend t (@ self state data content)
 									   new-val))
 						    (chain self props context methods
@@ -182,8 +182,8 @@
 		   (+ "content type-"
 		      (if (not (= "undefined" (typeof (@ self props data content type))))
 			  (chain self props data content type (substr 2))
-					; remove the first two characters; since this is a converted
-					; keyword, they will always be "__"
+			  ;; remove the first two characters; since this is a converted
+			  ;; keyword, they will always be "__"
 			  "null")
 		      (if (@ self props data content data-com)
 			  (+ " it-" (@ self props data content data-com length))
@@ -195,7 +195,7 @@
 			  ""))
 		   (if (and (@ self props data meta is-point)
 			    (@ self props data meta is-parent-point)
-			    (= "set" (@ self props context mode))) ; TODO: IS THIS THE CORRECT MODE VAR?
+			    (= "set" (@ self props context mode))) ;; TODO: IS THIS THE CORRECT MODE VAR?
 		       (panic:jsl (:div :class-name "editor"
 					(:input :class-name "data"
 						:value (@ self state data input-value)
@@ -203,8 +203,7 @@
 						(lambda (val)
 						  (chain self props context methods
 							 (set-delta (@ val target value)))
-						  (extend-state data (create input-value
-									     (@ val target value))))))))
+						  (extend-state data (create input-value (@ val target value))))))))
 		   (:span :class-name "overridden-text"
 			  (@ self props data content data-inp-ovr))
 		   (:span :class-name "text"
@@ -243,8 +242,8 @@
 					 ""))
 		      :style (create width
 				     (+ (- 100 (if (and is-composite (@ this state data content mt))
-					           ; 1 is added to the branch index to 
-					           ; allow for the point indicator to the right
+					           ;; 1 is added to the branch index to 
+					           ;; allow for the point indicator to the right
 						   (* 12 (1+ branch-index))
 						   0))
 					"%")
@@ -280,8 +279,8 @@
 			    (lambda ()
 			      (if (not (= (@ content vl)
 					  (@ self state space)))
-					  ; TODO: BOTH OF THE BELOW ACTIONS ARE NEEDED
-					  ; TO UPDATE THE VALUE ON THE SERVER AND CLIENT SIDES
+					  ;; TODO: BOTH OF THE BELOW ACTIONS ARE NEEDED
+					  ;; TO UPDATE THE VALUE ON THE SERVER AND CLIENT SIDES
 				  (progn (setf (@ content vl) (@ self state space)
 					       (@ content pr) (create "rgb-string" (@ self state space)))
 					 (chain self state context methods (grow))
@@ -356,8 +355,6 @@
      (if (not (= "set" (@ next-props context mode)))
 	 (chain this (set-state (chain this (initialize next-props)))))))
   (let ((self this))
-					;(cl :abc (@ self state))
-					;(cl 19 -autosize-textarea 55 -autosize-input)
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "textfield-holder"
 			   (:input :class-name "textfield"
@@ -368,12 +365,11 @@
 				   (lambda (event)
 				     (chain self (set-state (create space (@ event target value)))))
 				   :on-focus (lambda (event)
-					;(chain self state context methods (set-mode "set"))
+					       ;;(chain self state context methods (set-mode "set"))
 					       (chain self (set-state (create space 
 									      (@ event target value)))))
 				   :on-blur (lambda (event)
-					;(cl :out (@ self state space))
-					;(chain self state context methods (set-mode "move"))
+					      ;;(chain self state context methods (set-mode "move"))
 					      (chain self (designate (@ self state space))))))))))
  (textarea
   (:get-initial-state
@@ -461,7 +457,6 @@
      (chain this state context methods (grow)))
    :component-will-receive-props
    (lambda (next-props)
-					;(if (not (= "set" (@ next-props context mode)))
      (chain this (set-state (chain this (initialize next-props))))))
   (let ((self this))
     (panic:jsl (:div :class-name "list-interface-holder"

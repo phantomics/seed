@@ -2,5 +2,5 @@
 
 (defpackage #:seed.ui-model.stage
   (:export #:stage)
-  (:use #:cl))
+  (:use #:cl #:seed.generate))
 

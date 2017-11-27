@@ -130,8 +130,8 @@ Lifecycle documentation."
     `(,(if (consp name) 'setf 'defvar) ,name
       (create-react-class
 
-       ;; (ps:chain -react
-       ;; 		 (create-class
+       ;(ps:chain -react
+	;	 (create-class
        (ps:create 'display-name ,display-name
 		  'render #'(lambda () ,@render-body)
 		  ,@(when get-initial-state `('get-initial-state ,get-initial-state))

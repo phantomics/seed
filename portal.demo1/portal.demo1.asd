@@ -18,7 +18,7 @@
 	       #:seed.foreign.browser-spec.script.base
 	       #:seed.foreign.browser-spec.style.base
 	       #:quickproject #:prove #:parenscript #:panic #:lass
-	       #:swank) ; TODO: swank included only for demoSheet, are there other options?
+	       #:swank) ;; TODO: swank included only for demoSheet, are there other options?
   :components
   ((:file "package")
    (:file "test-core-systems")

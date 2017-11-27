@@ -66,7 +66,7 @@
 				(list (if (and (symbolp (first point))
 					       (equal "META" (string-upcase (first point))))
 					  (append (funcall (if operation operation (lambda (input) input))
-							   (cddr point)) ;(print (cddr point)))
+							   (cddr point))
 						  (let ((sub-meta (fetch-meta (second point) operation)))
 						    (if sub-meta (cons :meta sub-meta))))
 					  (fetch-meta point operation)))))

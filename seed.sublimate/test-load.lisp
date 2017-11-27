@@ -1,6 +1,6 @@
 ;;;; test-load.lisp
 
-; The code in this file is loaded by test.lisp to test the priority macro reader.
+;; The code in this file is loaded by test.lisp to test the priority macro reader.
 
 (princ (format nil "~%  Collapse of meta forms in read phase:~%"))
 (is (META (+ 1 2)) 

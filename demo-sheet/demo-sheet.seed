@@ -4,7 +4,7 @@
         :package ((:use :common-lisp :seed-lib-table) (:export))
         :branches
         ((stage (in (set-time))
-                (out (set-type :stage) (stage) (codec)))
+                (out (set-type :stage) (codec)))
          (main (in (contingencies :sheet-lock)
 		   (stage-params :contextual-menu
 				 (:insert-add-op :insert-mult-op))

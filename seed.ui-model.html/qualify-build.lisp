@@ -4,6 +4,7 @@
 (in-package #:seed.ui-model.html)
 
 (defmacro qualify-build (success failure)
+  "Ensure that the necessary components are in place to build the libraries needed by the frontend interface."
   `(let* ((criteria (list '("npm" "Command \"npm\" is not available. Please install Node.js and NPM. Note that a system-level installation of Node.js is needed; an nvm-installed Node.js system is not compatible with Seed's build process.")
 			  '("node" "Command \"node\" is not available. Please install the legacy Node.js package.")
 			  '("gulp" "Command \"gulp\" is not available. Please install Gulp. You should be able to do this by entering \"npm install -g gulp\" with root/administrator privileges.")))

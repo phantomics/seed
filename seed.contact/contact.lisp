@@ -12,13 +12,13 @@
 	  ((eq :post request-type)
 	   (let* ((input (let ((mime-type (first (split-sequence #\; (rest (assoc :content-type (headers-in*)))))))
 			   (cond ((string= mime-type "application/json")
-				  ; convert JSON Lisp format with jonathan
+				  ;; convert JSON Lisp format with jonathan
 				  (jonathan:parse (hunchentoot:raw-post-data :force-text t)
 						  :keyword-normalizer
 						  (lambda (key) (string-upcase (camel-case->lisp-name key)))
 						  :normalize-all t))
 				 ((string= mime-type "application/x-lisp")
-				  ; native Lisp text is passed directly through and read
+				  ;; native Lisp text is passed directly through and read
 				  (read-from-string (hunchentoot:raw-post-data :force-text t))))))
 		  (package-string (string-upcase (first input)))
 		  (function-string (string-upcase (second input))))
@@ -27,10 +27,11 @@
 					(find-symbol function-string package-string))
 				   (multiple-value-bind (function-symbol locality)
 				       (intern function-string package-string)
+				     (print (list 66 input))
 				     (if (eq :external locality)
-					 ; only allow the use of functions that are exported in the portal package
+					 ;; only allow the use of functions that are exported in the portal package
 					 (apply function-symbol
-					        ; the package string is always at the head of the argument list
+					        ;; the package string is always at the head of the argument list
 						(append (list (intern package-string "KEYWORD"))
 							(mapcar (lambda (param)
 								  (if (stringp param)
@@ -57,7 +58,7 @@
 (defmacro contact-open (&optional name) 
   (let ((contact (gensym)))
     `(let ((,contact ,(if name `(getf *contact-list* ,(intern (string-upcase name) "KEYWORD"))
-			  ; if no contact name is given, open the first contact instance in the list
+			  ;; if no contact name is given, open the first contact instance in the list
 			  `(second *contact-list*))))
        (start (getf ,contact :instance))
        (princ (format nil "~%Seed contact now open and listening at port ~d.~%~%" (getf ,contact :port)))
@@ -66,7 +67,7 @@
 (defmacro contact-close (&optional name) 
   (let ((contact (gensym)))
     `(let ((,contact ,(if name `(getf *contact-list* ,(intern (string-upcase name) "KEYWORD"))
-		          ; if no contact name is given, close the first contact instance in the list
+		          ;; if no contact name is given, close the first contact instance in the list
 			  `(second *contact-list*))))
      (stop (getf ,contact :instance))
      (princ (format nil "~%Seed contact at port ~d now closed.~%~%" (getf ,contact :port)))

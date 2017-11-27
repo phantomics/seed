@@ -37,9 +37,9 @@
 				       (grow (if (= "undefined" (typeof alternate-branch))
 						 (@ self state data id)
 						 alternate-branch)
-					     ; TODO: it may be desirable to add certain metadata to
-					     ; the meta for each grow request, that's what the
-					     ; derive-metadata function below may later be used for
+					     ;; TODO: it may be desirable to add certain metadata to
+					     ;; the meta for each grow request, that's what the
+					     ;; derive-metadata function below may later be used for
 					     new-space meta)))
 			      grow-branch
 			      (lambda (space meta callback)
@@ -113,7 +113,7 @@
 				    (@ this state space length))
 				 (+ (@ mo 1) (@ this state point 1))
 				 (@ this state point 0)))))
-       ; adjust scroll position of pane if cursor is moved out of view
+       ;; adjust scroll position of pane if cursor is moved out of view
        (if (and (not (= "undefined" (typeof (@ self state pane-element))))
 		(< 0 (@ self element-specs length)))
 	   (progn (if (< (+ (@ self state pane-element 0 client-height)
@@ -147,8 +147,8 @@
        (setf (getprop matrix y x)
 	     (if (= "[object Array]" (chain -object prototype to-string (call original-value)))
 		 (if (not (null value))
-		     ; assign the unknown type for now; 
-		     ; an accurate type will be assigned server-side
+		     ;; assign the unknown type for now;
+		     ;; an accurate type will be assigned server-side
 		     (create type "__unknown"
 			     data-inp value))
 		 (if (null value)
@@ -175,26 +175,26 @@
      (handle-actions
       (@ next-props action) (@ self state) next-props
       :actions-point-and-focus
-      (("move"
+      ((move
 	(chain self (move (@ params vector))))
-       ("deletePoint"
+       (delete-point
 	(if (not (= true (@ next-props data meta locked)))
 	    (chain self state context methods (grow-point nil (create)))))
-       ("record"
+       (record
 	(if (@ self props context clipboard-id)
 	    (chain self state context methods (grow-point (create)
 							  (create vector (@ params vector)
 								  point (@ self state point)
 								  branch (@ self state data id))
 							  (@ self props context clipboard-id)))))
-       ("recall"
+       (recall
 	(if (and (@ self props context history-id)
 		 (not (= true (@ next-props data meta locked))))
 	    (chain self state context methods (grow-point (create)
 							  (create vector (@ params vector)
 								  "recall-branch" (@ self state data id))
 							  (@ self props context history-id)))))
-       ("triggerPrimary"
+       (trigger-primary
 	(cond ((= "move" (@ self state context mode))
 	       (if (not (= true (@ next-props data meta locked)))
 		   (chain self state context methods (set-mode "set"))))
@@ -203,12 +203,12 @@
 		      (chain self state context methods (grow-point (@ self state point-attrs delta)
 								    (create)))
 		      (chain self state context methods (set-mode "move"))))))
-       ("triggerSecondary"
+       (trigger-secondary
 	(if (not (= true (@ next-props data meta locked)))
 	    (chain self state context methods (set-mode "set"))))
-       ("triggerAnti"
+       (trigger-anti
 	(chain self state context methods (set-mode "move")))
-       ("commit"
+       (commit
 	(if (not (= true (@ next-props data meta locked)))
 	    (chain self state context methods (grow-branch (@ self state space)
 							   (create save true))))))))
@@ -225,13 +225,46 @@
 	 (chain (j-query (+ "#sheet-view-" 
 			    (@ this props data id) 
 			    " .atom.mode-set.point .editor input")) 
-		(focus)))))
+		(focus))))
+   ;; :render-space
+   ;; (lambda ()
+   ;;   (let* ((self this)
+   ;; 	    (space (chain j-query (extend (list) (@ self state space)))))
+   ;;     (chain space (unshift (loop for index from 0 to (1- (@ space 0 length))
+   ;; 				collect (create data-inp (chain -string (from-char-code (+ 65 index)))))))
+   ;;     (setq space (chain space (map (lambda (row rix)
+   ;; 				       (chain row (map (lambda (cell cix)
+   ;; 							 (create value cell
+   ;; 								 component; (@ self cell-component)
+   ;; 								 (panic:jsl
+   ;; 								  (:div :class-name "cc"
+   ;; 									(subcomponent (@ interface-units
+   ;; 											 cell-spreadsheet)
+   ;; 										      (create content cell
+   ;; 											      meta 
+   ;; 											      (create 
+   ;; 											       is-point
+   ;; 											       false
+   ;; 											       is-parent-point
+   ;; 											       (@ self 
+   ;; 												  state 
+   ;; 												  context 
+   ;; 												  is-point))))))
+   ;; 								 force-component t
+   ;; 								 width 180))))))))
+   ;;     space))
+   )
   (defvar self this)
   ;(cl "SHR" (@ this state just-updated))
   ;(cl :cel (@ self state data) (@ self props context) (@ self state context))
-  (panic:jsl (:div :class-name "matrix-view spreadsheet-view"
-		   :id (+ "sheet-view-" (@ this state data id))
-		   (:table :class-name "form"
-			   :ref (+ "formSheet" (@ this state data id))
-			   (:thead (:tr (chain self (build-sheet-heading (@ self state space)))))
-			   (:tbody (chain self (build-sheet-cells (@ self state space)))))))))
+  ;(chain console (log :ssp (@ self state space)))
+  (let ((-data-sheet (new -react-data-sheet)))
+    (panic:jsl (:div :class-name "matrix-view spreadsheet-view"
+		     :id (+ "sheet-view-" (@ this state data id))
+		     (:table :class-name "form"
+			     :ref (+ "formSheet" (@ this state data id))
+			     (:thead (:tr (chain self (build-sheet-heading (@ self state space)))))
+			     (:tbody (chain self (build-sheet-cells (@ self state space))))))))))
+
+;; (:-react-data-sheet :data (funcall (@ self render-space))
+;; 		    :overflow "clip")

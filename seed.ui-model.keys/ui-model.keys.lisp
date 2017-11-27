@@ -41,7 +41,7 @@
 (defmacro discrete-key-ui (&rest combos)
   "Build a discrete key UI specification from the given key combinations."
   (cons 'build-key-ui 
-	; if a list of keystrokes is given, create duplicate behavior for each keystroke
+	;; if a list of keystrokes is given, create duplicate behavior for each keystroke
 	(loop :for combo :in combos :append (if (listp (first combo))
 						(mapcar (lambda (combo-element) (cons combo-element (rest combo)))
 							(first combo))
@@ -55,9 +55,9 @@
 	(loop :for combo :in combos :append
 	   (loop :for sub-combo :in (mapcar (lambda (combo-element direction)
 					      (mapcar (lambda (direction-alias)
-					                ; If the combo key string is empty, thus specifying the
-					                ; function of the dirrectional keys when pressed alone,
-					                ; make sure no extra space is added in the string
+					                ;; If the combo key string is empty, thus specifying the
+					                ;; function of the dirrectional keys when pressed alone,
+					                ;; make sure no extra space is added in the string
 							(cons (concatenate 'string (first combo)
 									   (if (< 0 (length (first combo)))
 									       " " "")
@@ -83,14 +83,14 @@
 				  (first combo)
 				  (list (first combo))))
 		    (options (rest combo)))
-		; set standard Keystroke options for the Seed key UI
+		;; set standard Keystroke options for the Seed key UI
 		(if (not (getf options (inp is-exclusive)))
 		    (setf (getf options (inp is-exclusive)) t))
 		(if (not (getf options (inp prevent-default)))
 		    (setf (getf options (inp prevent-default)) t))
 		(append `(create keys ,(first combo))
-			; object properties must be converted to underscore_format to work with the
-                        ; Keystroke library
+			;; object properties must be converted to underscore_format to work with the
+                        ;; Keystroke library
 			(labels ((underscore (input &optional output)
 				   (if input
 				       (underscore (cddr input)
