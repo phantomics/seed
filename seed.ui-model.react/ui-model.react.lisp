@@ -143,7 +143,7 @@
 				 content-type "application/json; charset=utf-8"
 				 data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow")))
 				 success (lambda (data)
-					   (chain console (log "DAT" data))
+					   ;(chain console (log "DAT" data))
 					   (chain -react-d-o-m
 						  (render (panic:jsl (,component :data data))
 							  (chain document (get-element-by-id "main")))))))))))

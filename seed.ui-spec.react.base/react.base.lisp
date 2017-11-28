@@ -636,7 +636,6 @@
      (panic:defcomponent -portal
 	 (:get-initial-state
 	  (lambda ()
-	    (cl :abc (@ this props data))
 	    (let* ((self this)
 		   (this-date (new (-date)))
 		   (modes (list "move" "set"))

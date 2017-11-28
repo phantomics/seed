@@ -587,11 +587,15 @@
    (lambda (rows-input callback)
      (let ((self this)
 	   (count 0))
-       (labels ((process-list (input output)
-		  (let ((output (if output output #())))
+       ;(chain console (log :ri rows-input))
+       (labels ((process-list (input layer index output)
+		  (let ((layer (if layer layer 0))
+			(index (if index index 0))
+			(output (if output output #())))
 		    (if (= 0 (@ input length))
 			output
 			(process-list (chain input (slice 1))
+				      layer (1+ index)
 				      (if (and (= "[object Object]" (chain -object prototype to-string
 									   (call (@ input 0))))
 					       (= "plain" (@ input 0 ty 0)))
@@ -600,15 +604,18 @@
 									      (call (@ input 0)))))
 					      (chain output 
 						     (concat (list (panic:jsl
-								    (:li :key (+ "list-" (@ input 0 ix))
+								    (:li :key (+ "list" (@ rows-input 0 ix)
+										 "-" layer "-" index)
 									 (:ul :class-name "form-view in"
-									      (process-list (@ input 0) nil)))))))
+									      (process-list (@ input 0)
+											    (1+ layer))))))))
 					      (progn (setf (@ input 0 ct) count
 							   count (1+ count))
 						     (chain output
 							    (concat (list (panic:jsl
 									   (:li 
-									    :key (+ "list-" (@ input 0 ix))
+									    :key (+ "li" (@ rows-input 0 ix)
+										    "-" layer "-" (@ input 0 ix))
 									    (chain self (render-atom
 											 (@ input 0))))))))))))))))
 	 (funcall callback (panic:jsl (:ul :class-name (+ "form-view " (@ self props context view-scope))
@@ -668,6 +675,7 @@
    (lambda (rows is-root)
      (let ((self this))
        (panic:jsl (:table :class-name (+ "form" (if is-root " root" ""))
+			  :key (+ (@ rows 0 0 key) "-body")
 			  :ref (lambda (ref)
 				 (if ref (let ((elem (j-query ref)))
 					   (if is-root (setf (@ self root-params)
@@ -1021,6 +1029,7 @@
 					   ;; at the bottom of the glyph pattern can be drawn
 					   (panic:jsl (:div :class-name "matrix-view form-view"
 							    :id (+ "form-view-" (@ self state data id))
+							    :key (+ "form-view-" (@ self state data id))
 							    (subcomponent (@ view-modes glyph-display)
 									  glyph-content)
 							    rendered)))))))
@@ -1028,6 +1037,7 @@
 					(lambda (rendered depth base-atom)
 					  (panic:jsl (:div :class-name "form-view"
 							   :id (+ "form-view-" (@ self state data id))
+							   :key (+ "form-view-" (@ self state data id))
 							   rendered)))))))
       (panic:jsl (:div))))
 

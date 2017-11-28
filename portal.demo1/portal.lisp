@@ -29,7 +29,7 @@
 
 (portal)
 
-(stage :branches (simple-branch-layout :omit (:stage :clipboard :history)
-				       :adjunct (:clipboard :history)
-				       :extend (:menu (stage-extension-menu-base)))
-       :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history)))
+(stage (simple-stage :branches (simple-branch-layout :omit (:stage :clipboard :history)
+						     :adjunct (:clipboard :history)
+						     :extend (:menu (stage-extension-menu-base)))
+		     :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history))))

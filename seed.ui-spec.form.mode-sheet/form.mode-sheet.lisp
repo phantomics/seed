@@ -265,6 +265,3 @@
 			     :ref (+ "formSheet" (@ this state data id))
 			     (:thead (:tr (chain self (build-sheet-heading (@ self state space)))))
 			     (:tbody (chain self (build-sheet-cells (@ self state space))))))))))
-
-;; (:-react-data-sheet :data (funcall (@ self render-space))
-;; 		    :overflow "clip")
