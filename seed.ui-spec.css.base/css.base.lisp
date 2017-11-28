@@ -23,7 +23,7 @@
       :width 100%
       :position relative
 
-       ;; universal form styles go here
+      ;; universal form styles go here
       ((:or ul.form-view.short ul.form-view.brief)
        :list-style-type none
        :padding 0
