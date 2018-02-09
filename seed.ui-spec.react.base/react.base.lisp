@@ -821,9 +821,9 @@
 	  :transact
 	  (lambda (portal-method params callback)
 	    (defvar self this)
-	    (chain console (log "par" params
-	    			(chain (list (@ window portal-id) portal-method)
-	    			       (concat params))))
+	    ;; (chain console (log "par" params
+	    ;; 			(chain (list (@ window portal-id) portal-method)
+	    ;; 			       (concat params))))
 	    (chain j-query
 		   (ajax (create 
 			  url "../portal"
