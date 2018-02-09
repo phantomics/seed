@@ -44,10 +44,18 @@
 		  (chain self props context
 			 (set-interaction "revert" (lambda () (chain state context methods
 								     (grow #() (create revert true))))))))
+       (if (@ self props context trace-category)
+	   (chain self props context methods (register-branch-path (@ self props context trace-category)
+								   (@ self props data id)
+								   (@ state context path))))
        state))
    :modulate-methods
    (lambda (methods)
-     (let ((self this))
+     (let* ((self this)
+	    (to-grow (if (@ self props context parent-system)
+			 (progn ;;(chain console (log :le (@ self props context parent-system)))
+				(chain methods (in-context-grow (@ self props context parent-system))))
+			 (@ methods grow))))
        (chain j-query 
 	      (extend (create set-delta (lambda (value) (extend-state point-attrs (create delta value)))
 			      set-point (lambda (datum) (chain self (set-point (list (@ datum ly) (@ datum ct)))))
@@ -58,18 +66,17 @@
 				(let ((space (let ((new-space (chain j-query (extend #() (@ self state space)))))
 					       (chain self (assign (@ self state point-attrs index)
 								   new-space data)))))
-				  (chain methods
-					 (grow (if (= "undefined" (typeof alternate-branch))
-						   (@ self state data id)
-						   alternate-branch)
-					       ;; TODO: it may be desirable to add certain metadata to
-					       ;; the meta for each grow request, that's what the
-					       ;; derive-metadata function below may later be used for
-					       space meta))))
+				  (to-grow (if (= "undefined" (typeof alternate-branch))
+					       (@ self state data id)
+					       alternate-branch)
+					   ;; TODO: it may be desirable to add certain metadata to
+					   ;; the meta for each grow request, that's what the
+					   ;; derive-metadata function below may later be used for
+					   space meta)))
 			      grow-branch
 			      (lambda (space meta callback)
-				(chain methods (grow (@ self state data id) 
-						     space meta callback))))))))
+				(to-grow (@ self state data id) 
+					 space meta callback)))))))
    ;; :derive-metadata
    ;; (lambda ()
    ;;   (let ((self this))
@@ -93,6 +100,15 @@
 						     (chain self (set-state (create index (@ datum ix))))
 						     (funcall (@ self props context methods load-branch)
 							      (@ datum vl))))
+	   select-branch (create click (lambda (self datum)
+					 (chain self props context methods
+						(set-branch-by-id (@ datum vl))))
+				 trigger-primary (lambda (self datum)
+						   (chain self props context methods
+							  (set-branch-by-id (@ datum vl))))
+				 trigger-secondary (lambda (self datum)
+						     (chain self props context methods
+							    (set-branch-by-id (@ datum vl)))))
 	   commit  (create click (lambda (self datum)
 				   (funcall (chain self props context (get-interaction "commit"))))
 			   trigger-primary (lambda (self datum)
@@ -410,7 +426,7 @@
 				    (let ((pr (chain j-query 
 						     (extend t (create)
 							     (create meta (chain j-query 
-										 (extend (create)
+										 (extend t (create)
 											 each-meta
 											 (@ datum mt))))
 							     (@ datum pr)))))
@@ -830,6 +846,10 @@
 
      (handle-actions
       (@ next-props action) (@ self state) next-props
+      :actions-any-branch
+      ((set-branch-by-id
+	(if (= (@ params id) (@ self props data id))
+	    (chain self props context methods (set-trace (@ self props context path))))))
       :actions-branch-id
       ((record-move
 	"clipboard"

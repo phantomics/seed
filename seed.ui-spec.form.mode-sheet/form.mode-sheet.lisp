@@ -20,6 +20,10 @@
 	    (state (funcall inherit self props
 			    (lambda (d) (chain j-query (extend (@ props data) (@ d data))))
 			    (lambda (pd) (@ pd data data)))))
+       ;; (if (@ self props context trace-category)
+       ;; 	   (chain self props context methods (register-branch-path (@ self props context trace-category)
+       ;; 								   (@ self props data id)
+       ;; 								   (@ state context path))))
        state))
    :element-specs #()
    :modulate-methods
@@ -174,6 +178,10 @@
 
      (handle-actions
       (@ next-props action) (@ self state) next-props
+      :actions-any-branch
+      ((set-branch-by-id
+	(if (= (@ params id) (@ self props data id))
+	    (chain self props context methods (set-trace (@ self props context path))))))
       :actions-point-and-focus
       ((move
 	(chain self (move (@ params vector))))

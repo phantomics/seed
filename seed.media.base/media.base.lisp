@@ -30,7 +30,8 @@
 
  ;; record a branch image
  (put-image (follows reagent)
-	    `((setf (branch-image branch) ,(if reagent 'reagent 'data))))
+	    `((print (list :rr ,(if reagent 'reagent 'data)))
+	      (setf (branch-image branch) ,(if reagent 'reagent 'data))))
 
  ;; set the branch image to nil
  (nullify-image (follows)
@@ -73,6 +74,19 @@
 	     `((set-branch-meta branch :stable ,(if (eq :not or-not) nil t))
 	       data))
 
+ ;; designate the set branch
+ (set-active-system-by-selection (follows reagent)
+				 `((let ((dat ,(if reagent 'reagent 'data))
+					 (value nil))
+				     (loop for item in (cadar dat)
+					when (eq :select (getf (getf (cddr item) :if) :type))
+					do (setq value (intern (string-upcase (second item))
+							       "KEYWORD")))
+				     (setf (getf (sprout-meta sprout) :active-system)
+					   (symbol-jstring-process value)
+					   (getf (branch-meta branch) :active-system)
+					   (string-downcase value)))))
+ 
  ;; fetch a branch parameter; functions as a check whether the parameter is nil or not
  (is-param (key true-or-not)
 	   `(get-param ,key))
@@ -186,6 +200,7 @@
 	`((seed.modulate:decode data))
 	`((multiple-value-bind (output meta-form)
 	      (seed.modulate:encode (sprout-name sprout) data)
+	    ;;(print (list :out output meta-form))
 	    ;(set-branch-meta branch :depth (getf meta-form :depth))
 	    ;(set-branch-meta branch :glyphs (gethash :glyphs meta-form))
 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))

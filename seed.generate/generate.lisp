@@ -229,6 +229,23 @@
   "Return a contact from a given portal whose system has the given name."
   (get-sprout-branch-specs (find-portal-contact-by-sprout-name portal contact-name)))
 
+#| 
+TODO: macros that don't exist in the media list act as do-nothing passthroughs regardless of their behavior.
+example:
+
+(defmacro aport (a) 1)
+
+(sprout :portal.demo1
+        :system (:description "This is a test portal.")
+        :package ((:use :cl))
+        :contacts (:demo-sheet :demo-drawing)
+        :branches ((systems (in (put-image (aport (get-image)))
+                                (put-file (get-image) :-self))
+                            (out (set-type :form) (put-image (build-stage)) (codec)))))
+
+inclusion of aport macro here just acts as passthrough
+|#
+
 (defmacro till (&rest media)
   "Manifest the possible convolutions of the input/output channels that branches may implement."
   (flet ((macro-media-builder (medium)
@@ -448,11 +465,14 @@
 	   ;; assign portal object to *portal* and the grow method to the 'grow symbol
 	   (setf (symbol-function (quote ,(intern "GROW" (package-name *package*))))
 		 (lambda (,portal-package-id &optional ,sprid ,brname ,data ,params)
-		   ;;(print (list 313 ,sprid ,brname ,data ,params))
-		   (let ((,sprout (if ,sprid (find-portal-contact-by-sprout-name ,port ,sprid) ,port)))
+		   (print (list 313 ,sprid ,brname ,data ,params))
+		   (let ((,sprout (if ,sprid (find-portal-contact-by-sprout-name ,port ,sprid) ,port))
+			 (,params (postprocess-structure ,params)))
 		     ;; if a sprout id and branch-name exist, input is being sent, so mediate
 		     ;; through the branch's input function
-		     (funcall (if (and ,sprid ,brname)
+		     (funcall (if ;; (and ,sprid ,brname)
+			          ;; TODO: is changing sprid for sprout workable?
+				  (and ,sprout ,brname)
 				  (lambda (,callback)
 				    (let ((,branch (find-branch-by-name ,brname ,sprout)))
 				      (labels ((assign-meta-from-list (,list)
@@ -473,10 +493,12 @@
 									      (second ,list))
 									(assign-meta-from-list (cddr ,list))))))
 					      (assign-meta-from-list ,params)))
-				
+				(print (list :par ,params ,sprid ,portal-package-id))
 				;; invoke the special priority macro system
 				;; meta tags will be evaluated before macro expansion
 				;; the first step to doing this is to load the meta form
+				;; (setf (getf (sprout-meta ,sprout) :active-system)
+				;;       "demo-drawing")
 				(if (instantiate-priority-macro-reader
 				      (asdf:load-system (if ,sprid ,sprid ,portal-package-id)))
 				      ;; load the system if it doesn't exist yet

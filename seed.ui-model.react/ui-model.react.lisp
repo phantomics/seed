@@ -5,7 +5,17 @@
 (defpsmacro handle-actions (action-obj state props &rest pairs)
   ;; Handle actions that propagate to a component according to the component's properties, 
   ;; such as whether it is currently the point or along the path of the point trace.
-  (let ((conditions (list :actions-branch-id
+  (let ((conditions (list :actions-any-branch
+			  ;; actions to be taken for all branches available
+			  (lambda (action-list)
+			    `(cond ,@(mapcar (lambda (action)
+					       (let ((action-id (first action))
+						     (action-content (rest action)))
+						 `((= action ,(lisp->camel-case action-id))
+						   ,@action-content
+						   (if action-confirm (action-confirm)))))
+					     action-list)))
+			  :actions-branch-id
 			  ;; actions to be taken when the branch's id matches one specified
 			  (lambda (action-list)
 			    `(cond ,@(mapcar (lambda (action)
@@ -143,7 +153,7 @@
 				 content-type "application/json; charset=utf-8"
 				 data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow")))
 				 success (lambda (data)
-					   ;(chain console (log "DAT" data))
+					   ;; (chain console (log "DAT" data))
 					   (chain -react-d-o-m
 						  (render (panic:jsl (,component :data data))
 							  (chain document (get-element-by-id "main")))))))))))

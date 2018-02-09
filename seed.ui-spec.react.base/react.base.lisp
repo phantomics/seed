@@ -92,8 +92,7 @@
 	       ;; 	      ))
 	       (progn (if (and is-point is-parent-vista (@ prop-data action)
 			       (= "retrace" (@ prop-data action id)))
-			  (progn ;(cl :rr retracers orientations)
-				 (loop for x from (1- (@ retracers length)) downto 0 do
+			  (progn (loop for x from (1- (@ retracers length)) downto 0 do
 				      ;; prevent motion vector from propagating if the orientation
 				      ;; switches from vertical to horizontal
 				      (if (and (getprop orientations x)
@@ -157,12 +156,10 @@
 		 context context)))
 
     (defvar interface-components
-      (create save (panic:jsl (:span :on-click
-				     (lambda ()
-				       (chain self context methods 
-					      (grow (@ branch id) 
-						    (@ branch data) 
-						    (create save true))))
+      (create save (panic:jsl (:span :on-click (lambda () (chain self context methods
+								 (grow (@ branch id)
+								       (@ branch data)
+								       (create save true))))
 				     "save"))))
 
     (defun generate-vistas (parent)
@@ -173,16 +170,13 @@
 		   (chain space (map (generate-vistas self))))))
 	     (respond-standard (sub-space) (lambda (self space))))
 	(lambda (sector index)
-	  ;(cl :ssc sector)
 	  (let* ((self parent)
 		 (initial-sector (if (@ sector 0)
 				     (if (@ sector 0 mt)
 					 (@ sector 0)
 					 (if (= "plain" (@ sector 0 ty 0))
 					     (if (@ sector 1)
-						 (if (@ sector 1 0)
-						     (@ sector 1 0)
-						     (@ sector 1))
+						 (if (@ sector 1 0) (@ sector 1 0) (@ sector 1))
 						 (@ sector 0))
 					     (@ sector 0)))
 				     sector))
@@ -201,7 +195,7 @@
 		     (or (not (@ sector vl))
 			 (not (= "nil" (@ sector vl)))))
 		(vista sector
-		       (let ((ex (create breadth 
+		       (let ((ex (create breadth
 					 (if (@ sector-data if breadth)
 					     (chain sector-data if breadth (slice 2))
 					     "full")
@@ -274,21 +268,28 @@
     ;; 									       (@ branch data 1) 0)))))))))
 
     (defun fill-branch (self space)
-      ;(cl 22 self space)
-      ;(cl 21 (@ self state))
+      ;;(cl 22 self space)
+      ;;(cl 21 (@ self state))
+      (if (and (@ self props action)
+	       (= "setBranchById" (@ self props action id)))
+	  (let* ((set-index nil))
+	    (loop for brix from 0 to (1- (@ self state data branches length))
+	       when (= (@ self props action params id)
+		       (getprop (@ self state data branches) brix "id"))
+	       do (setq set-index brix))
+	    ;;(cl :eeo set-index (@ self state data branches))
+	    ))
       (setf (@ self size) (@ space length))
       (if (= "undefined" (typeof set-interaction))
 	  (setq set-interaction (lambda (interaction-name interaction)
 				  (setf (getprop interactions interaction-name)
 					interaction))))
       (if (= "undefined" (typeof get-interaction))
-	  (setq get-interaction (lambda (interaction-name)
-				  (getprop interactions interaction-name))))
+	  (setq get-interaction (lambda (interaction-name) (getprop interactions interaction-name))))
       (if (= "undefined" (typeof fetch-pane-element))
-	  (setq fetch-pane-element (lambda (element)
-				     (if element
-					 (setf (@ self pane-element) element)
-					 (@ self pane-element)))))
+	  (setq fetch-pane-element (lambda (element) (if element
+							 (setf (@ self pane-element) element)
+							 (@ self pane-element)))))
       ;(cl :ad (@ self props context meta))
       (let* ((branch (chain self state data branches
 	     		    (find (lambda (branch)
@@ -339,12 +340,14 @@
 					   :context
 					   (index 
 					    0
+					    parent-system (@ self props context working-system)
 					    branch-index index
 					    ;; TODO: the above only needed for glyph rendering -
 					    ;; is there a way to obviate?
 					    force-render t
 					    ;(@ sub-con pane-specs) (@ self element-specs)
 					    fetch-pane-element fetch-pane-element
+					    trace-category "major"
 					    parent-meta (@ self props context meta)
 					    retracer (@ self retrace)
 					    set-interaction set-interaction
@@ -366,6 +369,8 @@
 			     (subcomponent (@ view-modes sheet-view)
 					   branch :context (index
 							    0
+							    branch-index index
+							    trace-category "major"
 							    parent-meta (@ self props context meta)
 							    pane-specs (@ self element-specs)
 					                    ;;pane-element (@ self pane-element)
@@ -454,7 +459,6 @@
 	  (chain self (set-state (create action nil branch-modes new-modes))))))
 
     (defun fill-branches-adjunct (self space)
-      ;(cl :fla self space (@ self state context index))
       ;(cl :fl space)
       (if (< 0 (@ self state data branches length))
 	  (chain space
@@ -636,42 +640,33 @@
      (panic:defcomponent -portal
 	 (:get-initial-state
 	  (lambda ()
+	    ;; (chain console (log 905 this))
 	    (let* ((self this)
 		   (this-date (new (-date)))
 		   (modes (list "move" "set"))
-		   (data (for-data-branch "systems" (@ self props data)
-					  (lambda (item)
-					    (let ((systems nil))
-					      ;(cl 89 (@ item data 1))
-					      (loop for datum in (@ item data 1)
-						 do (if (and (= "[object Array]" (chain -object prototype to-string 
-											(call datum)))
-							     (@ datum 0 mt)
-							     (@ datum 0 mt if)
-							     (= "__portalSpecs" (@ datum 0 mt if name)))
-							(setq systems 
-							      (create branches #()
-								      portal-name (@ datum 0 vl)
-								      systems (@ datum 1)
-								      working-system nil))))
-					      systems))))
+		   (data (for-data-branch "systems" (@ self props data) (@ self set-up-systems)))
 		   (space (for-data-branch "systems" (@ self props data)
 					   (lambda (item) (chain item data (slice 1)))))
 		   (gen-methods
 		    (funcall 
 		     (lambda (self)
-		       ;(cl :dat data)
+		       ;;(cl :dat data)
 		       (lambda ()
-			 (create grow (lambda (branch-id data params callback)
-					(chain self (transact "grow"
-							      (list (@ self state context working-system)
-								    branch-id data params)
-							      (if (not (= "undefined" (typeof callback)))
-								  (funcall callback)))))
-				 build-retracer (@ self build-retracer)
-				 set-mode (@ self set-mode)
-				 load-branch (@ self fill)
-				 set-trace (@ self set-trace))))
+			 (let ((grow-fn (lambda (working-system)
+					  (lambda (branch-id data params callback)
+					    (chain self (transact "grow"
+								  (list working-system branch-id data params)
+								  (if (not (= "undefined" (typeof callback)))
+								      (funcall callback))))))))
+			   (create grow (grow-fn)
+				   in-context-grow (lambda (ws) (grow-fn ws))
+				   build-retracer (@ self build-retracer)
+				   set-mode (@ self set-mode)
+				   load-branch (@ self fill)
+				   set-branch-by-id (@ self set-branch-by-id)
+				   set-trace (@ self set-trace)
+				   register-branch-path (@ self register-branch-path)
+				   trace-branch (@ self trace-branch)))))
 		     this)))
 	      ;(cl 333 (@ self props data))
 	      (create data data
@@ -683,6 +678,7 @@
 		      context (create trace #(0 0)
 				      on-trace t
 				      path #()
+				      branch-paths (create)
 				      retracers (list (@ self retrace))
 				      orientations (list false)
 				      methods (gen-methods)
@@ -695,6 +691,19 @@
 							   do (setf (getprop listeners (getprop modes mix))
 								    (new (chain window -keypress (-listener)))))
 							listeners)))))))
+	  :set-up-systems
+	  (lambda (item) (let ((systems nil))
+			   ;;(cl 89 (@ item data 1))
+			   (loop for datum in (@ item data 1)
+			      do (if (and (= "[object Array]" (chain -object prototype to-string (call datum)))
+					  (@ datum 0 mt)
+					  (@ datum 0 mt if)
+					  (= "__portalSpecs" (@ datum 0 mt if name)))
+				     (setq systems (create branches #()
+							   portal-name (@ datum 0 vl)
+							   systems (@ datum 1)
+							   working-system nil))))
+			   systems))
 	  :build-retracer
 	  (lambda (self)
 	    (lambda (primal-vector)
@@ -802,15 +811,19 @@
 								     (getprop (@ self state ui modes) mix))
 							    (stop_listening)))))
 				       new-state)))))
+	  :set-branch-by-id
+	  (lambda (id)
+	    (chain this (set-state (lambda () (create action (create id "setBranchById"
+								     params (create id id)))))))
 	  :act
 	  (lambda (id params)
 	    (chain this (set-state (lambda () (create action (create id id params params))))))
 	  :transact
 	  (lambda (portal-method params callback)
 	    (defvar self this)
-	    ;; (chain console (log "par" params
-	    ;; 			(chain (list (@ window portal-id) portal-method)
-	    ;; 			       (concat params))))
+	    (chain console (log "par" params
+	    			(chain (list (@ window portal-id) portal-method)
+	    			       (concat params))))
 	    (chain j-query
 		   (ajax (create 
 			  url "../portal"
@@ -822,19 +835,27 @@
 			  success
 			  (lambda (data)
 			    (defvar this-date (new (-date)))
-			    ;(chain console (log "DAT2" data (@ self state data) (@ self state)))
-			    ;(chain console (log "DAT2" (chain -j-s-o-n (stringify data))))
+			    ;; (chain console (log "DAT2" data (@ self state data) (@ self state)))
+			    ;; (chain console (log "DAT2" (chain -j-s-o-n (stringify data))))
 			    (chain self (set-state (lambda (previous-state current-props)
-						     (create data 
-					                     ;; TODO: REPLACE SELF STATE BELOW WITH PREVIOUS-STATE
-							     (chain j-query (extend (create) (@ self state data)
-										    (create branches data)))
+						     (create
+						      data 
+						      ;; TODO: REPLACE SELF STATE BELOW WITH PREVIOUS-STATE
+						      (chain j-query (extend (create)
+									     (@ self state data)
+									     (if (@ params 0)
+										 (create branches data)
+										 (for-data-branch
+										  "systems" data
+										  (@ self set-up-systems)))))
 						      action nil
 						      context
 						      (chain j-query
 						      	     (extend (create) (@ self state context)
 						      		     (create updated (chain this-date 
 											    (get-time)))))))))
+			    (if (not (@ params 0))
+				(chain self (fill (@ data 0 meta active-system))))
 			    (if callback (callback)))
 			  error (lambda (data err) (chain console (log 11 data err)))))))
 	  :fill
@@ -870,7 +891,6 @@
 				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" null null null
 									 (create active-system system-id))))
 				   success (lambda (data)
-					     ;(chain console (log 515 data))
 					     (chain self (load-b-data data system-id callback)))
 				   error (lambda (data err) (chain console (log 11 data err))))))))
 	  :load-b-data
@@ -883,10 +903,39 @@
 				   data-type "json"
 				   content-type "application/json; charset=utf-8"
 				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" system-id)))
-				   success (lambda (data)
-					     ;(chain console (log "DAT1" data))
-					     (callback stage-data data))
+				   success (lambda (data) (callback stage-data data))
 				   error (lambda (data err) (chain console (log 11 data err))))))))
+	  :register-branch-path
+	  (lambda (category name path)
+	    (let* ((self this)
+		   (new-paths (chain j-query (extend (create) (@ self state context branch-paths)))))
+	      (if (or (= "undefined" (typeof (getprop new-paths category)))
+		      (= "undefined" (typeof (getprop new-paths category name))))
+		  (chain self (set-state (create context
+						 (chain j-query
+							(extend (create) (@ self state context)
+								(create branch-paths
+									(progn
+									  (if (= "undefined"
+										 (typeof (getprop new-paths
+												  category)))
+									      (setf (getprop new-paths category)
+										    (create)))
+									  (setf (getprop new-paths category name)
+										path)
+									  new-paths))))))))))
+	  :trace-branch
+	  (lambda (category name)
+	    ;; TODO: make this work
+	    (cl 9191 category name (@ this state context))
+	    ;; (chain this (set-state ;; (create trace (getprop (@ this state branch-paths)
+	    ;; 			   ;; 			  category name))
+	    ;; 			   (create context (chain j-query (extend (create) (@ this state context)
+	    ;; 								  (create trace
+	    ;; 									  (getprop (@ this state context
+	    ;; 											   branch-paths)
+	    ;; 										   category name)))))))
+	    )
 	  ;; :should-component-update
 	  ;; (lambda (next-props next-state)
 	  ;;   (or (@ next-state just-updated)
@@ -909,7 +958,7 @@
        ;(cl 888 (@ this state) (chain this (build-retracer 0 (create breadth "full") (@ this state space))))
        ;(cl 921 (@ this props) (@ this state) (@ this state space))
        (let* ((self this))
-	 ;(cl :5sp (@ this state space) (@ this state data))
+	 ;; (cl :5sp (@ this state space) (@ this state data))
 	 (panic:jsl (:div :class-name "portal" (chain this state space (map (generate-vistas self)))
 			  (if (= 0 (@ this state data branches length))
 			      (panic:jsl (:div :class-name "intro-animation"

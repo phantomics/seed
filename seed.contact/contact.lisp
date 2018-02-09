@@ -27,7 +27,7 @@
 					(find-symbol function-string package-string))
 				   (multiple-value-bind (function-symbol locality)
 				       (intern function-string package-string)
-				     (print (list 66 input))
+				     ;; (print (list 66 input))
 				     (if (eq :external locality)
 					 ;; only allow the use of functions that are exported in the portal package
 					 (apply function-symbol

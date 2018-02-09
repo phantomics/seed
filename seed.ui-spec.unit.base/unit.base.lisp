@@ -325,18 +325,21 @@
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "menu-holder"
 			   (:-select :name "form-select"
-				     :value (let ((values (chain self state data content mt if options
-								 (map (lambda (item) (@ item value 0 vl))))))
-					      (funcall (lambda (item)
-							 (create label (@ item title)
-								 value (@ item value)))
-						       (getprop (@ self state data content mt if options)
-								(chain values 
-								       (index-of (@ self state space))))))
+				     :value (let* ((values (chain self state data content mt if options
+								  (map (lambda (item) (@ item value 0 vl)))))
+						   (current-value (getprop (@ self state data content mt if options)
+									   (chain values 
+										  (index-of (@ self state space))))))
+					      (if (not (= "undefined" (typeof current-value)))
+						  (funcall (lambda (item) (create label (@ item title)
+										  value (@ item value)))
+							   current-value)))
 				     :options (chain self state data content mt if options
 						     (map (lambda (item) (create label (@ item title)
 										 value (@ item value)))))
-				     :on-change (lambda (value) (chain self (designate value)))))))))
+				     :on-change (lambda (value)
+						  ;;(chain console (log :inter (@ self state) (@ self props) value))
+						  (chain self (designate value)))))))))
 
  (textfield
   (:get-initial-state

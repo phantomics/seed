@@ -11,9 +11,18 @@
 									      "KEYWORD")))))
        `(((meta ((meta ,,(intern (package-name *package*) "KEYWORD")
 		       :if (:type :portal-name))
-		 (meta ,(get-portal-contacts ,portal)
-		       :if (:type :portal-system-list :index -1)
-		       :each (:if (:interaction :select-system)))
+		 ,@(if (not branch-specs)
+		       `((meta ,(get-portal-contacts ,portal)
+			       :if (:type :portal-system-list :index -1)
+			       :each (:if (:interaction :select-system)))))
+		 ,@(if branch-specs
+		       `((meta ,(of-sprout-meta ,portal :active-system)
+			       :if (:options ,(mapcar (lambda (system-name)
+							`(:title ,(lisp->camel-case system-name)
+								 :value ,(string-downcase system-name)))
+						      (get-portal-contacts ,portal))
+					     ;; :interaction :select-system
+					     :type :select))))
 		 ,@(if branch-specs `((meta ,(funcall ,(macroexpand sub-nav)
 						      branch-specs)
 					    :if (:type :system-branch-list :index 0 :sets (2))
@@ -90,4 +99,7 @@
   `(lambda (branch-specs)
      (loop for branch in branch-specs append (let ((branch-name (intern (string-upcase (first branch)) "KEYWORD")))
 					       (if (not (find branch-name (list ,@omit)))
-						   (list branch-name))))))
+						   (list `(meta ,branch-name
+								:if (:type 
+								     :branch-selector
+								     :target ,branch-name))))))))

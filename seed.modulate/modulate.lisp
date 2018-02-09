@@ -288,11 +288,31 @@
 	  (if (keywordp (first list))
 	      (downcase-jsform (cddr list)
 			       (cons (intern (string-downcase (first list))
-						   "KEYWORD")
+					     "KEYWORD")
 				     (cons (second list)
 					   output)))
 	      list))
       output))
+
+;; (defun preprocess-pair (prop value)
+;;   (cond ((or (eq :default prop)
+;; 	     (eq :data prop)
+;; 	     (eq :format prop)
+;; 	     (eq :value prop))
+;; 	 (downcase-jsform (encode-expr value)))
+;; 	((eq t value)
+;; 	 t)
+;; 	;; TODO: figure better heuristic for handling
+;; 	;; nil/empty array conversion between Lisp and JSON
+;; 	((null value)
+;; 	 "_nil")
+;; 	((symbolp value)
+;; 	 (concatenate 'string (if (keywordp value)
+;; 				  "__" "_")
+;; 		      (lisp->camel-case value)))
+;; 	((listp value)
+;; 	 (preprocess-structure value))
+;; 	(t value)))
 
 (defun preprocess-structure (list &optional output)
   "Prepare a data structure for expression as JSON, preserving semantics including keywords and symbols."
@@ -326,6 +346,15 @@
 	      list))
       output))
 
+(defun symbol-jstring-process (symbol-string)
+  (if (and (not (symbolp symbol-string))
+	   (char= #\_ (aref symbol-string 0)))
+      (if (char= #\_ (aref symbol-string 1))
+	  (intern (string-upcase (camel-case->lisp-symbol (subseq symbol-string 2)))
+		  "KEYWORD")
+	  (intern (string-upcase (camel-case->lisp-symbol (subseq symbol-string 1)))))
+      symbol-string))
+
 (defun postprocess-structure (list &optional output)
   "Prepare a data structure converted back from JSON, translating leading underscore strings back to symbols and more."
   (if (and list (first list))
@@ -351,12 +380,13 @@
 							       (char= #\_ (aref (second list) 0)))
 							       ;; convert keywords and symbols according to
 							       ;; the leading underscores
-							  (if (char= #\_ (aref (second list) 1))
-							      (intern (string-upcase (camel-case->lisp-symbol
-										      (subseq (second list) 2)))
-								      "KEYWORD")
-							      (intern (string-upcase (camel-case->lisp-symbol
-										      (subseq (second list) 1))))))
+							  ;; (if (char= #\_ (aref (second list) 1))
+							  ;;     (intern (string-upcase (camel-case->lisp-symbol
+							  ;; 			      (subseq (second list) 2)))
+							  ;; 	      "KEYWORD")
+							  ;;     (intern (string-upcase (camel-case->lisp-symbol
+							  ;; 			      (subseq (second list) 1)))))
+							  (symbol-jstring-process (second list)))
 							 ((listp (second list))
 							  (postprocess-structure (second list)))
 							 (t (second list))))
@@ -512,6 +542,7 @@
 	     (let ((type (getf item :ty))
 		   (value (getf item :vl))
 		   (macros (getf item :am)))
+	       ;; (print (list :val value type))
 	       (cond ,@(append '(((not type) item))
 			       (loop :for entry :in entries :append
 				    (cond ((eq :type-is (first (getf entry :predicate)))

@@ -588,8 +588,8 @@
 		:border-right 1px solid "#eee8d5"
 		:border-bottom 1px solid "#eee8d5"
 		:text-align right
-		:padding 0 4px
-		:height 20px)
+		;:height 20px
+		:padding 0 4px)
 	    (tbody
 	     (:td :height 20px)
 	     ((:and tr :last-child)
