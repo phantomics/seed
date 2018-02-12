@@ -8,11 +8,26 @@
  media-spec-base
  ;; read data from a file
  (get-file (source)
-	   `(load-exp-from-file (sprout-name sprout)
-				(concatenate 'string (string-downcase ,(if (eq :-self source)
-									   `(branch-name branch)
-									   `(quote ,source)))
-					     ".lisp")))
+	   `(print (load-exp-from-file (sprout-name sprout)
+				,(if (symbolp source)
+				     `(concatenate 'string (string-downcase ,(if (eq :-self source)
+										 `(branch-name branch)
+										 `(quote ,source)))
+						   ".lisp")
+				     (if (stringp source)
+					 source)))))
+ 
+ ;; read text from a file
+ (get-file-text (source)
+		`(print (load-string-from-file (sprout-name sprout)
+					       ,(if (symbolp source)
+						    `(concatenate 'string
+								  (string-downcase ,(if (eq :-self source)
+											`(branch-name branch)
+											`(quote ,source)))
+								  ".lisp")
+						    (if (stringp source)
+							source)))))
 
  ;; write data to a file
  (put-file (follows reagent file-name)
@@ -30,8 +45,7 @@
 
  ;; record a branch image
  (put-image (follows reagent)
-	    `((print (list :rr ,(if reagent 'reagent 'data)))
-	      (setf (branch-image branch) ,(if reagent 'reagent 'data))))
+	    `((setf (branch-image branch) ,(if reagent 'reagent 'data))))
 
  ;; set the branch image to nil
  (nullify-image (follows)
@@ -86,6 +100,10 @@
 					   (symbol-jstring-process value)
 					   (getf (branch-meta branch) :active-system)
 					   (string-downcase value)))))
+
+ ;; passthrough form used to specify stage display parameters
+ (display-params (follows &rest params)
+		 `(data))
  
  ;; fetch a branch parameter; functions as a check whether the parameter is nil or not
  (is-param (key true-or-not)
@@ -206,7 +224,7 @@
 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))
 	    output)))
 
- ;; passthrough function meant to wrap stage parameters for use by stage definitions that analyze the branch spec
+ ;; passthrough form meant to wrap stage parameters for use by stage definitions that analyze the branch spec
  (stage-params (follows &rest params)
 	       `(data))
 

@@ -222,11 +222,37 @@
       body)
 
     (defun enclose-branches-main (self body)
-      (panic:jsl (:div :class-name "view" 
-		       (:div :class-name "main" 
-			     (:div :class-name "branches" 
-				   (:-grid (:-row :class-name "show-grid" body)))))))
+      (labels ((find-selected-index (id)
+		 (let ((in-segment nil))
+		   (loop for segix from 1 to (1- (@ self props context meta index format length))
+		      do (if (let ((segment (getprop (@ self props context meta index format)
+						     segix))
+				   (found nil))
+			       (loop for index from 0 to (1- (@ segment length))
+				  do (if (= id (getprop segment index "vl"))
+					 (setq found true)))
+			       found)
+			     (setq in-segment segix)))
+		   (1- in-segment))))
+	(if (and (@ self props action)
+		 (= "setBranchById" (@ self props action id)))
+	    (setf (@ self props context meta point)
+		  (find-selected-index (@ self props action params id))))
+	(panic:jsl (:div :class-name "branch-segment" (getprop body (@ self props context meta point))))))
 
+    (defun enclose-branch-segment (self body)
+      (let ((portion (/ 12 (@ body length))))
+	(panic:jsl (:div :class-name "view"
+			 (:div :class-name "main"
+			       (:div :class-name "branches"
+				     (:-grid (:-row :class-name "show-grid"
+						    (chain body (map (lambda (element index)
+								       (panic:jsl (:-col :md portion
+											 :class-name "column-outer"
+											 :key (+ "branch-" index)
+											 :id (+ "branch-" index)
+											 element)))))))))))))
+      
     (defun enclose-branches-adjunct (self body)
       (panic:jsl (:div :class-name (+ "adjunct-view"
 				      (if (= 0 (@ self props context focus))
@@ -244,7 +270,7 @@
 		      branch :context (index
 				       0
 				       initial-motion #(0 -1)
-				       set-control-target 
+				       set-control-target
 				       (lambda (index) (chain self (set-state (create control-target index))))))))
      
     (defun enclose-overview (self body)
@@ -268,8 +294,8 @@
     ;; 									       (@ branch data 1) 0)))))))))
 
     (defun fill-branch (self space)
-      ;;(cl 22 self space)
-      ;;(cl 21 (@ self state))
+      ;; (cl 22 self space)
+      ;; (cl 21 (@ self state))
       (if (and (@ self props action)
 	       (= "setBranchById" (@ self props action id)))
 	  (let* ((set-index nil))
@@ -311,18 +337,18 @@
 	     ;; 			       interaction)))
 	     ;; (get-interaction (lambda (interaction-name)
 	     ;; 			(getprop interactions interaction-name)))
-	     (visible-branches (chain self state data branches
-				      (map (lambda (this-branch index)
-					     (cond ((or (= (@ this-branch id) "stage")
-							(= (@ this-branch id) "clipboard")
-							(= (@ this-branch id) "history"))
-						    0)
-						   (t 1))))))
-	     (visible-branch-count (if (< 0 (@ visible-branches length))
-				       (chain visible-branches (reduce (lambda (total i) (+ total i))))
-				       1))
+	     ;; (visible-branches (chain self state data branches
+	     ;; 			      (map (lambda (this-branch index)
+	     ;; 				     (cond ((or (= (@ this-branch id) "stage")
+	     ;; 						(= (@ this-branch id) "clipboard")
+	     ;; 						(= (@ this-branch id) "history"))
+	     ;; 					    0)
+	     ;; 					   (t 1))))))
+	     ;; (visible-branch-count (if (< 0 (@ visible-branches length))
+	     ;; 			       (chain visible-branches (reduce (lambda (total i) (+ total i))))
+	     ;; 			       1))
 	     (flip-axis (lambda (vector) (list (@ vector 1) (- (@ vector 0)))))
-	     (portion (chain -math (floor (/ 12 visible-branch-count))))
+	     ;; (portion (chain -math (floor (/ 12 visible-branch-count))))
 	     (trace-index (getprop (@ self state context trace) 
 				   (@ self state context path length)))
 	     (this-index (if (@ self state context on-trace)
@@ -399,32 +425,29 @@
 							get-interaction get-interaction
 							movement-transform flip-axis)))))
 	;(cl :subc (@ self props context meta secondary-controls format))
-	(if element (panic:jsl (:-col :class-name (+ "portal-column " (chain branch type (join " ")))
-				      :md portion
-				      :key (+ "branch-" index)
-				      :id (+ "branch-" index)
-				      (:div :class-name (+ "header" (if (@ self state context on-trace)
-									" point" ""))
-					    (:div :class-name "branch-info"
-						  (:span :class-name "id" (@ branch id))
-						  (if (= true (@ branch meta locked))
-						      (panic:jsl (:span :class-name "locked-indicator"
-									"locked")))))
-				      (:div :class-name "holder"
-					    (:div :class-name "pane"
-					          ;; TODO: WARNING: CHANGE THIS AND THE
-					          ;; GLYPH RENDERING BREAKS BECAUSE
-					          ;; THE FIRST TERMINAL TD CAN'T BE FOUND!
-					          ;; FIGURE OUT WHY
-						  :id (+ "branch-" index "-" (@ branch id))
-						  :ref (lambda (ref)
-							 (let ((element (j-query ref)))
-							   (if (@ element 0)
-							       (fetch-pane-element element))))
-						  element)
-					    (:div :class-name (+ "footer horizontal-view" (if (= 1 this-index)
-											      " point" ""))
-						  (:div :class-name "inner" sub-controls))))))))
+	(if element (panic:jsl (:div :class-name (+ "portal-column " (chain branch type (join " ")))
+				     (:div :class-name (+ "header" (if (@ self state context on-trace)
+								       " point" ""))
+					   (:div :class-name "branch-info"
+						 (:span :class-name "id" (@ branch id))
+						 (if (= true (@ branch meta locked))
+						     (panic:jsl (:span :class-name "locked-indicator"
+								       "locked")))))
+				     (:div :class-name "holder"
+					   (:div :class-name "pane"
+						 ;; TODO: WARNING: CHANGE THIS AND THE
+						 ;; GLYPH RENDERING BREAKS BECAUSE
+						 ;; THE FIRST TERMINAL TD CAN'T BE FOUND!
+						 ;; FIGURE OUT WHY
+						 :id (+ "branch-" index "-" (@ branch id))
+						 :ref (lambda (ref)
+							(let ((element (j-query ref)))
+							  (if (@ element 0)
+							      (fetch-pane-element element))))
+						 element)
+					   (:div :class-name (+ "footer horizontal-view" (if (= 1 this-index)
+											     " point" ""))
+						 (:div :class-name "inner" sub-controls))))))))
 
     (defun respond-branches-main (self next-props)
       ;; toggle the activation of the contextual menu in a branch
@@ -903,7 +926,8 @@
 				   data-type "json"
 				   content-type "application/json; charset=utf-8"
 				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" system-id)))
-				   success (lambda (data) (callback stage-data data))
+				   success (lambda (data)
+					     (callback stage-data data))
 				   error (lambda (data err) (chain console (log 11 data err))))))))
 	  :register-branch-path
 	  (lambda (category name path)

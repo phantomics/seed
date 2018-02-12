@@ -228,6 +228,10 @@
 	 (.container 
 	  :width 100%
 	  :background "#fff"
+	  (.column-outer :padding-left 0
+			 :padding-right 4px)
+	  ((:and .column-outer :last-child) :padding-right 0)
+	  
 	  (.portal-column 
 	   :padding 0 2px 0 0
 	   (.header

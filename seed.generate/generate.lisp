@@ -78,10 +78,16 @@
 		       (write-to-string data)))))
 
 (defun load-exp-from-file (package-name file-path)
-  "Load a form from a file at the given path."
+  "Load a form from a file at the given relative path."
   (with-open-file (data (asdf:system-relative-pathname package-name file-path))
     (when data (loop for line = (read data nil)
 		  while line collect line))))
+
+(defun load-string-from-file (package-name file-path)
+  "Load a string from a file at the given relative path."
+  (with-open-file (data (asdf:system-relative-pathname package-name file-path))
+    (apply #'concatenate (cons 'string (when data (loop for line = (read-line data nil)
+						     while line collect line))))))
 
 ;; The generic class for Seed systems. Wraps an ASDF system, implementing the branch-based input/output model.
 (defclass sprout ()
