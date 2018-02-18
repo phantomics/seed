@@ -4,6 +4,23 @@
 
 (defvar *contact-list* nil)
 
+;; (defun process-input-params (params &optional output)
+;;   (if (not params)
+;;       output (process-input-params (cddr params)
+;; 				   (append output
+;; 					   (append (list (if (stringp (first params))
+;; 							     (intern (string-upcase (first params))
+;; 								     "KEYWORD")
+;; 							     (first params)))
+;; 						   ;;(second params)
+;; 						   (if (or (second params)
+;; 							   (< 1 (length params)))
+;; 						       (list ;; (if (stringp (second params))
+;; 							     ;; 	 (intern (string-upcase (second params))
+;; 							     ;; 		 "KEYWORD")
+;; 							     ;; 	 (second params))
+;; 							     (second params))))))))
+
 (define-easy-handler (seed-grow :uri "/portal") ()
   (setf (content-type*) "text/plain")
   (let ((request-type (hunchentoot:request-method hunchentoot:*request*)))
@@ -27,17 +44,18 @@
 					(find-symbol function-string package-string))
 				   (multiple-value-bind (function-symbol locality)
 				       (intern function-string package-string)
-				     ;; (print (list 66 input))
 				     (if (eq :external locality)
 					 ;; only allow the use of functions that are exported in the portal package
 					 (apply function-symbol
 					        ;; the package string is always at the head of the argument list
 						(append (list (intern package-string "KEYWORD"))
-							(mapcar (lambda (param)
-								  (if (stringp param)
-								      (intern (string-upcase param) "KEYWORD")
-								      param))
-								(cddr input)))))))))))))
+						      ;; (process-input-params (cddr input))
+						      (mapcar (lambda (param)
+						      		(if (stringp param)
+						      		    (intern (string-upcase param) "KEYWORD")
+						      		    param))
+						      	      (cddr input))
+						      )))))))))))
 
 (defmacro contact-create (name &key (port nil) (root nil))
   `(setf (getf *contact-list* ,(intern (string-upcase name) "KEYWORD"))

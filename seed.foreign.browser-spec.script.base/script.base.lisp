@@ -22,6 +22,9 @@
 	     (@ window -autosize-input) (getprop (require "react-input-autosize") "default")
 	     (@ window -autosize-textarea) (require "react-textarea-autosize")
 	     (@ window -select) (getprop (require "react-select") "default")
+	     (@ window -code-mirror) (require "react-codemirror")
+	     (@ window -slate-editor) (getprop (require "slate-react") "Editor")
+	     (@ window -slate-value) (getprop (require "slate") "Value")
 	     (@ window -sketch-color-picker) (getprop (require "react-color/lib/components/sketch/Sketch")
 						      "default")
 	     ;; TODO: keypress package has only this numbered, minified script to include.

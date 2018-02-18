@@ -81,7 +81,8 @@
 	    ;; erase gulpfile and root Javascript source file when done
 	    (delete-file ,style-build-file)
 	    
-	    (princ ,(format nil "~%Browser interface foundation build complete.~%~%")))
+	    (progn (princ ,(format nil "~%Browser interface foundation build complete.~%~%"))
+		   :success))
 
 	  ;; automatically invoke foundInterface if the interface files are not present
 	  (if (and (fboundp (quote ,(intern "FOUND-INTERFACE" (package-name *package*))))

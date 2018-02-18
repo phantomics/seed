@@ -481,6 +481,8 @@ inclusion of aport macro here just acts as passthrough
 				  (and ,sprout ,brname)
 				  (lambda (,callback)
 				    (let ((,branch (find-branch-by-name ,brname ,sprout)))
+				      (print (list 909 ,portal-package-id ,sprid ,brname ,data ,params
+						   (mapcar #'branch-name (sprout-branches ,sprout))))
 				      (labels ((assign-meta-from-list (,list)
 						 (if ,list (progn (setf (getf (branch-meta ,branch) (first ,list))
 									(second ,list))

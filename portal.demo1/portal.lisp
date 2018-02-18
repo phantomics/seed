@@ -14,10 +14,13 @@
 (browser-interface :markup ((html-index-header "Seed: Demo Portal")
 			    (html-index-body))
 		   :script ((key-ui keystroke-maps
-				    key-ui-base)
+				    key-ui-base
+				    key-ui-map-apl)
 			    (react-ui ((react-portal-core (component-set interface-units interface-units)
 							  (component-set view-modes
 									 form-view-mode
+									 text-view-mode
+									 document-view-mode
 									 sheet-view-mode)))
 				      :url "portal"
 				      :component :-portal))

@@ -29,7 +29,12 @@
 				    (or (= "short" (@ c breadth))
 					(= "brief" (@ c breadth)))))
 	      (this-index (if (@ c index) (@ c index) 0)) ;; add 0 if there's no explicit index 
-	      (path (chain c path (concat (list this-index))))
+	      (path (chain c path (concat (list (if (and (@ c meta)
+							 (= "__encloseBranchSegment" (@ c meta enclose)))
+						    0 this-index)))))
+	      ;; a 0 is always added to the path in case of an __encloseBranchSegment vista,
+	      ;; since only a single branch segment is displayed and the displayed segment is always "first"
+	      ;; for the purposes of the display logic
 	      (trace (if (< (@ c trace) (@ path length))
 			 (chain c trace (concat (list 0)))
 			 (@ c trace)))
@@ -123,6 +128,8 @@
 				 ;; SO THAT VERTICAL MOTION IS HANDLED AS WELL
 		     			;(cl :newt new-trace)
 				 (if new-trace (chain c methods (set-trace new-trace)))))
+		      ;; (if (> 7 (@ path length))
+		      ;; 	  (cl :path path (if (@ c meta) (@ c meta enclose))))
 		      (if (and (@ self props meta) (@ self props meta transparent))
 			  c (create trace trace
 				    path path
@@ -390,6 +397,18 @@
 								      (typeof (@ self state branch-modes))))
 							      (= "menu" (@ self state branch-modes 0)))
 							 false (@ self state context on-trace)))))
+			    ((= (@ branch type 0) "text")
+			     (subcomponent (@ view-modes text-view)
+					   branch
+					   :context (index
+						     0
+						     a 1 b 2 c 3)))
+			    ((= (@ branch type 0) "document")
+			     (subcomponent (@ view-modes document-view)
+					   branch
+					   :context (index
+						     0
+						     a 1 b 2 c 3)))
 			    ((and (= (@ branch type 0) "matrix")
 				  (= (@ branch type 1) "spreadsheet"))
 			     (subcomponent (@ view-modes sheet-view)
@@ -666,7 +685,7 @@
 	    ;; (chain console (log 905 this))
 	    (let* ((self this)
 		   (this-date (new (-date)))
-		   (modes (list "move" "set"))
+		   (modes (list "move" "set" "write"))
 		   (data (for-data-branch "systems" (@ self props data) (@ self set-up-systems)))
 		   (space (for-data-branch "systems" (@ self props data)
 					   (lambda (item) (chain item data (slice 1)))))
@@ -678,7 +697,7 @@
 			 (let ((grow-fn (lambda (working-system)
 					  (lambda (branch-id data params callback)
 					    (chain self (transact "grow"
-								  (list working-system branch-id data params)
+								  (list working-system branch-id daa params)
 								  (if (not (= "undefined" (typeof callback)))
 								      (funcall callback))))))))
 			   (create grow (grow-fn)
@@ -844,9 +863,9 @@
 	  :transact
 	  (lambda (portal-method params callback)
 	    (defvar self this)
-	    ;; (chain console (log "par" params
-	    ;; 			(chain (list (@ window portal-id) portal-method)
-	    ;; 			       (concat params))))
+	    (chain console (log "par" params
+	    			(chain (list (@ window portal-id) portal-method)
+	    			       (concat params))))
 	    (chain j-query
 		   (ajax (create 
 			  url "../portal"

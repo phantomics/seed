@@ -266,10 +266,10 @@
   ;(cl "SHR" (@ this state just-updated))
   ;(cl :cel (@ self state data) (@ self props context) (@ self state context))
   ;(chain console (log :ssp (@ self state space)))
-  (let ((-data-sheet (new -react-data-sheet)))
-    (panic:jsl (:div :class-name "matrix-view spreadsheet-view"
-		     :id (+ "sheet-view-" (@ this state data id))
-		     (:table :class-name "form"
-			     :ref (+ "formSheet" (@ this state data id))
-			     (:thead (:tr (chain self (build-sheet-heading (@ self state space)))))
-			     (:tbody (chain self (build-sheet-cells (@ self state space))))))))))
+  ;;(let ((-data-sheet (new -react-data-sheet)))
+  (panic:jsl (:div :class-name "matrix-view spreadsheet-view"
+		   :id (+ "sheet-view-" (@ this state data id))
+		   (:table :class-name "form"
+			   :ref (+ "formSheet" (@ this state data id))
+			   (:thead (:tr (chain self (build-sheet-heading (@ self state space)))))
+			   (:tbody (chain self (build-sheet-cells (@ self state space)))))))));)

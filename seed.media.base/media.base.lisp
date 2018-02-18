@@ -34,10 +34,18 @@
 	   `((file-output (exp-string reagent "")
 			  (asdf:system-relative-pathname 
 			   (sprout-name sprout)
-			   (concatenate 'string (string-downcase ,(if (eq :-self file-name)
-								      `(branch-name branch)
-								      `(quote ,file-name)))
-					".lisp")))))
+			   ;; (concatenate 'string (string-downcase ,(if (eq :-self file-name)
+			   ;; 					      `(branch-name branch)
+			   ;; 					      `(quote ,file-name)))
+			   ;; 		".lisp")
+			   ,(if (symbolp file-name)
+				`(concatenate 'string
+					      (string-downcase ,(if (eq :-self file-name)
+								    `(branch-name branch)
+								    `(quote ,file-name)))
+					      ".lisp")
+				(if (stringp file-name)
+				    file-name))))))
 
  ;; get a branch image
  (get-image (&optional source)
@@ -45,7 +53,8 @@
 
  ;; record a branch image
  (put-image (follows reagent)
-	    `((setf (branch-image branch) ,(if reagent 'reagent 'data))))
+	    `((print (list :eo ,(if reagent 'reagent 'data)))
+	      (setf (branch-image branch) ,(if reagent 'reagent 'data))))
 
  ;; set the branch image to nil
  (nullify-image (follows)

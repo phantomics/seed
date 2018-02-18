@@ -53,8 +53,7 @@
    (lambda (methods)
      (let* ((self this)
 	    (to-grow (if (@ self props context parent-system)
-			 (progn ;;(chain console (log :le (@ self props context parent-system)))
-				(chain methods (in-context-grow (@ self props context parent-system))))
+			 (chain methods (in-context-grow (@ self props context parent-system)))
 			 (@ methods grow))))
        (chain j-query 
 	      (extend (create set-delta (lambda (value) (extend-state point-attrs (create delta value)))
@@ -1022,6 +1021,8 @@
 	     (chain input-ref (val temp-val)))))))
 
   (defvar self this)
+  ;; (if (= "main" (@ this props data id))
+  ;;     (chain console (log :ioi (@ this state context))))
   (if (or (not (= "undefined" (typeof (@ this state rendered-content))))
 	  (and (= "[object Array]" (chain -object prototype to-string (call (@ this state rendered-content))))
 	       (= 0 (@ this state rendered-content length))))

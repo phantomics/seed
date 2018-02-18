@@ -263,6 +263,11 @@
 	   ((:and .vista :last-child)
 	    (.portal-column :padding 0))))
 
+	 (.portal-column.text
+	  (|.CodeMirror| :height 100%
+			 ;;:background transparent
+			 ))
+	 
 	 (.holder :height 100%
 		  :position relative
 		  :padding 0 4px
