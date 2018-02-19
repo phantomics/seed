@@ -106,9 +106,9 @@
        (trigger-anti
      	(chain self state context methods (set-mode "move")))
        (commit
-	(cl :commit
-	    (chain self editor-instance code-mirror doc (get-value))
-	    (@ self editor-instance))
+	;; (cl :commit
+	;;     (chain self editor-instance code-mirror doc (get-value))
+	;;     (@ self editor-instance))
      	(if (not (= true (@ next-props data meta locked)))
      	    (chain self state context methods (grow-branch (chain self editor-instance code-mirror doc (get-value))
      							   (create save true)))))))
