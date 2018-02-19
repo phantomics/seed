@@ -66,9 +66,10 @@
 
 (defun exp-string (list output)
   "Convert the given form to a string."
-  (if list (exp-string (rest list)
-		       (concatenate 'string output (write-to-string (first list))
-				    (list #\newline)))
+  (if list (if (stringp list)
+	       list (exp-string (rest list)
+				(concatenate 'string output (write-to-string (first list))
+					     (list #\newline))))
       output))
 
 (defun file-output (data file-path)

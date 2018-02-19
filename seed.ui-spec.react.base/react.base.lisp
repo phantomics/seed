@@ -697,7 +697,9 @@
 			 (let ((grow-fn (lambda (working-system)
 					  (lambda (branch-id data params callback)
 					    (chain self (transact "grow"
-								  (list working-system branch-id daa params)
+								  (list (+ "__" working-system)
+									(+ "__" branch-id)
+									data params)
 								  (if (not (= "undefined" (typeof callback)))
 								      (funcall callback))))))))
 			   (create grow (grow-fn)
@@ -944,7 +946,8 @@
 				   type "POST"
 				   data-type "json"
 				   content-type "application/json; charset=utf-8"
-				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" system-id)))
+				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow"
+									 (+ "__" system-id))))
 				   success (lambda (data)
 					     (callback stage-data data))
 				   error (lambda (data err) (chain console (log 11 data err))))))))

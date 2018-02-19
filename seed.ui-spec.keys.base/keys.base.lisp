@@ -27,8 +27,6 @@
        ("enter" on-keyup (portal-action trigger-primary)))
   (write ("esc" on-keydown (portal-action trigger-anti))
 	 ("enter" prevent-default false on-keyup (portal-action trigger-primary))))
- :keymap
- ((write (a nil nil ⍺ ⍶) (s nil nil ⌈) (d nil nil ⌊)))
  :navigational
  ((move
    (("h" "l" "k" "j") ("left" "right" "up" "down") ("num_left" "num_right" "num_up" "num_down"))
