@@ -98,16 +98,17 @@
 	    ;; (error-found false)
 	    (section (/ (@ self state space length) 4))
 	    (radius (/ (@ self state space length) 2))
-	    (new-space (-voxel-space (create ;materials (list "tilePale" "brickLight" "brickDark" "brickDarker")
-				      chunk-size section
-				      generate (lambda (x y z)
-						 ;;(setq cl (chain cl (concat (list (list x y z)))))
-						 (getprop self "state" "space"
-						 	  (+ radius (mod x radius))
-						 	  (+ radius (mod y radius))
-						 	  (+ radius (mod z radius)))
-						 ;; (if (= y -2) 2 0)
-						 ))
+	    (new-space (-voxel-space (create materials (list "#8baba8" "#f3827c" "#dfe0de" "#4f5e5d" "#000000")
+					     material-flat-color t
+					     chunk-size section
+					     generate (lambda (x y z)
+							;;(setq cl (chain cl (concat (list (list x y z)))))
+							(getprop self "state" "space"
+								 (+ radius (mod x radius))
+								 (+ radius (mod y radius))
+								 (+ radius (mod z radius)))
+							;; (if (= y -2) 2 0)
+							))
 				     ))
 	    (create-player (-voxel-space-player new-space))
 	    (new-player (create-player)))

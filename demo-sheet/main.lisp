@@ -2,7 +2,7 @@
 (DEFVAR GEN-SPACE-APL)
 (SETQ GEN-SPACE-APL "field←8 8 8⍴0
 field[;8;]←1
-field[1;6;2]←3
+field[2;2;2]←4
 field")
 ;;field[;2;]←2
 (DEFVAR GENERATED-SPACE)
