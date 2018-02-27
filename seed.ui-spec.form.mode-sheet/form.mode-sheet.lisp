@@ -28,7 +28,21 @@
    :element-specs #()
    :modulate-methods
    (lambda (methods)
-     (let ((self this))
+     (let* ((self this)
+	    (to-grow (if (@ self props context working-system)
+			 (chain methods (in-context-grow (@ self props context working-system)))
+			 (@ methods grow))))
+       (chain j-query
+   	      (extend (create set-delta (lambda (value) (extend-state point-attrs (create delta value))))
+   		      methods (create grow-branch (lambda (space meta callback)
+						    (to-grow (@ self state data id)
+							     space meta callback)))))))
+   :modulate-methods
+   (lambda (methods)
+     (let* ((self this)
+	    (to-grow (if (@ self props context working-system)
+			 (chain methods (in-context-grow (@ self props context working-system)))
+			 (@ methods grow))))
        (chain j-query
 	      (extend (create set-delta (lambda (value) (extend-state point-attrs (create delta value))))
 		      methods
@@ -37,18 +51,20 @@
 				(let ((new-space (chain j-query (extend t #() (@ self state space)))))
 				  ;(cl :as data new-space)
 				  (chain self (assign data new-space)))
-				(chain methods
-				       (grow (if (= "undefined" (typeof alternate-branch))
-						 (@ self state data id)
-						 alternate-branch)
-					     ;; TODO: it may be desirable to add certain metadata to
-					     ;; the meta for each grow request, that's what the
-					     ;; derive-metadata function below may later be used for
-					     new-space meta)))
+				;(chain methods
+				(to-grow (if (= "undefined" (typeof alternate-branch))
+					     (@ self state data id)
+					     alternate-branch)
+					 ;; TODO: it may be desirable to add certain metadata to
+					 ;; the meta for each grow request, that's what the
+					 ;; derive-metadata function below may later be used for
+					 new-space meta))
 			      grow-branch
 			      (lambda (space meta callback)
-				(chain methods (grow (@ self state data id) 
-						     space meta callback))))))))
+				(chain console (log :ss (@ self props context)))
+				;;(chain methods (grow
+				(to-grow (@ self state data id) 
+					 space meta callback)))))))
    :set-confirmed-value
    (lambda (value)
      (chain this (set-state (create confirmed-value value))))

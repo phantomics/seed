@@ -8,26 +8,26 @@
  media-spec-base
  ;; read data from a file
  (get-file (source)
-	   `(print (load-exp-from-file (sprout-name sprout)
+	   `(load-exp-from-file (sprout-name sprout)
 				,(if (symbolp source)
 				     `(concatenate 'string (string-downcase ,(if (eq :-self source)
 										 `(branch-name branch)
 										 `(quote ,source)))
 						   ".lisp")
 				     (if (stringp source)
-					 source)))))
+					 source))))
  
  ;; read text from a file
  (get-file-text (source)
-		`(print (load-string-from-file (sprout-name sprout)
-					       ,(if (symbolp source)
-						    `(concatenate 'string
-								  (string-downcase ,(if (eq :-self source)
-											`(branch-name branch)
-											`(quote ,source)))
-								  ".lisp")
-						    (if (stringp source)
-							source)))))
+		`(load-string-from-file (sprout-name sprout)
+					,(if (symbolp source)
+					     `(concatenate 'string
+							   (string-downcase ,(if (eq :-self source)
+										 `(branch-name branch)
+										 `(quote ,source)))
+							   ".lisp")
+					     (if (stringp source)
+						 source))))
 
  ;; write data to a file
  (put-file (follows reagent file-name)
@@ -53,8 +53,7 @@
 
  ;; record a branch image
  (put-image (follows reagent)
-	    `((print (list :eo ,(if reagent 'reagent 'data)))
-	      (setf (branch-image branch) ,(if reagent 'reagent 'data))))
+	    `((setf (branch-image branch) ,(if reagent 'reagent 'data))))
 
  ;; set the branch image to nil
  (nullify-image (follows)
@@ -305,13 +304,18 @@
 	      (array-to-list (array-map #'preprocess-structure data)))))
 
  ;; format/unformat the matrix content of a spreadsheet for processing
- (sheet-content (follows reagent)
-		 `((funcall (lambda (content)
-			      (append (list (first content) (second content)
-					    (funcall (lambda (c) (list (first c) (second c) data))
-						     (third content)))
-				      (cdddr content)))
-			    reagent)))
+ (dyn-assign (follows reagent symbol)
+	     `((funcall (lambda (content)
+			  (let ((def-pos (position ,symbol content
+						   :test (lambda (to-match item)
+							   (and (eql 'defvar (first item))
+								(eq to-match (intern (string (second item))
+										     "KEYWORD")))))))
+			    (setf (nth (1+ def-pos) content)
+				  `(setq ,(second (nth def-pos content))
+					 ,data))
+			    content))
+			reagent)))
 
  ;; records items from input to system's clipboard branch / fetches items from clipboard for output
  (clipboard (follows reagent)

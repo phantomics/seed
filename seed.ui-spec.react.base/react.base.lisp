@@ -426,6 +426,14 @@
 									   "history" nil)
 							    clipboard-id (if (@ element-ids cboard-index)
 									     "clipboard" nil))))
+			    ((and (= (@ branch type 0) "space")
+				  (= (@ branch type 1) "block"))
+			     (cl :vm (@ view-modes) (@ view-modes block-space-view))
+			     (subcomponent (@ view-modes block-space-view)
+					   branch
+					   :context (index
+						     0
+						     a 1 b 2 c 3)))
 			    ((and (= (@ branch type 0) "graphic")
 				  (= (@ branch type 1) "bitmap"))
 			     (subcomponent -remote-image-view (@ branch data)
@@ -865,6 +873,8 @@
 	  :transact
 	  (lambda (portal-method params callback)
 	    (defvar self this)
+	    (if (= "__undefined" (@ params 0))
+		(setf (@ params 0) null))
 	    (chain console (log "par" params
 	    			(chain (list (@ window portal-id) portal-method)
 	    			       (concat params))))
@@ -927,6 +937,7 @@
 	  (lambda (system-id callback)
 	    (let ((self this))
 	      (extend-state context (create working-system system-id))
+	      (chain console (log :sys system-id))
 	      (chain j-query
 		     (ajax (create url "../portal"
 				   type "POST"
@@ -941,6 +952,7 @@
 	  (lambda (stage-data system-id callback)
 	    (let ((self this))
 	      (extend-state context (create working-system system-id))
+	      (cl :ss system-id (@ window portal-id))
 	      (chain j-query
 		     (ajax (create url "../portal"
 				   type "POST"

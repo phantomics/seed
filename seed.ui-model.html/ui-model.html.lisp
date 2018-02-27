@@ -46,8 +46,14 @@
 					(webpack-config (create context ,(namestring script-path)
 								entry (create ,script-output-filename
 									      "./src.js")
-								resolve (create extensions (list "" ".js"))
-								output (create filename "./[name].js"))))
+								resolve (create extensions (list "" ".js" ".json"))
+								output (create filename "./[name].js")
+								module
+								(create loaders
+									(list (create test
+										      (regex "\.json$")
+										      loaders
+										      (list "json-loader")))))))
 				    (chain gulp (task "dev" (lambda () ,@(gulp-build-script))))))))
 				    ;; invoke cornerstone macro from script package to create root source file
 	    ,(if script `(with-open-file (,stream ,(namestring root-script)

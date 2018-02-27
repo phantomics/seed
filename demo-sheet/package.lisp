@@ -2,4 +2,4 @@
 
 (defpackage #:demo-sheet
   (:export)
-  (:use #:common-lisp #:seed.model.sheet #:seed.sublimate))
+  (:use #:common-lisp #:april #:array-operations #:seed.model.sheet #:seed.sublimate))

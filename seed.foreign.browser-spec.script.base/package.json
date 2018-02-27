@@ -22,6 +22,8 @@
     "react-textarea-autosize": "^5.2.0",
     "slate": "^0.31.3",
     "slate-react": "^0.10.17",
+    "voxel-engine": "^0.20.2",
+    "voxel-player": "^0.1.0",
     "webpack": "^3.8.1"
   },
   "scripts": {},
@@ -37,5 +39,8 @@
   "author": "Andrew Sengul",
   "license": "GPL-3.0",
   "main": "index.js",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "json-loader": "^0.5.7"
+  }
 }

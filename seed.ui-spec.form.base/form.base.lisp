@@ -87,6 +87,7 @@
    ;; 					    space (create meta (chain this (derive-metadata))))))
    :interactions
    (create select-system (create click (lambda (self datum)
+					 (chain console (log :ioi datum))
 					 (chain self (set-state (create index (@ datum ix))))
 					 (chain self (set-point datum))
 					 (funcall (@ self props context methods load-branch)

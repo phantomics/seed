@@ -18,6 +18,7 @@
 	       #:seed.ui-spec.form.mode-text
 	       #:seed.ui-spec.form.mode-document
 	       #:seed.ui-spec.form.mode-sheet
+	       #:seed.ui-spec.form.mode-block-space
 	       #:seed.foreign.browser-spec.script.base
 	       #:seed.foreign.browser-spec.style.base
 	       #:quickproject #:prove #:parenscript #:panic #:lass

@@ -472,7 +472,6 @@ inclusion of aport macro here just acts as passthrough
 	   ;; assign portal object to *portal* and the grow method to the 'grow symbol
 	   (setf (symbol-function (quote ,(intern "GROW" (package-name *package*))))
 		 (lambda (,portal-package-id &optional ,sprid ,brname ,data ,params)
-		   (print (list 313 ,sprid ,brname ,data ,params))
 		   (let ((,sprout (if ,sprid (find-portal-contact-by-sprout-name ,port ,sprid) ,port))
 			 (,params (postprocess-structure ,params)))
 		     ;; if a sprout id and branch-name exist, input is being sent, so mediate
@@ -482,8 +481,8 @@ inclusion of aport macro here just acts as passthrough
 				  (and ,sprout ,brname)
 				  (lambda (,callback)
 				    (let ((,branch (find-branch-by-name ,brname ,sprout)))
-				      (print (list 909 ,portal-package-id ,sprid ,brname ,data ,params
-						   (mapcar #'branch-name (sprout-branches ,sprout))))
+				      ;; (print (list 909 ,portal-package-id ,sprid ,brname ,data ,params
+				      ;; 		   (mapcar #'branch-name (sprout-branches ,sprout))))
 				      (labels ((assign-meta-from-list (,list)
 						 (if ,list (progn (setf (getf (branch-meta ,branch) (first ,list))
 									(second ,list))

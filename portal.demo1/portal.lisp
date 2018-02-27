@@ -21,7 +21,8 @@
 									 form-view-mode
 									 text-view-mode
 									 document-view-mode
-									 sheet-view-mode)))
+									 sheet-view-mode
+									 block-space-view-mode)))
 				      :url "portal"
 				      :component :-portal))
 		   :style (css-base
