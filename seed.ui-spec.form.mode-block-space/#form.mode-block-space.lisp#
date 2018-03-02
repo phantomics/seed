@@ -105,11 +105,6 @@
 					     lights-disabled t
 					     fog-disabled t
 					     generate (lambda (x y z)
-							;; (getprop self "state" "space"
-							;; 	 (+ radius (mod x radius))
-							;; 	 (+ radius (mod y radius))
-							;; 	 (+ radius (mod z radius))
-							;; 	 )
 							(getprop self "state" "space"
 								 (mod (+ radius x) space-length)
 								 (mod (+ radius y) space-length)
