@@ -39,8 +39,11 @@ car of the form being a keyword. See CLHS 3.1.2.1.2 Conses as Forms."
   (and (consp form)
        (or (keywordp (car form))
 	   (and (consp (car form))
-		(eq (caar form)
-		    'ps:@)))))
+		(or (eq (caar form)
+			'ps:@)
+		    ;; (eq (caar form)
+		    ;; 	'ps:chain)
+		    )))))
 
 (defun destructure-jsl-form (form) 
   "Return as multiple values the type (a keyword), props (a property

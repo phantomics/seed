@@ -73,50 +73,6 @@
 	  do (chain heading (push (panic:jsl (:th :key (+ "sheet-header-" index)
 						  (chain -string (from-char-code (+ 65 index))))))))
        heading))
-   :build-sheet-cells
-   (lambda (data)
-     (let ((self this)
-	   (cells #())
-	   (this-row #())
-	   (row-index 0))
-       (loop for row from 0 to (1- (@ data length))
-	  do (funcall
-	      (lambda (row-index)
-		(setq this-row (list (panic:jsl (:th :key (+ "row-label-" row)
-						     (1+ row)))))
-		(loop for col from 0 to (1- (@ (getprop data row) length))
-		   do (let ((cell-click (lambda () (chain self (set-state (create point (list col row))))))
-			    (is-point (and (= (@ self state point 1) row)
-					   (= (@ self state point 0) col))))
-			(chain this-row
-			       (push (panic:jsl (:td :key (+ "cell-" col "-" row)
-						     :on-click cell-click
-						     :ref 
-						     (lambda (ref)
-						       (let ((element (j-query ref)))
-							 (if (= "undefined"
-								(typeof (getprop self "elementSpecs" row)))
-							     (setf (getprop self "elementSpecs" row) #()))
-							 (if (not (= "undefined" (typeof (@ element 0))))
-							     (setf (getprop self "elementSpecs" row col)
-								   (create left (@ element 0 offset-left)
-									   top (@ element 0 offset-top)
-									   width (@ element 0 client-width)
-									   height (@ element 0 client-height))))))
-						     :class-name (+ "atom"
-								    (+ " mode-" (@ self state context mode))
-								    (if is-point " point" ""))
-						     (if is-point (panic:jsl (:div :class-name "point-marker")))
-						     (subcomponent (@ interface-units cell-spreadsheet)
-								   (create content (getprop data row col)
-									   meta (create is-point is-point
-											is-parent-point
-											(@ self state context 
-												is-point)))))))))))
-	      row)
-	    (chain cells (push (panic:jsl (:tr :key (+ "row-" row)
-					       this-row)))))
-       cells))
    ;; :move
    ;; (lambda (motion)
    ;;   (let* ((self this)

@@ -47,6 +47,10 @@
 								entry (create ,script-output-filename
 									      "./src.js")
 								resolve (create extensions (list "" ".js" ".json"))
+								node (create fs "empty" child_process "empty")
+								;; the above needed to prevent these modules
+								;; causing errors when they cannot be loaded
+								;; for client-side JS
 								output (create filename "./[name].js")
 								module
 								(create loaders

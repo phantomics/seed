@@ -411,6 +411,7 @@
 						     a 1 b 2 c 3)))
 			    ((and (= (@ branch type 0) "matrix")
 				  (= (@ branch type 1) "spreadsheet"))
+			     (cl :vm (@ window d3) (@ view-modes) (@ view-modes block-space-view))
 			     (subcomponent (@ view-modes sheet-view)
 					   branch :context (index
 							    0
@@ -428,12 +429,22 @@
 									     "clipboard" nil))))
 			    ((and (= (@ branch type 0) "space")
 				  (= (@ branch type 1) "block"))
-			     (cl :vm (@ view-modes) (@ view-modes block-space-view))
+			     (cl :bl (@ window d3) (@ view-modes) (@ view-modes block-space-view))
 			     (subcomponent (@ view-modes block-space-view)
 					   branch
 					   :context (index
 						     0
 						     a 1 b 2 c 3)))
+			    ((and (= (@ branch type 0) "shape")
+				  (= (@ branch type 1) "graph"))
+			     (let ((-gsv-component (chain window -react-faux-dom
+					   	  (with-faux-d-o-m (@ view-modes graph-shape-view)))))
+			       (subcomponent -gsv-component
+					     ;;(@ view-modes graph-shape-view)
+					     branch
+					     :context (index
+						       0
+						       a 1 b 2 c 3))))
 			    ((and (= (@ branch type 0) "graphic")
 				  (= (@ branch type 1) "bitmap"))
 			     (subcomponent -remote-image-view (@ branch data)
