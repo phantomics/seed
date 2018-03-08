@@ -23,7 +23,8 @@
 									 document-view-mode
 									 sheet-view-mode
 									 block-space-view-mode
-									 graph-shape-view-mode)))
+									 (graph-shape-view-mode
+									  :effects standard-vector-effects))))
 				      :url "portal"
 				      :component :-portal))
 		   :style (css-base

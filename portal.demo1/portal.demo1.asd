@@ -20,6 +20,7 @@
 	       #:seed.ui-spec.form.mode-sheet
 	       #:seed.ui-spec.form.mode-block-space
 	       #:seed.ui-spec.form.mode-shape-graph
+	       #:seed.ui-effects.vector.base
 	       #:seed.foreign.browser-spec.script.base
 	       #:seed.foreign.browser-spec.style.base
 	       #:quickproject #:prove #:parenscript #:panic #:lass

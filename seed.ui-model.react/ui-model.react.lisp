@@ -135,12 +135,30 @@
 
 (defmacro component-set (name &rest components)
   "Top-level wrapper for the component specification functions, which turns the list of component definitions into a form ready for conversion to Javascript. The order of the component definitions is reversed so that the components are produced in Javascript in the same order as they are listed."
-  `(setq ,name (funcall (lambda ()
-			  (let ((pairs (create))
-				(self this))
-			    ,@(mapcar (lambda (item) `(defcomponent (@ pairs ,(first item)) ,@(rest item)))
-				      (loop for item in components append (macroexpand (list item))))
-			    pairs)))))
+  (labels ((process-subcomponents (items &optional output)
+	     (if (not items)
+		 output (process-subcomponents (cddr items)
+					       (append (list (first items)
+							     (if (symbolp (second items))
+								 (macroexpand (list (second items)))
+								 (second items)))
+						       output)))))
+    `(setq ,name (funcall (lambda ()
+			    (let ((pairs (create))
+				  (self this))
+			      ,@(loop for item in components append
+				     (if (listp item)
+					 `((funcall (lambda ()
+						      (let ((subcomponents (create ,@(process-subcomponents
+										      (rest item)))))
+							,(funcall (lambda (item)
+								    `(defcomponent (@ pairs ,(first item))
+									 ,@(rest item)))
+								  (first (macroexpand (list (first item)))))))))
+					 (mapcar (lambda (item) `(defcomponent (@ pairs ,(first item))
+								     ,@(rest item)))
+						 (macroexpand (list item)))))
+			      pairs))))))
 
 (defmacro react-ui (components &key (url nil) (component nil))
   "Generate a React-based Seed user interface."

@@ -29,7 +29,7 @@
 						      "default")
 	     ;; TODO: keypress package has only this numbered, minified script to include.
 	     ;; Fork a version of keypress with a main script file.
-	     (@ window -keypress) (require "keypress.js/keypress-2.1.4.min.js")
+	     (@ window -keypress) (require "keypress.js/keypress-2.1.5.min.js")
 	     (@ window three-js) (require "three")
 	     (@ window -react-faux-dom) (require "react-faux-dom")
 	     (@ window -voxel-space) (require "voxel-engine")

@@ -361,7 +361,7 @@
 						   (if (and (= 0 (@ d depth))
 							    (= "root" (@ d title)))
 						       "none" "relative")))
-				 (style "opacity" 1e-6)))
+				 (style "opacity" 1)))
 	 ;; (each-link (chain main-display (select-all "path.link")
 	 ;; 		   (data ;;(chain layout (links nodes))
 	 ;; 		    (chain root (links))
@@ -458,35 +458,35 @@
      (chain params node-enter (append "text")
 	    (attr "class" "text")
 	    (text (lambda (d) (@ d data name)))))
-   :icon-effect
-   (lambda (params
-        nodeIcon = eachNode.append('svg:g')
-            .attr('class', function(d) {
-                var x, toReturn;
-                if (typeof d.types !== 'array') return d.type + ' object-data-fetch glyph';
-                else {
-                    toReturn = '';
-                    for (x = 0; x < d.types.length; x += 1) toReturn += d.types[x] + ' ';
-                    //console.log(toReturn + ' object-data-fetch');
-                    return toReturn + ' object-data-fetch glyph';
-                }
-            })
-	(let ((node-icon (chain params node-enter (append "svg:g")
-				(attr "class" (lambda (d)
-						(if (/= "array" (typeof (@ d type)))
-						    (+ (@ d type) " object-data-fetch glyph")))))))
-	  (chain node-icon (append "svg:path")
-		 (attr "class" (lambda (d)
-				 (let ((to-return "outer-meta-spokes"))
-				   ;; complete...
-				   to-return)))
-		 (attr "d" (lambda (d) ""
-				   ;; manifest outer spoke points
-				   ))
-		 (attr "transform" "translate("")")))))
+   ;; :icon-effect
+   ;; (lambda (params
+   ;;      nodeIcon = eachNode.append('svg:g')
+   ;;          .attr('class', function(d) {
+   ;;              var x, toReturn;
+   ;;              if (typeof d.types !== 'array') return d.type + ' object-data-fetch glyph';
+   ;;              else {
+   ;;                  toReturn = '';
+   ;;                  for (x = 0; x < d.types.length; x += 1) toReturn += d.types[x] + ' ';
+   ;;                  //console.log(toReturn + ' object-data-fetch');
+   ;;                  return toReturn + ' object-data-fetch glyph';
+   ;;              }
+   ;;          })
+   ;; 	(let ((node-icon (chain params node-enter (append "svg:g")
+   ;; 				(attr "class" (lambda (d)
+   ;; 						(if (/= "array" (typeof (@ d type)))
+   ;; 						    (+ (@ d type) " object-data-fetch glyph")))))))
+   ;; 	  (chain node-icon (append "svg:path")
+   ;; 		 (attr "class" (lambda (d)
+   ;; 				 (let ((to-return "outer-meta-spokes"))
+   ;; 				   ;; complete...
+   ;; 				   to-return)))
+   ;; 		 (attr "d" (lambda (d) ""
+   ;; 				   ;; manifest outer spoke points
+   ;; 				   ))
+   ;; 		 (attr "transform" "translate("")")))))
 		    
 
-     )
+   ;;   )
    :component-did-mount
    (lambda ()
    (let* ((self this)
@@ -496,7 +496,7 @@
 			       (attr "id" "mySvg"))))
      (chain self (make-display main-display (lambda (params)
 					      (cl :par params)
-					      (chain self (text-effect params)))))))
+					      (chain subcomponents (effects params)))))))
    :component-did-update
    (lambda ()
      (let ((faux-container (chain this props (connect-faux-d-o-m "div" "chart"))))
