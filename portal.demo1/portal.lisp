@@ -29,7 +29,8 @@
 				      :component :-portal))
 		   :style (css-base
 		   	   css-symbol-style-camel-case
-		   	   css-animation-silicon-sky)
+		   	   css-animation-silicon-sky
+			   css-ivector-standard)
 		   :foundation (:script (seed.foreign.browser-spec.script.base)
 				:style (seed.foreign.browser-spec.style.base)))
 

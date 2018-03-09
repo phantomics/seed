@@ -13,6 +13,7 @@
 	       #:seed.ui-spec.keys.base #:seed.ui-spec.keys.map-apl
 	       #:seed.ui-spec.html.base
 	       #:seed.ui-spec.react.base #:seed.ui-spec.css.base
+	       #:seed.ui-spec.css-vector.base
 	       #:seed.ui-spec.stage-menu.base
 	       #:seed.ui-spec.unit.base #:seed.ui-spec.form.base
 	       #:seed.ui-spec.form.mode-text
