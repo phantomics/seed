@@ -2,9 +2,9 @@
 (DEFVAR GEN-SPACE-APL)
 (SETQ GEN-SPACE-APL "field←16 16 16⍴0
 field[1 16;;]←1
-field[;;1 16]←1
+⍝field[;;1 16]←1
 field[;12;]←2
-field[2;2;]←5
+field[2;2;]←3
 field")
 (DEFVAR GENERATED-SPACE)
 (SETQ GENERATED-SPACE (ARRAY-TO-NESTED-VECTOR (APRIL GEN-SPACE-APL)))
@@ -112,18 +112,11 @@ field")
             (NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL
              (:DATA-COM (0) :TYPE :NUMBER) NIL NIL NIL NIL NIL NIL NIL NIL
              NIL)))
-(IN-TABLE MAIN-TABLE
-  (CELL "a2" 35)
-  (CELL "g9" (/ 8 2))
-  (CELL "c1" (+ 8 (META 3 :COMMENT "This is a test comment.") 5))
-  (CELL "g5" 13)
-  (CELL "d12" (- 20 6 (EXPT 2 3) 2))
-  (CELLS "c5" "e9" (+ 3 VAL-NUMBER))
-  (CELL "b7" (LAMBDA (C) (+ 4 C)))
-  (CELLS "e3" "l12" (+ 7 (* 1.25 VAL-NUMBER) VAL-NUMBER))
-  (CELLS "g2" "h6" (+ 1 2 VAL-NUMBER))
-  (CELL "d13" (CELL-UP))
-  (CELL "h13" (CELL-UP 8))
-  (ROW 11 (+ 1 (+ 1 VAL-NUMBER)))
-  (COL "k" (* 2 VAL-NUMBER))
-  (CELL "d16" (FUNCALL (CELL "b7") (CELL "d12"))))
+(IN-TABLE MAIN-TABLE (CELL "a2" 35) (CELL "g9" (/ 8 2))
+ (CELL "c1" (+ 8 (META 3 :COMMENT "This is a test comment.") 5)) (CELL "g5" 13)
+ (CELL "d12" (- 20 6 (EXPT 2 3) 2)) (CELLS "c5" "e9" (+ 3 VAL-NUMBER))
+ (CELL "b7" (LAMBDA (C) (+ 4 C)))
+ (CELLS "e3" "l12" (+ 7 (* 1.25 VAL-NUMBER) VAL-NUMBER))
+ (CELLS "g2" "h6" (+ 1 2 VAL-NUMBER)) (CELL "d13" (CELL-UP))
+ (CELL "h13" (CELL-UP 8)) (ROW 11 (+ 1 (+ 1 VAL-NUMBER)))
+ (COL "k" (* 2 VAL-NUMBER)) (CELL "d16" (FUNCALL (CELL "b7") (CELL "d12"))))
