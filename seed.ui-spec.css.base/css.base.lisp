@@ -264,9 +264,9 @@
 	    (.portal-column :padding 0))))
 
 	 (.portal-column.text
-	  (|.CodeMirror| :height 100%
-			 ;;:background transparent
-			 ))
+	  (.codemirror :height 100%
+		       :|box-shadow| none
+		       :background transparent))
 	 
 	 (.holder :height 100%
 		  :position relative

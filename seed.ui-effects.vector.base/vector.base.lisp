@@ -99,7 +99,6 @@
 		      (attr "cy" 0)
 		      (attr "cx" main-radius)
 		      (attr "r" (manifest-inner-circle-radius 0.5)))
-
 	       )))))
 
 (defvar expand-button-standard)
@@ -137,10 +136,33 @@
 		      (attr "r" main-radius))
 
 	       (chain button (append "svg:rect")
-		      (attr "y" (/ (- crossbar-breadth) 2))
 		      (attr "x" (- main-radius (/ crossbar-length 2)))
+		      (attr "y" (/ crossbar-breadth -2))
 		      (attr "height" crossbar-breadth)
-		      (attr "length" crossbar-length))
+		      (attr "width" crossbar-length))
+
+	       (chain button (append "svg:rect")
+		      (attr "x" (- main-radius (/ crossbar-breadth 2)))
+		      (attr "y" (* -1.5 crossbar-breadth))
+		      (attr "id" (lambda (d) (+ "plusCrossbar" (@ d id))))
+		      (attr "class" "plus-crossbar")
+		      (attr "width" crossbar-breadth)
+		      (attr "height" (lambda (d) (if (chain interface params visualizer-logic (node-expanded d))
+		       				     0 crossbar-length))))
+
+	        ;; (chain node (select-all ".plus-crossbar")
+		;;       (transition) (duration (@ interface params duration))
+		;;       (attr "y" (lambda (d) (if (chain interface params visualizer-logic (node-expanded d))
+		;; 				(* -1.5 crossbar-breadth) (/ crossbar-breadth -2))))
+		;;       (attr "height" (lambda (d) (if (chain interface params visualizer-logic (node-expanded d))
+		;; 				     0 crossbar-length))))
+	       
+	       (chain button (append "svg:circle")
+		      (on "click" (@ interface params interface-actions expand-toggle-node))
+		      (attr "opacity" 0)
+		      (attr "cy" 0)
+		      (attr "cx" main-radius)
+		      (attr "r" outer-radius))
 	       ;; TODO: complete this
 	       )))))
 

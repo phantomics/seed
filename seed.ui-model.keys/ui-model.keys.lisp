@@ -78,19 +78,35 @@
 	;; if a list of keystrokes is given, create duplicate behavior for each keystroke
 	(loop :for combo :in combos :append
 	   (let* ((char-string (string-downcase (write-to-string (first combo))))
+		  (shifted-char-string (if (third combo)
+					   (string-downcase (write-to-string (third combo)))))
 		  (input-string (if (= 1 (length char-string))
-				    char-string (aref char-string 1))))
-	     (append (if (second combo)
-			 (list `(,input-string (portal-action insert-char char ,(string (second combo))))))
-		     (if (third combo)
-			 (list `(,(format nil "shift ~a" input-string)
-				  (portal-action insert-char char ,(string (third combo))))))
+				    char-string (aref char-string 1)))
+		  (shifted-char-input-string (if shifted-char-string
+						 (if (= 1 (length shifted-char-string))
+						     shifted-char-string (aref shifted-char-string 1)))))
+	     (append ;; (if (second combo)
+		     ;; 	 (list `(,input-string (portal-action insert-char char ,(string (second combo)))))
+		     ;; 	 (list `(,input-string (portal-action insert-char char ,char-string)
+		     ;; 			       ("is_solitary" t))))
+		     ;; (if (third combo)
+		     ;; 	 (list `(,shifted-char-input-string
+		     ;; 		  (portal-action insert-char char ,(string (third combo)))))
+		     ;; 	 (list `(,(format nil "shift ~a" input-string)
+		     ;; 		  (portal-action insert-char char ,(string-upcase input-string))
+		     ;; 		  ("is_solitary" t))))
 		     (if (fourth combo)
 			 (list `(,(format nil "ctrl ~a" input-string)
-				  (portal-action insert-char char ,(string (fourth combo))))))
+				  (portal-action insert-char char ,(string (fourth combo)))
+				  ,(if (and (not shifted-char-string)
+					    (fifth combo))
+				       `("is_solitary" t)))))
 		     (if (fifth combo)
-			 (list `(,(format nil "ctrl shift ~a" input-string)
-				  (portal-action insert-char char ,(string (fifth combo)))))))))))
+			 (if shifted-char-string
+			     (list `(,(format nil "ctrl ~a" shifted-char-input-string)
+				      (portal-action insert-char char ,(string (fifth combo)))))
+			     (list `(,(format nil "ctrl shift ~a" input-string)
+				      (portal-action insert-char char ,(string (fifth combo))))))))))))
 
 (defpsmacro portal-action (action-name &rest params)
   "This macro is used in key definition files to wrap portal actions in functions for use in response to key commands."
@@ -109,8 +125,8 @@
 		;; set standard Keystroke options for the Seed key UI
 		(if (not (getf options (inp is-exclusive)))
 		    (setf (getf options (inp is-exclusive)) t))
-		(if (not (getf options (inp prevent-default)))
-		    (setf (getf options (inp prevent-default)) t))
+		;; (if (not (getf options (inp prevent-default)))
+		;;     (setf (getf options (inp prevent-default)) t))
 		(append `(create keys ,(first combo))
 			;; object properties must be converted to underscore_format to work with the
                         ;; Keystroke library
@@ -126,6 +142,11 @@
 
 (defmacro build-keymap (&rest combos)
   (mapcar (lambda (combo) (append `(create keys ,(first combo)
-					   "on_keyup" ,(second combo)
-					   "is_exclusive" t "prevent_default" t)))
+					   ;;"on_keyup" ,(second combo)
+					   "on_keydown" ,(second combo)
+					   ;;"is_solitary" t
+					   ;;"is_exclusive" t
+					   ;;"prevent_default" t
+					   ,@(third combo)
+					   )))
 	  combos))

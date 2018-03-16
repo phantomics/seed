@@ -99,16 +99,14 @@
        (insert-char
 	(chain self editor-instance code-mirror doc
 	       (replace-range (@ params char)
-			      (chain self editor-instance code-mirror doc (get-cursor)))))
+			      (chain self editor-instance code-mirror doc (get-cursor))))
+	false)
        (trigger-secondary
        	(chain self editor-instance (focus))
        	(chain self state context methods (set-mode "write")))
        (trigger-anti
      	(chain self state context methods (set-mode "move")))
        (commit
-	;; (cl :commit
-	;;     (chain self editor-instance code-mirror doc (get-value))
-	;;     (@ self editor-instance))
      	(if (not (= true (@ next-props data meta locked)))
      	    (chain self state context methods (grow-branch (chain self editor-instance code-mirror doc (get-value))
      							   (create save true)))))))
@@ -133,6 +131,10 @@
   ;(chain console (log :ssp (@ self state space)))
   ;;(let ((-data-sheet (new -react-data-sheet)))
   ;;(chain console (log :dd (@ self props context)))
+  (if (@ self editor-instance)
+      (progn ;;(chain self editor-instance code-mirror (remove-key-map "default"))
+	(setf (@ window aba) (@ self editor-instance))
+	(chain self editor-instance code-mirror (add-key-map (create name "null") t))))
   (panic:jsl (:-code-mirror :value (@ self state data data)
 			    :ref (lambda (ref)
 				   (if (not (@ self editor-instance))
@@ -142,5 +144,6 @@
 			    		       (chain self state context methods
 			    			      (set-mode (if in-focus "write" "move"))))
 			    :options (create theme "solarized light"
+					     key-map "basic"
 					     line-numbers t
 					     line-wrapping t)))))

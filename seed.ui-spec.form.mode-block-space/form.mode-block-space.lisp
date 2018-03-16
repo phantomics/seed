@@ -130,6 +130,7 @@
   ;;(chain console (log :ssp (@ self state space)))
   ;;(let ((-data-sheet (new -react-data-sheet)))
   ;;(chain console (log :dd (@ self props context)))
+  (cl 90 (@ self state space))
   (panic:jsl (:div :ref (lambda (ref)
 			  (if (not (@ self container-element))
 			      (setf (@ self container-element) ref)))))))
