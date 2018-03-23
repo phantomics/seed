@@ -12,22 +12,7 @@ field")
 (DEFVAR GENERATED-SPACE)
 (SETQ GENERATED-SPACE (ARRAY-TO-NESTED-VECTOR (APRIL GEN-SPACE-APL)))
 (DEFVAR DOCUMENT-CONTENT)
-(SETQ DOCUMENT-CONTENT
-        (LIST :STRING
-              "{\"kind\":\"value\",\"document\":{\"kind\":\"document\",\"data\":{},\"nodes\":[{\"kind\":\"block\",\"type\":\"paragraph\",\"isVoid\":false,\"data\":{},\"nodes\":[{\"kind\":\"text\",\"leaves\":[{\"kind\":\"leaf\",\"text\":\"Line.\",\"marks\":[]}]}]},{\"kind\":\"block\",\"type\":\"paragraph\",\"isVoid\":false,\"data\":{},\"nodes\":[{\"kind\":\"text\",\"leaves\":[{\"kind\":\"leaf\",\"text\":\"Another line.\",\"marks\":[]}]}]}]}}"
-              :DATA
-              '(:DOCUMENT
-                (:NODES
-                 ((:NODES
-                   ((:LEAVES ((:MARKS NIL :TEXT "Line." :KIND "leaf")) :KIND
-                     "text"))
-                   :DATA NIL :IS-VOID NIL :TYPE "paragraph" :KIND "block")
-                  (:NODES
-                   ((:LEAVES ((:MARKS NIL :TEXT "Another line." :KIND "leaf"))
-                     :KIND "text"))
-                   :DATA NIL :IS-VOID NIL :TYPE "paragraph" :KIND "block"))
-                 :DATA NIL :KIND "document")
-                :KIND "value")))
+(SETQ DOCUMENT-CONTENT NIL)
 (DEFVAR MAIN-TABLE)
 (SETQ MAIN-TABLE
         #2A((NIL NIL (:DATA-COM (16) :TYPE :NUMBER) NIL NIL NIL NIL NIL NIL NIL

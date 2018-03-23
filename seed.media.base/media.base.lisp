@@ -232,6 +232,33 @@
 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))
 	    output)))
 
+ ;; ;; converts data into display-ready JSON format
+ ;; (json-to-display (follows)
+ ;; 		  `((labels ((json-format (form &optional output)
+ ;; 			       (if form
+				   
+ ;; 				   output))
+ ;; 			     ;; (mapcar (lambda (element)
+ ;; 			     ;; 	       (cond ((listp element)
+ ;; 			     ;; 		      (json-format element))
+ ;; 			     ;; 		     ((keywordp element)
+ ;; 			     ;; 		      (intern (symbol-munger:lisp->camel-case element)
+ ;; 			     ;; 			      "KEYWORD"))
+ ;; 			     ;; 		     (t element)))
+ ;; 			     ;;   form)
+ ;; 			     ))
+ ;; 		      (json-format data))))
+
+ (json-string-structure (follows)
+			`(`(list :string ,data
+				 :data (quote ,(jonathan:parse data
+							       :keyword-normalizer
+							       (lambda (key)
+								 (string-upcase (camel-case->lisp-name key)))
+							       :normalize-all t))))
+			`((print (list :dd data))
+			  (getf data :string)))
+ 
  ;; passthrough form meant to wrap stage parameters for use by stage definitions that analyze the branch spec
  (stage-params (follows &rest params)
 	       `(data))
@@ -304,7 +331,7 @@
 	      (array-to-list (array-map #'preprocess-structure data)))))
 
  ;; format/unformat the matrix content of a spreadsheet for processing
- (dyn-assign (follows reagent symbol)
+ (dyn-assign (follows reagent symbol input)
 	     `((funcall (lambda (content)
 			  (let ((def-pos (position ,symbol content
 						   :test (lambda (to-match item)
@@ -313,7 +340,7 @@
 										     "KEYWORD")))))))
 			    (setf (nth (1+ def-pos) content)
 				  `(setq ,(second (nth def-pos content))
-					 ,data))
+					 ,(if ,input ,input data)))
 			    content))
 			reagent)))
 

@@ -411,7 +411,7 @@
 						     a 1 b 2 c 3)))
 			    ((and (= (@ branch type 0) "matrix")
 				  (= (@ branch type 1) "spreadsheet"))
-			     (cl :vm (@ window d3) (@ view-modes) (@ view-modes block-space-view))
+			     ;;(cl :vm (@ window d3) (@ view-modes) (@ view-modes block-space-view))
 			     (subcomponent (@ view-modes sheet-view)
 					   branch :context (index
 							    0
@@ -429,7 +429,6 @@
 									     "clipboard" nil))))
 			    ((and (= (@ branch type 0) "space")
 				  (= (@ branch type 1) "block"))
-			     (cl :bl (@ window d3) (@ view-modes) (@ view-modes block-space-view))
 			     (subcomponent (@ view-modes block-space-view)
 					   branch
 					   :context (index

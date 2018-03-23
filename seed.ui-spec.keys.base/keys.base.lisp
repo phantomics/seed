@@ -17,15 +17,17 @@
 	(("f c" "\\") on-keydown (portal-action set-point-type default "_" type (list "character")))
 	(("f r" "'") on-keydown (portal-action set-point-type default "" type (list "string")))
 	("delete" on-keydown (portal-action delete-point))
-	("control c" is-exclusive false on-keyup (portal-action record vector #(1 0)))
-	;; control-c copies the item at point
-	("control v" is-exclusive false on-keyup (portal-action record vector #(-1 0)))
-	;; control-v pastes the item at point
-	(("control s" "shift s") on-keydown (portal-action commit))
-	(("control r" "shift r") on-keydown (portal-action revert)))
+	("meta c" is-exclusive false on-keyup (portal-action record vector #(1 0)))
+	;; meta-c copies the item at point
+	("meta t" on-keydown (lambda (e) (chain console (log :ee e))))
+	("meta s" on-keydown (lambda (e) (chain console (log :ee e))))
+	("meta v" is-exclusive false on-keyup (portal-action record vector #(-1 0)))
+	;; meta-v pastes the item at point
+	(("meta s" "shift s") on-keydown (portal-action commit))
+	(("meta r" "shift r") on-keydown (portal-action revert)))
   (set ("esc" on-keydown (portal-action trigger-anti))
        ("enter" on-keyup (portal-action trigger-primary)))
-  (write ("esc" on-keydown (portal-action trigger-anti))
+  (write ("esc" prevent-default false on-keydown (portal-action trigger-anti))
 	 ("enter" prevent-default false on-keyup (portal-action trigger-primary))))
  :navigational
  ((move

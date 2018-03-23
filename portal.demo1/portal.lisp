@@ -15,7 +15,7 @@
 			    (html-index-body))
 		   :script ((key-ui keystroke-maps
 				    key-ui-base
-				    key-ui-map-apl)
+				    key-ui-map-apl-meta-specialized)
 			    (react-ui ((react-portal-core (component-set interface-units interface-units)
 							  (component-set view-modes
 									 form-view-mode

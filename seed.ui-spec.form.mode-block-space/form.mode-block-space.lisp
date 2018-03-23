@@ -92,7 +92,6 @@
 	 (@ next-state action-registered)))
    :component-did-mount
    (lambda ()
-     (cl :ll 5 (@ this state))
      (let* ((self this)
 	    (cl #())
 	    ;; (error-found false)
@@ -130,7 +129,7 @@
   ;;(chain console (log :ssp (@ self state space)))
   ;;(let ((-data-sheet (new -react-data-sheet)))
   ;;(chain console (log :dd (@ self props context)))
-  (cl 90 (@ self state space))
+  ;;(cl 90 (@ self state space))
   (panic:jsl (:div :ref (lambda (ref)
 			  (if (not (@ self container-element))
 			      (setf (@ self container-element) ref)))))))

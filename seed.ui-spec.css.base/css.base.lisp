@@ -264,9 +264,23 @@
 	    (.portal-column :padding 0))))
 
 	 (.portal-column.text
-	  (.codemirror :height 100%
-		       :|box-shadow| none
-		       :background transparent))
+	  (.text-pane-outer
+	   :height 100%
+	   (.reactcodemirror
+	    :height "calc(100% - 30px)"
+	    (.codemirror :height 100%
+			 :|box-shadow| none
+			 :background transparent))
+	   (.status-bar :height 30px)))
+
+	 (.portal-column.document
+	  (.document-pane-outer
+	   :height 100%
+	   (.slate-editor-pane
+	    :height "calc(100% - 30px)"
+	    :padding "4px 6px"
+	    :color "#002b36")
+	   (.status-bar :height 30px)))
 	 
 	 (.holder :height 100%
 		  :position relative

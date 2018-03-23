@@ -72,12 +72,13 @@
 					       :collect direction))
 	      append sub-combo))))
 
-(defmacro keymap-ui (&rest combos)
+(defmacro keymap-ui (modifier-key &rest combos)
   "Build a specification for a modified keymap."
   (cons 'build-keymap 
 	;; if a list of keystrokes is given, create duplicate behavior for each keystroke
 	(loop :for combo :in combos :append
 	   (let* ((char-string (string-downcase (write-to-string (first combo))))
+		  (modifier-string (string-downcase (write-to-string modifier-key)))
 		  (shifted-char-string (if (third combo)
 					   (string-downcase (write-to-string (third combo)))))
 		  (input-string (if (= 1 (length char-string))
@@ -85,27 +86,17 @@
 		  (shifted-char-input-string (if shifted-char-string
 						 (if (= 1 (length shifted-char-string))
 						     shifted-char-string (aref shifted-char-string 1)))))
-	     (append ;; (if (second combo)
-		     ;; 	 (list `(,input-string (portal-action insert-char char ,(string (second combo)))))
-		     ;; 	 (list `(,input-string (portal-action insert-char char ,char-string)
-		     ;; 			       ("is_solitary" t))))
-		     ;; (if (third combo)
-		     ;; 	 (list `(,shifted-char-input-string
-		     ;; 		  (portal-action insert-char char ,(string (third combo)))))
-		     ;; 	 (list `(,(format nil "shift ~a" input-string)
-		     ;; 		  (portal-action insert-char char ,(string-upcase input-string))
-		     ;; 		  ("is_solitary" t))))
-		     (if (fourth combo)
-			 (list `(,(format nil "ctrl ~a" input-string)
+	     (append (if (fourth combo)
+			 (list `(,(format nil "~a ~a" modifier-string input-string)
 				  (portal-action insert-char char ,(string (fourth combo)))
 				  ,(if (and (not shifted-char-string)
 					    (fifth combo))
 				       `("is_solitary" t)))))
 		     (if (fifth combo)
 			 (if shifted-char-string
-			     (list `(,(format nil "ctrl ~a" shifted-char-input-string)
+			     (list `(,(format nil "~a ~a" modifier-string shifted-char-input-string)
 				      (portal-action insert-char char ,(string (fifth combo)))))
-			     (list `(,(format nil "ctrl shift ~a" input-string)
+			     (list `(,(format nil "~a shift ~a" modifier-string input-string)
 				      (portal-action insert-char char ,(string (fifth combo))))))))))))
 
 (defpsmacro portal-action (action-name &rest params)
@@ -142,11 +133,6 @@
 
 (defmacro build-keymap (&rest combos)
   (mapcar (lambda (combo) (append `(create keys ,(first combo)
-					   ;;"on_keyup" ,(second combo)
 					   "on_keydown" ,(second combo)
-					   ;;"is_solitary" t
-					   ;;"is_exclusive" t
-					   ;;"prevent_default" t
-					   ,@(third combo)
-					   )))
+					   ,@(third combo))))
 	  combos))
