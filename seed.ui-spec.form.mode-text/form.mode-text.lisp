@@ -28,6 +28,19 @@
        ;; 	   (chain self props context methods (register-branch-path (@ self props context trace-category)
        ;; 								   (@ self props data id)
        ;; 								   (@ state context path))))
+       (if (@ self props context set-interaction)
+	   (progn (chain self props context
+			 (set-interaction "commit" (lambda () (chain self state context methods
+								     (grow-branch (chain self editor-instance
+											 code-mirror doc
+											 (get-value))
+										  (create save true))))))
+		  (chain self props context
+			 (set-interaction "revert" (lambda () (chain self state context methods
+								     (grow-branch (chain self editor-instance
+											 code-mirror doc
+											 (get-value))
+										  (create revert true))))))))
        state))
    :element-specs #()
    :editor-instance nil
@@ -50,6 +63,7 @@
      (defvar self this)
 
      (let ((new-state (chain this (initialize next-props))))
+       (cl :news new-state)
        (if (@ self state context is-point)
 	   (setf (@ new-state action-registered)
 		 (@ next-props action)))
