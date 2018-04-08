@@ -325,7 +325,7 @@
 			  interaction))
 		  (getprop branch-index (@ branch id) "getInteraction")
 		  (lambda (interaction-name)
-		    (cl :inout interactions (@ branch id) interaction-name)
+		    ;;(cl :inout interactions (@ branch id) interaction-name)
 		    (getprop interactions (@ branch id) interaction-name)))
 	    (if (= "undefined" (typeof fetch-pane-element))
 		(setq fetch-pane-element (lambda (element) (if element
@@ -421,16 +421,19 @@
 				  ((and (= (@ branch type 0) "space")
 					(= (@ branch type 1) "block"))
 				   (subcomponent (@ view-modes block-space-view)
-						 branch
-						 :context (index 0 a 1 b 2 c 3)))
+						 branch :context (index 0)))
 				  ((and (= (@ branch type 0) "shape")
 					(= (@ branch type 1) "graph"))
-				   (subcomponent (chain window -react-faux-dom
-							(with-faux-d-o-m (@ view-modes graph-shape-view)))
-						 branch
-						 :context (index
-							   0
-							   set-interaction this-set-interaction)))
+				   (let ((-this-component (chain window -react-faux-dom
+								 (with-faux-d-o-m (@ view-modes
+										     graph-shape-view)))))
+				     ;; the leading dash in -this-component is required so that the
+				     ;; JSL composition happens correctly; it expects the name of a component
+				     ;; to begin with a capital letter
+				     (subcomponent -this-component
+						   branch :context (index
+								    0
+								    set-interaction this-set-interaction))))
 				  ((and (= (@ branch type 0) "graphic")
 					(= (@ branch type 1) "bitmap"))
 				   (subcomponent -remote-image-view (@ branch data)

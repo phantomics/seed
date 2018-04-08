@@ -3,8 +3,6 @@
 (SETQ GEN-SPACE-APL "addWalls←{⍺,(⍵[;;1+⍳(3⌷⍴⍵)-2]),⍺}
 addFloor←{⍵[;⍳(2⌷⍴⍵)-1;],[2]⍺}
 
-1+1 2 3
-
 field←16 16 16⍴0
 field←1 addWalls (2 addFloor field)
 field[;5 6;4]←3

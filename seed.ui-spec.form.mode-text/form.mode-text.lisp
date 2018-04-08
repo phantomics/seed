@@ -40,7 +40,9 @@
 								     (grow-branch (chain self editor-instance
 											 code-mirror doc
 											 (get-value))
-										  (create revert true))))))))
+										  (create revert true)))
+							   (chain self editor-instance code-mirror doc
+								  (set-value (@ self props data data))))))))
        state))
    :element-specs #()
    :editor-instance nil
@@ -63,7 +65,7 @@
      (defvar self this)
 
      (let ((new-state (chain this (initialize next-props))))
-       (cl :news new-state)
+       ;;(cl :news new-state)
        (if (@ self state context is-point)
 	   (setf (@ new-state action-registered)
 		 (@ next-props action)))
@@ -108,7 +110,9 @@
        ;; 							  (@ self props context history-id)))))
        (trigger-primary
        	(cond ((= "move" (@ self state context mode))
+	       (chain self editor-instance (focus))
 	       (chain self state context methods (set-mode "write"))
+	       (chain self (set-state (create read-only false)))
        	       (chain self editor-instance code-mirror (set-option "readOnly" false)))))
        (insert-char
 	(chain self editor-instance code-mirror doc

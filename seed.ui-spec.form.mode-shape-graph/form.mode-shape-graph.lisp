@@ -188,6 +188,7 @@
      (let* ((self this)
 	    (params (create width 330
 			    section 32
+			    link-indent 3
 			    link-class "test-link"
 			    duration 600
 			    visualizer-logic (create node-has-children
@@ -224,6 +225,7 @@
 		      ;;(cl :doc svg-doc)
 		      (chain window d3 (select "svg") (transition)
 			     (duration (@ params duration)) (style "height" "600px"))
+
 		      (let ((index 0))
 			(chain root (each-before (lambda (n)
 						   (setf (@ n x) (- (* index (@ params section))
@@ -258,31 +260,35 @@
 								    obj-class))))
 					      (attr "id" (lambda (d) (+ "obj-" (@ d depth))))
 					      (attr "transform" (lambda (d)
-								  (+ "translate(" (@ d y) "," (@ d x) ")")))
+					      			  (+ "translate(" (@ d y) "," (@ d x) ")")))
 					      (attr "display" (lambda (d) (if (= 0 (@ d depth))
-									      "none" "relative")))
-					      (style "opacity" 1)))
+					      				      "none" "relative")))
+					      (style "opacity" 1)
+					      ))
+
 		      (chain node-enter (transition)
-			     (duration (@ params duration))
-			     (attr "transform" (lambda (d) (if (<= 1 (@ d depth))
-							       (+ "translate(" (@ d y) "," (@ d x) ")"))))
-			     (style "opacity" 1))
-
-		      ;; (chain node (transition)
-		      ;; 	     (duration (@ params duration))
-		      ;; 	     (attr "transform" (lambda (d) (if (<= 1 (@ d depth))
-		      ;; 					       (+ "translate(" (@ d y) "," (@ d x) ")"))))
-		      ;; 	     (style "opacity" 1))
-
-		      (chain node (exit) (style "opacity" (lambda (d) (if (= 1 (@ d depth)) 0 1))))
-
-		      (chain node (exit) (transition)
 		      	     (duration (@ params duration))
-		      	     (attr "transform" (lambda (d)
-						 (if (< 1 (@ d depth))
-						     (+ "translate(" (@ source y) "," (@ source x) ")"))))
-		      	     (style "opacity" 0)
-		      	     (remove))
+		      	     (attr "transform" (lambda (d) (if (<= 1 (@ d depth))
+		      					       (+ "translate(" (@ d y) "," (@ d x) ")"))))
+		      	     (style "opacity" 1))
+
+		      (chain node (transition)
+		      	     (duration (@ params duration))
+		      	     (attr "transform" (lambda (d) (if (<= 1 (@ d depth))
+		      					       (+ "translate(" (@ d y) "," (@ d x) ")"))))
+		      	     (style "opacity" 1))
+
+		      (chain node (exit) (style "opacity" (lambda (d) (if (= 1 (@ d depth)) 0 1)))
+			     (remove)
+			     )
+
+		      ;; (chain node (exit) (transition)
+		      ;; 	     (duration (@ params duration))
+		      ;; 	     (attr "transform" (lambda (d)
+		      ;; 				 (if (< 1 (@ d depth))
+		      ;; 				     (+ "translate(" (@ source y) "," (@ source x) ")"))))
+		      ;; 	     (style "opacity" 0)
+		      ;; 	     (remove))
 
 		      (setq link (chain main-display (select-all "path.link")
 					(data (chain root (links))
@@ -297,16 +303,18 @@
 					 (if (= 0 (@ d depth))
 					     "" (funcall diagonal d)))))
 
-		      (chain link (transition)
-			     (duration (@ params duration))
-			     (attr "d" diagonal))
+		      ;; (chain link (transition)
+		      ;; 	     (duration (@ params duration))
+		      ;; 	     (attr "d" diagonal))
 
-		      (chain link (exit) (transition)
-			     (duration (@ params duration))
-			     (attr "d" (lambda (d) (let ((o (create x (@ d source x) y (@ d source y))))
-						     (diagonal (create source o target o)))))
-			     (remove))
+		      ;; (chain link (exit) (transition)
+		      ;; 	     (duration (@ params duration))
+		      ;; 	     (attr "d" (lambda (d) (let ((o (create x (@ d source x) y (@ d source y))))
+		      ;; 				     (diagonal (create source o target o)))))
+		      ;; 	     (remove))
 
+		      (chain link (exit) (remove))
+		      
 		      (chain root (each (lambda (d) (setf (@ d x0) (@ d x)
 							  (@ d y0) (@ d y)))))
 		      
@@ -314,7 +322,7 @@
 
 		      (chain self props (animate-faux-d-o-m (@ params duration)))))
 	    (diagonal (chain window d3 (link-horizontal)
-			     (x (lambda (d) (@ d y)))
+			     (x (lambda (d) (+ (@ params link-indent) (@ d y))))
 			     (y (lambda (d) (@ d x)))))
 	    (max-depth 5)
 	    (horizontal-interval (/ (* 0.6 (@ params width)) max-depth)))
@@ -517,4 +525,4 @@
   		   :style (create height "100%" padding "4px 6px" color "#002b36")
 		   (@ self props chart)))
   ;;(@ self props chart)
-  ))
+))

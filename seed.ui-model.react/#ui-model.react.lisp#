@@ -135,6 +135,27 @@
 			      (@ self state action)
 			      (@ self props action))))))
 
+(defmacro subcomponent (symbol data &optional &key (context nil) (addendum nil))
+  ;; Create a subcomponent for use within a Seed interface.
+  (declare (ignorable addendum))
+  (labels ((assign-sub-context (pairs &optional output)
+	     (if pairs
+		 (assign-sub-context (cddr pairs)
+				     (append (list `(@ sub-con ,(first pairs)) (second pairs))
+					     output))
+		 output)))
+    `(panic:jsl (,(if (symbolp symbol)
+		      (intern (string-upcase symbol) "KEYWORD")
+		      symbol)
+		  :data ,data
+		  :context (let ((sub-con (chain j-query (extend t (create) (@ self state context)))))
+			     (progn ,(cons 'setf (assign-sub-context context))
+				    sub-con))
+		  :action (if (not (= "undefined" (typeof (@ self act))))
+			      ;; the act property is only present at the top-level portal component
+			      (@ self state action)
+			      (@ self props action))))))
+
 (defpsmacro vista (space context fill-by &optional respond-by encloser)
   ;; Create a vista, which contains components or sub-vistas within a Seed interface.
   `(panic:jsl (:-vista :key (+ "vista-" index)
