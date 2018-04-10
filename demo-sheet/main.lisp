@@ -28,6 +28,9 @@ field")
                    :DATA NIL :IS-VOID NIL :TYPE "paragraph" :KIND "block"))
                  :DATA NIL :KIND "document")
                 :KIND "value")))
+(DEFVAR GRAPH-CONTENT)
+(SETQ GRAPH-CONTENT (QUOTE (GRAPH-STEPS (#:G1573 :TYPE :OPTION :CONTENT "Hello" :LINKS ((#:G1574 :CONTENT "To Next")))
+				 (#:G1574 :TYPE :OPTION :CONTENT "Next" :LINKS ((#:G1573 :CONTENT "Go Back"))))))
 (DEFVAR MAIN-TABLE)
 (SETQ MAIN-TABLE
         #2A((NIL NIL (:DATA-COM (16) :TYPE :NUMBER) NIL NIL NIL NIL NIL NIL NIL
