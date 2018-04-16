@@ -14,29 +14,25 @@
 				      (cons portal-symbol (rest spec))))))))
 
 (defmacro stage-control-set (&key (by-spec nil) (by-parameters nil))
-    "Macro to generate stage control specifications from sub-macros that provide specifications for classes of stage controls. The sub-macros may provide for definition of specifications according to parameters passed to the control bank generation function or according to parameters present in the system I/O spec."
-    `(labels ((process-params (spec params &optional output)
-		(if (not params)
-		    (funcall (lambda (output)
-			       ,@(loop for element in by-spec
-				    append (macroexpand (if (listp element)
-							    (cons (first element)
-								  (append (list 'meta 'spec 'params 'output)
-									  (rest element)))
-							    (list element 'meta 'spec 'params 'output)))))
-			     output)
-		    (process-params spec (rest params)
-				    (cond ;; ((eq :save (first params))
-				      ;;  (cons `(,',meta-symbol :save :if (:interaction :commit))
-				      ;; 	output))
-				      ;; ((eq :revert (first params))
-				      ;;  (cons `(,',meta-symbol :revert :if (:interaction :revert))
-				      ;; 	output))
-				      ,@(loop for element in by-parameters
-					   append (macroexpand (if (listp element)
-								   (cons (first element)
-									 (append (list 'meta 'spec 'params 'output)
-										 (rest element)))
-								   (list element 'meta 'spec 'params 'output))))
-				      (t output))))))
-       #'process-params))
+  "Generate stage control specifications from sub-macros that provide specifications for classes of stage controls. The sub-macros may provide for definition of specifications according to parameters passed to the control bank generation function or according to parameters present in the system I/O spec."
+  `(labels ((process-params (spec params &optional output)
+	      (if (not params)
+		  (funcall (lambda (output)
+			     ,@(loop for element in by-spec
+				  append (macroexpand (if (listp element)
+							  (cons (first element)
+								(append (list 'meta 'spec 'params 'output)
+									(rest element)))
+							  (list element 'meta 'spec 'params 'output)))))
+			   output)
+		  (process-params spec (rest params)
+				  (cond ,@(loop for element in by-parameters
+					     append (macroexpand (if (listp element)
+								     (cons (first element)
+									   (append (list 'meta 'spec
+											 'params 'output)
+										   (rest element)))
+								     (list element 'meta 'spec
+									   'params 'output))))
+					(t output))))))
+     #'process-params))

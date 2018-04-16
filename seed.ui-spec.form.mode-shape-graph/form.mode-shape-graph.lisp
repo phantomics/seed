@@ -57,6 +57,12 @@
 	  do (chain heading (push (panic:jsl (:th :key (+ "sheet-header-" index)
 						  (chain -string (from-char-code (+ 65 index))))))))
        heading))
+   :interactions
+   (create add-graph-node
+	   (create click (lambda (self datum)
+			   (cl :add-node))
+		   trigger-primary (lambda (self datum) (cl :add-node2))
+		   trigger-secondary (lambda (self datum) (cl :add-node3))))
    ;; :move
    ;; (lambda (motion)
    ;;   (let* ((self this)

@@ -46,7 +46,7 @@
 				    :extend-response :respond-branches-main :axis :y
 				    :secondary-controls
 				    (:format (,(funcall ,(macroexpand (append (getf extend :controls)))
-							spec stage-params)))
+							spec (reverse (getf stage-params :secondary-controls)))))
 				    :contextual-menu
 				    (:format ,,@(if (< 0 (length (getf extend :menu)))
 						    (list `(funcall ,(macroexpand (append (getf extend :menu)

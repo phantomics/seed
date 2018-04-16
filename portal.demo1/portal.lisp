@@ -38,5 +38,7 @@
 
 (stage (simple-stage :branches
 		     (simple-branch-layout :menu (stage-extension-menu-base)
-					   :controls (stage-control-set :by-spec (stage-controls-base-contextual)))
+					   :controls (stage-control-set :by-spec (stage-controls-base-contextual)
+									:by-parameters
+									(stage-controls-graph-base)))
 		     :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history))))
