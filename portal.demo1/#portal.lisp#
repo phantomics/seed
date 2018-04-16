@@ -36,7 +36,6 @@
 
 (portal)
 
-(stage (simple-stage :branches
-		     (simple-branch-layout :menu (stage-extension-menu-base)
-					   :controls (stage-control-set :by-spec (stage-controls-base-contextual)))
+(stage (simple-stage :branches (simple-branch-layout :menu (stage-extension-menu-base)
+						     :marginal-controls (stage-element-set ))
 		     :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history))))

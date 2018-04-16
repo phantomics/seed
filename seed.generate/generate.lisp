@@ -264,7 +264,7 @@ inclusion of aport macro here just acts as passthrough
 	       (cons name
 		     ;; this conditional must cover a wide range of argument list taxonomies
 		     (cond ((and (eq 'follows (first args))
-				 (eq 'reagent (second args)))
+				 (position 'reagent args))
 			    `(,(prepend-args &optional)
 			       (declare (ignorable follows reagent))
 			       `(let ((dat (funcall (lambda (data ,@(if reagent (list 'reagent)))

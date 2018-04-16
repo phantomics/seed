@@ -5,10 +5,10 @@
 (defmacro simple-stage (portal &key (branches nil) (sub-nav nil))
   `(lambda ()
      (let ((branch-specs (if (of-sprout-meta ,portal :active-system)
-			     (get-portal-contact-branch-specs ,portal (intern (string-upcase
-									       (of-sprout-meta ,portal
-											       :active-system))
-									      "KEYWORD")))))
+			     (get-portal-contact-branch-specs ,portal
+							      (intern (string-upcase
+								       (of-sprout-meta ,portal :active-system))
+								      "KEYWORD")))))
        `(((meta ((meta ,,(intern (package-name *package*) "KEYWORD")
 		       :if (:type :portal-name))
 		 ,@(if (not branch-specs)
@@ -33,21 +33,20 @@
 	       ;; is the transparent property needed here?
 	       :if (:type :vista :transparent t))))))
 
-(defmacro simple-branch-layout (&key (omit nil) (adjunct nil) (extend nil))
+(defmacro simple-branch-layout (&rest extend)
   "A layout for display of major and adjunct branches within a Seed system."
   `(lambda (branch-specs)
      (labels ((prospec-branch (spec)
 		(let* ((name (intern (string-upcase (first spec)) "KEYWORD"))
 		       (param-checks (mapcar #'cadr (find-form-in-spec 'is-param spec)))
 		       (stage-params (cdar (find-form-in-spec 'stage-params spec)))
-		       (secondary-controls (append (if (find :save param-checks)
-						       (list `(meta :save :if (:interaction :commit))))
-						   (if (find :revert param-checks)
-						       (list `(meta :revert :if (:interaction :revert)))))))
+		       (secondary-controls (append (or (find :save param-checks) (find :revert param-checks)))))
 		  `(meta (:body ,@(if secondary-controls (list :sub-controls)))
 			 :if (:type :vista :ct 0 :fill :fill-branch :branch ,name
 				    :extend-response :respond-branches-main :axis :y
-				    :secondary-controls (:format (,secondary-controls))
+				    :secondary-controls
+				    (:format (,(funcall ,(macroexpand (append (getf extend :controls)))
+							spec stage-params)))
 				    :contextual-menu
 				    (:format ,,@(if (< 0 (length (getf extend :menu)))
 						    (list `(funcall ,(macroexpand (append (getf extend :menu)
@@ -73,7 +72,7 @@
 	      (prospec-nav (specs)
 		(rest (assoc :primary (rest (first (find-form-in-spec 'display-params (first specs)))))))
 
-	      (prospec-adj (specs &optional output)
+	      (prospec-adj (specs) ;;(specs &optional output)
 		(second (assoc :adjunct (rest (first (find-form-in-spec 'display-params (first specs))))))))
        `((meta ((meta ,(prospec-segment branch-specs)
 		      :if (:type :vista :name :branches :enclose :enclose-branches-main :point 0
