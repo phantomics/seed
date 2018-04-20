@@ -50,13 +50,13 @@
 				     nodes)))
        (defun ,function-name (state) (funcall (aref nodes 0) state))))))
 
-(defun generate-blank-node (type)
+(defun generate-blank-node (type meta)
   "Generate a blank node for use in a garden path, starting with a UUID key so the node can be uniquely identified for logging purposes."
   (let ((base (list :id (let ((str (make-string-output-stream)))
 			  (uuid:format-as-urn str (uuid:make-v1-uuid))
 			  (intern (string-upcase (third (split-sequence #\: (get-output-stream-string str))))
 				  "KEYWORD"))
-		    :type type :meta (list :title "" :about ""))))
+		    :type type :meta meta)))
     (append base (if (eq :portal type)
 		     (list :to nil)
 		     (list :items nil :do nil :links nil)))))
@@ -66,8 +66,8 @@
   (list :id nil :meta (list :title "" :about "")
 	:items nil :if nil))
 
-(defun add-blank-node (list type)
-  (append list (list (generate-blank-node type))))
+(defun add-blank-node (list type meta)
+  (append list (list (generate-blank-node type meta))))
 
 (defun add-blank-link (node-id list)
   (loop for item in list

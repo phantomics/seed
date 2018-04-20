@@ -65,14 +65,13 @@
 				(let ((space (let ((new-space (chain j-query (extend #() (@ self state space)))))
 					       (chain self (assign (@ self state point-attrs index)
 								   new-space data)))))
-				  ;; (to-grow (if (= "undefined" (typeof alternate-branch))
-				  ;; 	       (@ self state data id)
-				  ;; 	       alternate-branch)
-				  ;; 	   ;; TODO: it may be desirable to add certain metadata to
-				  ;; 	   ;; the meta for each grow request, that's what the
-				  ;; 	   ;; derive-metadata function below may later be used for
-				  ;; 	   space meta)
-				  ))
+				  (to-grow (if (= "undefined" (typeof alternate-branch))
+				  	       (@ self state data id)
+				  	       alternate-branch)
+				  	   ;; TODO: it may be desirable to add certain metadata to
+				  	   ;; the meta for each grow request, that's what the
+				  	   ;; derive-metadata function below may later be used for
+				  	   space meta)))
 			      grow-branch
 			      (lambda (space meta callback)
 				(to-grow (@ self state data id) 
@@ -100,7 +99,7 @@
 						     (chain self (set-state (create index (@ datum ix))))
 						     (funcall (@ self props context methods load-branch)
 							      (@ datum vl))))
-	   add-graph-node (create click (lambda (self datum) (cl :9080)))
+	   ;;add-graph-node (create click (lambda (self datum) (cl :9080)))
 	   select-branch (create click (lambda (self datum)
 					 (chain self props context methods
 						(set-branch-by-id (@ datum vl))))
@@ -110,12 +109,12 @@
 				 trigger-secondary (lambda (self datum)
 						     (chain self props context methods
 							    (set-branch-by-id (@ datum vl)))))
-	   commit (create click (lambda (self datum)
-				  (funcall (chain self props context (get-interaction "commit"))))
-			  trigger-primary (lambda (self datum)
-					    (funcall (chain self props context (get-interaction "commit"))))
-			  trigger-secondary (lambda (self datum)
-					      (funcall (chain self props context (get-interaction "commit")))))
+	   ;; commit (create click (lambda (self datum)
+	   ;; 			  (funcall (chain self props context (get-interaction "commit"))))
+	   ;; 		  trigger-primary (lambda (self datum)
+	   ;; 				    (funcall (chain self props context (get-interaction "commit"))))
+	   ;; 		  trigger-secondary (lambda (self datum)
+	   ;; 				      (funcall (chain self props context (get-interaction "commit")))))
 	   revert (create click (lambda (self datum)
 				  (funcall (chain self props context (get-interaction "revert"))))
 			  trigger-primary (lambda (self datum)
@@ -499,10 +498,17 @@
 							      (@ datum pr meta)
 							      (@ datum pr meta if)
 							      (@ datum pr meta if interaction))
-							 (getprop (@ self interactions)
-								  (chain datum pr meta if interaction 
-									 (substr 2))
-								  "click"))))
+							 (if (getprop (@ self interactions)
+								      (chain datum pr meta if interaction 
+									     (substr 2)))
+							     (getprop (@ self interactions)
+								      (chain datum pr meta if interaction 
+									     (substr 2))
+								      "click")
+							     (chain self props context
+								    (get-interaction
+								     (chain datum pr meta if interaction 
+									    (substr 2))))))))
 				    (if interaction
 					(funcall interaction self datum)
 					(let ((datum (chain j-query
@@ -955,6 +961,8 @@
 		   (chain self state context methods (set-mode "set"))))
 	      ((= "set" (@ self state context mode))
 	       (chain self (set-state (create action-registered nil)))
+	       (cl :dlt (@ self state point-attrs delta)
+		   (@ self state context methods))
 	       (chain self state context methods (grow (@ self state point-attrs delta)))
 	       (chain self (set-focus "meta" 0))
 	       (chain self state context methods (set-delta nil))

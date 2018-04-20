@@ -49,7 +49,7 @@
 
  ;; get a branch image
  (get-image (&optional source)
-	    `(branch-image branch))
+	    `(print (branch-image branch)))
 
  ;; record a branch image
  (put-image (follows reagent)
@@ -232,22 +232,12 @@
 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))
 	    output)))
 
- ;; ;; converts data into display-ready JSON format
- ;; (json-to-display (follows)
- ;; 		  `((labels ((json-format (form &optional output)
- ;; 			       (if form
-				   
- ;; 				   output))
- ;; 			     ;; (mapcar (lambda (element)
- ;; 			     ;; 	       (cond ((listp element)
- ;; 			     ;; 		      (json-format element))
- ;; 			     ;; 		     ((keywordp element)
- ;; 			     ;; 		      (intern (symbol-munger:lisp->camel-case element)
- ;; 			     ;; 			      "KEYWORD"))
- ;; 			     ;; 		     (t element)))
- ;; 			     ;;   form)
- ;; 			     ))
- ;; 		      (json-format data))))
+ (junk (follows)
+       `((print data)))
+ 
+ ;; converts data into display-ready JSON format
+ (json-to-display (follows reagent)
+		  `((preprocess-structure (if ,reagent ,reagent data))))
 
  (json-string-structure (follows)
 			`(`(list :string ,data
@@ -256,7 +246,7 @@
 							       (lambda (key)
 								 (string-upcase (camel-case->lisp-name key)))
 							       :normalize-all t))))
-			`((print (list :dd data))
+			`(;;(print (list :dd data))
 			  (getf data :string)))
  
  ;; passthrough form meant to wrap stage parameters for use by stage definitions that analyze the branch spec

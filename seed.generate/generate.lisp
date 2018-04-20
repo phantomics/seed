@@ -501,7 +501,7 @@ inclusion of aport macro here just acts as passthrough
 									      (second ,list))
 									(assign-meta-from-list (cddr ,list))))))
 					      (assign-meta-from-list ,params)))
-				(print (list :par ,params ,sprid ,portal-package-id))
+				;; (print (list :par ,params ,sprid ,portal-package-id))
 				;; invoke the special priority macro system
 				;; meta tags will be evaluated before macro expansion
 				;; the first step to doing this is to load the meta form

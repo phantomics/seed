@@ -12,7 +12,7 @@
 		  (attr "dy" 4.8)
 		  (attr "x" (lambda (d) (if (chain interface params visualizer-logic (node-has-children d))
 					    text-xoffset-expandable text-xoffset-expandable)))
-		  (text (lambda (d) (@ d data name)))))))
+		  (text (lambda (d) (if (@ d data meta) (@ d data meta title))))))))
 
 (defvar circle-icon-standard)
 (setq circle-icon-standard

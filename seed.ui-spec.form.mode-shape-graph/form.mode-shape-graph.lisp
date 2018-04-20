@@ -8,7 +8,7 @@
   (:get-initial-state
    (lambda ()
      (chain console (log :gshape (@ this props)))
-     (chain j-query (extend (create point #(0 0)
+     (chain j-query (extend (create point 0
 				    content (create)
 				    point-attrs (create value nil delta nil)
 				    meta (chain j-query (extend t (create max-depth 0
@@ -22,31 +22,56 @@
 	    (state (funcall inherit self props
 			    (lambda (d) (chain j-query (extend (@ props data) (@ d data))))
 			    (lambda (pd) (@ pd data data)))))
+       (if (@ self props context set-interaction)
+	   (progn (chain self props context
+			 (set-interaction "addGraphNode"
+					  (lambda ()
+					    (chain self state context methods
+						   (grow #() (create "add-node" true
+								     "object-type" "__option"
+								     "object-meta" (create title "Untitled"
+											   about "")))))))
+		  (chain self props context
+			 (set-interaction "addGraphLink"
+					  (lambda ()
+					    (chain self state context methods
+						   (grow #() (create "add-link" true
+								     "object-meta" (create title "Untitled"
+											   about "")))))))
+		  (chain self props context
+			 (set-interaction "removeGraphObject"
+					  (lambda () (chain self state context methods
+							    (grow #() (create "remove-object" true))))))))
        state))
    :element-specs #()
-   ;; :modulate-methods
-   ;; (lambda (methods)
-   ;;   (let ((self this))
-   ;;     (chain j-query
-   ;; 	      (extend (create set-delta (lambda (value) (extend-state point-attrs (create delta value))))
-   ;; 		      methods
-   ;; 		      (create grow-point
-   ;; 			      (lambda (data meta alternate-branch)
-   ;; 				(let ((new-space (chain j-query (extend t #() (@ self state space)))))
-   ;; 				  ;(cl :as data new-space)
-   ;; 				  (chain self (assign data new-space)))
-   ;; 				(chain methods
-   ;; 				       (grow (if (= "undefined" (typeof alternate-branch))
-   ;; 						 (@ self state data id)
-   ;; 						 alternate-branch)
-   ;; 					     ;; TODO: it may be desirable to add certain metadata to
-   ;; 					     ;; the meta for each grow request, that's what the
-   ;; 					     ;; derive-metadata function below may later be used for
-   ;; 					     new-space meta)))
-   ;; 			      grow-branch
-   ;; 			      (lambda (space meta callback)
-   ;; 				(chain methods (grow (@ self state data id) 
-   ;; 						     space meta callback))))))))
+   :modulate-methods
+   (lambda (methods)
+     (let* ((self this)
+	    (to-grow (if (@ self props context parent-system)
+			 (chain methods (in-context-grow (@ self props context parent-system)))
+			 (@ methods grow))))
+       (chain j-query
+   	      (extend (create set-delta (lambda (value) (extend-state point-attrs (create delta value)))
+			      set-point (lambda (datum) (chain self (set-point (@ datum index))))
+			      delete-point (lambda (point) (chain self (delete-point point))))
+   		      methods
+   		      (create grow
+   			      (lambda (data meta alternate-branch)
+				(let ((space (let ((new-space (chain j-query (extend #() (@ self state space)))))
+					       ;; (chain self (assign (@ self state point-attrs index)
+					       ;; 			   new-space data))
+					       new-space)))
+				  (to-grow (if (= "undefined" (typeof alternate-branch))
+				  	       (@ self state data id)
+				  	       alternate-branch)
+				  	   ;; TODO: it may be desirable to add certain metadata to
+				  	   ;; the meta for each grow request, that's what the
+				  	   ;; derive-metadata function below may later be used for
+				  	   space meta)))
+   			      grow-branch
+   			      (lambda (space meta callback)
+   				(chain methods (grow (@ self state data id) 
+   						     space meta callback))))))))
    :set-confirmed-value
    (lambda (value)
      (chain this (set-state (create confirmed-value value))))
@@ -208,14 +233,7 @@
 							    (setf (@ d _children) (@ d children)
 								  (@ d children) null))
 							(funcall update d)))))
-	    (root (let* ((data (create name "bla" id "bla"
-				      children (list (create name "ab" id "ab1"
-							     children (list (create name "aa" id "aa")
-									    (create name "bb" id "bb")))
-						     (create name "cd" id "cd2")
-						     (create name "ef" id "ef3"
-							     children (list (create name "ee" id "ee")
-									    (create name "ff" id "ff"))))))
+	    (root (let* ((data (create name "root" id "root" children (@ self props data data)))
 			 (model (chain window d3 (hierarchy data))))
 		    (chain model (each (lambda (d)
 					 (if (= 1 (@ d depth))

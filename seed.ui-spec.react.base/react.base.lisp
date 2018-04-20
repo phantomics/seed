@@ -433,7 +433,9 @@
 				     (subcomponent -this-component
 						   branch :context (index
 								    0
-								    set-interaction this-set-interaction))))
+								    set-interaction this-set-interaction
+								    parent-system
+								    (@ self props context working-system)))))
 				  ((and (= (@ branch type 0) "graphic")
 					(= (@ branch type 1) "bitmap"))
 				   (subcomponent -remote-image-view (@ branch data)
@@ -877,9 +879,9 @@
 	    (defvar self this)
 	    (if (= "__undefined" (@ params 0))
 		(setf (@ params 0) null))
-	    (chain console (log "par" params
-	    			(chain (list (@ window portal-id) portal-method)
-	    			       (concat params))))
+	    ;; (chain console (log "par" params
+	    ;; 			(chain (list (@ window portal-id) portal-method)
+	    ;; 			       (concat params))))
 	    (chain j-query
 		   (ajax (create 
 			  url "../portal"
