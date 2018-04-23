@@ -36,7 +36,11 @@
 
      (.glyph
       (.outer-circle :fill "#dc322f")
-      (.inner-circle :fill "#fdf6e3")))))
+      (.inner-circle :fill "#fdf6e3")
+      (.outer-meta-band :stroke "#268bd2"
+			:stroke-width 3px)
+      (.outer-meta-spokes :stroke "#268bd2"
+			  :stroke-width 1.8px)))))
 
 
 

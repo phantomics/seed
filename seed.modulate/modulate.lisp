@@ -333,7 +333,7 @@
 							;; TODO: figure better heuristic for handling
 							;; nil/empty array conversion between Lisp and JSON
 							((null (second list))
-							 "_nil")
+							 nil)
 							((symbolp (second list))
 							 (concatenate 'string
 								      (if (keywordp (second list))

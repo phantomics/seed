@@ -11,7 +11,7 @@
 		  (attr "class" "text")
 		  (attr "dy" 4.8)
 		  (attr "x" (lambda (d) (if (chain interface params visualizer-logic (node-has-children d))
-					    text-xoffset-expandable text-xoffset-expandable)))
+					    text-xoffset-expandable text-xoffset-unexpandable)))
 		  (text (lambda (d) (if (@ d data meta) (@ d data meta title))))))))
 
 (defvar circle-icon-standard)
@@ -76,13 +76,13 @@
 				     (attr "class" "glyph"))))
 	       (chain node-icon (append "svg:path")
 		      ;; TODO: complete class function
-		      (attr "class" (lambda (d) "outer-meta-spokes"))
+		      (attr "class" "outer-meta-spokes")
 		      (attr "d" (lambda (d) (manifest-outer-spoke-points 3)))
 		      (attr "transform" (+ "translate(" main-radius ",0)")))
 
 	       (chain node-icon (append "svg:path")
 		      ;; TODO: complete class function
-		      (attr "class" (lambda (d) "outer-meta-band"))
+		      (attr "class" "outer-meta-band")
 		      (attr "d" (lambda (d) (manifest-outer-band 0.6)))
 		      (attr "transform" (+ "translate(" main-radius ",0)")))
 
@@ -122,7 +122,11 @@
 				  (append "svg:g")
 				  (attr "class" "expand-control")
 				  (attr "cursor" "pointer")
-				  (attr "transform" (+ "translate(" indentation ",0)")))))
+				  (attr "transform" (+ "translate(" indentation ",0)"))
+				  (attr "style" (lambda (d)
+						  (if (not (chain interface params visualizer-logic
+								  (node-has-children d)))
+						      "display: none" ""))))))
 	       (chain button (append "svg:circle")
 		      (attr "class" "button-backing")
 		      (attr "cy" 0)
@@ -181,7 +185,6 @@
 		(text-frame-outer-border-radius (/ (* 0.95 section) 2)))
 	   (flet ((get-node-bar-width (node)
 		    (- (@ interface params width) (+ (@ node y) (* 1.75 section)))))
-	     (chain console (log :ii interface))
 	     (let ((icon-title-frame (chain interface node-enter
 					    (append "svg:g")
 					    (attr "class" "icon-title-frame")

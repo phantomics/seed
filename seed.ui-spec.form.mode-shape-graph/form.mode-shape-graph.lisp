@@ -10,7 +10,7 @@
      (chain console (log :gshape (@ this props)))
      (chain j-query (extend (create point 0
 				    content (create)
-				    point-attrs (create value nil delta nil)
+				    point-attrs (create node-id nil)
 				    meta (chain j-query (extend t (create max-depth 0
 									  confirmed-value nil
 									  invert-axis (list false true))
@@ -22,27 +22,29 @@
 	    (state (funcall inherit self props
 			    (lambda (d) (chain j-query (extend (@ props data) (@ d data))))
 			    (lambda (pd) (@ pd data data)))))
+
        (if (@ self props context set-interaction)
 	   (progn (chain self props context
 			 (set-interaction "addGraphNode"
-					  (lambda ()
-					    (chain self state context methods
-						   (grow #() (create "add-node" true
-								     "object-type" "__option"
-								     "object-meta" (create title "Untitled"
-											   about "")))))))
+					  (lambda () (chain self state context methods
+							    (grow #() (create add-node true
+									      object-type "__option"
+									      object-meta (create title "Untitled"
+												  about "")))))))
 		  (chain self props context
 			 (set-interaction "addGraphLink"
-					  (lambda ()
-					    (chain self state context methods
-						   (grow #() (create "add-link" true
-								     "object-meta" (create title "Untitled"
-											   about "")))))))
+					  (lambda () (chain self state context methods
+							    (grow #() (create add-link true
+									      node-id
+									      (@ self state point-attrs node-id)
+									      object-meta (create title "Untitled"
+												  about "")))))))
 		  (chain self props context
 			 (set-interaction "removeGraphObject"
 					  (lambda () (chain self state context methods
-							    (grow #() (create "remove-object" true))))))))
+							    (grow #() (create remove-object true))))))))
        state))
+   :container-element nil
    :element-specs #()
    :modulate-methods
    (lambda (methods)
@@ -88,6 +90,9 @@
 			   (cl :add-node))
 		   trigger-primary (lambda (self datum) (cl :add-node2))
 		   trigger-secondary (lambda (self datum) (cl :add-node3))))
+   :move
+   (lambda (vector)
+     (cl :vector vector))
    ;; :move
    ;; (lambda (motion)
    ;;   (let* ((self this)
@@ -160,6 +165,8 @@
 	 (setf (@ new-state pane-element)
 	       (chain (j-query (+ "#branch-" (@ self props context index)
 				  "-" (@ self props data id))))))
+
+     ;; (cl :909 (@ self state pane-element))
      
      (handle-actions
       (@ next-props action) (@ self state) next-props
@@ -214,33 +221,79 @@
    ;; 	 (not (= (@ next-state context mode)
    ;; 		 (@ this state context mode)))
    ;; 	 (@ next-state action-registered)))
+   ;; (create name "bla" id "bla"
+   ;; 	      children (list (create name "ab" id "ab1"
+   ;; 				     children (list (create name "aa" id "aa")
+   ;; 						    (create name "bb" id "bb")))
+   ;; 			     (create name "cd" id "cd2")
+   ;; 			     (create name "ef" id "ef3"
+   ;; 				     children (list (create name "ee" id "ee")
+   ;; 						    (create name "ff" id "ff")))))
+   :display-format
+   (lambda (graph index)
+     (let ((index (if index index 0)))
+       (chain graph (map (lambda (node)
+			   (setf (@ node children) (@ node links)
+				 (@ node index) index
+				 index (1+ index))
+			   node)))))
    :make-display
    (lambda (main-display callback)
      (let* ((self this)
-	    (params (create width 330
-			    section 32
-			    link-indent 3
-			    link-class "test-link"
-			    duration 600
-			    visualizer-logic (create node-has-children
-						     (lambda (d) (or (@ d children) (@ d _children)))
-						     node-expanded (lambda (d) (@ d children)))
-			    interface-actions (create expand-toggle-node
-						      (lambda (d)
-							(if (not (@ d children))
-							    (setf (@ d children) (@ d _children)
-								  (@ d _children) null)
-							    (setf (@ d _children) (@ d children)
-								  (@ d children) null))
-							(funcall update d)))))
-	    (root (let* ((data (create name "root" id "root" children (@ self props data data)))
+	    (root (let* ((data (create name "root" id "root"
+				       children (chain self (display-format (@ self props data data)))))
 			 (model (chain window d3 (hierarchy data))))
+		    ;; (cl 676 data model)
 		    (chain model (each (lambda (d)
 					 (if (= 1 (@ d depth))
 					     (if (@ d children)
 						 (setf (@ d _children) (@ d children)
 						       (@ d children) null))))))
 		    model))
+	    (from-link (lambda (parent id)
+			 (let ((found nil))
+			   (loop for item in (@ root children) do
+				(if (= id (@ item data id))
+				    (setq found (chain j-query (extend (create) item)))))
+			   (if (and (@ found _children) (not (= "untitled" (typeof (@ found _children)))))
+			       (setf (@ found children) (@ found _children)
+			   	     (@ found _children) nil))
+			   (let ((downstream (chain found (copy))))
+			     ;;(cl :d (chain -j-s-o-n (stringify downstream)))
+			     (setf (@ downstream parent) parent
+				   (@ downstream depth) (1+ (@ parent depth))
+				   (@ downstream _children) (chain downstream children
+								   (map (lambda (item)
+									  (setf (@ item depth)
+										(+ 2 (@ parent depth))
+										(@ item children) null)
+									  item)))
+				   (@ downstream children) null)
+			     ;;(chain self (display-format downstream))
+			     downstream))))
+	    (params (create width (@ self container-element 0 client-width)
+			    section 32
+			    link-indent 3
+			    link-class "test-link"
+			    duration 600
+			    visualizer-logic (create node-has-children
+						     (lambda (d)
+						       (or (@ d data to)
+							   (and (@ d children) (< 0 (@ d children length)))
+							   (and (@ d _children) (< 0 (@ d _children length)))))
+						     node-expanded (lambda (d) (@ d children)))
+			    interface-actions (create expand-toggle-node
+						      (lambda (d)
+							(cl :exp d)
+							(if (not (@ d children))
+							    (if (and (@ d data to) (not (@ d _children)))
+								(setf (@ d children)
+								      (list (from-link d (@ d data to))))
+								(setf (@ d children) (@ d _children)
+								      (@ d _children) null))
+							    (setf (@ d _children) (@ d children)
+								  (@ d children) null))
+							(funcall update d)))))
 	    (update (lambda (source)
 		      (setq nodes (chain root (descendants))
 			    faux-container (chain self props (connect-faux-d-o-m "div" "chart")))
@@ -287,8 +340,7 @@
 					      			  (+ "translate(" (@ d y) "," (@ d x) ")")))
 					      (attr "display" (lambda (d) (if (= 0 (@ d depth))
 					      				      "none" "relative")))
-					      (style "opacity" 1)
-					      ))
+					      (style "opacity" 1)))
 
 		      (chain node-enter (transition)
 		      	     (duration (@ params duration))
@@ -303,8 +355,7 @@
 		      	     (style "opacity" 1))
 
 		      (chain node (exit) (style "opacity" (lambda (d) (if (= 1 (@ d depth)) 0 1)))
-			     (remove)
-			     )
+			     (remove))
 
 		      ;; (chain node (exit) (transition)
 		      ;; 	     (duration (@ params duration))
@@ -323,9 +374,8 @@
 			     (attr "class" "link")
 			     (transition)
 			     (duration (@ params duration))
-			     (attr "d" (lambda (d)
-					 (if (= 0 (@ d depth))
-					     "" (funcall diagonal d)))))
+			     (attr "d" (lambda (d) (if (= 0 (@ d depth))
+						       "" (funcall diagonal d)))))
 
 		      ;; (chain link (transition)
 		      ;; 	     (duration (@ params duration))
@@ -346,7 +396,7 @@
 
 		      (chain self props (animate-faux-d-o-m (@ params duration)))))
 	    (diagonal (chain window d3 (link-horizontal)
-			     (x (lambda (d) (+ (@ params link-indent) (@ d y))))
+			     (x (lambda (d) (+ 0 (@ d y))))
 			     (y (lambda (d) (@ d x)))))
 	    (max-depth 5)
 	    (horizontal-interval (/ (* 0.6 (@ params width)) max-depth)))
@@ -513,23 +563,15 @@
    ;;   )
    :component-did-mount
    (lambda ()
-   (let* ((self this)
-	  (faux-container (chain self props (connect-faux-d-o-m "div" "chart")))
-	  (main-display (chain window d3 (select faux-container)
-			       (append "svg")
-			       (attr "class" "vector-interface"))))
-     (chain self (make-display main-display (lambda (params)
-					      ;; (cl :par params)
-					      (chain subcomponents (effects params)))))))
-   ;; :component-did-update
-   ;; (lambda ()
-   ;;   (let ((faux-container (chain this props (connect-faux-d-o-m "div" "chart"))))
-   ;;     (chain window d3 (select faux-container)
-   ;; 	      (append "text")
-   ;; 	      (attr "x" 20)
-   ;; 	      (attr "y" 20)
-   ;; 	      (text "Hello, testing."))))
-   )
+     (let* ((self this)
+	    (faux-container (chain self props (connect-faux-d-o-m "div" "chart")))
+	    (main-display (chain window d3 (select faux-container)
+				 (append "svg")
+				 (attr "class" "vector-interface"))))
+       (cl :fc faux-container)
+       (chain self (make-display main-display (lambda (params)
+						;; (cl :par params)
+						(chain subcomponents (effects params))))))))
   (defvar self this)
   ;(cl "SHR" (@ this state just-updated))
   ;;(chain console (log :abc (@ self state data) -slate-editor -slate-value))
@@ -541,6 +583,9 @@
   		   :id "testcomponent"
   		   :on-change (lambda (value)
   				(chain self (set-state (create content (@ value value)))))
+		   :ref (lambda (ref)
+			  (if (not (@ self container-element))
+			      (setf (@ self container-element) (j-query ref))))
   		   ;; :on-focus (lambda (value)
   		   ;; 		 (chain self state context methods (set-mode "write")))
   		   ;; :on-blur (lambda (value)
