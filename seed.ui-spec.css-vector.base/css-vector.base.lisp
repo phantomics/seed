@@ -24,10 +24,12 @@
       :stroke-width 1.5px)
 
      (.icon-title-frame
-      :opacity 0.175
+      :opacity 0
       ((:or rect circle)
        :fill ;;"#eee8d5"
        "#839496"))
+
+     (.item.point (.icon-title-frame :opacity 0.175))
 
      (.expand-control
       (.button-backing :fill "#fdf6e3")

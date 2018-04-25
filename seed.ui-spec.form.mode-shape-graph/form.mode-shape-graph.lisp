@@ -60,8 +60,6 @@
    		      (create grow
    			      (lambda (data meta alternate-branch)
 				(let ((space (let ((new-space (chain j-query (extend #() (@ self state space)))))
-					       ;; (chain self (assign (@ self state point-attrs index)
-					       ;; 			   new-space data))
 					       new-space)))
 				  (to-grow (if (= "undefined" (typeof alternate-branch))
 				  	       (@ self state data id)
@@ -72,7 +70,7 @@
 				  	   space meta)))
    			      grow-branch
    			      (lambda (space meta callback)
-   				(chain methods (grow (@ self state data id) 
+   				(chain methods (grow (@ self state data id)
    						     space meta callback))))))))
    :set-confirmed-value
    (lambda (value)
@@ -91,130 +89,85 @@
 		   trigger-primary (lambda (self datum) (cl :add-node2))
 		   trigger-secondary (lambda (self datum) (cl :add-node3))))
    :move
-   (lambda (vector)
-     (cl :vector vector))
-   ;; :move
-   ;; (lambda (motion)
-   ;;   (let* ((self this)
-   ;; 	    (mo (chain motion (map (lambda (axis index)
-   ;; 				     (* axis (if (getprop (@ self state meta invert-axis) index)
-   ;; 						 -1 1))))))
-   ;; 	    (new-point (list (if (< -1 (+ (@ mo 0) (@ this state point 0))
-   ;; 				    (@ this state space 0 length))
-   ;; 				 (+ (@ mo 0) (@ this state point 0))
-   ;; 				 (@ this state point 0))
-   ;; 			     (if (< -1 (+ (@ mo 1) (@ this state point 1))
-   ;; 				    (@ this state space length))
-   ;; 				 (+ (@ mo 1) (@ this state point 1))
-   ;; 				 (@ this state point 0)))))
-   ;;     ;; adjust scroll position of pane if cursor is moved out of view
-   ;;     (if (and (not (= "undefined" (typeof (@ self state pane-element))))
-   ;; 		(< 0 (@ self element-specs length)))
-   ;; 	   (progn (if (< (+ (@ self state pane-element 0 client-height)
-   ;; 			    (@ self state pane-element 0 scroll-top))
-   ;; 			 (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top"))
-   ;; 		      (setf (@ self state pane-element 0 scroll-top)
-   ;; 			    (+ (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top")
-   ;; 			       (/ (@ self state pane-element 0 client-height) 2)))
-   ;; 		      (if (> (@ self state pane-element 0 scroll-top)
-   ;; 			     (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top"))
-   ;; 			  (setf (@ self state pane-element 0 scroll-top)
-   ;; 				(- (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "top")
-   ;; 				   (/ (@ self state pane-element 0 client-height) 2)))))
-   ;; 		  (if (< (+ (@ self state pane-element 0 client-width)
-   ;; 			    (@ self state pane-element 0 scroll-left))
-   ;; 			 (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left"))
-   ;; 		      (setf (@ self state pane-element 0 scroll-left)
-   ;; 			    (+ (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left")
-   ;; 			       (/ (@ self state pane-element 0 client-height) 2)))
-   ;; 		      (if (> (@ self state pane-element 0 scroll-left)
-   ;; 			     (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left"))
-   ;; 			  (setf (@ self state pane-element 0 scroll-left)
-   ;; 				(- (getprop (@ self element-specs) (@ new-point 1) (@ new-point 0) "left")
-   ;; 				   (/ (@ self state pane-element 0 client-width) 2)))))))
-   ;;     (chain this (set-state (create point new-point)))))
-   ;; :assign
-   ;; (lambda (value matrix)
-   ;;   (let* ((x (@ this state point 0))
-   ;; 	    (y (@ this state point 1))
-   ;; 	    (original-value (getprop matrix y x)))
-   ;;     (setf (getprop matrix y x)
-   ;; 	     (if (= "[object Array]" (chain -object prototype to-string (call original-value)))
-   ;; 		 (if (not (null value))
-   ;; 		     ;; assign the unknown type for now;
-   ;; 		     ;; an accurate type will be assigned server-side
-   ;; 		     (create type "__unknown"
-   ;; 			     data-inp value))
-   ;; 		 (if (null value)
-   ;; 		     (list)
-   ;; 		     (chain j-query (extend (create) original-value
-   ;; 					    (create data-inp-ovr value))))))
-   ;;     matrix))
+   (let ((point 0))
+     (lambda (vector)
+       ;;(cl :vector vector)
+       (let ((self this)
+	     (new-point (max 0 (+ (- (@ vector 1))
+				  (@ vector 0) point))))
+	 (setq point new-point)
+	 (cl vector (@ self state point) new-point)
+	 (chain self (set-state (create point new-point)))
+	 (cl :aab (+ "#branch-" (@ self props context index)
+		"-" (@ self props data id)
+		" .vector-interface .item"))
+	 (chain (j-query (+ "#branch-" (@ self props context index)
+			    "-" (@ self props data id)
+			    " .vector-interface .item"))
+		(remove-class "point"))
+	 (chain (j-query (+ "#branch-" (@ self props context index)
+			    "-" (@ self props data id)
+			    " .vector-interface .item.obj-" (1+ new-point)))
+		(add-class "point")))))
    :component-will-receive-props
-   (lambda (next-props)
-     (defvar self this)
+   (let ((last-updated 0))
+     (lambda (next-props)
+       (defvar self this)
 
-     (let ((new-state (chain this (initialize next-props))))
-       (if (@ self state context is-point)
-	   (setf (@ new-state action-registered)
-		 (@ next-props action)))
-       (chain this (set-state new-state)))
+       (if (or (< last-updated (@ next-props context updated))
+	       (and (@ next-props action)
+		    (< last-updated (@ next-props action time))))
+	   (progn (setq last-updated (@ next-props action time))
+		  (if (< last-updated (@ next-props context updated))
+		      (setq last-updated (@ next-props context updated))
+		      (if (and (@ next-props action)
+			       (< last-updated (@ next-props action time)))
+			  (setq last-updated (@ next-props action time))))
+		  
+		  (let ((new-state (chain this (initialize next-props))))
+		    (if (@ self state context is-point)
+			(setf (@ new-state action-registered)
+			      (@ next-props action)))
+		    (chain this (set-state new-state)))
 
-     (if (and (not (@ self state pane-element))
-	      (not (= "undefined" (typeof (@ self props context fetch-pane-element)))))
-	 (setf (@ new-state pane-element)
-	       (chain (j-query (+ "#branch-" (@ self props context index)
-				  "-" (@ self props data id))))))
+		  (if (and (not (@ self state pane-element))
+			   (not (= "undefined" (typeof (@ self props context fetch-pane-element)))))
+		      (setf (@ new-state pane-element)
+			    (chain (j-query (+ "#branch-" (@ self props context index)
+					       "-" (@ self props data id))))))
 
-     ;; (cl :909 (@ self state pane-element))
-     
-     (handle-actions
-      (@ next-props action) (@ self state) next-props
-      :actions-any-branch
-      ((set-branch-by-id
-     	(if (= (@ params id) (@ self props data id))
-     	    (chain self props context methods (set-trace (@ self props context path))))))
-      :actions-point-and-focus
-      ((move
-     	(chain self (move (@ params vector))))
-       ;; (delete-point
-       ;; 	(if (not (= true (@ next-props data meta locked)))
-       ;; 	    (chain self state context methods (grow-point nil (create)))))
-       ;; (record
-       ;; 	(if (@ self props context clipboard-id)
-       ;; 	    (chain self state context methods (grow-point (create)
-       ;; 							  (create vector (@ params vector)
-       ;; 								  point (@ self state point)
-       ;; 								  branch (@ self state data id))
-       ;; 							  (@ self props context clipboard-id)))))
-       ;; (recall
-       ;; 	(if (and (@ self props context history-id)
-       ;; 		 (not (= true (@ next-props data meta locked))))
-       ;; 	    (chain self state context methods (grow-point (create)
-       ;; 							  (create vector (@ params vector)
-       ;; 								  "recall-branch" (@ self state data id))
-       ;; 							  (@ self props context history-id)))))
-       (trigger-primary
-       	(cond ((= "move" (@ self state context mode))
-       	       (if (not (= true (@ next-props data meta locked)))
-       		   (chain self state context methods (set-mode "set"))))
-       	      ((= "write" (@ self props context mode))
-       	       (progn (chain self (set-state (create action-registered nil)))
-       		      ;; (chain self state context methods (grow-point (@ self state point-attrs delta)
-       		      ;; 						    (create)))
-		      (chain console (log 222 (@ self state content value)
-					  (chain -j-s-o-n (stringify (@ self state content value)))))
-		      ))))
-       ;; (trigger-secondary
-       ;; 	(if (not (= true (@ next-props data meta locked)))
-       ;; 	    (chain self state context methods (set-mode "set"))))
-       (trigger-anti
-     	(chain self state context methods (set-mode "move")))
-       (commit
-     	(if (not (= true (@ next-props data meta locked)))
-     	    (chain self state context methods (grow-branch (@ self state space)
-     							   (create save true)))))))
-     )
+		  ;; (cl :909 (@ self state pane-element))
+		  (cl 919 next-props)
+		  ;;(cl 919)
+		  
+		  (handle-actions
+		   (@ next-props action) (@ self state) next-props
+		   :actions-any-branch
+		   ((set-branch-by-id
+		     (if (= (@ params id) (@ self props data id))
+			 (chain self props context methods (set-trace (@ self props context path))))))
+		   :actions-point-and-focus
+		   ((move ;;(cl :aac)
+		     (chain self (move (@ params vector))))
+		    ;; (delete-point
+		    ;; 	(if (not (= true (@ next-props data meta locked)))
+		    ;; 	    (chain self state context methods (grow-point nil (create)))))
+		    ;; (record
+		    ;; 	(if (@ self props context clipboard-id)
+		    ;; 	    (chain self state context methods (grow-point (create)
+		    ;; 							  (create vector (@ params vector)
+		    ;; 								  point (@ self state point)
+		    ;; 								  branch (@ self state data id))
+		    ;; 							  (@ self props context clipboard-id)))))
+		    (trigger-primary (cl :aaa))
+		    (trigger-secondary (cl :bbb))
+		    (trigger-anti
+		     (chain self state context methods (set-mode "move")))
+		    (commit
+		     (if (not (= true (@ next-props data meta locked)))
+			 (chain self state context methods (grow-branch (@ self state space)
+									(create save true)))))))
+		  ))))
    ;; :should-component-update
    ;; (lambda (next-props next-state)
    ;;   (or (not (@ next-state context current))
@@ -269,7 +222,6 @@
 										(@ item children) null)
 									  item)))
 				   (@ downstream children) null)
-			     ;;(chain self (display-format downstream))
 			     downstream))))
 	    (params (create width (@ self container-element 0 client-width)
 			    section 32
@@ -284,7 +236,6 @@
 						     node-expanded (lambda (d) (@ d children)))
 			    interface-actions (create expand-toggle-node
 						      (lambda (d)
-							(cl :exp d)
 							(if (not (@ d children))
 							    (if (and (@ d data to) (not (@ d _children)))
 								(setf (@ d children)
@@ -296,26 +247,27 @@
 							(funcall update d)))))
 	    (update (lambda (source)
 		      (setq nodes (chain root (descendants))
-			    faux-container (chain self props (connect-faux-d-o-m "div" "chart")))
-		      (setq svg-doc (chain window d3 (select faux-container)
-		      			   (select "svg")))
-		      ;;(cl :doc svg-doc)
-		      (chain window d3 (select "svg") (transition)
-			     (duration (@ params duration)) (style "height" "600px"))
-
+			    depth-map (list))
 		      (let ((index 0))
 			(chain root (each-before (lambda (n)
 						   (setf (@ n x) (- (* index (@ params section))
 								    (/ (@ params section) 2))
 							 (@ n y) (+ 3 (* horizontal-interval (1- (@ n depth))))
+							 (@ n index) index
+							 (getprop depth-map index) (@ n depth)
 							 index (1+ index))))))
-		      (setq node (chain svg-doc (select-all ".item")
+		      (cl :dm depth-map (@ self state point))
+		      (setq node (chain main-display (select-all ".item")
 					(data nodes (lambda (d) (@ d id))))
 			    node-enter (chain node (enter)
 					      (append "svg:g")
 					      (attr "class" (lambda (d)
 							      (let ((type-parts nil)
-								    (obj-class "item ")
+								    (obj-class (+ "obj-" (@ d index)
+										  " item "
+										  (if (= (@ d index)
+											 (1+ (@ self state point)))
+										      "point " "")))
 								    (link-id-parts nil))
 								(if (@ d type)
 								    (let ((type-parts (chain d type (split "_"))))
@@ -335,7 +287,6 @@
 										      (+ obj-class "broken-link ")))
 									    obj-class)))
 								    obj-class))))
-					      (attr "id" (lambda (d) (+ "obj-" (@ d depth))))
 					      (attr "transform" (lambda (d)
 					      			  (+ "translate(" (@ d y) "," (@ d x) ")")))
 					      (attr "display" (lambda (d) (if (= 0 (@ d depth))
@@ -388,10 +339,10 @@
 		      ;; 	     (remove))
 
 		      (chain link (exit) (remove))
-		      
+
 		      (chain root (each (lambda (d) (setf (@ d x0) (@ d x)
 							  (@ d y0) (@ d y)))))
-		      
+
 		      (if callback (funcall callback (create node node node-enter node-enter params params)))
 
 		      (chain self props (animate-faux-d-o-m (@ params duration)))))
@@ -527,71 +478,26 @@
 	   
        ;; 	   (if callback (funcall callback (create node node node-enter node-enter params params))))
        ))
-   ;; :component-will-mount
-   ;; (lambda ()
-   ;;   (let ((faux-container (chain this props (connect-faux-d-o-m "div" "chart"))))
-   ;;     (chain window d3 (select faux-container)
-   ;; 	      (append "svg"))))
-   ;; :icon-effect
-   ;; (lambda (params
-   ;;      nodeIcon = eachNode.append('svg:g')
-   ;;          .attr('class', function(d) {
-   ;;              var x, toReturn;
-   ;;              if (typeof d.types !== 'array') return d.type + ' object-data-fetch glyph';
-   ;;              else {
-   ;;                  toReturn = '';
-   ;;                  for (x = 0; x < d.types.length; x += 1) toReturn += d.types[x] + ' ';
-   ;;                  //console.log(toReturn + ' object-data-fetch');
-   ;;                  return toReturn + ' object-data-fetch glyph';
-   ;;              }
-   ;;          })
-   ;; 	(let ((node-icon (chain params node-enter (append "svg:g")
-   ;; 				(attr "class" (lambda (d)
-   ;; 						(if (/= "array" (typeof (@ d type)))
-   ;; 						    (+ (@ d type) " object-data-fetch glyph")))))))
-   ;; 	  (chain node-icon (append "svg:path")
-   ;; 		 (attr "class" (lambda (d)
-   ;; 				 (let ((to-return "outer-meta-spokes"))
-   ;; 				   ;; complete...
-   ;; 				   to-return)))
-   ;; 		 (attr "d" (lambda (d) ""
-   ;; 				   ;; manifest outer spoke points
-   ;; 				   ))
-   ;; 		 (attr "transform" "translate("")")))))
-		    
-
-   ;;   )
    :component-did-mount
    (lambda ()
      (let* ((self this)
-	    (faux-container (chain self props (connect-faux-d-o-m "div" "chart")))
-	    (main-display (chain window d3 (select faux-container)
-				 (append "svg")
-				 (attr "class" "vector-interface"))))
-       (cl :fc faux-container)
+   	    (faux-container (chain self props (connect-faux-d-o-m "div" "chart")))
+   	    (main-display (chain window d3 (select faux-container)
+   				 (append "svg")
+   				 (attr "class" "vector-interface"))))
        (chain self (make-display main-display (lambda (params)
-						;; (cl :par params)
-						(chain subcomponents (effects params))))))))
-  (defvar self this)
+       						(chain subcomponents (effects params)))))))
+   )
   ;(cl "SHR" (@ this state just-updated))
   ;;(chain console (log :abc (@ self state data) -slate-editor -slate-value))
   ;(chain console (log :ssp (@ self state space)))
   ;;(let ((-data-sheet (new -react-data-sheet)))
   ;; (chain console (log :cc (@ self props action) (@ self state context mode)
   ;; 		      (@ self state context)))
-  (panic:jsl (:div ;;:value (@ self state content)
-  		   :id "testcomponent"
-  		   :on-change (lambda (value)
-  				(chain self (set-state (create content (@ value value)))))
-		   :ref (lambda (ref)
-			  (if (not (@ self container-element))
-			      (setf (@ self container-element) (j-query ref))))
-  		   ;; :on-focus (lambda (value)
-  		   ;; 		 (chain self state context methods (set-mode "write")))
-  		   ;; :on-blur (lambda (value)
-  		   ;; 		;;(chain console (log :bb value))
-  		   ;; 		(chain self state context methods (set-mode "move")))
-  		   :style (create height "100%" padding "4px 6px" color "#002b36")
-		   (@ self props chart)))
-  ;;(@ self props chart)
-))
+  (let ((self this))
+    (panic:jsl (:div :on-change (lambda (value) (chain self (set-state (create content (@ value value)))))
+		     :ref (lambda (ref)
+			    (if (not (@ self container-element))
+				(setf (@ self container-element) (j-query ref))))
+		     (@ self props chart)
+		     )))))

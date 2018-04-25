@@ -431,6 +431,7 @@
 				     ;; JSL composition happens correctly; it expects the name of a component
 				     ;; to begin with a capital letter
 				     (subcomponent -this-component
+						   ;;(@ view-modes graph-shape-view)
 						   branch :context (index
 								    0
 								    set-interaction this-set-interaction
@@ -869,11 +870,15 @@
 				       new-state)))))
 	  :set-branch-by-id
 	  (lambda (id)
-	    (chain this (set-state (lambda () (create action (create id "setBranchById"
-								     params (create id id)))))))
+	    (let ((this-date (new (-date))))
+	      (chain this (set-state (lambda () (create action (create id "setBranchById"
+								       params (create id id)
+								       time (chain this-date (get-time)))))))))
 	  :act
 	  (lambda (id params)
-	    (chain this (set-state (lambda () (create action (create id id params params))))))
+	    (let ((this-date (new (-date))))
+	      (chain this (set-state (lambda () (create action (create id id params params
+								       time (chain this-date (get-time)))))))))
 	  :transact
 	  (lambda (portal-method params callback)
 	    (defvar self this)
