@@ -424,14 +424,15 @@
 						 branch :context (index 0)))
 				  ((and (= (@ branch type 0) "shape")
 					(= (@ branch type 1) "graph"))
-				   (let ((-this-component (chain window -react-faux-dom
-								 (with-faux-d-o-m (@ view-modes
-										     graph-shape-view)))))
+				   (let ((-this-component ;; (chain window -react-faux-dom
+							  ;; 	 (with-faux-d-o-m (@ view-modes
+							  ;; 			     graph-shape-view)))
+					   nil))
 				     ;; the leading dash in -this-component is required so that the
 				     ;; JSL composition happens correctly; it expects the name of a component
 				     ;; to begin with a capital letter
-				     (subcomponent -this-component
-						   ;;(@ view-modes graph-shape-view)
+				     (subcomponent ;;-this-component
+						   (@ view-modes graph-shape-view)
 						   branch :context (index
 								    0
 								    set-interaction this-set-interaction

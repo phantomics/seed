@@ -93,26 +93,26 @@
       `(chain self (set-state (create ,@(process-pairs (if deep (rest items)
 							   items))))))))
 
-(defmacro subcomponent (symbol data &optional &key (context nil) (addendum nil))
-  ;; Create a subcomponent for use within a Seed interface.
-  (declare (ignorable addendum))
-  (labels ((assign-sub-context (pairs &optional output)
-	     (if pairs
-		 (assign-sub-context (cddr pairs)
-				     (append (list `(@ sub-con ,(first pairs)) (second pairs))
-					     output))
-		 output)))
-    `(panic:jsl (,(if (symbolp symbol)
-		      (intern (string-upcase symbol) "KEYWORD")
-		      symbol)
-		  :data ,data
-		  :context (let ((sub-con (chain j-query (extend t (create) (@ self state context)))))
-			     (progn ,(cons 'setf (assign-sub-context context))
-				    sub-con))
-		  :action (if (not (= "undefined" (typeof (@ self act))))
-			      ;; the act property is only present at the top-level portal component
-			      (@ self state action)
-			      (@ self props action))))))
+;; (defmacro subcomponent (symbol data &optional &key (context nil) (addendum nil))
+;;   ;; Create a subcomponent for use within a Seed interface.
+;;   (declare (ignorable addendum))
+;;   (labels ((assign-sub-context (pairs &optional output)
+;; 	     (if pairs
+;; 		 (assign-sub-context (cddr pairs)
+;; 				     (append (list `(@ sub-con ,(first pairs)) (second pairs))
+;; 					     output))
+;; 		 output)))
+;;     `(panic:jsl (,(if (symbolp symbol)
+;; 		      (intern (string-upcase symbol) "KEYWORD")
+;; 		      symbol)
+;; 		  :data ,data
+;; 		  :context (let ((sub-con (chain j-query (extend t (create) (@ self state context)))))
+;; 			     (progn ,(cons 'setf (assign-sub-context context))
+;; 				    sub-con))
+;; 		  :action (if (not (= "undefined" (typeof (@ self act))))
+;; 			      ;; the act property is only present at the top-level portal component
+;; 			      (@ self state action)
+;; 			      (@ self props action))))))
 
 (defpsmacro subcomponent (symbol data &optional &key (context nil) (addendum nil))
   ;; Create a subcomponent for use within a Seed interface.
@@ -172,10 +172,10 @@
 					 `((funcall (lambda ()
 						      (let ((subcomponents (create ,@(process-subcomponents
 										      (rest item)))))
-							,(funcall (lambda (item)
+							,@(mapcar (lambda (item)
 								    `(defcomponent (@ pairs ,(first item))
 									 ,@(rest item)))
-								  (first (macroexpand (list (first item)))))))))
+								  (macroexpand (list (first item))))))))
 					 (mapcar (lambda (item) `(defcomponent (@ pairs ,(first item))
 								     ,@(rest item)))
 						 (macroexpand (list item)))))
