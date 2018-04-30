@@ -6,10 +6,11 @@
 (setq title-text-standard
       `(lambda (interface)
 	 (let ((text-xoffset-expandable (* 1.7 (@ interface params section)))
-	       (text-xoffset-unexpandable (* 1.1 (@ interface params section))))
+	       (text-xoffset-unexpandable (* 1.1 (@ interface params section)))
+	       (text-yposition 4.8))
 	   (chain interface node-enter (append "text")
 		  (attr "class" "text")
-		  (attr "dy" 4.8)
+		  (attr "dy" text-yposition)
 		  (attr "x" (lambda (d) (if (chain interface params visualizer-logic (node-has-children d))
 					    text-xoffset-expandable text-xoffset-unexpandable)))
 		  (text (lambda (d) (if (@ d data meta) (@ d data meta title))))))))
@@ -162,7 +163,7 @@
 		;; 				     0 crossbar-length))))
 	       
 	       (chain button (append "svg:circle")
-		      (on "click" (@ interface params interface-actions expand-toggle-node))
+		      (on "click" (@ interface params interface-actions expand-toggle-object))
 		      (attr "opacity" 0)
 		      (attr "cy" 0)
 		      (attr "cx" main-radius)
@@ -213,8 +214,7 @@
 		      (attr "height" text-outer-frame-height)
 		      (attr "width" get-node-bar-width)
 		      (attr "opacity" 0)
-		      ;; TODO: add control interactions
-		      )
+		      (on "click" (@ interface params interface-actions set-point-object)))
 
 	       (chain icon-title-frame (append "svg:circle")
 		      (attr "class" "circle-frame")
@@ -224,9 +224,7 @@
 
 (defvar standard-effect-set)
 (setq standard-effect-set
-      `(list ,icon-title-frame-standard ,circle-icon-standard ,title-text-standard ,expand-button-standard)
-      ;;`(list ,icon-title-frame-standard ,title-text-standard)
-      )
+      `(list ,title-text-standard ,icon-title-frame-standard ,circle-icon-standard ,expand-button-standard))
 
 (defmacro standard-vector-effects ()
   `(lambda (interface)

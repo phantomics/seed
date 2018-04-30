@@ -873,13 +873,11 @@
 	  (lambda (id)
 	    (let ((this-date (new (-date))))
 	      (chain this (set-state (lambda () (create action (create id "setBranchById"
-								       params (create id id)
-								       time (chain this-date (get-time)))))))))
+								       params (create id id))))))))
 	  :act
 	  (lambda (id params)
 	    (let ((this-date (new (-date))))
-	      (chain this (set-state (lambda () (create action (create id id params params
-								       time (chain this-date (get-time)))))))))
+	      (chain this (set-state (lambda () (create action (create id id params params)))))))
 	  :transact
 	  (lambda (portal-method params callback)
 	    (defvar self this)
@@ -899,7 +897,7 @@
 			  success
 			  (lambda (data)
 			    (defvar this-date (new (-date)))
-			    ;; (chain console (log "DAT2" data (@ self state data) (@ self state)))
+			    (chain console (log "DAT2" data (@ self state data) (@ self state)))
 			    ;; (chain console (log "DAT2" (chain -j-s-o-n (stringify data))))
 			    (chain self (set-state (lambda (previous-state current-props)
 						     (create
