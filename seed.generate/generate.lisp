@@ -472,6 +472,15 @@ inclusion of aport macro here just acts as passthrough
 	   ;; assign portal object to *portal* and the grow method to the 'grow symbol
 	   (setf (symbol-function (quote ,(intern "GROW" (package-name *package*))))
 		 (lambda (,portal-package-id &optional ,sprid ,brname ,data ,params)
+		   ;; if this (grow) function is called with only the portal package argument, meaning
+		   ;; that most likely it is being invoked upon a Seed interface page load, clear the
+		   ;; active system so that the user is presented with the introductory screen.
+		   ;; This behavior works for the time being but it may eventually prove undesirable,
+		   ;; so later provisions may be made for someone reloading a Seed interface to pick up
+		   ;; immediately where they left off.
+		   (if (not ,sprid)
+		       (setf (getf (sprout-meta ,port) :active-system)
+			     nil))
 		   (let ((,sprout (if ,sprid (find-portal-contact-by-sprout-name ,port ,sprid) ,port))
 			 (,params (postprocess-structure ,params)))
 		     ;; if a sprout id and branch-name exist, input is being sent, so mediate
