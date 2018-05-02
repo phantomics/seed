@@ -11,5 +11,5 @@
      (cons `(,',meta-symbol :add-link :if (:interaction :add-graph-link))
 	   ,output-symbol))
     ((eq :remove-graph-object (first ,params-symbol))
-     (cons `(,',meta-symbol :delete :if (:interaction :remove-graph-object))
+     (cons `(,',meta-symbol :delete-object :if (:interaction :remove-graph-object))
 	   ,output-symbol))))

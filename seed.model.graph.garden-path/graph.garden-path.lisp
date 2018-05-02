@@ -9,7 +9,7 @@
     (labels ((build-conditions (node)
 	       (let ((last-link-index (1- (length (getf node :links)))))
 		 `(cond ,@(mapcar (lambda (link-data link-index)
-				    (let ((nix (position (getf link-data :id)
+				    (let ((nix (position (getf link-data :to)
 							 node-ids))
 					  (link link-data))
 				      (cond ((or (eq :switch (getf node :type))
@@ -64,7 +64,11 @@
 
 (defun generate-blank-link (meta)
   "Generate a blank link to connect garden path nodes."
-  (list :meta meta :items nil :if nil))
+  (list :id (let ((str (make-string-output-stream)))
+	      (uuid:format-as-urn str (uuid:make-v1-uuid))
+	      (intern (string-upcase (third (split-sequence #\: (get-output-stream-string str))))
+		      "KEYWORD"))
+	:meta meta :items nil :if nil))
 
 (defun add-blank-node (list type meta)
   (multiple-value-bind (output-item output-id)
@@ -79,6 +83,17 @@
 		  (append (getf item :links)
 			  (list (generate-blank-link meta))))))
   list)
+
+(defun remove-graph-element (list node-id &optional link-id)
+  (loop for node in list when (or link-id (not (eq node-id (getf node :id))))
+     collect (if (and link-id (eq node-id (getf node :id)))
+		 (let ((new-node (copy-tree node)))
+		   (progn (setf (getf new-node :links)
+				(loop for link in (getf new-node :links)
+				   when (not (eq link-id (getf link :id)))
+				   collect link))
+			  new-node))
+		 node)))
 
 (defun preprocess-nodes (input)
   "Prepare a set of nodes for expression as JSON."

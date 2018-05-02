@@ -49,7 +49,7 @@
 
  ;; get a branch image
  (get-image (&optional source)
-	    `(print (branch-image branch)))
+	    `(branch-image branch))
 
  ;; record a branch image
  (put-image (follows reagent)
@@ -232,9 +232,6 @@
 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))
 	    output)))
 
- (junk (follows)
-       `((print data)))
- 
  ;; converts data into display-ready JSON format
  (json-to-display (follows reagent)
 		  `((preprocess-structure (if ,reagent ,reagent data))))
