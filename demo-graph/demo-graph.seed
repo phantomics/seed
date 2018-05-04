@@ -1,0 +1,30 @@
+(sprout :demo-graph :system (:DESCRIPTION
+			     "This is demoGraph, a package created to demonstrate Seed's graph explorer module."
+			     :AUTHOR "Andrew Sengul" :LICENSE "GPL-3.0")
+        :package ((:use :common-lisp) (:export))
+        :branches
+        ((stage (in (set-time))
+                (out (set-type :stage)
+		     (display-params (:primary (:graph :node)))
+		     (codec)))
+	 (graph (in (set-time)
+		    (stage-params :secondary-controls
+				  (:add-graph-node :add-graph-link :remove-graph-object))
+		    (put-image (graph-garden-path-content)))
+		(out (set-type :shape :graph)
+		     (if-condition (is-image :not)
+				   (:then (put-image (graph-garden-path-content (get-file :-self) :main-graph))
+					  (set-time) (fork-to :history)
+					  (json-to-display (graph-garden-path-display)))
+				   (:else (json-to-display (graph-garden-path-display (get-image)))))))
+	 (node (in (set-time)
+		   (put-image (graph-garden-path-node-content)))
+	       (out (set-type :form)
+		    (if-condition (is-image :not)
+                                  (:then (put-image (graph-garden-path-node-content (get-image :graph)
+										    (get-meta :point
+											      :of-branch
+											      :graph)))
+					 (set-time) (codec))
+       	                          (:else (set-data (get-image)) (form)
+                                         (codec)))))))
