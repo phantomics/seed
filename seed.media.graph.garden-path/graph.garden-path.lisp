@@ -6,7 +6,10 @@
  media-spec-graph-garden-path
  (graph-garden-path-content
   (follows reagent graph-id)
-  `((cond ((get-param :add-node)
+  `((cond ((get-param :set-point)
+	   (set-branch-meta branch :point (intern (get-param :node-id) "KEYWORD"))
+	   (branch-image branch))
+	  ((get-param :add-node)
 	   (multiple-value-bind (output-data new-node-id)
 	       (add-blank-node (branch-image branch)
 			       (get-param :object-type)
@@ -54,5 +57,6 @@
 	 do (if (string= (string-upcase ,point)
 			 (string-upcase (getf item :id)))
 		(setq to-return item)))
-      (list to-return))))
+      `((node :title ,(getf (getf to-return :meta) :title)
+	      :comment ,(getf (getf to-return :meta) :about))))))
  )
