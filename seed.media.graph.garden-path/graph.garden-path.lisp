@@ -41,4 +41,18 @@
 
  (graph-garden-path-display
   (follows reagent)
-  `((preprocess-nodes ,(if reagent reagent `(branch-image branch))))))
+  `((if (not (of-branch-meta branch :point))
+	(set-branch-meta branch :point (getf (first (branch-image branch))
+					     :id)))
+    (preprocess-nodes ,(if reagent reagent `(branch-image branch)))))
+
+ (graph-garden-path-node-content
+  (follows reagent point)
+  `((let ((to-return nil))
+      (print (list :reg reagent ,point))
+      (loop for item in reagent while (not to-return)
+	 do (if (string= (string-upcase ,point)
+			 (string-upcase (getf item :id)))
+		(setq to-return item)))
+      (list to-return))))
+ )

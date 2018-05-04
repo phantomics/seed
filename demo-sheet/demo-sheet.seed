@@ -5,7 +5,7 @@
         :branches
         ((stage (in (set-time))
                 (out (set-type :stage)
-		     (display-params (:primary (:main :cells) (:text :space) (:doc) (:graph))
+		     (display-params (:primary (:main :cells) (:text :space) (:doc) (:graph :node))
 				     (:adjunct (:clipboard :history)))
 		     (codec)))
          (main (in (contingencies :sheet-lock)
@@ -88,6 +88,23 @@
 					  (set-time) (fork-to :history)
 					  (json-to-display (graph-garden-path-display)))
 				   (:else (json-to-display (graph-garden-path-display (get-image)))))))
+	 (node (in (set-time)
+		   (put-image (graph-garden-path-node-content)))
+	       (out (set-type :form)
+		    ;; (if-condition (is-image :not)
+		    ;; 		  (:then (put-image (graph-garden-path-node-content (get-image :graph)
+		    ;; 								    (get-meta :point
+		    ;; 									      :of-branch
+		    ;; 									      :graph))))
+		    ;; 		  (:else (get-image)))
+		    (if-condition (is-image :not)
+                                  (:then (put-image (graph-garden-path-node-content (get-image :graph)
+										    (get-meta :point
+											      :of-branch
+											      :graph)))
+					 (set-time) (codec))
+       	                          (:else (set-data (get-image)) (form)
+                                         (codec)))))
 	 (clipboard (in (set-time) (put-image (clipboard (get-image))))
                     (out (set-type :form) (clipboard)
                          (if-condition (is-image :not) (:then (put-image))

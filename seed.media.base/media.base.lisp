@@ -49,7 +49,9 @@
 
  ;; get a branch image
  (get-image (&optional source)
-	    `(branch-image branch))
+	    `(branch-image ,(if source
+				`(find-branch-by-name ,source sprout)
+				'branch)))
 
  ;; record a branch image
  (put-image (follows reagent)
@@ -75,6 +77,14 @@
  (set-data (follows reagent)
 	   (list reagent))
 
+ ;; get a property of branch metadata
+ (get-meta (source &rest params)
+	   `(of-branch-meta ,(if (getf params :of-branch)
+				 `(find-branch-by-name ,(getf params :of-branch)
+						       sprout)
+				 'branch)
+			    ,source))
+ 
  ;; set a property of the branch's metadata
  (set-meta (follows reagent value)
 	   `((set-branch-meta branch ,(intern (string-upcase reagent) "KEYWORD")
