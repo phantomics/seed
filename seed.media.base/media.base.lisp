@@ -49,8 +49,7 @@
 
  ;; get a branch image
  (get-image (&optional source)
-	    `(branch-image ,(if source
-				`(find-branch-by-name ,source sprout)
+	    `(branch-image ,(if source `(find-branch-by-name ,source sprout)
 				'branch)))
 
  ;; record a branch image
@@ -58,8 +57,10 @@
 	    `((setf (branch-image branch) ,(if reagent 'reagent 'data))))
 
  ;; set the branch image to nil
- (nullify-image (follows)
-		`((setf (branch-image branch) nil)))
+ (nullify-image (follows reagent)
+		`((setf (branch-image ,(if reagent `(find-branch-by-name ,reagent sprout)
+					   'branch))
+			nil)))
 
  ;; get a referenced value from a system
  (get-value (follows source)
@@ -127,6 +128,9 @@
  (is-param (key true-or-not)
 	   `(get-param ,key))
 
+ (set-param (follows key value)
+	    `((set-param ,key ,value)))
+ 
  ;; fetch a piece of branch metadata; functions as a check whether said element is nil or not
  (is-meta (key true-or-not)
 	  `(of-branch-meta branch ,key))
@@ -144,6 +148,7 @@
 	    data))
  
  ;; transfer current input to a different portal
+ ;; TODO: this is a WIP
  (to-portal (follows reagent)
 	    `(()))
 

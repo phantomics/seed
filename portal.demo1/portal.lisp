@@ -28,7 +28,7 @@
 				      :url "portal"
 				      :component :-portal))
 		   :style (css-base
-		   	   css-symbol-style-camel-case
+		   	   css-symbol-style-dash-separated
 		   	   css-animation-silicon-sky
 			   css-ivector-standard)
 		   :foundation (:script (seed.foreign.browser-spec.script.base)

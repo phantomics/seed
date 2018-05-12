@@ -314,173 +314,174 @@
 			   (getprop (@ self state data branches) brix "id"))
 		   do (setq set-index brix))))
 	  (setf (@ self size) (@ space length))
-	  (let ((branch (chain self state data branches
-			       (find (lambda (branch)
-				       (= (@ branch id) (chain self props context meta branch (substr 2))))))))
-	    (setf (getprop branch-index (@ branch id)) (create)
-		  (getprop interactions (@ branch id)) (create)
-		  (getprop branch-index (@ branch id) "setInteraction")
-		  (lambda (interaction-name interaction)
-		    (setf (getprop interactions (@ branch id) interaction-name)
-			  interaction))
-		  (getprop branch-index (@ branch id) "getInteraction")
-		  (lambda (interaction-name)
-		    ;;(cl :inout interactions (@ branch id) interaction-name)
-		    (getprop interactions (@ branch id) interaction-name)))
-	    (if (= "undefined" (typeof fetch-pane-element))
-		(setq fetch-pane-element (lambda (element) (if element
-							       (setf (@ self pane-element) element)
-							       (@ self pane-element)))))
-	    (let* ((index (@ self props context meta ct))
-		   (this-set-interaction (getprop branch-index (@ branch id) "setInteraction"))
-		   (this-get-interaction (getprop branch-index (@ branch id) "getInteraction"))
-		   (element-ids (funcall (lambda ()
-					   (let ((history-index nil)
-						 (cboard-index nil))
-					     (chain self props data branches (map (lambda (branch index)
-										    (if (= "history" (@ branch id))
-											(setq history-index index))
-										    (if (= "clipboard" (@ branch id))
-											(setq cboard-index index)))))
-					     (create history-index history-index
-						     cboard-index cboard-index)))))
-		   (flip-axis (lambda (vector) (list (@ vector 1) (- (@ vector 0)))))
-		   (trace-index (getprop (@ self state context trace) 
-					 (@ self state context path length)))
-		   (this-index (if (@ self state context on-trace)
-				   (if (not (= "undefined" (typeof trace-index)))
-				       trace-index 0)
-				   -1))
-		   (element (cond ((or (not branch)
-				       (= (@ branch id) "stage")
-				       (= (@ branch id) "clipboard")
-				       (= (@ branch id) "history"))
-				   nil)
-				  ((= (@ branch type 0) "form")
-				   (subcomponent (@ view-modes form-view)
-						 branch
-						 :context
-						 (index 
-						  0
-						  interactions interactions
-						  parent-system (@ self props context working-system)
-						  branch-index index
-						  ;; TODO: the above only needed for glyph rendering -
-						  ;; is there a way to obviate?
-						  force-render t
-						  ;;(@ sub-con pane-specs) (@ self element-specs)
-						  fetch-pane-element fetch-pane-element
-						  trace-category "major"
-						  parent-meta (@ self props context meta)
-						  retracer (@ self retrace)
-						  set-interaction this-set-interaction
-						  menu-content
-						  (if (and (@ self state branch-modes)
-							   (= "menu" (getprop (@ self state branch-modes) index)))
-						      (@ self props space 0 mt if contextual-menu format))
-						  history-id (if (@ element-ids history-index) "history" nil)
-						  clipboard-id (if (@ element-ids cboard-index) "clipboard" nil)
-						  ;; cut the trace if the menu is active - prevents
-						  ;; movement commands from registering in form area
-						  ;; and menu at the same time
-						  on-trace (if (and (not (= "undefined" 
-									    (typeof (@ self state branch-modes))))
-								    (= "menu" (@ self state branch-modes 0)))
-							       false (@ self state context on-trace)))))
-				  ((= (@ branch type 0) "text")
-				   (subcomponent (@ view-modes text-view)
-						 branch
-						 :context (index
+	  (if (< 0 (@ self state data branches length))
+	      (let ((branch (chain self state data branches
+				   (find (lambda (branch)
+					   (= (@ branch id) (chain self props context meta branch (substr 2))))))))
+		(setf (getprop branch-index (@ branch id)) (create)
+		      (getprop interactions (@ branch id)) (create)
+		      (getprop branch-index (@ branch id) "setInteraction")
+		      (lambda (interaction-name interaction)
+			(setf (getprop interactions (@ branch id) interaction-name)
+			      interaction))
+		      (getprop branch-index (@ branch id) "getInteraction")
+		      (lambda (interaction-name)
+			;;(cl :inout interactions (@ branch id) interaction-name)
+			(getprop interactions (@ branch id) interaction-name)))
+		(if (= "undefined" (typeof fetch-pane-element))
+		    (setq fetch-pane-element (lambda (element) (if element
+								   (setf (@ self pane-element) element)
+								   (@ self pane-element)))))
+		(let* ((index (@ self props context meta ct))
+		       (this-set-interaction (getprop branch-index (@ branch id) "setInteraction"))
+		       (this-get-interaction (getprop branch-index (@ branch id) "getInteraction"))
+		       (element-ids (funcall (lambda ()
+					       (let ((history-index nil)
+						     (cboard-index nil))
+						 (chain self props data branches (map (lambda (branch index)
+											(if (= "history" (@ branch id))
+											    (setq history-index index))
+											(if (= "clipboard" (@ branch id))
+											    (setq cboard-index index)))))
+						 (create history-index history-index
+							 cboard-index cboard-index)))))
+		       (flip-axis (lambda (vector) (list (@ vector 1) (- (@ vector 0)))))
+		       (trace-index (getprop (@ self state context trace) 
+					     (@ self state context path length)))
+		       (this-index (if (@ self state context on-trace)
+				       (if (not (= "undefined" (typeof trace-index)))
+					   trace-index 0)
+				       -1))
+		       (element (cond ((or (not branch)
+					   (= (@ branch id) "stage")
+					   (= (@ branch id) "clipboard")
+					   (= (@ branch id) "history"))
+				       nil)
+				      ((= (@ branch type 0) "form")
+				       (subcomponent (@ view-modes form-view)
+						     branch
+						     :context
+						     (index 
+						      0
+						      interactions interactions
+						      parent-system (@ self props context working-system)
+						      branch-index index
+						      ;; TODO: the above only needed for glyph rendering -
+						      ;; is there a way to obviate?
+						      force-render t
+						      ;;(@ sub-con pane-specs) (@ self element-specs)
+						      fetch-pane-element fetch-pane-element
+						      trace-category "major"
+						      parent-meta (@ self props context meta)
+						      retracer (@ self retrace)
+						      set-interaction this-set-interaction
+						      menu-content
+						      (if (and (@ self state branch-modes)
+							       (= "menu" (getprop (@ self state branch-modes) index)))
+							  (@ self props space 0 mt if contextual-menu format))
+						      history-id (if (@ element-ids history-index) "history" nil)
+						      clipboard-id (if (@ element-ids cboard-index) "clipboard" nil)
+						      ;; cut the trace if the menu is active - prevents
+						      ;; movement commands from registering in form area
+						      ;; and menu at the same time
+						      on-trace (if (and (not (= "undefined" 
+										(typeof (@ self state branch-modes))))
+									(= "menu" (@ self state branch-modes 0)))
+								   false (@ self state context on-trace)))))
+				      ((= (@ branch type 0) "text")
+				       (subcomponent (@ view-modes text-view)
+						     branch
+						     :context (index
+							       0
+							       set-interaction this-set-interaction)))
+				      ((= (@ branch type 0) "document")
+				       (subcomponent (@ view-modes document-view)
+						     branch
+						     :context (index
+							       0
+							       set-interaction this-set-interaction)))
+				      ((and (= (@ branch type 0) "matrix")
+					    (= (@ branch type 1) "spreadsheet"))
+				       ;;(cl :vm (@ window d3) (@ view-modes) (@ view-modes block-space-view))
+				       (subcomponent (@ view-modes sheet-view)
+						     branch :context (index
+								      0
+								      interactions interactions
+								      branch-index index
+								      trace-category "major"
+								      parent-meta (@ self props context meta)
+								      pane-specs (@ self element-specs)
+								      ;;pane-element (@ self pane-element)
+								      fetch-pane-element fetch-pane-element
+								      retracer (@ self retrace)
+								      set-interaction this-set-interaction
+								      history-id (if (@ element-ids history-index)
+										     "history" nil)
+								      clipboard-id (if (@ element-ids cboard-index)
+										       "clipboard" nil))))
+				      ((and (= (@ branch type 0) "space")
+					    (= (@ branch type 1) "block"))
+				       (subcomponent (@ view-modes block-space-view)
+						     branch :context (index 0)))
+				      ((and (= (@ branch type 0) "shape")
+					    (= (@ branch type 1) "graph"))
+				       (let ((-this-component ;; (chain window -react-faux-dom
+					      ;; 	 (with-faux-d-o-m (@ view-modes
+					      ;; 			     graph-shape-view)))
+					      nil))
+					 ;; the leading dash in -this-component is required so that the
+					 ;; JSL composition happens correctly; it expects the name of a component
+					 ;; to begin with a capital letter
+					 (subcomponent ;;-this-component
+					  (@ view-modes graph-shape-view)
+					  branch :context (index
 							   0
-							   set-interaction this-set-interaction)))
-				  ((= (@ branch type 0) "document")
-				   (subcomponent (@ view-modes document-view)
-						 branch
-						 :context (index
-							   0
-							   set-interaction this-set-interaction)))
-				  ((and (= (@ branch type 0) "matrix")
-					(= (@ branch type 1) "spreadsheet"))
-				   ;;(cl :vm (@ window d3) (@ view-modes) (@ view-modes block-space-view))
-				   (subcomponent (@ view-modes sheet-view)
-						 branch :context (index
-								  0
-								  interactions interactions
-								  branch-index index
-								  trace-category "major"
-								  parent-meta (@ self props context meta)
-								  pane-specs (@ self element-specs)
-								  ;;pane-element (@ self pane-element)
-								  fetch-pane-element fetch-pane-element
-								  retracer (@ self retrace)
-								  set-interaction this-set-interaction
-								  history-id (if (@ element-ids history-index)
-										 "history" nil)
-								  clipboard-id (if (@ element-ids cboard-index)
-										   "clipboard" nil))))
-				  ((and (= (@ branch type 0) "space")
-					(= (@ branch type 1) "block"))
-				   (subcomponent (@ view-modes block-space-view)
-						 branch :context (index 0)))
-				  ((and (= (@ branch type 0) "shape")
-					(= (@ branch type 1) "graph"))
-				   (let ((-this-component ;; (chain window -react-faux-dom
-							  ;; 	 (with-faux-d-o-m (@ view-modes
-							  ;; 			     graph-shape-view)))
-					   nil))
-				     ;; the leading dash in -this-component is required so that the
-				     ;; JSL composition happens correctly; it expects the name of a component
-				     ;; to begin with a capital letter
-				     (subcomponent ;;-this-component
-						   (@ view-modes graph-shape-view)
-						   branch :context (index
-								    0
-								    set-interaction this-set-interaction
-								    parent-system
-								    (@ self props context working-system)))))
-				  ((and (= (@ branch type 0) "graphic")
-					(= (@ branch type 1) "bitmap"))
-				   (subcomponent -remote-image-view (@ branch data)
-						 :context (index index)))
-				  ((= (@ branch type 0) "html-element")
-				   (subcomponent -html-display (@ branch data)
-						 :context (index index)))))
-		   (sub-controls (if (not (= "nil" (@ self props context meta secondary-controls format 0 vl)))
-				     ;; don't display the sub-controls if the value is 'nil',
-				     ;; i.e. there's nothing to show
-				     (subcomponent (@ view-modes form-view)
-						   (create id "sub-controls"
-							   data (@ self props context meta
-									secondary-controls format))
-						   :context (view-scope 
-							     "short"
-							     index 1
-							     interactions interactions
-							     get-interaction this-get-interaction
-							     movement-transform flip-axis)))))
-	      (if element (panic:jsl (:div :class-name (+ "portal-column " (chain branch type (join " ")))
-					   (:div :class-name (+ "header" (if (@ self state context on-trace)
-									     " point" ""))
-						 (:div :class-name "branch-info"
-						       (:span :class-name "id" (@ branch id))
-						       (if (= true (@ branch meta locked))
-							   (panic:jsl (:span :class-name "locked-indicator"
-									     "locked")))))
-					   (:div :class-name "holder"
-						 (:div :class-name "pane"
-						       ;; TODO: WARNING: CHANGE THIS AND THE
-						       ;; GLYPH RENDERING BREAKS BECAUSE
-						       ;; THE FIRST TERMINAL TD CAN'T BE FOUND!
-						       ;; FIGURE OUT WHY
-						       :id (+ "branch-" index "-" (@ branch id))
-						       :ref (lambda (ref)
-							      (let ((element (j-query ref)))
-								(if (@ element 0)
-								    (fetch-pane-element element))))
-						       element)
-						 (:div :class-name (+ "footer horizontal-view" (if (= 1 this-index)
-												   " point" ""))
-						       (:div :class-name "inner" sub-controls))))))))))
+							   set-interaction this-set-interaction
+							   parent-system
+							   (@ self props context working-system)))))
+				      ((and (= (@ branch type 0) "graphic")
+					    (= (@ branch type 1) "bitmap"))
+				       (subcomponent -remote-image-view (@ branch data)
+						     :context (index index)))
+				      ((= (@ branch type 0) "html-element")
+				       (subcomponent -html-display (@ branch data)
+						     :context (index index)))))
+		       (sub-controls (if (not (= "nil" (@ self props context meta secondary-controls format 0 vl)))
+					 ;; don't display the sub-controls if the value is 'nil',
+					 ;; i.e. there's nothing to show
+					 (subcomponent (@ view-modes form-view)
+						       (create id "sub-controls"
+							       data (@ self props context meta
+									    secondary-controls format))
+						       :context (view-scope 
+								 "short"
+								 index 1
+								 interactions interactions
+								 get-interaction this-get-interaction
+								 movement-transform flip-axis)))))
+		  (if element (panic:jsl (:div :class-name (+ "portal-column " (chain branch type (join " ")))
+					       (:div :class-name (+ "header" (if (@ self state context on-trace)
+										 " point" ""))
+						     (:div :class-name "branch-info"
+							   (:span :class-name "id" (@ branch id))
+							   (if (= true (@ branch meta locked))
+							       (panic:jsl (:span :class-name "locked-indicator"
+										 "locked")))))
+					       (:div :class-name "holder"
+						     (:div :class-name "pane"
+							   ;; TODO: WARNING: CHANGE THIS AND THE
+							   ;; GLYPH RENDERING BREAKS BECAUSE
+							   ;; THE FIRST TERMINAL TD CAN'T BE FOUND!
+							   ;; FIGURE OUT WHY
+							   :id (+ "branch-" index "-" (@ branch id))
+							   :ref (lambda (ref)
+								  (let ((element (j-query ref)))
+								    (if (@ element 0)
+									(fetch-pane-element element))))
+							   element)
+						     (:div :class-name (+ "footer horizontal-view" (if (= 1 this-index)
+												       " point" ""))
+							   (:div :class-name "inner" sub-controls)))))))))))
 
       (defun respond-branches-main (self next-props)
 	;; toggle the activation of the contextual menu in a branch
