@@ -352,11 +352,11 @@
 				       (if (not (= "undefined" (typeof trace-index)))
 					   trace-index 0)
 				       -1))
-		       (element (cond ((or (not branch)
-					   (= (@ branch id) "stage")
-					   (= (@ branch id) "clipboard")
-					   (= (@ branch id) "history"))
-				       nil)
+		       (element (cond ;; ((or (not branch)
+				      ;; 	   (= (@ branch id) "stage")
+				      ;; 	   (= (@ branch id) "clipboard")
+				      ;; 	   (= (@ branch id) "history"))
+				      ;;  nil)
 				      ((= (@ branch type 0) "form")
 				       (subcomponent (@ view-modes form-view)
 						     branch
@@ -377,7 +377,8 @@
 						      set-interaction this-set-interaction
 						      menu-content
 						      (if (and (@ self state branch-modes)
-							       (= "menu" (getprop (@ self state branch-modes) index)))
+							       (= "menu"
+								  (getprop (@ self state branch-modes) index)))
 							  (@ self props space 0 mt if contextual-menu format))
 						      history-id (if (@ element-ids history-index) "history" nil)
 						      clipboard-id (if (@ element-ids cboard-index) "clipboard" nil)
@@ -516,7 +517,6 @@
 	    (chain self (set-state (create action nil branch-modes new-modes))))))
 
     (defun fill-branches-adjunct (self space)
-      ;(cl :fl space)
       (if (< 0 (@ self state data branches length))
 	  (chain space
 		 (filter (lambda (sector)
@@ -553,7 +553,11 @@
 								    ((= "clipboard" (@ branch id)) "■")))))
 					   (:div :class-name "content"
 						 (subcomponent (@ view-modes form-view)
-							       branch :context (index index)))))))))))
+							       branch :context (index
+										index
+										parent-system
+										(@ self props context
+											working-system))))))))))))
 
     (defun -seed-symbol (props)
       (let ((segments (@ props symbol)))

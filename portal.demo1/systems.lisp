@@ -2,7 +2,7 @@
  ((META :PORTAL.DEMO1 :ATOM (:IF (:TYPE :PORTAL-NAME)) :IF
    (:ENCLOSE :ENCLOSE-OVERVIEW :FILL :FILL-OVERVIEW :NAME :PORTAL-SPECS :LAYOUT
     :COLUMN :BREADTH :SHORT :TYPE :VISTA))
-  (META "demo-sheet" :IF
+  (META "demo-drawing" :IF
    (:TYPE :SELECT :OPTIONS
     ((:VALUE "demo-sheet" :TITLE "demoSheet")
      (:VALUE "demo-drawing" :TITLE "demoDrawing"))))

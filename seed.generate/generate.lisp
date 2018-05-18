@@ -478,7 +478,7 @@ inclusion of aport macro here just acts as passthrough
 		   ;; This behavior works for the time being but it may eventually prove undesirable,
 		   ;; so later provisions may be made for someone reloading a Seed interface to pick up
 		   ;; immediately where they left off.
-		   ;; (print (list :data ,portal-package-id ,sprid ,brname ,data ,params))
+		   ;;(print (list :data ,portal-package-id ,sprid ,brname ,data ,params))
 		   (if (not ,sprid)
 		       (setf (getf (sprout-meta ,port) :active-system)
 			     nil))

@@ -2,9 +2,9 @@
 (GEN-SVG
  (:G :ID "group1"
   (:RECT :X 228 :Y 82 :HEIGHT 100 :WIDTH 40 :FILL
-   (META "#111b11" :IF (:TYPE :COLOR-PICKER :OUTPUT :HTML-RGB-STRING)))
+   (META "#48cc48" :IF (:TYPE :COLOR-PICKER :OUTPUT :HTML-RGB-STRING)))
   (:ELLIPSE :CX 245 :FILL
-   (META "#CC4B4B" :IF
+   (META "#C80000" :IF
     (:TYPE :SELECT :OPTIONS
      ((:VALUE "#CC4B4B" :TITLE "Faded Red")
       (:VALUE "#C80000" :TITLE "Dark Red"))))
@@ -25,19 +25,17 @@
      (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
       :IF (:TYPE :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
      (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-      :IF (:REMOVABLE T :TITLE "Small Green Circle" :TYPE :ITEM))
+      :IF (:TYPE :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
      (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
-      :IF (:TYPE :ITEM :TITLE "Big Blue Circle" :REMOVABLE T))
+      :IF (:REMOVABLE T :TITLE "Big Blue Circle" :TYPE :ITEM))
      (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-      :IF (:REMOVABLE T :TITLE "Small Green Circle" :TYPE :ITEM))
+      :IF (:TYPE :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
      (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
-      :IF (:TYPE :ITEM :TITLE "Big Blue Circle" :REMOVABLE T))
+      :IF (:REMOVABLE T :TITLE "Big Blue Circle" :TYPE :ITEM))
      (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-      :IF (:REMOVABLE T :TITLE "Small Green Circle" :TYPE :ITEM))
+      :IF (:TYPE :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
      (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
-      :IF (:TYPE :ITEM :TITLE "Big Blue Circle" :REMOVABLE T))
-     (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-      :IF (:REMOVABLE T :TITLE "Small Green Circle" :TYPE :ITEM)))
+      :IF (:REMOVABLE T :TITLE "Big Blue Circle" :TYPE :ITEM)))
     :IF
     (:OPTIONS
      ((:VALUE
