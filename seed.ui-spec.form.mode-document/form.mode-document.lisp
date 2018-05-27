@@ -40,8 +40,31 @@
 	    (state (funcall inherit self props
 			    (lambda (d) (chain j-query (extend (@ props data) (@ d data))))
 			    (lambda (pd) (@ pd data data)))))
+       (if (@ self props context set-interaction)
+	   (progn (chain self props context
+			 (set-interaction "docMarkBold" (lambda () (chain self (toggle-mark "bold")))))
+		  (chain self props context
+			 (set-interaction "docMarkItalic" (lambda () (chain self (toggle-mark "italic")))))
+		  (chain self props context
+			 (set-interaction "docNodeQuote" (lambda () (chain self (toggle-node "quote")))))
+		  (chain self props context
+			 (set-interaction "docNodePgraph" (lambda () (chain self (toggle-node "paragraph")))))))
        state))
    :element-specs #()
+   :toggle-mark
+   (lambda (type-string)
+     (let* ((self this)
+	    (value (@ (chain self editor-instance state value
+			     (change) (toggle-mark type-string))
+		      value)))
+       (chain self (set-state (create content value)))))
+   :toggle-node
+   (lambda (type-string)
+     (let* ((self this)
+	    (value (@ (chain self editor-instance state value
+			     (change) (set-block type-string))
+		      value)))
+       (chain self (set-state (create content value)))))
    :modulate-methods
    (lambda (methods)
      (let* ((self this)
@@ -113,11 +136,8 @@
 		   (chain self (set-state (create read-only false)))))
 	)
        (trigger-anti
-	;; (chain self (set-state (create read-only t)))
-     	;; (chain self state context methods (set-mode "move"))
-	(chain self state content (change)
-	       (toggle-mark "myMark"))
-	(cl 909))
+	(chain self (set-state (create read-only t)))
+     	(chain self state context methods (set-mode "move")))
        (commit
      	(if (not (= true (@ next-props data meta locked)))
      	    (chain self state context methods (grow-branch (chain -j-s-o-n
@@ -141,10 +161,24 @@
 		(focus))))
    :render-node
    (lambda (props)
-     (cl :nprop props))
+     (let ((node-type (@ props node type))
+	   (children (@ props children)))
+       (cond ((= node-type "quote")
+	      (cl :nno node-type)
+	      (panic:jsl (:div :class-name "node-holder blockquote"
+			       (:div :class-name "glyph")
+			       (:blockquote :class-name "node blockquote" children))))
+	     (t (panic:jsl (:div :class-name "node-holder p"
+				 (:div :class-name "glyph")
+				 (:div :class-name "node p" children)))))))
    :render-mark
    (lambda (props)
-     (cl :prop props))
+     (let ((mark-type (@ props mark type))
+	   (children (@ props children)))
+       (cond ((= mark-type "bold")
+	      (panic:jsl (:strong children)))
+	     ((= mark-type "italic")
+	      (panic:jsl (:em children))))))
    )
   (defvar self this)
   ;; (cl :ac (@ self props action) (@ self state read-only) (@ self editor-instance)
@@ -155,8 +189,8 @@
 						(chain self (set-state (create content (@ value value)))))
 				   :ref (lambda (ref) (if (not (@ self editor-instance))
 							  (setf (@ self editor-instance) ref)))
-				   ;; :render-node (@ self render-node)
-				   ;; :render-mark (@ self render-mark)
+				   :render-node (@ self render-node)
+				   :render-mark (@ self render-mark)
 				   ;; :on-focus (lambda (value)
 				   ;; 		 (chain self state context methods (set-mode "write")))
 				   ;; :on-blur (lambda (value)

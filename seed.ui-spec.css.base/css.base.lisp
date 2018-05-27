@@ -278,8 +278,20 @@
 	   :height 100%
 	   (.slate-editor-pane
 	    :height "calc(100% - 30px)"
-	    :padding "4px 6px"
-	    :color "#002b36")
+	    :padding 4px 6px
+	    :color "#002b36"
+	    (div.node-holder
+	     (div.glyph :cursor pointer :height "calc(3px + 1em)" :width 16px :float left
+			:background "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='20' version='1.1'><g transform='translate(0,3)'><rect style='fill:%23839496;fill-opacity:1;stroke:none' x='0' y='0' width='2' height='15' /></g></svg>\") no-repeat")
+	     (div.node :margin-left 16px))
+	    ;; ((:and div :before)
+	    ;;  :content "."
+	    ;;  :padding-right 16px
+	    ;;  :opacity 0
+	    ;;  :cursor pointer
+	    ;;  ;:background "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' version='1.1'><rect fill='%23eee8d5' x='0' y='21' width='100%' height='8px'/></svg>\")"
+	    ;;  )
+	    )
 	   (.status-bar :height 30px)))
 	 
 	 (.holder :height 100%

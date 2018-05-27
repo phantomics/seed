@@ -40,5 +40,6 @@
 		     (simple-branch-layout :menu (stage-extension-menu-base)
 					   :controls (stage-control-set :by-spec (stage-controls-base-contextual)
 									:by-parameters
-									(stage-controls-graph-base)))
+									(stage-controls-graph-base
+									 stage-controls-document-base)))
 		     :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history))))

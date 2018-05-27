@@ -5,8 +5,13 @@
 (defmacro graph-garden-path (function-name &rest nodes)
   "Build the function for traversal of a path given the specification of the nodes in the path."
   (let ((node-ids (mapcar (lambda (node) (getf node :id))
-			  nodes)))
+			  nodes))
+	(nodes-sym (gensym)) (state (gensym)) (content (gensym)))
     (labels ((build-conditions (node)
+	       ;; manifest the conditions that pertain to this link; for option nodes, conditions are evaluated
+	       ;; to determine whether the node is presented, while for action and switch nodes the conditions
+	       ;; for each link are evaluated in turn and the first link whose condition evaluates to true is
+	       ;; followed, or the last link is followed in case it has a condition that evaluates to false
 	       (let ((last-link-index (1- (length (getf node :links)))))
 		 `(cond ,@(mapcar (lambda (link-data link-index)
 				    (let ((nix (position (getf link-data :to)
@@ -26,6 +31,7 @@
 				  (getf node :links)
 				  (loop for i from 0 to last-link-index collect i)))))
 	     (import-designated-symbols (form)
+	       ;; import 'state symbols into the current package so the evaluation of code works properly
 	       (mapcar (lambda (element) (cond ((listp element)
 						(import-designated-symbols element))
 					       ((not (symbolp element))
@@ -33,22 +39,22 @@
 					       ((string= "STATE" (string-upcase element))
 						'state)
 					       (t element)))
-		       form)))
-    `(let ((nodes nil))
-       (setq nodes (vector ,@(mapcar (lambda (node)
-				       `(lambda (state &optional content)
-					  (let ((content ,(if (getf node :items)
-							      `(append content (quote (,(getf node :items))))
-							      `content)))
-					    ,@(import-designated-symbols (getf node :do))
-					    ,(cond ((eq :portal (getf node :type))
-						    `(funcall (function ,(getf node :to)) state))
-						   ((eq :switch (getf node :type))
-						    (build-conditions node))
-						   (t `(values content state
-							       (lambda (state input) ,(build-conditions node))))))))
-				     nodes)))
-       (defun ,function-name (state) (funcall (aref nodes 0) state))))))
+		       form))
+	     (format-node (node)
+	       ;; generate the top-level format for each node
+	       `(lambda (state &optional content)
+		  (let ((content ,(if (getf node :items)
+				      `(append content (quote (,(getf node :items))))
+				      `content)))
+		    ,@(import-designated-symbols (getf node :do))
+		    ,(cond ((eq :portal (getf node :type))
+			    `(funcall (function ,(getf node :to)) state))
+			   ((eq :switch (getf node :type))
+			    (build-conditions node))
+			   (t `(values content state
+				       (lambda (state input) ,(build-conditions node)))))))))
+      `(let ((,nodes-sym (vector ,@(mapcar #'format-node nodes))))
+	 (defun ,function-name (state) (funcall (aref ,nodes-sym 0) state))))))
 
 (defun generate-blank-node (type meta)
   "Generate a blank node for use in a garden path, starting with a UUID key so the node can be uniquely identified for logging purposes."
@@ -71,12 +77,14 @@
 	:meta meta :items nil :if nil))
 
 (defun add-blank-node (list type meta)
+  "Add a blank node to the specified graph node list with the specified type and metadata."
   (multiple-value-bind (output-item output-id)
       (generate-blank-node type meta)
     (values (append list (list output-item))
 	    output-id)))
 
 (defun add-blank-link (list node-id meta)
+  "Add a blank link to the node with the specified id in graph node list with the provided metadata."
   (loop for item in list
      do (if (eq node-id (getf item :id))
 	    (setf (getf item :links)
@@ -85,6 +93,7 @@
   list)
 
 (defun remove-graph-element (list node-id &optional link-id)
+  "Remove the node or link from the specified graph node list. The presence of the link-id argument means a link will be removed, otherwise the node with the specified id will be removed."
   (loop for node in list when (or link-id (not (eq node-id (getf node :id))))
      collect (if (and link-id (eq node-id (getf node :id)))
 		 (let ((new-node (copy-tree node)))
