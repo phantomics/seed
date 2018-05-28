@@ -70,11 +70,11 @@
 	 	  (if-condition (is-param :save)
 	 			(:then (put-file (dyn-assign (get-file :main)
 	 						     :document-content
-	 						     (json-string-structure))
+	 						     (document-content))
 	 					 :main))))
 	      (out (set-type :document)
 	 	   (put-image (get-value :document-content))
-	 	   (json-string-structure)))
+	 	   (document-content)))
 	 (graph (in (set-time)
 		    (stage-params :secondary-controls
 				  (:add-graph-node :add-graph-link :remove-graph-object))

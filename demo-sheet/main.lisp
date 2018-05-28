@@ -13,21 +13,21 @@ field")
 (SETQ GENERATED-SPACE (ARRAY-TO-NESTED-VECTOR (APRIL GEN-SPACE-APL)))
 (DEFVAR DOCUMENT-CONTENT)
 (SETQ DOCUMENT-CONTENT
-        (LIST :STRING
-              "{\"kind\":\"value\",\"document\":{\"kind\":\"document\",\"data\":{},\"nodes\":[{\"kind\":\"block\",\"type\":\"paragraph\",\"isVoid\":false,\"data\":{},\"nodes\":[{\"kind\":\"text\",\"leaves\":[{\"kind\":\"leaf\",\"text\":\"Line.\",\"marks\":[]}]}]},{\"kind\":\"block\",\"type\":\"paragraph\",\"isVoid\":false,\"data\":{},\"nodes\":[{\"kind\":\"text\",\"leaves\":[{\"kind\":\"leaf\",\"text\":\"Another line.\",\"marks\":[]}]}]}]}}"
-              :DATA
-              '(:DOCUMENT
-                (:NODES
-                 ((:NODES
-                   ((:LEAVES ((:MARKS NIL :TEXT "Line." :KIND "leaf")) :KIND
-                     "text"))
-                   :DATA NIL :IS-VOID NIL :TYPE "paragraph" :KIND "block")
-                  (:NODES
-                   ((:LEAVES ((:MARKS NIL :TEXT "Another line." :KIND "leaf"))
-                     :KIND "text"))
-                   :DATA NIL :IS-VOID NIL :TYPE "paragraph" :KIND "block"))
-                 :DATA NIL :KIND "document")
-                :KIND "value")))
+        '(:DOCUMENT
+          (:NODES
+           ((:NODES
+             ((:LEAVES ((:MARKS NIL :TEXT "Line 2." :KIND "leaf")) :KIND
+               "text"))
+             :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+            (:NODES
+             ((:LEAVES ((:MARKS NIL :TEXT "Another line." :KIND "leaf")) :KIND
+               "text"))
+             :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+            (:NODES
+             ((:LEAVES ((:MARKS NIL :TEXT "Test." :KIND "leaf")) :KIND "text"))
+             :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block"))
+           :DATA NIL :KIND "document")
+          :KIND "value"))
 (DEFVAR GRAPH-CONTENT)
 (SETQ GRAPH-CONTENT
         '(GRAPH-STEPS

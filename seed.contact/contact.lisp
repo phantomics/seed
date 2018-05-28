@@ -18,7 +18,7 @@
 						  (lambda (key) (string-upcase (camel-case->lisp-name key)))
 						  :normalize-all t))
 				 ((string= mime-type "application/x-lisp")
-				  ;; native Lisp text is passed directly through and read
+				  ;; native Lisp code is passed directly through and read
 				  (read-from-string (hunchentoot:raw-post-data :force-text t))))))
 		  (package-string (string-upcase (first input)))
 		  (function-string (string-upcase (second input))))

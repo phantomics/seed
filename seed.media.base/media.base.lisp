@@ -260,6 +260,28 @@
 							       :normalize-all t))))
 			`(;;(print (list :dd data))
 			  (getf data :string)))
+
+ (document-content (follows)
+		   `((let ((jonathan:*null-value* :null)
+			   (jonathan:*false-value* :false))
+		       (list 'quote (jonathan:parse data
+						    :keyword-normalizer
+						    (lambda (key) (string-upcase (camel-case->lisp-name key)))
+						    :normalize-all t))))
+		   `((let ((jonathan:*null-value* :null)
+			   (jonathan:*false-value* :false))
+		       (labels ((convert-keywords (items)
+				  (if (listp (first items))
+				      (mapcar #'convert-keywords items)
+				      (let ((index 0))
+					(loop for item in items
+					   when (evenp index) collect (intern (lisp->camel-case item)
+									      "KEYWORD")
+					   when (oddp index) collect (if (and item (listp item))
+									 (convert-keywords item)
+									 item)
+					   do (incf index 1))))))
+			 (jonathan:to-json (convert-keywords data))))))
  
  ;; passthrough form meant to wrap stage parameters for use by stage definitions that analyze the branch spec
  (stage-params (follows &rest params)
