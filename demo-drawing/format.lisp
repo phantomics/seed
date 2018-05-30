@@ -7,11 +7,11 @@
 
 (defmacro gen-svg (&rest form)
   (let ((stream-symbol (gensym)))
-    `(progn (defvar svg-content)
-	    (defvar ,stream-symbol (make-string-output-stream))
-	    (cl-who:with-html-output (,stream-symbol)
-	      (:svg ,@form))
-	    (setq svg-content (get-output-stream-string ,stream-symbol)))))
+    `(let ((,stream-symbol (make-string-output-stream)))
+       (defvar svg-content)
+       (cl-who:with-html-output (,stream-symbol)
+	 (:svg ,@form))
+       (setq svg-content (get-output-stream-string ,stream-symbol)))))
 
 ;; (defmacro gen-svg (&rest form)
 ;;   (let ((stream-symbol (gensym)))

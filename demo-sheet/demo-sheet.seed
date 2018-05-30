@@ -1,7 +1,9 @@
 (sprout :demo-sheet :system (:DESCRIPTION
 			     "This is demoSheet, a package created to demonstrate Seed's spreadsheet module."
 			     :AUTHOR "Andrew Sengul" :LICENSE "GPL-3.0")
-        :package ((:use :common-lisp :seed-lib-table) (:export))
+        :package ((:use #:common-lisp #:seed.model.sheet
+			#:seed.app-model.graph.garden-path #:seed.app-model.document.slate.base)
+		  (:export))
         :branches
         ((stage (in (set-time))
                 (out (set-type :stage)
@@ -39,8 +41,8 @@
                                                        (:then (put-image))
                                                        (:else (sheet) (fork-to :history) (put-image)))
                                          (if-condition (is-param :save)
-                                                       (:then (put-file (dyn-assign (get-file :main)
-										    :main-table)
+                                                       (:then (put-file (dynamic-var (get-file :main)
+										     :main-table)
 									:main)
                                                               (put-image nil) (set-stable))
                                                        (:else (set-stable :not))))))
@@ -53,7 +55,7 @@
                      (sheet)))
 	 (apl (in (set-time) (put-image)
 	 	   (if-condition (is-param :save)
-	 			 (:then (put-file (dyn-assign (get-file :main)
+	 			 (:then (put-file (dynamic-var (get-file :main)
 	 						      :gen-space-apl)
 	 					  :main))
 				 (:else (if-condition (is-param :revert)
@@ -64,16 +66,19 @@
 	 (space (out (set-type :space :block)
 	 	     (put-image (get-value :generated-space))))
 	 (doc (in (set-time)
-		  (stage-params :secondary-controls (:doc-mark-bold :doc-mark-italic
-								    :doc-node-quote :doc-node-pgraph))
-		  (put-image)
+	 	  (stage-params :secondary-controls (:doc-mark-bold :doc-mark-italic :doc-node-pgraph
+	 							    :doc-node-quote :doc-node-points
+	 							    :doc-node-count))
+	 	  (put-image)
 	 	  (if-condition (is-param :save)
-	 			(:then (put-file (dyn-assign (get-file :main)
-	 						     :document-content
-	 						     (document-content))
+	 			(:then (put-file (dynamic-var (get-file :main)
+	 						      :document-content
+	 						      (document-content))
 	 					 :main))))
 	      (out (set-type :document)
-	 	   (put-image (get-value :document-content))
+		   (if-condition (is-image :not)
+				 (:then (put-image (dynamic-var (get-file :main)
+								:document-content))))
 	 	   (document-content)))
 	 (graph (in (set-time)
 		    (stage-params :secondary-controls

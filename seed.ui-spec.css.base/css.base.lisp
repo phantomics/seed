@@ -283,7 +283,12 @@
 	    (div.node-holder
 	     (div.glyph :cursor pointer :height "calc(3px + 1em)" :width 16px :float left
 			:background "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='20' version='1.1'><g transform='translate(0,3)'><rect style='fill:%23839496;fill-opacity:1;stroke:none' x='0' y='0' width='2' height='15' /></g></svg>\") no-repeat")
-	     (div.node :margin-left 16px))
+	     (blockquote :font-size 1.2em
+			 :margin 6px 0 6px 6px
+			 :padding 6px 0 6px 18px
+			 :border-left "4px solid #eee8d5")
+	     ((:or ul ol) :margin 8px 0))
+	    (div.node-holder.p (div.node :margin-left 16px))
 	    ;; ((:and div :before)
 	    ;;  :content "."
 	    ;;  :padding-right 16px

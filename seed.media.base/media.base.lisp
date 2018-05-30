@@ -264,10 +264,11 @@
  (document-content (follows)
 		   `((let ((jonathan:*null-value* :null)
 			   (jonathan:*false-value* :false))
-		       (list 'quote (jonathan:parse data
-						    :keyword-normalizer
-						    (lambda (key) (string-upcase (camel-case->lisp-name key)))
-						    :normalize-all t))))
+		       (list 'document-as-html
+			     (jonathan:parse data
+					     :keyword-normalizer
+					     (lambda (key) (string-upcase (camel-case->lisp-name key)))
+					     :normalize-all t))))
 		   `((let ((jonathan:*null-value* :null)
 			   (jonathan:*false-value* :false))
 		       (labels ((convert-keywords (items)
@@ -281,7 +282,8 @@
 									 (convert-keywords item)
 									 item)
 					   do (incf index 1))))))
-			 (jonathan:to-json (convert-keywords data))))))
+			 ;; process the second element of the data since the first element is 'document-as-html
+			 (jonathan:to-json (convert-keywords (second data)))))))
  
  ;; passthrough form meant to wrap stage parameters for use by stage definitions that analyze the branch spec
  (stage-params (follows &rest params)
@@ -354,20 +356,30 @@
 	      (apply #'aref (cons data (reverse (get-param :point))))
 	      (array-to-list (array-map #'preprocess-structure data)))))
 
- ;; format/unformat the matrix content of a spreadsheet for processing
- (dyn-assign (follows reagent symbol input)
-	     `((funcall (lambda (content)
-			  (let ((def-pos (position ,symbol content
-						   :test (lambda (to-match item)
-							   (and (eql 'defvar (first item))
-								(eq to-match (intern (string (second item))
-										     "KEYWORD")))))))
-			    (setf (nth (1+ def-pos) content)
-				  `(setq ,(second (nth def-pos content))
-					 ,(if ,input ,input data)))
-			    content))
-			reagent)))
-
+ ;; generate or disassemble a dynamic variable assignment in Lisp code
+ (dynamic-var (follows reagent symbol input)
+	      `((funcall (lambda (content)
+			   (let ((def-pos (position ,symbol content
+						    :test (lambda (to-match item)
+							    (and (eql 'defvar (first item))
+								 (eq to-match (intern (string (second item))
+										      "KEYWORD")))))))
+			     (setf (nth (1+ def-pos) content)
+				   `(setq ,(second (nth def-pos content))
+					  ,(if ,input ,input data)))
+			     content))
+			 reagent))
+	      `((let ((found nil) (output nil))
+		  (loop for item in ,reagent
+		     when (and found (not output))
+		     do (setq output (third item))
+		     when (and (eql 'defvar (first item))
+			       (string= (string-upcase (second item))
+					,(string-upcase symbol)))
+		     do (setq found t))
+		  (print (list :out output ,reagent ,(string-upcase symbol)))
+		  output)))
+ 
  ;; records items from input to system's clipboard branch / fetches items from clipboard for output
  (clipboard (follows reagent)
 	    `((let* ((vector (get-param :vector))

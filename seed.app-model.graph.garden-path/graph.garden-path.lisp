@@ -1,6 +1,6 @@
 ;;;; graph.garden-path.lisp
 
-(in-package #:seed.model.graph.garden-path)
+(in-package #:seed.app-model.graph.garden-path)
 
 (defmacro graph-garden-path (function-name &rest nodes)
   "Build the function for traversal of a path given the specification of the nodes in the path."

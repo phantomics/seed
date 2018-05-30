@@ -23,7 +23,6 @@
 										       (list
 											(create text
 												"Line.")))))))))))))
-       ;;(cl :val1 (@ this props data data) initial-value)
        (chain j-query (extend (create point #(0 0)
 				      content initial-value
 				      point-attrs (create value nil delta nil)
@@ -46,25 +45,42 @@
 		  (chain self props context
 			 (set-interaction "docMarkItalic" (lambda () (chain self (toggle-mark "italic")))))
 		  (chain self props context
-			 (set-interaction "docNodeQuote" (lambda () (chain self (toggle-node "quote")))))
+			 (set-interaction "docNodePgraph" (lambda () (chain self (set-node "paragraph")))))
 		  (chain self props context
-			 (set-interaction "docNodePgraph" (lambda () (chain self (toggle-node "paragraph")))))))
+			 (set-interaction "docNodeQuote" (lambda () (chain self (set-node "quote")))))
+		  (chain self props context
+			 (set-interaction "docNodePoints" (lambda () (chain self (set-node "points")))))
+		  (chain self props context
+			 (set-interaction "docNodeCount" (lambda () (chain self (set-node "count")))))))
        state))
    :element-specs #()
    :toggle-mark
    (lambda (type-string)
      (let* ((self this)
-	    (value (@ (chain self editor-instance state value
-			     (change) (toggle-mark type-string))
-		      value)))
-       (chain self (set-state (create content value)))))
-   :toggle-node
+	    (value-container (chain self editor-instance state value (change)
+				    (toggle-mark type-string))))
+       (chain self (set-state (create content (@ value-container value))))))
+   :set-node
    (lambda (type-string)
      (let* ((self this)
-	    (value (@ (chain self editor-instance state value
-			     (change) (set-block type-string))
-		      value)))
-       (chain self (set-state (create content value)))))
+	    (change (chain self editor-instance state value (change)))
+	    (is-member (chain self editor-instance state value blocks (some (lambda (node)
+									      (or (= "section" (@ node type))
+										  (= "member" (@ node type)))))))
+	    (value-container (cond ((or (= type-string "points")
+					(= type-string "count"))
+				    (chain change (set-block "member") (wrap-block type-string)))
+				   ((= type-string "quote")
+				    (if is-member
+					(chain change (set-block "section")
+					       (unwrap-block "points") (unwrap-block "count")
+					       (wrap-block type-string))
+					(chain change (set-block "section") (wrap-block type-string))))
+				   (t (if is-member
+					  (chain change (set-block type-string) (unwrap-block "quote")
+						 (unwrap-block "points") (unwrap-block "count"))
+					  (chain change (set-block type-string)))))))
+       (chain self (set-state (create content (@ value-container value))))))
    :modulate-methods
    (lambda (methods)
      (let* ((self this)
@@ -106,9 +122,6 @@
      	    (chain self props context methods (set-trace (@ self props context path))))))
       :actions-point-and-focus
       ((move (chain self (move (@ params vector))))
-       ;; (delete-point
-       ;; 	(if (not (= true (@ next-props data meta locked)))
-       ;; 	    (chain self state context methods (grow-point nil (create)))))
        ;; (record
        ;; 	(if (@ self props context clipboard-id)
        ;; 	    (chain self state context methods (grow-point (create)
@@ -133,8 +146,7 @@
        	(if (not (= true (@ next-props data meta locked)))
 	    (progn (chain self state context methods (set-mode "write"))
 		   (chain self editor-instance (focus))
-		   (chain self (set-state (create read-only false)))))
-	)
+		   (chain self (set-state (create read-only false))))))
        (trigger-anti
 	(chain self (set-state (create read-only t)))
      	(chain self state context methods (set-mode "move")))
@@ -144,14 +156,7 @@
 								  (stringify (chain self editor-instance
 										    state value (to-j-s-o-n))))
      							   (create save true)))))
-       ))
-     )
-   ;; :should-component-update
-   ;; (lambda (next-props next-state)
-   ;;   (or (not (@ next-state context current))
-   ;; 	 (not (= (@ next-state context mode)
-   ;; 		 (@ this state context mode)))
-   ;; 	 (@ next-state action-registered)))
+       )))
    :component-did-update
    (lambda ()
      (if (and (= "set" (@ this state context mode))
@@ -164,10 +169,21 @@
      (let ((node-type (@ props node type))
 	   (children (@ props children)))
        (cond ((= node-type "quote")
-	      (cl :nno node-type)
 	      (panic:jsl (:div :class-name "node-holder blockquote"
 			       (:div :class-name "glyph")
 			       (:blockquote :class-name "node blockquote" children))))
+	     ((= node-type "points")
+	      (panic:jsl (:div :class-name "node-holder points"
+			       (:div :class-name "glyph")
+			       (:ul :class-name "node points" children))))
+	     ((= node-type "count")
+	      (panic:jsl (:div :class-name "node-holder count"
+			       (:div :class-name "glyph")
+			       (:ol :class-name "node count" children))))
+	     ((= node-type "member")
+	      (panic:jsl (:li :class-name "node member" children)))
+	     ((= node-type "section")
+	      (panic:jsl (:div :class-name "node member" children)))
 	     (t (panic:jsl (:div :class-name "node-holder p"
 				 (:div :class-name "glyph")
 				 (:div :class-name "node p" children)))))))
@@ -181,8 +197,6 @@
 	      (panic:jsl (:em children))))))
    )
   (defvar self this)
-  ;; (cl :ac (@ self props action) (@ self state read-only) (@ self editor-instance)
-  ;;     (@ self props) (@ self state space) (@ self state content))
   (panic:jsl (:div :class-name "document-pane-outer"
 		   (:-slate-editor :value (@ self state content)
 				   :on-change (lambda (value)

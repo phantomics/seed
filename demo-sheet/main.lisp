@@ -13,21 +13,106 @@ field")
 (SETQ GENERATED-SPACE (ARRAY-TO-NESTED-VECTOR (APRIL GEN-SPACE-APL)))
 (DEFVAR DOCUMENT-CONTENT)
 (SETQ DOCUMENT-CONTENT
-        '(:DOCUMENT
-          (:NODES
-           ((:NODES
-             ((:LEAVES ((:MARKS NIL :TEXT "Line 2." :KIND "leaf")) :KIND
-               "text"))
-             :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
-            (:NODES
-             ((:LEAVES ((:MARKS NIL :TEXT "Another line." :KIND "leaf")) :KIND
-               "text"))
-             :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
-            (:NODES
-             ((:LEAVES ((:MARKS NIL :TEXT "Test." :KIND "leaf")) :KIND "text"))
-             :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block"))
-           :DATA NIL :KIND "document")
-          :KIND "value"))
+      (DOCUMENT-AS-HTML
+       (:DOCUMENT
+	(:NODES
+	 ((:NODES
+	   ((:LEAVES ((:MARKS NIL :TEXT "Line 2." :KIND "leaf")) :KIND
+		     "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+	  (:NODES
+	   ((:LEAVES ((:MARKS NIL :TEXT "Another line." :KIND "leaf")) :KIND
+		     "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+	  (:NODES
+	   ((:LEAVES ((:MARKS NIL :TEXT "Test." :KIND "leaf")) :KIND "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+	  (:NODES
+	   ((:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Hello" :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "section" :KIND "block")
+	    (:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Testing 123" :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "section" :KIND "block")
+	    (:NODES
+	     ((:LEAVES
+	       ((:MARKS NIL :TEXT "Hello " :KIND "leaf")
+		(:MARKS ((:DATA NIL :TYPE "bold" :KIND "mark")) :TEXT "again"
+			:KIND "leaf")
+		(:MARKS NIL :TEXT "." :KIND "leaf"))
+	       :KIND "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "section" :KIND "block"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "quote" :KIND "block")
+	  (:NODES
+	   ((:LEAVES
+	     ((:MARKS NIL :TEXT "Back " :KIND "leaf")
+	      (:MARKS ((:DATA NIL :TYPE "bold" :KIND "mark")) :TEXT "to"
+		      :KIND "leaf")
+	      (:MARKS NIL :TEXT " normal." :KIND "leaf"))
+	     :KIND "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+	  (:NODES
+	   ((:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Test 123." :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block")
+	    (:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Test again." :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block")
+	    (:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Tested" :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block")
+	    (:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Test" :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "count" :KIND "block")
+	  (:NODES
+	   ((:LEAVES
+	     ((:MARKS ((:DATA NIL :TYPE "italic" :KIND "mark")) :TEXT
+		      "Testing" :KIND "leaf"))
+	     :KIND "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+	  (:NODES
+	   ((:LEAVES ((:MARKS NIL :TEXT "Hello" :KIND "leaf")) :KIND "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+	  (:NODES
+	   ((:LEAVES ((:MARKS NIL :TEXT "Testing 123" :KIND "leaf")) :KIND
+		     "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+	  (:NODES
+	   ((:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Point test" :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block")
+	    (:NODES
+	     ((:LEAVES
+	       ((:MARKS ((:DATA NIL :TYPE "bold" :KIND "mark")) :TEXT
+			"Tested again" :KIND "leaf"))
+	       :KIND "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block")
+	    (:NODES
+	     ((:LEAVES
+	       ((:MARKS NIL :TEXT "Hello " :KIND "leaf")
+		(:MARKS ((:DATA NIL :TYPE "italic" :KIND "mark")) :TEXT "123"
+			:KIND "leaf"))
+	       :KIND "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block")
+	    (:NODES
+	     ((:LEAVES ((:MARKS NIL :TEXT "Tested" :KIND "leaf")) :KIND
+		       "text"))
+	     :DATA NIL :IS-VOID :FALSE :TYPE "member" :KIND "block"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "points" :KIND "block")
+	  (:NODES
+	   ((:LEAVES ((:MARKS NIL :TEXT "At the end." :KIND "leaf")) :KIND
+		     "text"))
+	   :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block"))
+	 :DATA NIL :KIND "document")
+	:KIND "value")))
 (DEFVAR GRAPH-CONTENT)
 (SETQ GRAPH-CONTENT
         '(GRAPH-STEPS

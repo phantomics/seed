@@ -3,4 +3,5 @@
 (defpackage #:demo-sheet
   (:export)
   (:use #:common-lisp #:april #:array-operations
-	#:seed.model.sheet #:seed.model.graph.garden-path #:seed.sublimate))
+	#:seed.model.sheet #:seed.sublimate
+	#:seed.app-model.graph.garden-path #:seed.app-model.document.slate.base))
