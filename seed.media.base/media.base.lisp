@@ -264,7 +264,7 @@
  (document-content (follows)
 		   `((let ((jonathan:*null-value* :null)
 			   (jonathan:*false-value* :false))
-		       (list 'document-as-html
+		       (list 'seed.app-model.document-slate.base:document-as-html
 			     (jonathan:parse data
 					     :keyword-normalizer
 					     (lambda (key) (string-upcase (camel-case->lisp-name key)))

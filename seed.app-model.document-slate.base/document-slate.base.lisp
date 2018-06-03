@@ -1,6 +1,6 @@
 ;;;; slate.base.lisp
 
-(in-package #:seed.app-model.document.slate.base)
+(in-package #:seed.app-model.document-slate.base)
 
 (defun render-html (form)
   (if (and (eq :document (first form))

@@ -7,7 +7,7 @@
         :branches
         ((stage (in (set-time))
                 (out (set-type :stage)
-		     (display-params (:primary (:main :cells) (:doc) (:apl :space) (:graph :node))
+		     (display-params (:primary (:main :cells) (:doc :page) (:apl :space) (:graph :node))
 				     (:adjunct (:clipboard :history)))
 		     (codec)))
          (main (in (contingencies :sheet-lock)
@@ -69,17 +69,22 @@
 	 	  (stage-params :secondary-controls (:doc-mark-bold :doc-mark-italic :doc-node-pgraph
 	 							    :doc-node-quote :doc-node-points
 	 							    :doc-node-count))
+		  (document-content)
 	 	  (put-image)
 	 	  (if-condition (is-param :save)
-	 			(:then (put-file (dynamic-var (get-file :main)
-	 						      :document-content
-	 						      (document-content))
-	 					 :main))))
+	 	  		(:then (put-file (dynamic-var (get-file :main)
+	 	  					      :document-content
+	 	  					      (get-image))
+	 	  				 :main))))
 	      (out (set-type :document)
 		   (if-condition (is-image :not)
 				 (:then (put-image (dynamic-var (get-file :main)
 								:document-content))))
 	 	   (document-content)))
+	 (page (out (set-type :html-element :svg)
+		    (get-value :document-content)
+		    ;;(put-image)
+		    ))
 	 (graph (in (set-time)
 		    (stage-params :secondary-controls
 				  (:add-graph-node :add-graph-link :remove-graph-object))

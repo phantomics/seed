@@ -298,6 +298,13 @@
 	    ;;  )
 	    )
 	   (.status-bar :height 30px)))
+
+	 (.portal-column.html-element
+	  (|#branch-0-page|
+	    (.html-display
+	     :background "#fefefa"
+	     :padding 12px
+	     :font-family "Verdana")))
 	 
 	 (.holder :height 100%
 		  :position relative
