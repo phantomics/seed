@@ -2,8 +2,6 @@
 
 (in-package #:seed.contact)
 
-(defvar *contact-list* nil)
-
 (define-easy-handler (seed-grow :uri "/portal") ()
   (setf (content-type*) "text/plain")
   (let ((request-type (hunchentoot:request-method hunchentoot:*request*)))
@@ -41,8 +39,8 @@
 								      param))
 								(cddr input)))))))))))))
 
-(defmacro contact-create (name &key (port nil) (root nil))
-  `(setf (getf *contact-list* ,(intern (string-upcase name) "KEYWORD"))
+(defmacro contact-create-in (contact-list name &key (port nil) (root nil))
+  `(setf (getf ,contact-list ,(intern (string-upcase name) "KEYWORD"))
 	 (list :port ,port
 	       :instance (make-instance 'hunchentoot:easy-acceptor
 					:port ,port
@@ -50,27 +48,27 @@
 							(make-symbol (package-name *package*))
 							,root)))))
 
-(defmacro contact-remove (name)
-  `(setf (getf *contact-list* ,(intern (string-upcase name) "KEYWORD"))
+(defmacro contact-remove-in (contact-list name)
+  `(setf (getf ,contact-list ,(intern (string-upcase name) "KEYWORD"))
 	 nil))
 
-(defmacro contact-remove-all ()
-  `(setq *contact-list* nil))
+(defmacro contact-remove-all-in ()
+  `(setq ,contact-list nil))
 
-(defmacro contact-open (&optional name) 
+(defmacro contact-open-in (contact-list &optional name) 
   (let ((contact (gensym)))
-    `(let ((,contact ,(if name `(getf *contact-list* ,(intern (string-upcase name) "KEYWORD"))
+    `(let ((,contact ,(if name `(getf ,contact-list ,(intern (string-upcase name) "KEYWORD"))
 			  ;; if no contact name is given, open the first contact instance in the list
-			  `(second *contact-list*))))
+			  `(second ,contact-list))))
        (start (getf ,contact :instance))
        (princ (format nil "~%Seed contact now open and listening at port ~d.~%~%" (getf ,contact :port)))
        nil)))
 
-(defmacro contact-close (&optional name) 
+(defmacro contact-close-in (contact-list &optional name) 
   (let ((contact (gensym)))
-    `(let ((,contact ,(if name `(getf *contact-list* ,(intern (string-upcase name) "KEYWORD"))
+    `(let ((,contact ,(if name `(getf ,contact-list ,(intern (string-upcase name) "KEYWORD"))
 		          ;; if no contact name is given, close the first contact instance in the list
-			  `(second *contact-list*))))
-     (stop (getf ,contact :instance))
-     (princ (format nil "~%Seed contact at port ~d now closed.~%~%" (getf ,contact :port)))
-     nil)))
+			  `(second ,contact-list))))
+       (stop (getf ,contact :instance))
+       (princ (format nil "~%Seed contact at port ~d now closed.~%~%" (getf ,contact :port)))
+       nil)))
