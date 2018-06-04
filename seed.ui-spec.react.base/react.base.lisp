@@ -105,12 +105,18 @@
 					   (setq vertical-sequence-matched true))
 				       (if (and vertical-sequence-matched (not (getprop orientations x)))
 					   (setq vertical-sequence-broken true))
+				       (cl :st x new-trace
+					   vertical-sequence-broken
+					   (typeof (getprop retracers x)))
 				       (if (and (not new-trace)
 						(not vertical-sequence-broken)
+						;; (or (not (@ c meta))
+						;;     (not (= "__encloseBranchesMain" (@ c meta enclose))))
 						(= "function" (typeof (getprop retracers x))))
 					   (let ((shift-value (funcall (getprop retracers x)
 								       (@ prop-data action params vector)
 								       path)))
+					     (cl :sv x shift-value)
 					     (if (or shift-value (= 0 shift-value))
 						 (setf new-trace (chain path (slice 0 x) (concat shift-value)))))))
 				  ;; if the movement vector is negative, once a valid branch has been
@@ -129,7 +135,8 @@
 		     			;(cl :newt new-trace)
 				  (if new-trace (chain c methods (set-trace new-trace)))))
 		       ;; (if (> 7 (@ path length))
-		       ;; 	  (cl :path path (if (@ c meta) (@ c meta enclose))))
+		       ;; 	   (cl :path path trace (if (@ c meta) (@ c meta enclose))
+		       ;; 	       c))
 		       (if (and (@ self props meta) (@ self props meta transparent))
 			   c (create trace trace
 				     path path
@@ -447,6 +454,19 @@
 				      ((= (@ branch type 0) "html-element")
 				       (subcomponent -html-display (@ branch data)
 						     :context (index index)))))
+		       ;; (top-controls (if (not (= "nil" (@ self props context meta secondary-controls format 0 vl)))
+		       ;; 			 ;; don't display the sub-controls if the value is 'nil',
+		       ;; 			 ;; i.e. there's nothing to show
+		       ;; 			 (subcomponent (@ view-modes form-view)
+		       ;; 				       (create id "sub-controls"
+		       ;; 					       data (@ self props context meta
+		       ;; 							    secondary-controls format))
+		       ;; 				       :context (view-scope 
+		       ;; 						 "short"
+		       ;; 						 index 1
+		       ;; 						 interactions interactions
+		       ;; 						 get-interaction this-get-interaction
+		       ;; 						 movement-transform flip-axis))))
 		       (sub-controls (if (not (= "nil" (@ self props context meta secondary-controls format 0 vl)))
 					 ;; don't display the sub-controls if the value is 'nil',
 					 ;; i.e. there's nothing to show
@@ -769,6 +789,7 @@
 			   systems))
 	  :build-retracer
 	  (lambda (self)
+	    ;;(cl :self (@ self props context))
 	    (lambda (primal-vector)
 	      (let* ((display-vertical (or (and (@ self props context meta)
 						(= "__y" (@ self props context meta axis)))
@@ -794,9 +815,13 @@
 							      (= "__vista" (@ index-item mt if type))))))
 						(reduce (lambda (total this-item)
 							  (+ total (if this-item 1 0)))))))))
-		
 		(if (and (= 0 (@ vector 1))
 			 (not (= 0 (@ vector 0)))
+			 ;; don't retrace if this is an enclosure for branches; since only one segment will
+			 ;; ever by visible, retracing for branch enclosures with more than one segment
+			 ;; causes an inability to move the trace past the multi-segment enclosure
+			 (or (not (@ self props context meta))
+			     (not (= "__encloseBranchesMain" (@ self props context meta enclose))))
 			 ;; check whether space is subdivided into plain lists; if so, one should be subtracted
 			 ;; from the space length since the space will have a plain list at its beginning that
 			 ;; pads its length by one. TODO: this is clumsy, is there a better way to determine the
