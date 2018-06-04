@@ -105,9 +105,6 @@
 					   (setq vertical-sequence-matched true))
 				       (if (and vertical-sequence-matched (not (getprop orientations x)))
 					   (setq vertical-sequence-broken true))
-				       (cl :st x new-trace
-					   vertical-sequence-broken
-					   (typeof (getprop retracers x)))
 				       (if (and (not new-trace)
 						(not vertical-sequence-broken)
 						;; (or (not (@ c meta))
@@ -116,7 +113,6 @@
 					   (let ((shift-value (funcall (getprop retracers x)
 								       (@ prop-data action params vector)
 								       path)))
-					     (cl :sv x shift-value)
 					     (if (or shift-value (= 0 shift-value))
 						 (setf new-trace (chain path (slice 0 x) (concat shift-value)))))))
 				  ;; if the movement vector is negative, once a valid branch has been
