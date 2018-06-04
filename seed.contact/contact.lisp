@@ -52,7 +52,7 @@
   `(setf (getf ,contact-list ,(intern (string-upcase name) "KEYWORD"))
 	 nil))
 
-(defmacro contact-remove-all-in ()
+(defmacro contact-remove-all-in (contact-list)
   `(setq ,contact-list nil))
 
 (defmacro contact-open-in (contact-list &optional name) 
@@ -61,7 +61,7 @@
 			  ;; if no contact name is given, open the first contact instance in the list
 			  `(second ,contact-list))))
        (start (getf ,contact :instance))
-       (princ (format nil "~%Seed contact now open and listening at port ~d.~%~%" (getf ,contact :port)))
+       (princ (format nil "~%[ _ ] Opened Seed contact.~%Port: ~d~%~%" (getf ,contact :port)))
        nil)))
 
 (defmacro contact-close-in (contact-list &optional name) 
@@ -70,5 +70,5 @@
 		          ;; if no contact name is given, close the first contact instance in the list
 			  `(second ,contact-list))))
        (stop (getf ,contact :instance))
-       (princ (format nil "~%Seed contact at port ~d now closed.~%~%" (getf ,contact :port)))
+       (princ (format nil "~%[|||] Closed Seed contact.~%Port: ~d~%~%" (getf ,contact :port)))
        nil)))
