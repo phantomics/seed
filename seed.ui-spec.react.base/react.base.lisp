@@ -832,7 +832,11 @@
 			 ;; from the space length since the space will have a plain list at its beginning that
 			 ;; pads its length by one. TODO: this is clumsy, is there a better way to determine the
 			 ;; navigable area within vistas?
-			 (< -1 new-point (@ self size)))
+			 (< (if (and (@ self props context meta)
+				     (@ self props context meta starting-index))
+				(1- (@ self props context meta starting-index))
+				-1)
+			    new-point (@ self size)))
 			    ;; (+ (if (and (@ self state space 1)
 			    ;; 		(@ self state space 1 0)
 			    ;; 		(@ self state space 1 0 ty)

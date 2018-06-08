@@ -97,7 +97,8 @@
      (chain this (set-state (create confirmed-value value))))
    :move
    (lambda (motion)
-     (cl :mo motion))
+     ;;(cl :mo motion)
+     )
    :component-will-receive-props
    (lambda (next-props)
      (defvar self this)

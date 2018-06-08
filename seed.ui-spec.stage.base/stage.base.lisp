@@ -46,6 +46,7 @@
 				  (list :body)
 				  (if secondary-controls (list :sub-controls)))
 			 :if (:type :vista :ct 0 :fill :fill-branch :branch ,name
+				    ,@(if primary-controls (list :starting-index -1))
 				    :extend-response :respond-branches-main :axis :y
 				    ,@(if primary-controls
 					  `(:primary-controls
