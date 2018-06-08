@@ -450,19 +450,20 @@
 				      ((= (@ branch type 0) "html-element")
 				       (subcomponent -html-display (@ branch data)
 						     :context (index index)))))
-		       ;; (top-controls (if (not (= "nil" (@ self props context meta secondary-controls format 0 vl)))
-		       ;; 			 ;; don't display the sub-controls if the value is 'nil',
-		       ;; 			 ;; i.e. there's nothing to show
-		       ;; 			 (subcomponent (@ view-modes form-view)
-		       ;; 				       (create id "sub-controls"
-		       ;; 					       data (@ self props context meta
-		       ;; 							    secondary-controls format))
-		       ;; 				       :context (view-scope 
-		       ;; 						 "short"
-		       ;; 						 index 1
-		       ;; 						 interactions interactions
-		       ;; 						 get-interaction this-get-interaction
-		       ;; 						 movement-transform flip-axis))))
+		       (top-controls (if (and (@ self props context meta primary-controls)
+					      (not (= "nil" (@ self props context meta primary-controls format 0 vl))))
+		       			 ;; don't display the sub-controls if the value is 'nil',
+		       			 ;; i.e. there's nothing to show
+		       			 (subcomponent (@ view-modes form-view)
+		       				       (create id "sub-controls"
+		       					       data (@ self props context meta
+		       							    primary-controls format))
+		       				       :context (view-scope 
+		       						 "short"
+		       						 index -1
+		       						 interactions interactions
+		       						 get-interaction this-get-interaction
+		       						 movement-transform flip-axis))))
 		       (sub-controls (if (not (= "nil" (@ self props context meta secondary-controls format 0 vl)))
 					 ;; don't display the sub-controls if the value is 'nil',
 					 ;; i.e. there's nothing to show
@@ -476,6 +477,7 @@
 								 interactions interactions
 								 get-interaction this-get-interaction
 								 movement-transform flip-axis)))))
+		  ;;(cl :ef top-controls branch (@ self props context meta))
 		  (if element (panic:jsl (:div :class-name (+ "portal-column " (chain branch type (join " ")))
 					       (:div :class-name (+ "header" (if (@ self state context on-trace)
 										 " point" ""))
@@ -485,7 +487,15 @@
 							       (panic:jsl (:span :class-name "locked-indicator"
 										 "locked")))))
 					       (:div :class-name "holder"
-						     (:div :class-name "pane"
+						     (if top-controls
+						     	 (panic:jsl (:div :class-name
+						     			  (+ "sub-header horizontal-view"
+						     			     (if (= -1 this-index)
+						     				 " point" ""))
+						     			  (:div :class-name "inner"
+						     				top-controls))))
+						     (:div :class-name (+ "pane"
+									  (if top-controls " with-sub-header" ""))
 							   ;; TODO: WARNING: CHANGE THIS AND THE
 							   ;; GLYPH RENDERING BREAKS BECAUSE
 							   ;; THE FIRST TERMINAL TD CAN'T BE FOUND!

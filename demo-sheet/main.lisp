@@ -6,7 +6,7 @@ addFloor←{⍵[;⍳(2⌷⍴⍵)-1;],[2]⍺}
 field←16 16 16⍴0
 field←1 addWalls (2 addFloor field)
 field[;5 6;4]←3
-field[8;4;6]←4
+field[8;2;6]←4
 field[8;8;]←1
 field")
 (DEFVAR GENERATED-SPACE)
@@ -26,6 +26,14 @@ field")
                :KIND "text"))
              :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
             (:NODES
+             ((:LEAVES
+               ((:MARKS NIL :TEXT "This is " :KIND "leaf")
+                (:MARKS ((:DATA NIL :TYPE "bold" :KIND "mark")) :TEXT
+                 "a test, " :KIND "leaf")
+                (:MARKS NIL :TEXT "hello, more testing." :KIND "leaf"))
+               :KIND "text"))
+             :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
+            (:NODES
              ((:LEAVES ((:MARKS NIL :TEXT "Test." :KIND "leaf")) :KIND "text"))
              :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
             (:NODES
@@ -34,8 +42,8 @@ field")
                  "text"))
                :DATA NIL :IS-VOID :FALSE :TYPE "section" :KIND "block")
               (:NODES
-               ((:LEAVES ((:MARKS NIL :TEXT "Testing 123" :KIND "leaf")) :KIND
-                 "text"))
+               ((:LEAVES ((:MARKS NIL :TEXT "Testing 123 456" :KIND "leaf"))
+                 :KIND "text"))
                :DATA NIL :IS-VOID :FALSE :TYPE "section" :KIND "block")
               (:NODES
                ((:LEAVES

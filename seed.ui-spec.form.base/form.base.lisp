@@ -509,6 +509,7 @@
 								    (get-interaction
 								     (chain datum pr meta if interaction 
 									    (substr 2))))))))
+				    (cl :ii interaction datum)
 				    (if interaction
 					(funcall interaction self datum)
 					(let ((datum (chain j-query

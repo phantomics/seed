@@ -66,9 +66,8 @@
 	 (space (out (set-type :space :block)
 	 	     (put-image (get-value :generated-space))))
 	 (doc (in (set-time)
-	 	  (stage-params :secondary-controls (:doc-mark-bold :doc-mark-italic :doc-node-pgraph
-	 							    :doc-node-quote :doc-node-points
-	 							    :doc-node-count))
+	 	  (stage-params :primary-controls (:doc-node-pgraph :doc-node-quote :doc-node-points :doc-node-count)
+				:secondary-controls (:doc-mark-bold :doc-mark-italic))
 		  (document-content)
 	 	  (put-image)
 	 	  (if-condition (is-param :save)

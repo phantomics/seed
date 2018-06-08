@@ -271,7 +271,8 @@
 	    (.codemirror :height 100%
 			 :|box-shadow| none
 			 :background transparent))
-	   (.status-bar :height 30px)))
+	   ;;(.status-bar :height 30px)
+	   ))
 
 	 (.portal-column.document
 	  (.document-pane-outer
@@ -313,25 +314,33 @@
 		  :border-left "6px solid #eee8d5"
 		  :border-right "6px solid #eee8d5")
 
-	 (.footer :height 42px
-		  (.inner :padding 12px 4px 4px 4px
-			  :border-top "2px solid #eee8d5"
-			  :text-align right
-			  :font-family monospace
-			  (span.title :padding 0 4px)
-			  (span :color "#839496"
-				:border-bottom "2px solid #eee8d5"
-				:cursor pointer)
-			  (.atom-inner.point
-			   (span :background "#eee8d5"))))
+	 ((:or .footer .sub-header)
+	  :height 42px
+	  (.inner :padding 12px 4px 4px 4px
+		  :border-top "2px solid #eee8d5"
+		  :text-align right
+		  :font-family monospace
+		  (span.title :padding 0 4px)
+		  (span :color "#839496"
+			:border-bottom "2px solid #eee8d5"
+			:cursor pointer)
+		  (.atom-inner.point
+		   (span :background "#eee8d5"))))
+
+	 (.sub-header :height 32px
+		      :border-bottom "2px solid #eee8d5"
+		      (.inner :padding-top 4px
+			      (.form-view :text-align left)))
 	 
-	 (.footer.point
+	 ((:or .footer.point .sub-header.point)
 	  (.inner
 	   :border-bottom "2px solid #93a1a1"
 	   (.atom-inner.point
 	    (span :color "#fdf6e3"
 		  :background "#93a1a1"))))
 
+	 (div.pane.with-sub-header :height "calc(100% - 112px)")
+	 
 	 (div.pane
 	  :background "#fdf6e3"
 	  :position relative

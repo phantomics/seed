@@ -40,10 +40,18 @@
 		(let* ((name (intern (string-upcase (first spec)) "KEYWORD"))
 		       (param-checks (mapcar #'cadr (find-form-in-spec 'is-param spec)))
 		       (stage-params (cdar (find-form-in-spec 'stage-params spec)))
+		       (primary-controls (getf stage-params :primary-controls))
 		       (secondary-controls (append (or (find :save param-checks) (find :revert param-checks)))))
-		  `(meta (:body ,@(if secondary-controls (list :sub-controls)))
+		  `(meta ,(append (if primary-controls (list :top-controls))
+				  (list :body)
+				  (if secondary-controls (list :sub-controls)))
 			 :if (:type :vista :ct 0 :fill :fill-branch :branch ,name
 				    :extend-response :respond-branches-main :axis :y
+				    ,@(if primary-controls
+					  `(:primary-controls
+					    (:format (,(funcall ,(macroexpand (append (getf extend :controls)))
+								nil (reverse (getf stage-params
+										   :primary-controls)))))))
 				    :secondary-controls
 				    (:format (,(funcall ,(macroexpand (append (getf extend :controls)))
 							spec (reverse (getf stage-params :secondary-controls)))))
