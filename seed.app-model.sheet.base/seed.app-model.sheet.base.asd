@@ -1,6 +1,6 @@
-;;;; seed.model.sheet.asd
+;;;; seed.app-model.sheet.base.asd
 
-(asdf:defsystem #:seed.model.sheet
+(asdf:defsystem #:seed.app-model.sheet.base
   :description "Seed data model for spreadsheet applications."
   :author "Andrew Sengul"
   :license "GPL-3.0"
@@ -8,5 +8,5 @@
   :depends-on (#:jonathan #:parse-number #:swank)
   :components 
   ((:file "package")
-   (:file "model.sheet")))
+   (:file "sheet.base")))
 

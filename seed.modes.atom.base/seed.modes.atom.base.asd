@@ -1,6 +1,6 @@
-;;;; seed.reflect.atom.base.asd
+;;;; seed.modes.atom.base.asd
 
-(asdf:defsystem #:seed.reflect.atom.base
+(asdf:defsystem #:seed.modes.atom.base
   :description "Baseline specifications for modulating atoms in Seed."
   :author "Andrew Sengul"
   :license "GPL-3.0"

@@ -2,4 +2,4 @@
 
 (in-package #:seed.modulate)
 
-(export 'reflect-form-base)
+(export 'modes-form-base)

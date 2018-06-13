@@ -2,8 +2,11 @@
 
 (in-package #:portal.demo1)
 
-(reflect :atom (reflect-atom-base)
-	 :form (reflect-form-base))
+(defvar *portal*)
+
+(modes :atom (modes-atom-base)
+       :form (modes-form-base)
+       :meta (modes-meta-common))
 
 (media media-spec-base media-spec-graph-garden-path)
 

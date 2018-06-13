@@ -7,7 +7,8 @@
   :serial t
   :depends-on (#:seed.generate #:seed.media.base
 	       #:seed.media.graph.garden-path #:seed.modulate
-	       #:seed.reflect.atom.base #:seed.reflect.form.base
+	       #:seed.modes.atom.base #:seed.modes.form.base
+	       #:seed.modes.meta.common
 	       #:seed.express.glyphs.base #:seed.ui-model.stage
 	       #:seed.ui-model.keys #:seed.ui-model.html
 	       #:seed.ui-model.react #:seed.ui-spec.stage.base

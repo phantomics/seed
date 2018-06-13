@@ -1,6 +1,6 @@
-;;;; seed.reflect.form.base.asd
+;;;; seed.modes.form.base.asd
 
-(asdf:defsystem #:seed.reflect.form.base
+(asdf:defsystem #:seed.modes.form.base
   :description "Baseline specifications for modulating forms in Seed."
   :author "Andrew Sengul"
   :license "GPL-3.0"

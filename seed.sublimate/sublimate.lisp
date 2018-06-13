@@ -2,12 +2,6 @@
 
 (in-package #:seed.sublimate)
 
-(defmacro expand-1 (form &environment env)
-  "Expand a macro by a single step."
-  (multiple-value-bind (expansion expanded-p)
-      (macroexpand-1 form env)
-    `(values ',expansion ',expanded-p)))
-
 (defparameter *opening-parenthesis-handler* (get-macro-character #\())
 
 (defun priority-macro-reader-extension (stream character)
@@ -22,9 +16,9 @@
 		 (char= #\Newline (aref string 4))
 		 (char= #\Return (aref string 4)))
 	     (string= "META" (subseq string 0 4)))
-	(macroexpand (read (make-concatenated-stream (make-string-input-stream "(SEED.SUBLIMATE::EXPAND-META ")
-						     stream)
-			   nil nil t))
+	(macroexpand-1 (read (make-concatenated-stream (make-string-input-stream "(SEED.SUBLIMATE::EXPAND-META ")
+						       stream)
+			     nil nil t))
 	(funcall *opening-parenthesis-handler*
 	         (make-concatenated-stream (make-string-input-stream string)
 		                           stream)
@@ -37,17 +31,8 @@
      ,@body))
 
 (defmacro expand-meta (form &rest params)
-  "Expand a meta form according to a given format."
-  (let ((expander (getf params :format))
-	(format (gensym))
-	(to-format (gensym)))
-    (if expander
-	(if (symbolp expander)
-	    (list expander form)
-	    `(macrolet ((,format ,(list to-format)
-			  (funcall ,expander ,to-format)))
-	       (expand-1 (,format ,form))))
-	form)))
+  (declare (ignore params))
+  form)
 
 (defmacro meta (form &rest params)
   (declare (ignore params))

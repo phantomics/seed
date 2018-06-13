@@ -349,6 +349,7 @@
 	   (state (if state state (create row 0 column 0)))
 	   (last-index nil)
 	   (context-begins false)
+	   (meta-mode-active false)
 	   (is-plain-list (= "plain" (@ data 0 ty 0)))
 	   (increment-breadth (lambda (number) (setf (@ data 0 br) (+ (if (or number (= 0 number))
 									  number 1)
@@ -382,9 +383,14 @@
 			(@ data 0 cx) (if context-begins
 					  (chain state reader-context (concat (list "start")))
 					  (@ state reader-context)))
-					  ;; assign column, row and reader macro content
+		  ;; assign column, row and reader macro content
+		  ;; (if (@ data 0 mt)
+		  ;;     (cl :iio data))
 		  (chain data
 			 (map (lambda (datum index)
+				;; (if (and meta-mode-active (= 0 index))
+				;;     (progn (setf (@ datum inmt)
+				;; 		 (@ data 0 mt))))
 				(if (and (= 1 index)
 					 (not is-plain-list))
 				    (setf (@ state column) (1+ (@ state column))))
@@ -756,7 +762,7 @@
 						      (@ datum ix))
 						   " point" "")
 					       (if (and (not (= "undefined" (typeof (@ datum br))))
-							(= 0 (@ datum br)))
+						(= 0 (@ datum br)))
 						   " singleton" "")
 					       (if (@ datum cx)
 						   (chain datum cx (map (lambda (item index)

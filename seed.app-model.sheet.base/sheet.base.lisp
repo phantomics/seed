@@ -1,6 +1,6 @@
-;;;; model.sheet.lisp
+;;;; sheet.base.lisp
 
-(in-package #:seed.model.sheet)
+(in-package #:seed.app-model.sheet.base)
 
 (defun list-to-2d-array (list)
   (make-array (list (length list)

@@ -2,8 +2,6 @@
 
 (in-package #:seed.generate)
 
-(use-package 'seed.model.sheet)
-
 (specify-media
  media-spec-base
  ;; read data from a file
@@ -350,7 +348,7 @@
 				     :data-inp cb-data))
 			      (t cb-data))))
 		(branch-image branch))
-	      (array-map #'seed.model.sheet:interpret-cell
+	      (array-map #'seed.app-model.sheet.base:interpret-cell
 			 (array-map #'postprocess-structure (list-to-array data 2)))))
 	`((if (get-param :from-clipboard)
 	      (apply #'aref (cons data (reverse (get-param :point))))

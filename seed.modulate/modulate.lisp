@@ -2,6 +2,8 @@
 
 (in-package #:seed.modulate)
 
+(defparameter *local-package-name* (package-name *package*))
+
 (defun array-map (function &rest arrays)
   "Maps the function over the arrays. Assumes that all arrays are of the same dimensions. Returns a new result array of the same dimension."
   (flet ((make-displaced-array (array)
@@ -107,7 +109,7 @@
 		   (first form) ;; passed directly from an output function
 		   form))
 	(meta (if meta meta (create-meta))))
-
+    ;;(print (list :mt meta form))
     ;; set initial element flag to true so that the atom heading a form can be correctly marked
     (if (not output)
 	(setf (of-meta :initial) t))
@@ -326,6 +328,7 @@
 						  (cond ((or (eq :default (first list))
 							     (eq :data (first list))
 							     (eq :format (first list))
+							     (eq :model (first list))
 							     (eq :value (first list)))
 							 (downcase-jsform (encode-expr (second list))))
 							((eq t (second list))
@@ -366,6 +369,7 @@
 						   (cond ((or (eq :default (first list))
 							      (eq :data (first list))
 							      (eq :format (first list))
+							      (eq :model (first list))
 							      (eq :value (first list)))
 							      ;; if the decoded expression is just an atom,
 							      ;; pull it out of the list it comes in,
@@ -500,23 +504,30 @@
 	(plot-glyph type-list))
   glyph-array)
 
-(defmacro reflect (&key (atom nil) (form nil))
-  `(progn ,@(if atom (macroexpand (cons 'set-atom-reflection
+(defmacro modes (&key (atom nil) (form nil) (meta nil))
+  `(progn ,@(if atom (macroexpand (cons 'set-atom-modes
 					(loop :for spec :in atom :append (macroexpand (list spec))))))
-	  ,@(if form (macroexpand (cons 'set-form-reflection
-				        (loop :for spec :in form :append (macroexpand (list spec))))))))
+	  ,@(if form (macroexpand (cons 'set-form-modes
+				        (loop :for spec :in form :append (macroexpand (list spec))))))
+	  ,@(if meta (macroexpand (cons 'set-meta-modes
+				        (loop :for spec :in meta :append (macroexpand (list spec))))))))
 
-(defmacro specify-atom-reflection (name &rest params)
-  "Define (part of) an atom reflection specification to determine the behavior of seed.modulate."
+(defmacro specify-atom-modes (name &rest params)
+  "Define (part of) an atom mode specification to determine the behavior of seed.modulate."
   `(defmacro ,name ()
      `(,@',params)))
 
-(defmacro specify-form-reflection (name &rest params)
-  "Define (part of) a form reflection specification to determine the behavior of seed.modulate."
+(defmacro specify-form-modes (name &rest params)
+  "Define (part of) a form mode specification to determine the behavior of seed.modulate."
   `(defmacro ,name ()
      `(,@',params)))
 
-(defmacro set-atom-reflection (&rest entries)
+(defmacro specify-meta-modes (name &rest params)
+  "Define (part of) a meta mode specification to determine the behavior of seed.modulate."
+  `(defmacro ,name ()
+     `(,@',params)))
+
+(defmacro set-atom-modes (&rest entries)
   "Define encoding and decoding processes for individual atoms, according to their type and other qualities."
   (list `(defun encode-atom (item meta)
 	   (cond ((eq item :seed-constant-blank) ;; handle the blank symbol
@@ -566,7 +577,7 @@
 			       '((t (progn (setf (getf item :ty) (rest type))
 					   (decode-atom item)))))))))))
 
-(defmacro set-form-reflection (&rest entries)
+(defmacro set-form-modes (&rest entries)
   "Define encoding and decoding methods for forms based on given heuristics. For example, certain macros, such as the quasiquote macros, may be encoded and decoded in unique ways."
   (let ((form-process (gensym)) (atom-process (gensym)) (meta (gensym))
 	(output (gensym)) (macros (gensym)) (macro (gensym)))
@@ -581,12 +592,15 @@
 						      `((and (symbolp (first form))
 							     (string= (string-downcase (first form))
 								      ,(string-downcase symbol)))
+							;; (print (list :mim form))
 							(multiple-value-bind (result-output result-meta)
-							    (if (and (second form)
-								     (listp (second form)))
-								(encode-form (second form) ,form-process 
-									     ,atom-process ,meta ,output)
-								(funcall ,atom-process (second form) ,meta))
+							    (let ((to-process ,(if (getf entry :to-process)
+										   (getf entry :to-process)
+										   `(second form))))
+							      (if (and to-process (listp to-process))
+								  (encode-form to-process ,form-process 
+									       ,atom-process ,meta ,output)
+								  (funcall ,atom-process to-process ,meta)))
 							  ,@(if (getf entry :encode)
 								(getf entry :encode)
 								`((if (keywordp (first result-output))
@@ -619,6 +633,16 @@
 			     '((t form))))
 		    (rest ,macros)
 		    original-form)))))))
+
+(defmacro set-meta-modes (&rest entries)
+  (let ((form (gensym)) (format (gensym)) (formats (gensym)))
+    `((let ((,formats (make-hash-table :test #'eq)))
+	(setf ,@(loop :for entry :in entries :append
+		   `((gethash ,(first entry) ,formats)
+		     ,(second entry))))
+	(defun meta-format (,form ,format)
+	  (funcall (gethash ,form ,formats)
+		   ,format))))))
 
 ;; (defun decode-array (form dims &optional point output callback)
 ;;   (let ((point (if point point (list 0)))

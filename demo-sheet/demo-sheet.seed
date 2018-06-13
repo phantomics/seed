@@ -1,7 +1,7 @@
 (sprout :demo-sheet :system (:DESCRIPTION
 			     "This is demoSheet, a package created to demonstrate Seed's spreadsheet module."
 			     :AUTHOR "Andrew Sengul" :LICENSE "GPL-3.0")
-        :package ((:use #:common-lisp #:seed.model.sheet
+        :package ((:use #:common-lisp #:seed.app-model.sheet.base
 			#:seed.app-model.graph.garden-path #:seed.app-model.document-slate.base)
 		  (:export))
         :branches

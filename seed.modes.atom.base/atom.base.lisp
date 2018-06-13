@@ -11,8 +11,8 @@
 	(t (mapcar (lambda (substring) (split-sequence #\- substring)) 
 		   (split-sequence #\. symbol)))))
 
-(specify-atom-reflection
- reflect-atom-base
+(specify-atom-modes
+ modes-atom-base
  (:predicate
   (:enclosed-by (meta))
   :decode ((cons (intern "META")
