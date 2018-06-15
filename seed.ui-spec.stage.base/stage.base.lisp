@@ -10,28 +10,28 @@
 								       (of-sprout-meta ,portal :active-system))
 								      "KEYWORD")))))
        `(((meta ((meta ,,(intern (package-name *package*) "KEYWORD")
-		       :if (:type :portal-name))
+		       :mode (:view :portal-name))
 		 ,@(if (not branch-specs)
 		       `((meta ,(get-portal-contacts ,portal)
-			       :if (:type :portal-system-list :index -1)
-			       :each (:if (:interaction :select-system)))))
+			       :mode (:view :portal-system-list :index -1)
+			       :each (:mode (:interaction :select-system)))))
 		 ,@(if branch-specs
 		       `((meta ,(of-sprout-meta ,portal :active-system)
-			       :if (:options ,(mapcar (lambda (system-name)
+			       :mode (:options ,(mapcar (lambda (system-name)
 							`(:title ,(lisp->camel-case system-name)
 								 :value ,(string-downcase system-name)))
 						      (get-portal-contacts ,portal))
-					     :type :select))))
+					     :view :select))))
 		 ,@(if branch-specs `((meta ,(funcall ,(macroexpand sub-nav)
 						      branch-specs)
-					    :if (:type :system-branch-list :index 0 :sets (2))
-					    :each (:if (:interaction :select-branch))))))
-		:if (:type :vista :breadth :short :layout :column :name :portal-specs
+					    :mode (:view :system-branch-list :index 0 :sets (2))
+					    :each (:mode (:interaction :select-branch))))))
+		:mode (:view :vista :breadth :short :layout :column :name :portal-specs
 			   :fill :fill-overview :enclose :enclose-overview)))
 	 (meta ,(if branch-specs (funcall ,(macroexpand branches)
 					  branch-specs))
 	       ;; is the transparent property needed here?
-	       :if (:type :vista :transparent t))))))
+	       :mode (:view :vista :transparent t))))))
 
 (defmacro simple-branch-layout (&rest extend)
   "A layout for display of major and adjunct branches within a Seed system."
@@ -45,7 +45,7 @@
 		  `(meta ,(append (if primary-controls (list :top-controls))
 				  (list :body)
 				  (if secondary-controls (list :sub-controls)))
-			 :if (:type :vista :ct 0 :fill :fill-branch :branch ,name
+			 :mode (:view :vista :ct 0 :fill :fill-branch :branch ,name
 				    ,@(if primary-controls (list :starting-index -1))
 				    :extend-response :respond-branches-main :axis :y
 				    ,@(if primary-controls
@@ -66,7 +66,7 @@
 	      	(labels ((process-section (section)
 	      		   (if (listp section)
 	      		       `(meta ,(mapcar #'process-section section)
-				      :if (:type :vista :enclose :enclose-branch-segment))
+				      :mode (:view :vista :enclose :enclose-branch-segment))
 	      		       (prospec-branch (labels ((find-spec (target specs)
 							  (if specs
 							      (if (eq target (intern (string-upcase (caar specs))
@@ -84,16 +84,16 @@
 	      (prospec-adj (specs) ;;(specs &optional output)
 		(second (assoc :adjunct (rest (first (find-form-in-spec 'display-params (first specs))))))))
        `((meta ((meta ,(prospec-segment branch-specs)
-		      :if (:type :vista :name :branches :enclose :enclose-branches-main :point 0
+		      :mode (:view :vista :name :branches :enclose :enclose-branches-main :point 0
 				 :index (:format
 					 ,(rest (assoc :primary
 						       (rest (first (find-form-in-spec 'display-params
 										       (first branch-specs)))))))
 				 :navigation (:format (,(prospec-nav branch-specs)))))
 		(meta ,(prospec-adj branch-specs)
-		      :if (:type :vista :name :branches-adjunct :breadth :brief
+		      :mode (:view :vista :name :branches-adjunct :breadth :brief
 				 :fill :fill-branches-adjunct :enclose :enclose-branches-adjunct)))
-	       :if (:type :vista))))))
+	       :mode (:view :vista))))))
 
 
 (defmacro simple-sub-navigation-layout (&key (omit nil))
@@ -102,6 +102,6 @@
      (loop for branch in branch-specs append (let ((branch-name (intern (string-upcase (first branch)) "KEYWORD")))
 					       (if (not (find branch-name (list ,@omit)))
 						   (list `(meta ,branch-name
-								:if (:type :branch-selector
+								:mode (:view :branch-selector
 									   :target ,branch-name))))))))
 

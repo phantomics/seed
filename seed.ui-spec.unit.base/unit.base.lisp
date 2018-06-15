@@ -325,16 +325,16 @@
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "menu-holder"
 			   (:-select :name "form-select"
-				     :value (let* ((values (chain self state data content mt if options
+				     :value (let* ((values (chain self state data content mt mode options
 								  (map (lambda (item) (@ item value 0 vl)))))
-						   (current-value (getprop (@ self state data content mt if options)
+						   (current-value (getprop (@ self state data content mt mode options)
 									   (chain values 
 										  (index-of (@ self state space))))))
 					      (if (not (= "undefined" (typeof current-value)))
 						  (funcall (lambda (item) (create label (@ item title)
 										  value (@ item value)))
 							   current-value)))
-				     :options (chain self state data content mt if options
+				     :options (chain self state data content mt mode options
 						     (map (lambda (item) (create label (@ item title)
 										 value (@ item value)))))
 				     :on-change (lambda (value)
@@ -391,10 +391,10 @@
   (let ((self this))
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "info-tabs"
-			   (if (@ self state data content mt if title)
+			   (if (@ self state data content mt mode title)
 			       (panic:jsl (:span :class-name "title" 
-						 (@ self state data content mt if title))))
-			   (if (@ self state data content mt if removable)
+						 (@ self state data content mt mode title))))
+			   (if (@ self state data content mt mode removable)
 			       (panic:jsl (:span :class-name "remove" 
 						 :on-click (lambda (event)
 							     (chain self props context methods
@@ -435,8 +435,8 @@
     (panic:jsl (:div :class-name "list-interface-holder"
 		     ((@ -react-bootstrap -panel)
 		      (:div :class-name "panel-heading"
-			    (:div :class-name "title" (@ self state data params mt if title))
-			    (if (@ self state data params mt if removable)
+			    (:div :class-name "title" (@ self state data params mt mode title))
+			    (if (@ self state data params mt mode removable)
 				(panic:jsl (:span :class-name "remove"
 						  :on-click (lambda (event)
 							      (chain self props context methods
@@ -467,16 +467,16 @@
 		      (:div :class-name "panel-heading"
 			    (:-select
 			     :name "form-select"
-			     :value (let ((values (chain self state data params mt if options
+			     :value (let ((values (chain self state data params mt mode options
 							 (map (lambda (item) (@ item value))))))
-				      (getprop (@ self state data params mt if options)
+				      (getprop (@ self state data params mt mode options)
 					       (chain values (index-of (@ self state space)))))
-			     :options (chain self state data params mt if options
+			     :options (chain self state data params mt mode options
 					     (map (lambda (item) (create label (@ item title)
 									 value (@ item value)))))
 			     :on-change (lambda (value) (chain self (designate value))))
 			    (:div :class-name "list-info"
-				  (if (@ self state data params mt if removable)
+				  (if (@ self state data params mt mode removable)
 				      (panic:jsl (:span :class-name "remove" 
 							:on-click 
 							(lambda (event)
