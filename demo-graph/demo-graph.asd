@@ -5,7 +5,7 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on (#:seed.model.graph.garden-path)
+  :depends-on (#:seed.app-model.graph.garden-path)
   :components
   ((:file "package")
    (:file "graph")))

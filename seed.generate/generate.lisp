@@ -234,6 +234,7 @@
 (defgeneric get-portal-contact-branch-specs (portal contact-name))
 (defmethod get-portal-contact-branch-specs ((portal portal) contact-name)
   "Return a contact from a given portal whose system has the given name."
+  (print (list :eeg portal contact-name))
   (get-sprout-branch-specs (find-portal-contact-by-sprout-name portal contact-name)))
 
 #| 
@@ -513,12 +514,12 @@ inclusion of aport macro here just acts as passthrough
 									      (second ,list))
 									(assign-meta-from-list (cddr ,list))))))
 					      (assign-meta-from-list ,params)))
-				;; (print (list :par ,params ,sprid ,portal-package-id))
 				;; invoke the special priority macro system
 				;; meta tags will be evaluated before macro expansion
 				;; the first step to doing this is to load the meta form
 				;; (setf (getf (sprout-meta ,sprout) :active-system)
 				;;       "demo-drawing")
+				(print (list :ssp ,sprid ,portal-package-id))
 				(if (instantiate-priority-macro-reader
 				      (asdf:load-system (if ,sprid ,sprid ,portal-package-id)))
 				      ;; load the system if it doesn't exist yet

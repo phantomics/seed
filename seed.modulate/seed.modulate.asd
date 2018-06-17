@@ -5,6 +5,5 @@
   :serial t
   :depends-on (#:fare-quasiquote #:cl-ppcre #:cl-utilities #:parse-number #:symbol-munger)
   :components 
-  ((:file "mode")
-   (:file "package")
+  ((:file "package")
    (:file "modulate")))

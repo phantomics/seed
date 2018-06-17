@@ -110,7 +110,7 @@
 				 `((let ((dat ,(if reagent 'reagent 'data))
 					 (value nil))
 				     (loop for item in (cadar dat)
-					when (eq :select (getf (getf (cddr item) :if) :type))
+					when (eq :select (getf (getf (cddr item) :mode) :view))
 					do (setq value (intern (string-upcase (second item))
 							       "KEYWORD")))
 				     (setf (getf (sprout-meta sprout) :active-system)
@@ -375,7 +375,6 @@
 			       (string= (string-upcase (second item))
 					,(string-upcase symbol)))
 		     do (setq found t))
-		  (print (list :out output ,reagent ,(string-upcase symbol)))
 		  output)))
  
  ;; records items from input to system's clipboard branch / fetches items from clipboard for output

@@ -2,7 +2,7 @@
 (GEN-SVG
  (:G :ID "group1"
   (:RECT :X 228 :Y 82 :HEIGHT 100 :WIDTH 40 :FILL
-   (META "#2fc02f" :MODE (:OUTPUT :HTML-RGB-STRING :VIEW :COLOR-PICKER)))
+   (META "#0fc50f" :MODE (:OUTPUT :HTML-RGB-STRING :VIEW :COLOR-PICKER)))
   (:ELLIPSE :CX 245 :FILL
    (META "#CC4B4B" :MODE
     (:OPTIONS
@@ -39,37 +39,126 @@
    (SPIRAL-POINTS 450 300
     (META
      ((META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
       (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
-       :MODE (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T))
+       :MODE
+       (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T :MODEL
+        ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+        :VALUE NIL))
       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
       (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
-       :MODE (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T))
+       :MODE
+       (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T :MODEL
+        ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+        :VALUE NIL))
       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
       (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
-       :MODE (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T))
+       :MODE
+       (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T :MODEL
+        ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+        :VALUE NIL))
       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
-       :MODE (:VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T)))
+       :MODE
+       (:VALUE NIL :MODEL
+        ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM)))
      :MODE
-     (:VIEW :LIST :FILL-BY :SELECT :REMOVABLE NIL :OPTIONS
+     (:VALUE NIL :MODEL
+      ((META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
+       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
+       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T))
+       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+        :MODE
+        (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T :MODEL
+         ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+         :VALUE NIL))
+       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+        :MODE
+        (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T :MODEL
+         ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+         :VALUE NIL))
+       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM))
+       (META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+        :MODE
+        (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T :MODEL
+         ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+         :VALUE NIL))
+       (META ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+        :MODE
+        (:VALUE NIL :MODEL
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :REMOVABLE T :TITLE "Small Green Circle" :VIEW :ITEM)))
+      :VIEW :LIST :FILL-BY :SELECT :REMOVABLE NIL :OPTIONS
       ((:TITLE "Small Green Circle" :VALUE
         (META
-         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00")) :MODE
-         (:VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T)))
+         ((:CIRCLE :R 3 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#88AA00"))
+         :MODE (:VIEW :ITEM :TITLE "Small Green Circle" :REMOVABLE T)))
        (:TITLE "Big Blue Circle" :VALUE
         (META
-         ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE")) :MODE
-         (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T)))))))
+         ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+         :MODE (:VIEW :ITEM :TITLE "Big Blue Circle" :REMOVABLE T)))))))
    :FORMAT :SPIRAL-POINTS-EXPAND :VALUE NIL)))
 (LET ((A 1) (B 2))
   (+ (* A 3) (+ B 1)))

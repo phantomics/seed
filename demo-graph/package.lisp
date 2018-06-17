@@ -2,4 +2,4 @@
 
 (defpackage #:demo-graph
   (:export)
-  (:use #:common-lisp #:seed.model.sheet #:seed.app-model.graph.garden-path #:seed.sublimate))
+  (:use #:common-lisp #:seed.app-model.graph.garden-path #:seed.sublimate))

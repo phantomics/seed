@@ -991,7 +991,9 @@
 				   data-type "json"
 				   content-type "application/json; charset=utf-8"
 				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow" null null null
-									 (create active-system system-id))))
+									 (create active-system
+										 (if (= "nil" system-id)
+										     null system-id)))))
 				   success (lambda (data)
 					     (chain self (load-b-data data system-id callback)))
 				   error (lambda (data err) (chain console (log 11 data err))))))))
@@ -1005,7 +1007,8 @@
 				   data-type "json"
 				   content-type "application/json; charset=utf-8"
 				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow"
-									 (+ "__" system-id))))
+									 (if (= "nil" system-id)
+									     null (+ "__" system-id)))))
 				   success (lambda (data)
 					     (callback stage-data data))
 				   error (lambda (data err) (chain console (log 11 data err))))))))
