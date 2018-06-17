@@ -1,8 +1,0 @@
-;;;; demo-image.lisp
-
-(in-package #:demo-image)
-
-(raster-process-layers
- (out :path "sample2.jpg")
- (apl :exp "1+input")
- (load :path "sample.jpg"))
