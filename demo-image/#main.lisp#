@@ -9,7 +9,7 @@
        :MODE
        (:MODEL
 	(META
-	 ((META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+	 ((META "sample.jpg"
 		:MODE
 		(:VALUE NIL :MODEL
 			((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))

@@ -967,8 +967,6 @@
 		   (chain self state context methods (set-mode "set"))))
 	      ((= "set" (@ self state context mode))
 	       (chain self (set-state (create action-registered nil)))
-	       (cl :dlt (@ self state point-attrs delta)
-		   (@ self state context methods))
 	       (chain self state context methods (grow (@ self state point-attrs delta)))
 	       (chain self (set-focus "meta" 0))
 	       (chain self state context methods (set-delta nil))
