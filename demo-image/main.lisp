@@ -1,7 +1,7 @@
 ;;;; demo-image.lisp
 
 (in-package #:demo-image)
-
+#|
 (meta (raster-process-layers
        (load :path "sample.jpg")
        (apl :exp "1+input")
@@ -9,7 +9,7 @@
        :MODE
        (:MODEL
 	(META
-	 ((META ((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
+	 ((META "sample.jpg"
 		:MODE
 		(:VALUE NIL :MODEL
 			((:CIRCLE :R 5 :STROKE-WIDTH 2 :STROKE "#E3DBDB" :FILL "#87AADE"))
@@ -35,3 +35,4 @@
 			   :MODE (:VIEW :TEXTFIELD :VALUE "sample2.jpg" :REMOVABLE T)))))))
        ;;:FORMAT :SPIRAL-POINTS-EXPAND
        :VALUE NIL))
+|#
