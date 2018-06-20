@@ -445,7 +445,8 @@
 									    (list (@ self state data data ly)
 										  (@ self state data data ct)))))
 							"X"))))))
-		     (@ self state data content)))))
+		     ;;(@ self state data content)
+		     ))))
  (list
   (:get-initial-state
    (lambda () (chain this (initialize (@ this props))))
