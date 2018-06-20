@@ -432,18 +432,20 @@
    (lambda (next-props)
      (chain this (set-state (chain this (initialize next-props))))))
   (let ((self this))
-    (panic:jsl (:div :class-name "list-interface-holder"
-		     ((@ -react-bootstrap -panel)
-		      (:div :class-name "panel-heading"
-			    (:div :class-name "title" (@ self state data params mt mode title))
-			    (if (@ self state data params mt mode removable)
-				(panic:jsl (:span :class-name "remove"
-						  :on-click (lambda (event)
-							      (chain self props context methods
-								     (delete-point
-								      (list (@ self state data params ly)
-									    (@ self state data params ct)))))
-						  "X")))))))))
+    (cl :egeg5 (@ self state data))
+    (panic:jsl (:div (:div :class-name "list-interface-holder"
+			   ((@ -react-bootstrap -panel)
+			    (:div :class-name "panel-heading"
+				  (:div :class-name "title" (@ self state data data mt mode title))
+				  (if (@ self state data data mt mode removable)
+				      (panic:jsl (:span :class-name "remove"
+							:on-click (lambda (event)
+								    (chain self props context methods
+									   (delete-point
+									    (list (@ self state data data ly)
+										  (@ self state data data ct)))))
+							"X"))))))
+		     (@ self state data content)))))
  (list
   (:get-initial-state
    (lambda () (chain this (initialize (@ this props))))

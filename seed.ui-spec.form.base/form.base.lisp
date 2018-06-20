@@ -580,7 +580,9 @@
 						 cell-data))
 				  ((= "__item" (@ datum mt mode view))
 				   (subcomponent (@ interface-units item)
-						 cell-data))
+						 ;;cell-data
+						 (create content nil ;;(chain self (render-table-body content))
+							 data datum)))
 				  ((= "__select" (@ datum mt mode view))
 				   (subcomponent (@ interface-units select)
 						 cell-data))
@@ -698,7 +700,7 @@
 				   (= "__item" (@ datum mt mode view)))
 			      (subcomponent (@ interface-units item)
 					    (create content (chain self (render-table-body content))
-						    params datum)))
+						    data datum)))
 			     (t (chain self (render-table-body content))))))))
    :render-table-body
    (lambda (rows is-root)

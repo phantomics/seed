@@ -519,7 +519,6 @@ inclusion of aport macro here just acts as passthrough
 				;; the first step to doing this is to load the meta form
 				;; (setf (getf (sprout-meta ,sprout) :active-system)
 				;;       "demo-drawing")
-				(print (list :ssp ,sprid ,portal-package-id))
 				(if (instantiate-priority-macro-reader
 				      (asdf:load-system (if ,sprid ,sprid ,portal-package-id)))
 				      ;; load the system if it doesn't exist yet

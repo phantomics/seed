@@ -26,7 +26,6 @@
 				  (getf leaf :text))
 		     (getf leaf :text)))))
       (cond ((eq :nodes (first node))
-	     (print (list :nno node))
 	     (cons (cond ((string= "paragraph" (getf node :type))
 			  :p)
 			 ((string= "section" (getf node :type))

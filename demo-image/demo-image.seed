@@ -21,7 +21,7 @@
 								(:else (set-stable :not))))))
 			 (out (set-type :form)
 			      (if-condition (is-image :not)
-					    (:then (put-image (get-file :-self)) (code-package) 
+					    (:then (put-image (get-file :-self)) (code-package)
                                                    (set-time) (fork-to :history) (put-image) (codec))
 					    (:else (set-data (get-image)) (form)
 						   (if-condition (is-param :to-display)
