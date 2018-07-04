@@ -70,10 +70,3 @@
 				     ,output)))))
 		 output)))
     (process layers)))
-
-#|
-(raster-process-layers
- (load :path "sample.jpg")
- (apl :exp "255⌊⌈1.3×input")
- (output :path "sample2.jpg"))
-|#

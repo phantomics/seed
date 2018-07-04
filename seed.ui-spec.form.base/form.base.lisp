@@ -58,6 +58,22 @@
        (chain j-query
 	      (extend (create set-delta (lambda (value) (extend-state point-attrs (create delta value)))
 			      set-point (lambda (datum) (chain self (set-point (list (@ datum ly) (@ datum ct)))))
+			      sort (lambda (point new-index)
+				     ;; NOTE: This function changes the state data in place as opposed to creating
+				     ;; a copy and feeding it to the grow function. The creation of the new copy
+				     ;; results in a cyclic reference in the JSON structure. Is this a problem?
+				     (chain self
+					    (seek point (@ point 0) (@ self state space)
+						  (lambda (target target-list target-parent target-index path)
+						    (chain target-parent 0
+							   (md (lambda (data)
+								 (chain data
+									(splice (@ new-index ct) 0
+										(@ (chain data
+											  (splice (@ point 1) 1)
+											  0))))
+								 data)))
+						    (chain self state context methods (grow))))))
 			      delete-point (lambda (point) (chain self (delete-point point))))
 		      methods
 		      (create grow

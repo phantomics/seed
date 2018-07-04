@@ -1,52 +1,56 @@
-;;;; demo-image.lisp
-
-(in-package #:demo-image)
-
-(1+ (META ;; (raster-process-layers
-      ;;  (load :path "sample.jpg")
-      ;;  (apl :exp "0⌈255⌊⌈1.3×input")
-      ;;  (out :path "sample2.jpg"))
-      (+ 3 5)
-      :MODE
-      (:MODEL
-       ((META ((:load (META "sampleX1.jpg"
-			    :MODE (:VIEW :TEXTFIELD :VALUE "sampleX1.jpg"))))
-	      :MODE (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T))
-					;(META "sample.jpg"
-					;     :MODE (:VIEW :TEXTFIELD :VALUE "sample.jpg"))
-	
-	(META ((:apl (META ""
-			   :MODE (:VIEW :TEXTFIELD :VALUE ""))))
-	      :MODE (:VIEW :ITEM :TITLE "APL Mutation" :REMOVABLE T))
-	(META ((:out (META "sample2.jpg"
-			   :MODE (:VIEW :TEXTFIELD :VALUE "sample2.jpg"))))
-	      :MODE (:VIEW :ITEM :TITLE "Output to File" :REMOVABLE T)))
-       :VALUE NIL :VIEW :LIST :FILL-BY :SELECT :REMOVABLE NIL :OPTIONS
-       ((:TITLE "Load File" :VALUE
-		((META
-		  ((:load (META "sampleXX.jpg"
-				:MODE (:VIEW :TEXTFIELD :VALUE "sampleXX.jpg"))))
-		  :MODE (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T))))
-	;; (:TITLE "Load File" :VALUE
-	;; 	((META
-	;; 	  (:load)
-	;; 	  :MODE (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T))
-	;; 	 (META
-	;; 	  "sample.jpg"
-	;; 	  :MODE (:VIEW :TEXTFIELD :VALUE "sample.jpg"))))
-	(:TITLE "APL Mutation" :VALUE
-		((META
-		  (:apl)
-		  :MODE (:VIEW :ITEM :TITLE "APL Mutation" :REMOVABLE T))
-		 (META
-		  ""
-		  :MODE (:VIEW :TEXTFIELD :VALUE ""))))
-	(:TITLE "Output to File" :VALUE
-		((META
-		  (:outx)
-		  :MODE (:VIEW :ITEM :TITLE "Output to File" :REMOVABLE T))
-		 (META
-		  "sample2.jpg"
-		  :MODE (:VIEW :TEXTFIELD :VALUE "sample2.jpg" :REMOVABLE T)))))
-       :FORMAT :RASTER-PROCESS-LAYERS-EXPAND :VALUE NIL)))
-
+(IN-PACKAGE #:DEMO-IMAGE)
+(DEFVAR IMAGE-OUTPUT-PATH)
+(PROGN
+ (META
+  (SEED.APP-MODEL.RASTER-LAYERS.BASE:RASTER-PROCESS-LAYERS
+   (:LOAD :PATH "sample-image.jpg") (:APL :EXP "0⌈255⌊⌈1.2×input")
+   (:APL :EXP "0⌈255⌊20+input") (:OUTPUT :PATH "sample-image-out.jpg"))
+  :MODE
+  (:MODEL
+   ((META
+     (((META "sample-image.jpg" :MODE
+        (:VIEW :TEXTFIELD :VALUE "sample-image.jpg"))))
+     :MODE
+     (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T :FORMAT-PROPERTIES
+      (:TYPE :LOAD) :MODEL
+      (((META "sample-image.jpg" :MODE
+         (:VIEW :TEXTFIELD :VALUE "sample-image.jpg"))))
+      :VALUE NIL))
+    (META
+     (((META "0⌈255⌊⌈1.2×input" :MODE
+        (:VIEW :TEXTFIELD :VALUE "0⌈255⌊⌈1.3×input"))))
+     :MODE
+     (:VIEW :ITEM :TITLE "APL Mutation" :REMOVABLE T :FORMAT-PROPERTIES
+      (:TYPE :APL) :MODEL
+      (((META "0⌈255⌊⌈1.2×input" :MODE
+         (:VIEW :TEXTFIELD :VALUE "0⌈255⌊⌈1.3×input"))))
+      :VALUE NIL))
+    (META (((META "0⌈255⌊20+input" :MODE (:VIEW :TEXTFIELD :VALUE "")))) :MODE
+     (:VALUE NIL :MODEL
+      (((META "0⌈255⌊20+input" :MODE (:VIEW :TEXTFIELD :VALUE ""))))
+      :FORMAT-PROPERTIES (:TYPE :APL) :REMOVABLE T :TITLE "APL Mutation" :VIEW
+      :ITEM))
+    (META
+     (((META "sample-image-out.jpg" :MODE
+        (:VIEW :TEXTFIELD :VALUE "sample-image-out.jpg"))))
+     :MODE
+     (:VIEW :ITEM :TITLE "Output to File" :REMOVABLE T :FORMAT-PROPERTIES
+      (:TYPE :OUTPUT) :MODEL
+      (((META "sample-image-out.jpg" :MODE
+         (:VIEW :TEXTFIELD :VALUE "sample-image-out.jpg"))))
+      :VALUE NIL)))
+   :VIEW :LIST :FILL-BY :SELECT :REMOVABLE NIL :OPTIONS
+   ((:TITLE "Load File" :VALUE
+     (META (((META "" :MODE (:VIEW :TEXTFIELD :VALUE "")))) :MODE
+      (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T :FORMAT-PROPERTIES
+       (:TYPE :LOAD))))
+    (:TITLE "APL Mutation" :VALUE
+     (META (((META "" :MODE (:VIEW :TEXTFIELD :VALUE "")))) :MODE
+      (:VIEW :ITEM :TITLE "APL Mutation" :REMOVABLE T :FORMAT-PROPERTIES
+       (:TYPE :APL))))
+    (:TITLE "Output to File" :VALUE
+     (META (((META "" :MODE (:VIEW :TEXTFIELD :VALUE "")))) :MODE
+      (:VIEW :ITEM :TITLE "Output to File" :REMOVABLE T :FORMAT-PROPERTIES
+       (:TYPE :OUTPUT)))))
+   :FORMAT :RASTER-PROCESS-LAYERS-EXPAND :VALUE NIL)))
+(SETQ IMAGE-OUTPUT-PATH "../demo-image/sample-image-out.jpg")

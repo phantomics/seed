@@ -355,6 +355,7 @@
    :designate
    (lambda (item) 
      (setf (@ this state data content vl) item)
+     (cl :aat item (@ this state data content))
      (chain this state context methods (grow)))
    :component-will-receive-props
    (lambda (next-props)
@@ -362,6 +363,7 @@
    	 (chain this (set-state (chain this (initialize next-props))))))
    )
   (let ((self this))
+    (cl :ssl (@ self state space))
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "textfield-holder"
 			   (:input :class-name "textfield"
@@ -369,10 +371,10 @@
 					      (@ self state space)
 					      (@ self state data content vl))
 				   :on-change (lambda (event)
-						;;(cl :ee)
+						(cl :ee)
 						(chain self (set-state (create space (@ event target value)))))
 				   :on-focus (lambda (event)
-					       ;;(cl :eve event (@ self state data content vl))
+					       (cl :eve event (@ self state data content vl))
 					       (chain self state context methods (set-mode "set"))
 					       (chain self (set-state (create space
 									      (@ self state data content vl)))))
@@ -380,55 +382,7 @@
 				   	      (chain self state context methods (set-mode "move"))
 				   	      (chain self (designate (@ self state space))))
 				   ))))))
- 
- ;; (textfield
- ;;  (:get-initial-state
- ;;   (lambda () (chain this (initialize (@ this props))))
- ;;   :initialize
- ;;   (lambda (props)
- ;;     (cl 9090 props)
- ;;     (funcall inherit this props
- ;; 	      (lambda (d) (@ d data))
- ;; 	      (lambda (pd) (if (and (@ this state) (@ this state space))
- ;; 			       (@ this state space)
- ;; 			       nil))))
- ;;   :designate
- ;;   (lambda (item) 
- ;;     (setf (@ this state data content vl) item)
- ;;     (chain this state context methods (grow)))
- ;;   :content ""
- ;;   :component-will-receive-props
- ;;   (lambda (next-props)
- ;;     (if (not (= "set" (@ next-props context mode)))
- ;;   	 (chain this (set-state (chain this (initialize next-props))))))
- ;;   )
- ;;  (let ((self this))
- ;;    (cl :ssl (@ self content))
- ;;    (panic:jsl (:div :class-name "content"
- ;; 		     (:div :class-name "textfield-holder"
- ;; 			   (:input :class-name "textfield"
- ;; 				   :value (if (@ self content)
- ;; 					      (@ self content)
- ;; 					      (@ self state data content vl))
- ;; 				   :on-change (lambda (event)
- ;; 						(cl :ee (@ event target))
- ;; 						(setf (@ self content)
- ;; 						      (@ event target value))
- ;; 						(chain self (set-state (create space (@ event target value))))
- ;; 						)
- ;; 				   :on-focus (lambda (event)
- ;; 					       (cl :eve event (@ self state data content vl))
- ;; 					       (chain self state context methods (set-mode "set"))
- ;; 					       (chain self (set-state (create space
- ;; 					       				      (@ self state data content vl))))
- ;; 					       (setf (@ self content)
- ;; 						     (@ self state data content vl)))
- ;; 				   :on-blur (lambda (event)
- ;; 				   	      (chain self state context methods (set-mode "move"))
- ;; 				   	      (chain self (designate (@ self state space))))
- ;; 				   ))))))
 
- 
  (textarea
   (:get-initial-state
    (lambda () (chain this (initialize (@ this props))))
@@ -484,13 +438,14 @@
 			    (lambda (d) (@ d data))
 			    (lambda (pd) nil)))
    :component-will-receive-props
-   (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
+   (lambda (next-props)
+     (chain this (set-state (chain this (initialize next-props))))))
   (let* ((self this)
-	 (handle (chain self props (connect-drag-source (panic:jsl (:div :class-name "handle")))))
+	 (-handle (chain window (-sortable-handle (lambda () (panic:jsl (:span "  :::"))))))
 	 (content (panic:jsl (:div (:div :class-name "list-interface-holder"
 					 ((@ -react-bootstrap -panel)
 					  (:div :class-name "panel-heading"
-						handle
+						(:-handle)
 						(:div :class-name "title" (@ self state data data mt mode title))
 						(if (@ self state data data mt mode removable)
 						    (panic:jsl (:span :class-name "remove"
@@ -502,25 +457,74 @@
 										      (@ self state data
 											      data ct)))))
 								      "X"))))))
-				   (@ self state data content)))))
-    (chain self props (connect-drag-preview (chain self props (connect-drop-target content))))))
+				   (@ self state data content))))
+	 (-sortable-item (chain window (-sortable-element (lambda (input) content)))))
+    (panic:jsl (:-sortable-item :index (@ self props data data ct)
+				:disabled (= "set" (@ self props context mode))))
+    ;;content
+    ))
 
  (list
   (:get-initial-state
    (lambda () (chain this (initialize (@ this props))))
    :initialize
-   (lambda (props) (funcall inherit this props
-			    (lambda (d) (@ d data))
-			    (lambda (pd) nil)))
+   (lambda (props)
+     (funcall inherit this props
+	      (lambda (d) (@ d data))
+	      (lambda (pd) nil)))
    :designate
    (lambda (item)
      (chain this state data params (md (lambda (data) 
 					 (chain data (push (@ item value)))
 					 data)))
      (chain this state context methods (grow)))
+   :sort
+   (lambda (old-index new-index)
+     (chain this state data params
+	    (md (lambda (data)
+		  (chain data (splice new-index 0 (@ (chain data (splice old-index 1)) 0)))
+		  data)))
+     (chain this state context methods (grow)))
    :component-will-receive-props
-   (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
-  (let ((self this))
+   (lambda (next-props)
+     (chain this (set-state (chain this (initialize next-props))))))
+;;   function move(arr, old_index, new_index) {
+;;     while (old_index < 0) {
+;;         old_index += arr.length;
+;;     }
+;;     while (new_index < 0) {
+;;         new_index += arr.length;
+;;     }
+;;     if (new_index >= arr.length) {
+;;         var k = new_index - arr.length;
+;;         while ((k--) + 1) {
+;;             arr.push(undefined);
+;;         }
+;;     }
+;;      arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);  
+;;    return arr;
+;; }
+  (let* ((self this)
+	 (on-sort-end (lambda (props)
+			;; (flet ((move (array old-index new-index)
+			;; 	 ;; (while (< old-index 0) (incf old-index (@ array length)))
+			;; 	 ;; (while (< new-index 0) (incf new-index (@ array length)))
+			;; 	 ;; (if (>= new-index (@ array length))
+			;; 	 ;;     (let ((k (- new-index (@ array length))))
+			;; 	 ;;       (while (not (= 0 (1+ (incf k -1))))
+			;; 	 ;; 	 (chain array (push undefined)))))
+			;; 	 (cl :aaa array)
+			;; 	 (chain array (splice (new-index 0 (@ (chain array (splice old-index 1)) 0))))
+			;; 	 array))
+			;;   (cl :sorted props)
+			;;   (chain self state data params (md (lambda (data)
+			;; 				      (cl :dda data (@ self state data) (@ self props data))
+			;; 				      (if (not (= "undefined" (typeof data)))
+			;; 					  (progn (move data (@ props old-index)
+			;; 						       (@ props new-index))
+			;; 						 (cl :ddt data))))))
+			(chain self (sort (@ props old-index) (@ props new-index)))))
+	 (-sortable-list (chain window (-sortable-container (lambda (input) (@ self state data content))))))
     (panic:jsl (:div :class-name "list-interface-holder"
 		     ((@ -react-bootstrap -panel)
 		      (:div :class-name "panel-heading"
@@ -546,4 +550,6 @@
 				  (:div :class-name "list-label"
 					(+ (@ self state data params pr count)
 					   " items")))))
-		     (@ self state data content))))))
+		     ;;(@ self state data content)
+		     (:-sortable-list :use-drag-handle t :on-sort-end on-sort-end)
+		     )))))

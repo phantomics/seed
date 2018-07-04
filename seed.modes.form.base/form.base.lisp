@@ -17,15 +17,13 @@
 	       (setf (getf (first result-output) :fm)
 	   	     (cons "meta" (getf (first result-output) :fm))
 	   	     (getf (first result-output) :mt)
-		     (let* ((meta-content (cddr form))
+		     (let* ((meta-content (preprocess-structure (cddr form)))
 			    (processed-meta-content
 			     (progn (if (and (getf meta-content :mode)
 					     (getf (getf meta-content :mode) :model))
-				    	(setf (getf (getf meta-content :mode) :model)
-				    	      nil
-				    	      (getf (getf meta-content :mode) :value)
+				    	(setf (getf (getf meta-content :mode) :value)
 				    	      (second form)))
-				    (preprocess-structure meta-content))))
+				    meta-content)))
 		       (if (and (getf (first result-output) :mt)
 				(getf (first result-output) :am))
 			   ;; if the form macro metadata is being imprinted over existing atom macro metadata
@@ -36,8 +34,7 @@
 				   processed-meta-content)
 			   processed-meta-content)))))
   :decode ((let ((meta-content (postprocess-structure (getf original-form :mt))))
-	     (if (and (getf meta-content :mode)
-	     	      (not (getf (getf meta-content :mode) :model)))
+	     (if (getf meta-content :mode)
 	     	 (setf (getf (getf meta-content :mode) :model)
 	     	       form
 	     	       (getf (getf meta-content :mode) :value)
@@ -48,8 +45,8 @@
 					  (getf (getf meta-content :mode) :model))
 			     form)
 			 meta-content)))))
- (:predicate
-  (:enclosed-by (quote quasiquote unquote unquote-splicing))))
+ (:predicate (:enclosed-by (quote quasiquote unquote unquote-splicing))))
+
 #|
  (:predicate
   (:enclosed-by (meta))

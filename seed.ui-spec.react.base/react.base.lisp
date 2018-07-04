@@ -20,6 +20,7 @@
   "Specify a React portal interface implementing different interfaces for Lisp forms and other data types."
   `(,@(loop for item in content append (list (macroexpand (if (listp item)
 							      item (list item)))))
+
       (defun inherit (self prop-data process-data map-data)
 	(let* ((data (funcall process-data prop-data))
 	       (c (@ prop-data context))
@@ -1065,7 +1066,6 @@
        ;(cl 888 (@ this state) (chain this (build-retracer 0 (create breadth "full") (@ this state space))))
        ;(cl 921 (@ this props) (@ this state) (@ this state space))
        (let* ((self this))
-	 ;; (cl :5sp (@ this state space) (@ this state data))
 	 (panic:jsl (:div :class-name "portal" (chain this state space (map (generate-vistas self)))
 			  (if (= 0 (@ this state data branches length))
 			      (panic:jsl (:div :class-name "intro-animation"
@@ -1076,6 +1076,35 @@
 										      :id (+ "star-caster-" n)))))))
 					       (:h3 :class-name "title" "seed"))))))))
 
+      (setq -portal (chain ((chain window (-drag-drop-context (@ window -react-d-n-d-html5-backend)))
+			    -portal)))
+
+      (let* ((over-data nil)
+	     (collect-source (lambda (connect monitor)
+			       (create connect-drag-source (chain connect (drag-source))
+				       connect-drag-preview (chain connect (drag-preview))
+				       is-dragging (chain monitor (is-dragging)))))
+	     (collect-target (lambda (connect) (create connect-drop-target (chain connect (drop-target)))))
+	     (item-source (create begin-drag (lambda (props) (create id (@ props data data ix)
+								     ly (@ props data data ly)
+								     ct (@ props data data ct)
+								     original-index (@ props data data ct)))
+				  end-drag (lambda (props monitor component)
+					     (if (chain monitor (did-drop))
+						 (let ((item (chain monitor (get-item)))
+						       (drop-result (chain monitor (get-drop-result))))
+						   (chain props context methods (sort (list (@ item ly)
+											    (@ item ct))
+										      over-data)))))))
+	     (item-target (create can-drop (lambda (props) t)
+				  hover (lambda (props monitor) (setq over-data (@ props data data))))))
+      	(setf (@ interface-units item)
+      	      (funcall (chain window (-drop-target "item" item-target collect-target))
+      		       (funcall (chain window (-drag-source "item" item-source collect-source))
+      				(@ interface-units item)))))
+
+
+      
      (panic:defcomponent :-html-display
 	 (:get-initial-state
 	  (lambda ()

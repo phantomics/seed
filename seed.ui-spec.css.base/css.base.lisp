@@ -547,7 +547,19 @@
 	      (.panel-body
 	       :padding 4px 8px 4px 0
 	       (.panel-heading
-		:padding 0))
+		:padding 0
+		(.handle
+		:float left
+		:height 20px
+		:width 24px
+		:cursor grab
+		:margin 0 0 0 4px
+		:background-image "-webkit-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
+		:background-image "-moz-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
+		:background-image "-ms-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
+		:background-image "-o-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
+		:background-image "repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
+		:background-size 4px 4px)))
 	      (.remove :float right :cursor pointer)
 	      (.title :float left
 		      :margin-left 8px)
@@ -569,8 +581,11 @@
 	    (.textfield-holder
 	     (input.textfield
 	      :background-color "#fafafa"
-	      :border-color "#dadde2"
-	      :margin 1px 0))
+	      :border "1px solid #dadde2"
+	      :border-radius 2px
+	      :width "calc(100% - 6px)"
+	      :margin 1px 0 0 6px
+	      :padding 4px 8px))
 
 	    (.textarea-holder
 	     (textarea

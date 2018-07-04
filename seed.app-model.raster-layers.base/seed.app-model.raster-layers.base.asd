@@ -5,7 +5,7 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on (:opticl)
+  :depends-on (:opticl :april)
   :components ((:file "package")
                (:file "raster-layers.base")))
 

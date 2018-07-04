@@ -537,6 +537,10 @@ inclusion of aport macro here just acts as passthrough
 							       :|meta| (preprocess-structure
 									(branch-meta ,branch))))))
 					    (sprout-branches ,sprout))))))))
+	   (setf (symbol-function (quote ,(intern "LOAD-SEED-SYSTEM" (package-name *package*))))
+	   	 (lambda (symbol)
+	   	   (instantiate-priority-macro-reader
+	   	     (asdf:load-system symbol))))
 	   (if (of-sprout-meta ,port :symbol)
 	       (set (intern (string-upcase (of-sprout-meta ,port :symbol)))
 		    ,port)
