@@ -129,16 +129,17 @@
   `(with-open-file (stream (asdf:system-relative-pathname (make-symbol (package-name *package*))
 							  "portal.css")
 			   :direction :output :if-exists :supersede :if-does-not-exist :create)
-     (let ((data (concatenate 'string ,@(mapcar (lambda (css-module)
-						  (if (listp css-module)
-						      (lass:compile-and-write css-module) 
-						      (if (stringp css-module)
-							  css-module)))
-						(loop :for item :in items 
-						   :append (macroexpand (if (listp item)
-									    item (list item))))))))
+     (let ((data (apply #'concatenate
+			(cons 'string (mapcar (lambda (item)
+						(if (listp item)
+						    (lass:compile-and-write item)
+						    (if (stringp item)
+							item)))
+					      (append ,@(loop :for item :in items
+							   :collect (macroexpand (if (listp item)
+										     item (list item))))))))))
        (format stream (if (stringp data)
-			  data (write-to-string data))))))
+       			  data (write-to-string data))))))
 
 (defmacro html-stream-to-string (form)
   "Render HTML to string."

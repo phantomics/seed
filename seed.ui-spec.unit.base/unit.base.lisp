@@ -487,7 +487,24 @@
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
   (let* ((self this)
 	 (handle (chain self props (connect-drag-source (panic:jsl (:div :class-name "handle")))))
-	 (content (panic:jsl (:div (:div :class-name "list-interface-holder"
+	 (content (panic:jsl (:div (:div :class-name (+ "item-interface-holder"
+							(if (@ self state data data mt mode toggle)
+							    " with-toggle" ""))
+					 (if (@ self state data data mt mode toggle)
+					     (panic:jsl (:div :class-name "btn-group toggle"
+							      (:button :on-click
+								       (lambda (event)
+									 (setf (@ self state data data
+										       mt mode toggle)
+									       (if (= "__on" (@ self state data
+												     data mt mode
+												     toggle))
+										   "__off" "__on"))
+									 (chain self state context methods
+										(grow)))
+								       (if (= "__on" (@ self state data data
+											     mt mode toggle))
+									   "On" "Off")))))
 					 ((@ -react-bootstrap -panel)
 					  (:div :class-name "panel-heading"
 						handle

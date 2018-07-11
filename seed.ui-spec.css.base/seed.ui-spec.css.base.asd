@@ -5,6 +5,5 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :components
-  ((:file "package")
-   (:file "css.base")))
+  :components ((:file "extension")
+	       (:file "css.base")))

@@ -5,6 +5,6 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :components ((:file "package")
+  :components ((:file "extension")
                (:file "css-vector.base")))
 

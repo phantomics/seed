@@ -1,7 +1,39 @@
 ;;;; css-vector.base.lisp
 
-(in-package #:seed.ui-spec.css-vector.base)
+(in-package #:seed.ui-model.css)
 
+(specify-css-styles
+ css-ivector-standard
+ (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
+			       yellow orange red magenta violet blue cyan green))
+ :by-palette (``((.link :stroke ,base1)
+
+		 (.icon-title-frame ((:or rect circle) :fill ,base0))
+
+		 (.expand-control
+		  (.button-backing :fill ,base3)
+		  (.button-circle :fill ,base0)
+		  (rect :fill ,base3))
+
+		 (.glyph (.outer-circle :fill ,red)
+			 (.inner-circle :fill ,base3)
+			 (.outer-meta-band :stroke ,blue
+					   :stroke-width 3px)
+			 (.outer-meta-spokes :stroke ,blue
+					     :stroke-width 1.8px))))
+ :basic (``((.vector-interface
+	     :height 100%
+	     :width 100%
+
+	     ;; high-level portal styles
+	     (.link :fill none
+		    :stroke-width 1.5px)
+
+	     (.icon-title-frame :opacity 0)
+
+	     (.item.point (.icon-title-frame :opacity 0.175))))))
+
+#|
 (defmacro css-ivector-standard ()
   "Main CSS styles for Seed's interface."
   `("/* Portal styles */
@@ -43,7 +75,7 @@
 			:stroke-width 3px)
       (.outer-meta-spokes :stroke "#268bd2"
 			  :stroke-width 1.8px)))))
-
+|#
 
 
 #|

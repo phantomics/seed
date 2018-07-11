@@ -10,7 +10,7 @@
 									  "KEYWORD")
 								  "sample-out.jpg")))
 	 (img (read-jpeg-file img-src-path)))
-    (print (list :ii img-src-path img-out-path))
+    ;;(print (list :ii img-src-path img-out-path))
     (typecase img
       (8-bit-rgb-image
        (locally (declare (type 8-bit-rgb-image img))
@@ -63,7 +63,7 @@
 					     ,output))
 				  ((eq layer-type :output)
 				   `(funcall (lambda (,input)
-					       (print (type-of ,input))
+					       ;;(print (type-of ,input))
 					       (write-jpeg-file ,(concatenate 'string path-string
 									      (getf layer-data :path))
 								,input))

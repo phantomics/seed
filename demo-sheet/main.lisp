@@ -35,7 +35,7 @@ field")
             (:NODES
              ((:LEAVES
                ((:MARKS ((:DATA NIL :TYPE "bold" :KIND "mark")) :TEXT
-                 "Interspersed." :KIND "leaf"))
+                 "Interspersed, and a change." :KIND "leaf"))
                :KIND "text"))
              :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
             (:NODES

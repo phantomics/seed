@@ -1066,7 +1066,8 @@
        ;(cl 888 (@ this state) (chain this (build-retracer 0 (create breadth "full") (@ this state space))))
        ;(cl 921 (@ this props) (@ this state) (@ this state space))
        (let* ((self this))
-	 (panic:jsl (:div :class-name "portal" (chain this state space (map (generate-vistas self)))
+	 (panic:jsl (:div :class-name "portal palette-standard"
+			  (chain this state space (map (generate-vistas self)))
 			  (if (= 0 (@ this state data branches length))
 			      (panic:jsl (:div :class-name "intro-animation"
 					       (:div :class-name "animation-inner"
