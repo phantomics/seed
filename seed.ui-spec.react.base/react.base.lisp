@@ -255,7 +255,7 @@
       (defun enclose-branch-segment (self body)
 	(let ((portion (/ 12 (@ body length))))
 	  (panic:jsl (:div :class-name "view"
-			   (:div :class-name "main"
+			   (:div :class-name "main palette-backdrop"
 				 (:div :class-name "branches"
 				       (:-grid (:-row :class-name "show-grid"
 						      (chain body (map (lambda (element index)
@@ -267,15 +267,16 @@
 											   element)))))))))))))
       
       (defun enclose-branches-adjunct (self body)
-	(panic:jsl (:div :class-name (+ "adjunct-view"
-					(if (= 0 (@ self props context focus))
-					    " focus" "")
-					(if (@ self props context is-point)
-					    " point" ""))
-			 (:div :class-name "status")
-			 (:div :class-name (+ "branches" (if (= 1 (@ self props context focus))
-							     " focus" ""))
-			       body))))
+	(panic:jsl (:div :class-name "palette-adjunct"
+			 (:div :class-name (+ "adjunct-view"
+					      (if (= 0 (@ self props context focus))
+						  " focus" "")
+					      (if (@ self props context is-point)
+						  " point" ""))
+			       (:div :class-name "status")
+			       (:div :class-name (+ "branches" (if (= 1 (@ self props context focus))
+								   " focus" ""))
+				     body)))))
 
       (defun fill-overview (self space)
 	(let ((branch (create data space id "systems")))
@@ -287,12 +288,14 @@
 					 (lambda (index) (chain self (set-state (create control-target index))))))))
       
       (defun enclose-overview (self body)
-	(panic:jsl (:div :class-name (+ "overview" (if (@ self state context on-trace)
-						       " point" ""))
-			 body (:div :class-name "footer"
-				    (if (< 0 (@ self state data branches length))
-					(panic:jsl (:div :class-name "title-container"
-							 (:h3 :class-name "title" "seed"))))))))
+	(panic:jsl (:div :class-name "palette-adjunct"
+			 (:div :class-name (+ "overview" (if (@ self state context on-trace)
+							     " point" ""))
+			       (:div :class-name "overview-headspacer")
+			       body (:div :class-name "footer"
+					  (if (< 0 (@ self state data branches length))
+					      (panic:jsl (:div :class-name "title-container"
+							       (:h3 :class-name "title" "seed")))))))))
 
     ;; (defun fill-main-stage (self space)
     ;;   (defvar stuff nil)

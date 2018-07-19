@@ -189,8 +189,6 @@
 	:right 0
 	:height 100%
 	:width 4em
-	;;:background "#fafafa"
-	;; :border-left 3px solid "#fff" ;;"#ebebeb"
 
 	(.status :min-height 10px
 		 :margin 0 4px)
@@ -209,17 +207,12 @@
 	   :margin 0 0 2px 0
 	   (div :background "#dadde2"
 		:height 100%))
-	  ;; (.point (.bar (div :background "#cc5c4b")))
-	  ;; (.bar.sub-point (div :background "#6f7c91"))
 	  (.point-marker (div :display none))
 	  (.atom-inner.point
 	   (.point-marker (div :display block
 			       ;; :background "#cc5c4b"
 			       :width 9%
 			       :float right)))))
-	
-	;; (.view-section.point
-	;;  (.id-char :color "#c80000"))
 
 	(.view-section.empty :display none)
 	
