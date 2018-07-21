@@ -6,21 +6,21 @@
  css-ivector-standard
  (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
 			       yellow orange red magenta violet blue cyan green))
- :by-palette (``((.link :stroke ,base1)
+ :by-palette (``((.pane (svg (.link :stroke ,base1)
 
-		 (.icon-title-frame ((:or rect circle) :fill ,base0))
+			     (.icon-title-frame ((:or rect circle) :fill ,base0 :!important))
 
-		 (.expand-control
-		  (.button-backing :fill ,base3)
-		  (.button-circle :fill ,base0)
-		  (rect :fill ,base3))
+			     (.expand-control
+			      (.button-backing :fill ,base3)
+			      (.button-circle :fill ,base0)
+			      (rect :fill ,base3))
 
-		 (.glyph (.outer-circle :fill ,red)
-			 (.inner-circle :fill ,base3)
-			 (.outer-meta-band :stroke ,blue
-					   :stroke-width 3px)
-			 (.outer-meta-spokes :stroke ,blue
-					     :stroke-width 1.8px))))
+			     (.glyph (.outer-circle :fill ,red)
+				     (.inner-circle :fill ,base3)
+				     (.outer-meta-band :stroke ,blue
+						       :stroke-width 3px)
+				     (.outer-meta-spokes :stroke ,blue
+							 :stroke-width 1.8px))))))
  :basic (``((.vector-interface
 	     :height 100%
 	     :width 100%

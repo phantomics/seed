@@ -490,7 +490,7 @@
 							   (if (= true (@ branch meta locked))
 							       (panic:jsl (:span :class-name "locked-indicator"
 										 "locked")))))
-					       (:div :class-name "holder"
+					       (:div :class-name "holder palette-standard"
 						     (if top-controls
 						     	 (panic:jsl (:div :class-name
 						     			  (+ "sub-header horizontal-view"
@@ -498,21 +498,24 @@
 						     				 " point" ""))
 						     			  (:div :class-name "inner"
 						     				top-controls))))
-						     (:div :class-name (+ "pane"
-									  (if top-controls " with-sub-header" ""))
-							   ;; TODO: WARNING: CHANGE THIS AND THE
-							   ;; GLYPH RENDERING BREAKS BECAUSE
-							   ;; THE FIRST TERMINAL TD CAN'T BE FOUND!
-							   ;; FIGURE OUT WHY
-							   :id (+ "branch-" index "-" (@ branch id))
-							   :ref (lambda (ref)
-								  (let ((element (j-query ref)))
-								    (if (@ element 0)
-									(fetch-pane-element element))))
-							   element)
-						     (:div :class-name (+ "footer horizontal-view" (if (= 1 this-index)
-												       " point" ""))
-							   (:div :class-name "inner" sub-controls)))))))))))
+						     ;;(:div :class-name "palette-standard"
+							   (:div :class-name
+								 (+ "pane"
+								    (if top-controls " with-sub-header" ""))
+								 ;; TODO: WARNING: CHANGE THIS AND THE
+								 ;; GLYPH RENDERING BREAKS BECAUSE
+								 ;; THE FIRST TERMINAL TD CAN'T BE FOUND!
+								 ;; FIGURE OUT WHY
+								 :id (+ "branch-" index "-" (@ branch id))
+								 :ref (lambda (ref)
+									(let ((element (j-query ref)))
+									  (if (@ element 0)
+									      (fetch-pane-element
+									       element))))
+								 element))
+					       (:div :class-name (+ "footer horizontal-view" (if (= 1 this-index)
+												 " point" ""))
+						     (:div :class-name "inner" sub-controls))))))))))
 
       (defun respond-branches-main (self next-props)
 	;; toggle the activation of the contextual menu in a branch

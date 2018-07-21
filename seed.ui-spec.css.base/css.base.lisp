@@ -126,16 +126,18 @@
 	(.overview-headspacer
 	 :height 10px
 	 :margin-right 6px)
-	(.portal-name
-	 :height 37px
-	 :margin 0 6px
-	 (.title :font-family monospace
-		 :font-size 1.2em
-		 :line-height 2.2em))
 	(.form-view
+	 :margin 0 6px
+	 (.portal-name
+	  :height 37px
+	  :margin-bottom 4px
+	  ;; :margin 0 6px
+	  (.title :font-family monospace
+		  :font-size 1.2em
+		  :line-height 2.2em))
 	 (ul.in :padding 6px
 		:list-style-type none
-		:margin 8px 6px 8px 0
+		:margin 8px 0
 		(li :border-bottom 1px solid ; "#dadde2" ;"#e8ded0"
 		    :cursor pointer)
 		(.index
@@ -146,6 +148,10 @@
 		   :margin 0.05em 6px 0 0
 		   :font-size 1.2em
 		   :line-height 1em)))))
+
+	(.form-view.short
+	 :margin 0
+	 (ul.form-view.in :padding 0))
 	
 	;; styles for the overview footer
 	(.footer
@@ -172,13 +178,13 @@
 		  :background ,base3
 		  :border-left 2px solid ,base2
 		  (.status :border-bottom 2px solid ,base2)
-		  (.view-section (.header (.id-char :color ,base0)
-					  (.content ((:or .bar .point-marker)
-						     (div :background ,base2))
-						    (.point (.bar (div :background ,red)))
-						    (.bar.sub-point (div :background ,base2))
-						    (.atom-inner.point (.point-marker (div :background ,red))))
-					  (.view-section.point (.id-char :color ,red)))))))
+		  (.view-section (.header (.id-char :color ,base0))
+				 (.content ((:or .bar .point-marker)
+					    (div :background ,base00))
+					   (.point (.bar (div :background ,red)))
+					   (.bar.sub-point (div :background ,base00))
+					   (.atom-inner.point (.point-marker (div :background ,red)))))
+		  (.view-section.point (.id-char :color ,red)))))
  :basic
  (``((|#main|
       (.portal
@@ -205,7 +211,7 @@
 	   :width 100%
 	   :height 2px
 	   :margin 0 0 2px 0
-	   (div :background "#dadde2"
+	   (div ;; :background "#dadde2"
 		:height 100%))
 	  (.point-marker (div :display none))
 	  (.atom-inner.point
@@ -216,9 +222,10 @@
 
 	(.view-section.empty :display none)
 	
-	(.view-section.display-history
-	 (.content (.point (.bar (div :background "#dadde2")))
-		   (.bar.sub-point (div :background "#6f7c91"))))))))))
+	;; (.view-section.display-history
+	;;  (.content ;;(.point (.bar (div :background "#dadde2")))
+	;;   (.bar.sub-point (div :background "#6f7c91"))))
+	))))))
 
 (specify-css-styles 
  css-column-view
@@ -232,24 +239,26 @@
 					  :background
 					  ,(format nil "linear-gradient(0deg, ~a 1px, ~a 1px)" base1 base3))
 					 (.header.point :color ,red)
+					 (.footer :border-top 1px solid ,base1
+						  :background ,base3)
 					 (.holder
-					  :background ,base3
-					  (.footer :border-top 1px solid ,base1)
-					  (.sub-header :border-bottom 1px solid ,base1)
+					  :background ,base3)
+					  ;; (.footer :border-top 1px solid ,base1)
+					 (.sub-header :border-bottom 1px solid ,base1)
 
-					  ((:or .footer .sub-header)
-					   :height 42px
-					   (.inner (span :color ,base0
-							 :border-bottom 2px solid ,base2
-							 :cursor pointer)
-						   (.atom-inner.point
-						    (span :background ,base2))))
-					  
-					  ((:or .footer.point .sub-header.point)
-					   (.inner :border-bottom 2px solid ,base1
-						   (span :border-bottom 2px solid ,base1)
-						   (.atom-inner.point (span :color ,base3
-									    :background ,base1))))))))))
+					 ((:or .footer .sub-header)
+					  :height 42px
+					  (.inner (span :color ,base0
+							:border-bottom 2px solid ,base2
+							:cursor pointer)
+						  (.atom-inner.point
+						   (span :background ,base2))))
+					 
+					 ((:or .footer.point .sub-header.point)
+					  (.inner :border-bottom 2px solid ,base1
+						  (span :border-bottom 2px solid ,base1)
+						  (.atom-inner.point (span :color ,base3
+									   :background ,base1)))))))))
  :basic
  (``((|#main|
       (.portal
@@ -310,11 +319,13 @@
 	      :font-weight bold
 	      :color "#dc322f"))
 
+	    (.footer :margin 0 2px)
+
 	    (span.id
 	     :font-size 1.25em
 	     :line-height 48px)
 	    	  
-	    (.holder :height "calc(100% - 42px)"
+	    (.holder :height "calc(100% - 72px)"
 		     :position relative
 		     :margin 0 2px))
 
@@ -326,7 +337,7 @@
 	     (.portal-column :padding 0))))
 
 	  ((:or .footer .sub-header)
-	   :height 22px
+	   :height 30px
 	   (.inner :padding 4px
 		   :text-align right
 		   :font-family monospace
@@ -336,12 +347,13 @@
 	  (.sub-header (.inner :padding-top 4px
 			       (.form-view :text-align left)))
 
-	  (div.pane.with-sub-header :height "calc(100% - 73px)")
+	  (div.pane.with-sub-header :height "calc(100% - 30px)")
 	  
 	  (div.pane
 	   :background "#fdf6e3"
 	   :position relative
-	   :height "calc(100% - 40px)"
+	   ;;:height "calc(100% - 40px)"
+	   :height 100%
 	   :margin 0
 	   :overflow auto)))))))))
 
@@ -349,6 +361,10 @@
  css-form-view
  (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
 			       yellow orange red magenta violet blue cyan green))
+ :by-palette (``((.matrix-view
+		  (table.form
+		   (.atom
+		    (.content (.package-tag :background ,base2)))))))
  :basic
  (``((|#main|
       (.portal
@@ -440,7 +456,7 @@
 		:position absolute
 		:color "#586e75"
 		:font-family monospace
-		:background none
+ 		:background none
 		:border none
 		:width 100%
 		:line-height 1em))
@@ -458,7 +474,7 @@
 		:line-height 1em
 		:padding 0 2px
 		:border-radius 0 6px 6px 6px
-		:background "#eee8d5"
+		;; :background "#eee8d5"
 		:opacity 0.6
 		:margin-left 2px
 		(span (.seed-symbol

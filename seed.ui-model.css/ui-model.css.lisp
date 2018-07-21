@@ -68,14 +68,38 @@
 	     collect (list color `(getf ',palette-argument (intern (string-upcase color)
 								  "KEYWORD"))))))
 
+;; (defmacro specify-css-styles (name params &key (by-palette nil) (basic nil))
+;;   "Define (part of) a component set specification to be used in building a React interface."
+;;   (let ((options (gensym)) (palette (gensym)) (palettes (gensym)) (palette-symbols (gensym))
+;; 	(pal-data (gensym)))
+;;     `(defmacro ,name (&optional ,options)
+;;        (let* ((,options (rest ,options))
+;; 	      (,palettes (getf ,options :palettes))
+;; 	      (,palette-symbols '(,@(getf (rest params) :palette-symbols))))
+;; 	 `(append ,@,(if (not (null by-palette))
+;; 		  	 `(if ,palettes
+;; 		  	      (loop :for ,palette :in ,palettes :append
+;; 		  		 `((let* ((,',pal-data ,(cons 'list (rest ,palette)))
+;; 		  			  ;;(pal-data ,(cons 'list (rest ,palette)))
+;; 		  			  ,@(loop :for symbol :in ,palette-symbols
+;; 		  			       :collect (list symbol `(getf ,',pal-data
+;; 		  							    ,(intern (string-upcase symbol)
+;; 		  								     "KEYWORD")))))
+;; 		  		     (declare (ignorable ,@(loop :for symbol :in ,palette-symbols
+;; 		  					      :collect symbol)))
+;; 		  		     (list `(,(intern (format nil ".PALETTE-~a" ,(first ,palette)))
+;; 		  			      ,@,,@by-palette)))))))
+;; 		  ,,@basic)))))
+
 (defmacro specify-css-styles (name params &key (by-palette nil) (basic nil))
   "Define (part of) a component set specification to be used in building a React interface."
   (let ((options (gensym)) (palette (gensym)) (palettes (gensym)) (palette-symbols (gensym))
-	(pal-data (gensym)))
+	(palette-contexts (gensym)) (pal-data (gensym)))
     `(defmacro ,name (&optional ,options)
        (let* ((,options (rest ,options))
 	      (,palettes (getf ,options :palettes))
-	      (,palette-symbols '(,@(getf (rest params) :palette-symbols))))
+	      (,palette-symbols '(,@(getf (rest params) :palette-symbols)))
+	      (,palette-contexts (getf ,options :palette-contexts)))
 	 `(append ,@,(if (not (null by-palette))
 			 `(if ,palettes
 			      (loop :for ,palette :in ,palettes :append
@@ -87,7 +111,11 @@
 										     "KEYWORD")))))
 				     (declare (ignorable ,@(loop :for symbol :in ,palette-symbols
 							      :collect symbol)))
-				     (list `(,(intern (format nil ".PALETTE-~a" ,(first ,palette)))
+				     (list `((:or ,(intern (format nil ".PALETTE-~a" ,(first ,palette)))
+						  ,@(loop :for symbol :in ',,palette-contexts
+						       collect (intern (format nil ".PALETTE-~a.~a"
+									       ,(first ,palette)
+									       symbol))))
 					      ,@,,@by-palette)))))))
 		  ,,@basic)))))
 
@@ -98,6 +126,21 @@
 (defmacro css-styles (options &rest styles)
   `(append ,@(loop for style in styles
 		collect (macroexpand (list style options)))))
+
+(specify-css-styles
+ css-symbol-style-camel-case
+ (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
+			       yellow orange red magenta violet blue cyan green))
+ :by-palette (``((.overview
+		 (.overview.point :color red))))
+ :basic
+ (``((.seed-symbol
+      ((:and span :|not(:first-child)|)
+       (.fl :text-transform uppercase))
+      (span.leading (.fl :text-transform none))
+      (span.divider :opacity 0.5)
+      ((:and span.divider :before)
+       :content ".")))))
 
 ;; (main-branch-styles (with :palettes ((:basic :base3 "#fff" :base2 "#ddd")
 ;; (:other :base3 "#ff0000" :base2 "#00ff00"))))
@@ -205,3 +248,13 @@ orange peak to cinnamon
 	 :violet "#6874AF" :blue "#408ABC" :cyan "#509D95" :green "#919637")
 
 |#
+
+
+(css-styles (with :palettes ((:standard :base03 "#002b36" :base02 "#073642" :base01 "#586e75"
+			   				 :base00 "#657b83" :base0 "#839496" :base1 "#93a1a1"
+			   				 :base2 "#eee8d5" :base3 "#fdf6e3" :yellow "#b58900"
+			   				 :orange "#cb4b16" :red "#dc322f" :magenta "#d33682"
+			   				 :violet "#6c71c4" :blue "#268bd2" :cyan "#2aa198"
+			   				 :green "#859900"))
+		  :palette-contexts (:holder))
+	    css-form-view)
