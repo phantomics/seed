@@ -50,6 +50,7 @@
 			   				 :violet "#6874AF" :blue "#408ABC" :cyan "#509D95"
 			   				 :green "#919637")))
 			   	       css-base css-overview css-adjunct css-column-view
+				       ;;(css-form-view (with :palette-contexts (:holder)))
 			   	       css-text-view
 			   	       css-ivector-standard
 				       css-symbol-style-camel-case)
@@ -59,18 +60,18 @@
 			   				 :orange "#cb4b16" :red "#dc322f" :magenta "#d33682"
 			   				 :violet "#6c71c4" :blue "#268bd2" :cyan "#2aa198"
 			   				 :green "#859900")
-							(:adjunct :BASE03 "#262625" :BASE02 "#2F3033" :BASE01 "#676B71"
-								  :BASE00 "#707784" :BASE0 "#89919E" :BASE1 "#9A9EA5"
-								  :BASE2 "#E6E8EC" :BASE3 "#F7F6F5" :yellow "#B38A39"
-								  :orange "#BD5A34" :red "#C94F42" :magenta "#BE527E"
-								  :violet "#6874AF" :blue "#408ABC" :cyan "#509D95"
-								  :green "#919637")
-							(:backdrop :BASE03 "#262625" :BASE02 "#33302D" :BASE01 "#716964"
-								   :BASE00 "#83746A" :BASE0 "#9E8E83" :BASE1 "#A59C97"
-								   :BASE2 "#ECE7E4" :BASE3 "#F7F6F5" :yellow "#B38A39"
-								   :orange "#BD5A34" :red "#C94F42" :magenta "#BE527E"
-								   :violet "#6874AF" :blue "#408ABC" :cyan "#509D95"
-								   :green "#919637"))
+			   				(:adjunct :BASE03 "#262625" :BASE02 "#2F3033" :BASE01 "#676B71"
+			   					  :BASE00 "#707784" :BASE0 "#89919E" :BASE1 "#9A9EA5"
+			   					  :BASE2 "#E6E8EC" :BASE3 "#F7F6F5" :yellow "#B38A39"
+			   					  :orange "#BD5A34" :red "#C94F42" :magenta "#BE527E"
+			   					  :violet "#6874AF" :blue "#408ABC" :cyan "#509D95"
+			   					  :green "#919637")
+			   				(:backdrop :BASE03 "#262625" :BASE02 "#33302D" :BASE01 "#716964"
+			   					   :BASE00 "#83746A" :BASE0 "#9E8E83" :BASE1 "#A59C97"
+			   					   :BASE2 "#ECE7E4" :BASE3 "#F7F6F5" :yellow "#B38A39"
+			   					   :orange "#BD5A34" :red "#C94F42" :magenta "#BE527E"
+			   					   :violet "#6874AF" :blue "#408ABC" :cyan "#509D95"
+			   					   :green "#919637"))
 			   		     :palette-contexts (:holder))
 			   	       css-form-view)
 			   css-animation-silicon-sky)
