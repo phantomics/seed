@@ -99,8 +99,7 @@
        (let* ((,palettes (getf ,options :palettes))
 	      (,palette-contexts (getf ,options :palette-contexts))
 	      (,palette-symbols '(,@(getf (rest params) :palette-symbols))))
-	 `(progn (print (list :opop ',,options))
-		 (append ,@,(if (not (null by-palette))
+	 `(append ,@,(if (not (null by-palette))
 			 `(if ,palettes
 			      (loop :for ,palette :in ,palettes :append
 				 `((let* ((,',pal-data ,(cons 'list (rest ,palette)))
@@ -116,8 +115,8 @@
 						       collect (intern (format nil ".PALETTE-~a.~a"
 									       ,(first ,palette)
 									       symbol))))
-					      ,@,,@by-palette)))))))
-		  ,,@basic))))))
+					     ,@,,@by-palette)))))))
+		  ,,@basic)))))
 
 ;; (defmacro css-style-set (name options &rest components)
 ;;   `(let ,(loop for color in (getf options :palette)
@@ -127,8 +126,8 @@
   `(append ,@(loop for style in styles
 		collect (macroexpand (if (listp style)
 					 (list (first style)
-					       (append (rest options)
-						       (cddr style)))
+					       (append (cdadr style)
+						       (rest options)))
 					 (list style (rest options)))))))
 
 ;; (main-branch-styles (with :palettes ((:basic :base3 "#fff" :base2 "#ddd")

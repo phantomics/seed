@@ -234,7 +234,6 @@
 (defgeneric get-portal-contact-branch-specs (portal contact-name))
 (defmethod get-portal-contact-branch-specs ((portal portal) contact-name)
   "Return a contact from a given portal whose system has the given name."
-  (print (list :eeg portal contact-name))
   (get-sprout-branch-specs (find-portal-contact-by-sprout-name portal contact-name)))
 
 #| 
