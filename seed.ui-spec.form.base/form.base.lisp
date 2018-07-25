@@ -37,6 +37,7 @@
        ;; 		(chain j-query (extend (@ self state point-attrs)
        ;; 				       (create index (@ props data meta point-to))))))
        ;; TODO: copy of point-to was eliminated here to prevent paradoxes; see if it's not needed
+       (cl (@ props data data))
        (if (@ self props context set-interaction)
 	   (progn (chain self props context
 			 (set-interaction "commit" (lambda () (chain self state context methods
