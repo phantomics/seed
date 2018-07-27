@@ -32,4 +32,16 @@
 			     ((eq :output type)
 			      `((:output :path ,(second (caaadr item))))))))))
       (cons (intern "RASTER-PROCESS-LAYERS" (package-name *package*))
-	    output)))))
+	    output))))
+ (:html-form-components-expand
+  (lambda (items)
+    (let ((output (loop :for item :in items :append
+		     (let ((type (getf (getf (getf (cddr item) :mode) :format-properties) :type)))
+		       (cond ((eq :section-title type)
+			      `((:h2 ,(second (caaadr item)))))
+			     ((eq :form-field type)
+			      `((:label ,(second (caaadr item)))
+				(:input))))))))      
+      (append (list (intern "GENERATE-HTML-FORM" (package-name *package*))
+		    (intern "FORM-OUTPUT" (package-name *package*)))
+	      output)))))

@@ -72,5 +72,7 @@
 	 do (if (string= (string-upcase ,point)
 			 (string-upcase (getf item :id)))
 		(setq to-return item)))
-      `((:node ,@(getf to-return :meta))))))
+      `((:node ,@(getf to-return :meta)
+	       ,@(if (getf to-return :do)
+		     (list :action (getf to-return :do))))))))
  )

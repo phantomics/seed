@@ -8,4 +8,5 @@
   :depends-on (#:seed.app-model.graph.garden-path)
   :components
   ((:file "package")
-   (:file "graph")))
+   (:file "graph")
+   (:file "utilities")))

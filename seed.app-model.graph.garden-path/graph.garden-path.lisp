@@ -133,3 +133,8 @@
 		      (setf (getf link :to)
 			    (intern (getf link :to) "KEYWORD"))))))
     nodes))
+
+#|
+(graph-garden-path other-graph
+		   (:id :ab :type :portal :to main-graph))
+|#
