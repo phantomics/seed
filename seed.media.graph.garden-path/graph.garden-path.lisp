@@ -6,7 +6,8 @@
  media-spec-graph-garden-path
  (graph-garden-path-content
   (follows reagent graph-id)
-  `((cond ((eq :node (caar data))
+  `((set-branch-meta branch :change nil)
+    (cond ((eq :node (caar data))
 	   (labels ((transcribe (target items)
 		      (if (not items)
 			  target (progn (setf (getf (getf target :meta)
