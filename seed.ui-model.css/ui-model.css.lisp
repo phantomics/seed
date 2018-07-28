@@ -100,22 +100,22 @@
 	      (,palette-contexts (getf ,options :palette-contexts))
 	      (,palette-symbols '(,@(getf (rest params) :palette-symbols))))
 	 `(append ,@,(if (not (null by-palette))
-			 `(if ,palettes
-			      (loop :for ,palette :in ,palettes :append
-				 `((let* ((,',pal-data ,(cons 'list (rest ,palette)))
-					  ;;(pal-data ,(cons 'list (rest ,palette)))
-					  ,@(loop :for symbol :in ,palette-symbols
-					       :collect (list symbol `(getf ,',pal-data
-									    ,(intern (string-upcase symbol)
-										     "KEYWORD")))))
-				     (declare (ignorable ,@(loop :for symbol :in ,palette-symbols
-							      :collect symbol)))
-				     (list `((:or ,(intern (format nil ".PALETTE-~a" ,(first ,palette)))
-						  ,@(loop :for symbol :in ',,palette-contexts
-						       collect (intern (format nil ".PALETTE-~a.~a"
-									       ,(first ,palette)
-									       symbol))))
-					     ,@,,@by-palette)))))))
+		  	 `(if ,palettes
+		  	      (loop :for ,palette :in ,palettes :append
+		  		 `((let* ((,',pal-data ,(cons 'list (rest ,palette)))
+		  			  ;;(pal-data ,(cons 'list (rest ,palette)))
+		  			  ,@(loop :for symbol :in ,palette-symbols
+		  			       :collect (list symbol `(getf ,',pal-data
+		  							    ,(intern (string-upcase symbol)
+		  								     "KEYWORD")))))
+		  		     (declare (ignorable ,@(loop :for symbol :in ,palette-symbols
+		  					      :collect symbol)))
+		  		     (list `((:or ,(intern (format nil ".PALETTE-~a" ,(first ,palette)))
+		  				  ,@(loop :for symbol :in ',,palette-contexts
+		  				       collect (intern (format nil ".PALETTE-~a.~a"
+		  							       ,(first ,palette)
+		  							       symbol))))
+		  			     ,@,,@by-palette)))))))
 		  ,,@basic)))))
 
 ;; (defmacro css-style-set (name options &rest components)
