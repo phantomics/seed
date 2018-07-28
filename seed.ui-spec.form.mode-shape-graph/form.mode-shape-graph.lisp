@@ -257,6 +257,13 @@
 			(chain root (each (lambda (d) (setf (@ d x0) (@ d x)
 							    (@ d y0) (@ d y)))))
 
+			;; (let ((drag-handler (chain window d3 (drag)
+			;; 			   (on "drag" (lambda ()
+			;; 					(chain window d3 (select this)
+			;; 					       (attr "x" (@ window d3 event x))
+			;; 					       (attr "y" (@ window d3 event y))))))))
+			;;   (drag-handler (chain main-display (select-all "item"))))
+
 			(if callback (funcall callback (create node node node-enter node-enter params params)))
 
 			(chain self props (animate-faux-d-o-m (@ params duration)))))
