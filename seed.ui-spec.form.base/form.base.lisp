@@ -37,7 +37,7 @@
        ;; 		(chain j-query (extend (@ self state point-attrs)
        ;; 				       (create index (@ props data meta point-to))))))
        ;; TODO: copy of point-to was eliminated here to prevent paradoxes; see if it's not needed
-       (cl (@ props data data))
+       (cl 15 (@ props data data))
        (if (@ self props context set-interaction)
 	   (progn (chain self props context
 			 (set-interaction "commit" (lambda () (chain self state context methods
@@ -532,6 +532,7 @@
 								    (get-interaction
 								     (chain datum pr meta mode interaction 
 									    (substr 2))))))))
+				    (cl :ababcd datum)
 				    (if interaction
 					(funcall interaction self datum)
 					(let ((datum (chain j-query
@@ -720,22 +721,24 @@
 						    data datum)))
 			     (t (chain self (render-table-body content))))))))
    :render-table-body
-   (lambda (rows is-root)
-     (let ((self this))
-       (panic:jsl (:table :class-name (+ "form" (if is-root " root" ""))
-			  :key (+ (@ rows 0 0 key) "-body")
-			  :ref (lambda (ref)
-				 (if ref (let ((elem (j-query ref)))
-					   (if is-root (setf (@ self root-params)
-							     (create parent-height
-								     (@ elem 0 offset-parent client-height)
-								     left (@ elem 0 offset-left)
-								     top (@ elem 0 offset-top)
-								     width (@ elem 0 client-width)
-								     height (@ elem 0 client-height)))))))
-			  (:tbody (chain rows (map (lambda (row-data index)
-						     (panic:jsl (:tr :key (+ "tr-" index)
-								     row-data))))))))))
+   (let ((table-count -1))
+     (lambda (rows is-root)
+       (let ((self this))
+	 (setq table-count (1+ table-count))
+	 (panic:jsl (:table :class-name (+ "form" (if is-root " root" ""))
+			    :key (+ table-count "-body")
+			    :ref (lambda (ref)
+				   (if ref (let ((elem (j-query ref)))
+					     (if is-root (setf (@ self root-params)
+							       (create parent-height
+								       (@ elem 0 offset-parent client-height)
+								       left (@ elem 0 offset-left)
+								       top (@ elem 0 offset-top)
+								       width (@ elem 0 client-width)
+								       height (@ elem 0 client-height)))))))
+			    (:tbody (chain rows (map (lambda (row-data index)
+						       (panic:jsl (:tr :key (+ "tr-" index)
+								       row-data)))))))))))
    :render-table
    (lambda (rows-input callback)
      (defvar self this)

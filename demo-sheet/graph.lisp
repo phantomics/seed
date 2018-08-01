@@ -20,6 +20,27 @@
 			:LINKS ((:ID :B1 :TO :AA :META (:TITLE "Go Back" :ABOUT "")
 				     :ITEMS "Go Back"))))
 
+(graph-garden-path main-graph
+		   (:ID :CC :TYPE :SWITCH :ITEMS ("Begin")
+			:META (:TITLE "Delivery By Grower" :ABOUT "")
+			:DO ((permissions :all))
+			:LINKS ((:ID :C1 :TO :AA :META (:TITLE "Return" :ABOUT "")
+				     :IF (= 1 1))
+				(:ID :C2 :TO :BB :META (:TITLE "Other Node" :ABOUT "")
+				     :IF t)))
+		   (:ID :AA :TYPE :OPTION :ITEMS ("Hello")
+			:META (:TITLE "Regional Processing" :ABOUT "")
+			:DO ((permissions :modify (:weight)))
+			:LINKS ((:ID :A1 :TO :BB :META (:TITLE "To Next" :ABOUT "")
+				     :ITEMS ("To Next"))
+				(:ID :A2 :TO :AA :META (:TITLE "To Same" :ABOUT "")
+				     :ITEMS ("To Same"))))
+		   (:ID :BB :TYPE :OPTION :ITEMS ("Next")
+			:META (:TITLE "Export" :ABOUT "")
+			:DO ((permissions :modify (:weight)))
+			:LINKS ((:ID :B1 :TO :AA :META (:TITLE "Go Back" :ABOUT "")
+				     :ITEMS "Go Back"))))
+
 (graph-garden-path other-graph
 		   (:id :ab :type :portal :to main-graph))
 

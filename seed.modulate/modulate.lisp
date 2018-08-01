@@ -154,7 +154,8 @@
 				    (not (getf (second output) :fm)))
 			       ;(progn (print (list :mm meta))
 				;;      output)
-			       (rest output)
+			       ;; (rest output)
+			       output
 			       output)
 			   meta))))))
 

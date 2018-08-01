@@ -259,10 +259,13 @@
 
 			;; (let ((drag-handler (chain window d3 (drag)
 			;; 			   (on "drag" (lambda ()
+			;; 					(cl :drag (@ window d3 event))
 			;; 					(chain window d3 (select this)
 			;; 					       (attr "x" (@ window d3 event x))
 			;; 					       (attr "y" (@ window d3 event y))))))))
-			;;   (drag-handler (chain main-display (select-all "item"))))
+			;;   (drag-handler (chain main-display (select-all ".item"))))
+
+			;; (cl :iit (chain main-display (select-all ".item")))
 
 			(if callback (funcall callback (create node node node-enter node-enter params params)))
 
@@ -274,8 +277,7 @@
 	      (horizontal-interval (/ (* 0.6 (@ params width)) max-depth)))
 	 (setf (@ this updated)
 	       (@ this props updated))
-	 (funcall update root)
-	 ))))
+	 (funcall update root)))))
   (let ((self this))
     (panic:jsl (:div :class-name "display-holder-inner"
 		     :ref (lambda (ref) (if (not (@ self container-element))

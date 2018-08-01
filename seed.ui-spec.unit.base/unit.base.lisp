@@ -369,16 +369,19 @@
 					      (@ self state space)
 					      (@ self state data content vl))
 				   :on-change (lambda (event)
-						;;(cl :ee)
+					        (cl :ee)
 						(chain self (set-state (create space (@ event target value)))))
 				   :on-focus (lambda (event)
-					       ;;(cl :eve event (@ self state data content vl))
+					       (cl :eve event (@ self state data content vl))
 					       (chain self state context methods (set-mode "set"))
-					       (chain self (set-state (create space
-									      (@ self state data content vl)))))
+					       ;; (chain self (set-state (create space
+					       ;; 				      (@ self state data content vl))))
+					       )
 				   :on-blur (lambda (event)
+					      (cl :ab)
 				   	      (chain self state context methods (set-mode "move"))
-				   	      (chain self (designate (@ self state space))))
+				   	      ;; (chain self (designate (@ self state space)))
+					      )
 				   ))))))
  
  ;; (textfield

@@ -80,7 +80,7 @@
 				 (:then (put-image (dynamic-var (get-file :main)
 								:document-content))))
 	 	   (document-content)))
-	 (page (out (set-type :html-element :svg)
+	 (page (out (set-type :html-element)
 		    (get-value :document-content)))
 	 (clipboard (in (set-time) (put-image (clipboard (get-image))))
                     (out (set-type :form) (clipboard)

@@ -944,7 +944,7 @@
 			  success
 			  (lambda (data)
 			    (defvar this-date (new (-date)))
-			    ;; (chain console (log "DAT2" data (@ self state data) (@ self state)))
+			    (chain console (log "DAT2" data (@ self state data) (@ self state)))
 			    ;; (chain console (log "DAT2" (chain -j-s-o-n (stringify data))))
 			    (chain self (set-state (lambda (previous-state current-props)
 						     (create
