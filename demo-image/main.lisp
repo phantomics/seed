@@ -7,8 +7,8 @@
  :MODE
  (:MODEL
   ((META
-    (((META "sample-image.jpg" :MODE
-	    (:VIEW :TEXTFIELD :VALUE "sample-image.jpg"))))
+    ((META "sample-image.jpg" :MODE
+	   (:VIEW :TEXTFIELD :VALUE "sample-image.jpg")))
     :MODE
     (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T :FORMAT-PROPERTIES
      (:TYPE :LOAD) :MODEL

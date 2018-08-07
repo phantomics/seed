@@ -522,7 +522,8 @@
 										      (@ self state data
 											      data ct)))))
 								      "X"))))))
-				   (@ self state data content)))))
+				   ;; (@ self state data content)
+				   ))))
     (chain self props (connect-drag-preview (chain self props (connect-drop-target content))))))
 
  (list
