@@ -449,10 +449,12 @@
 							   (@ self props context working-system)))))
 				      ((and (= (@ branch type 0) "graphic")
 					    (= (@ branch type 1) "bitmap"))
-				       (subcomponent -remote-image-view (@ branch data)
+				       (subcomponent (@ view-modes bitmap-display)
+						     (@ branch data)
 						     :context (index index)))
 				      ((= (@ branch type 0) "html-element")
-				       (subcomponent -html-display (@ branch data)
+				       (subcomponent (@ view-modes html-display)
+						     (@ branch data)
 						     :context (index index)))))
 		       (top-controls (if (and (@ self props context meta primary-controls)
 					      (not (= "nil" (@ self props context meta primary-controls format 0 vl))))
@@ -944,7 +946,7 @@
 			  success
 			  (lambda (data)
 			    (defvar this-date (new (-date)))
-			    (chain console (log "DAT2" data (@ self state data) (@ self state)))
+			    ;; (chain console (log "DAT2" data (@ self state data) (@ self state)))
 			    ;; (chain console (log "DAT2" (chain -j-s-o-n (stringify data))))
 			    (chain self (set-state (lambda (previous-state current-props)
 						     (create
@@ -1128,33 +1130,4 @@
       ;; 	      (funcall (chain window (-drop-target "node" item-target collect-target))
       ;; 		       (funcall (chain window (-drag-source "node" item-source collect-source))
       ;; 				(@ view-modes graph-shape-view)))))
-      
-
-
-      
-     (panic:defcomponent :-html-display
-	 (:get-initial-state
-	  (lambda ()
-	    (create content-string (@ this props data)))
-	  :component-will-receive-props
-	  (lambda (next-props)
-	    (chain this (set-state (create content-string (@ next-props data))))))
-       (panic:jsl (:div :class-name "element-view"
-			(:div :class-name "html-display"
-			      :dangerously-set-inner-h-t-m-l
-			      (create __html (@ this state content-string))))))
-
-     (panic:defcomponent :-remote-image-view
-	 (:get-initial-state
-	  (lambda ()
-	    (create image-uri (@ this props data)))
-	  :component-will-receive-props
-	  (lambda (next-props)
-	    (defvar this-date (new (-date)))
-	    (chain this (set-state (create image-uri
-					   (+ (@ this props data) "?"
-					      (chain this-date (get-time))))))))
-       (panic:jsl 
-	(:div :class-name "element-view"
-	      (:img :src (@ this state image-uri)))))
-     ))
+      ))

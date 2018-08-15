@@ -37,7 +37,7 @@
        ;; 		(chain j-query (extend (@ self state point-attrs)
        ;; 				       (create index (@ props data meta point-to))))))
        ;; TODO: copy of point-to was eliminated here to prevent paradoxes; see if it's not needed
-       (cl 15 (@ props data data))
+       ;;(cl 15 (@ props data data))
        (if (@ self props context set-interaction)
 	   (progn (chain self props context
 			 (set-interaction "commit" (lambda () (chain self state context methods
@@ -534,7 +534,7 @@
 								    (get-interaction
 								     (chain datum pr meta mode interaction 
 									    (substr 2))))))))
-				    (cl :ababcd datum)
+				    ;;(cl :ababcd datum)
 				    (if interaction
 					(funcall interaction self datum)
 					(let ((datum (chain j-query
@@ -866,8 +866,8 @@
        (if (and (not (@ self state pane-element))
 		(not (= "undefined" (typeof (@ self props context fetch-pane-element)))))
 	   (setf (@ new-state pane-element)
-		 (chain (j-query (+ "#branch-" (@ self props context index)
-				    "-" (@ self props data id))))))
+		 (j-query (+ "#branch-" (@ self props context index)
+			     "-" (@ self props data id)))))
        ;; (if (not (= "undefined" (typeof (@ self props context fetch-pane-element))))
        ;; 	  (progn (cl :ffe (@ self props context))
        ;; 		 (cl :ffe (chain self props context (fetch-pane-element)))))

@@ -1,9 +1,10 @@
 (META
  ((META :PORTAL.DEMO1 :MODE (:VIEW :PORTAL-NAME))
-  (META "demo-image" :MODE
+  (META "demo-graph" :MODE
    (:VIEW :SELECT :OPTIONS
     ((:VALUE "demo-sheet" :TITLE "demoSheet")
      (:VALUE "demo-image" :TITLE "demoImage")
+     (:VALUE "demo-graph" :TITLE "demoGraph")
      (:VALUE "demo-drawing" :TITLE "demoDrawing"))))
   (META
    ((META :MAIN :MODE (:TARGET :MAIN :VIEW :BRANCH-SELECTOR))
@@ -16,10 +17,11 @@
  :MODE
  (:VALUE NIL :MODEL
   ((META :PORTAL.DEMO1 :MODE (:VIEW :PORTAL-NAME))
-   (META "demo-image" :MODE
+   (META "demo-graph" :MODE
     (:VIEW :SELECT :OPTIONS
      ((:VALUE "demo-sheet" :TITLE "demoSheet")
       (:VALUE "demo-image" :TITLE "demoImage")
+      (:VALUE "demo-graph" :TITLE "demoGraph")
       (:VALUE "demo-drawing" :TITLE "demoDrawing"))))
    (META
     ((META :MAIN :MODE (:TARGET :MAIN :VIEW :BRANCH-SELECTOR))

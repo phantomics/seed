@@ -1,10 +1,10 @@
 (IN-PACKAGE #:DEMO-SHEET)
 (DEFVAR GEN-SPACE-APL)
-(SETQ GEN-SPACE-APL "addWalls←{⍺,(⍵[;;1+⍳(3⌷⍴⍵)-2]),⍺}
+(SETQ GEN-SPACE-APL "addWalls←{⍺⍪⍵[1+⍳(1⌷⍴⍵)-2;;]⍪⍺}
 addFloor←{⍵[;⍳(2⌷⍴⍵)-1;],[2]⍺}
 
 field←16 16 16⍴0
-field←1 addWalls (2 addFloor field)
+field←1 addWalls 2 addFloor field
 field[;5 6;4]←3
 field[8;2;6]←4
 field[8;8;]←1

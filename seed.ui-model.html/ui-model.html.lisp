@@ -63,8 +63,8 @@
 	    ,(if script `(with-open-file (,stream ,(namestring root-script)
 						  :direction :output :if-exists :supersede 
 						  :if-does-not-exist :create)
-			   (format ,stream (macroexpand (list (quote ,(intern "CORNERSTONE"
-									      (string-upcase (first script)))))))))
+			   (format ,stream ,(macroexpand (list (intern "CORNERSTONE"
+								       (string-upcase (first script))))))))
 	    ,@(if script-path (list `(princ
 				      ,(format nil "~%Synchronizing source files for Javascript generation.~%"))
 				    (macroexpand (list 'synchronize-npm-modules script-path))))
@@ -74,7 +74,7 @@
 			      :output *standard-output*)
 	                      ;; invoke cornerstone macro from style package to save compiled style file
 			      ;; TODO: reenable once character format issue with bootstrap CSS files is figured out
-	    (delete-file ,script-build-file)
+	    ;;(delete-file ,script-build-file)
 	    (delete-file ,root-script)
 
 	    (with-open-file (,stream ,(namestring style-build-file)

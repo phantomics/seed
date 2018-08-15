@@ -118,10 +118,6 @@
 		  			     ,@,,@by-palette)))))))
 		  ,,@basic)))))
 
-;; (defmacro css-style-set (name options &rest components)
-;;   `(let ,(loop for color in (getf options :palette)
-;; 	    collect (list color `(getf ,)))))
-
 (defmacro css-styles (options &rest styles)
   `(append ,@(loop for style in styles
 		collect (macroexpand (if (listp style)

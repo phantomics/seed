@@ -2,10 +2,12 @@
 
 (in-package #:seed.foreign.browser-spec.script.base)
 
+(defparameter this-package-symbol (intern (package-name *package*) "KEYWORD"))
+
 (defmacro cornerstone ()
   "Generate the content for the root script source file."
   `(parenscript:ps
-     (let ((j-query (require "jquery/dist/jquery.min.js")))
+     (let* ((j-query (require "jquery/dist/jquery.min.js")))
        (setf (@ window $) j-query
 	     (@ window j-query) j-query
 	     (@ window -react) (require "react")
@@ -22,7 +24,6 @@
 	     (@ window -autosize-input) (getprop (require "react-input-autosize") "default")
 	     (@ window -autosize-textarea) (require "react-textarea-autosize")
 	     (@ window -select) (getprop (require "react-select") "default")
-	     (@ window array-move) (@ -sortable array-move)
 	     (@ window -react-d-n-d-html5-backend) (getprop (require "react-dnd-html5-backend") "default")
 	     (@ window -drag-drop-context) (getprop (require "react-dnd") "DragDropContext")
 	     (@ window -drag-source) (getprop (require "react-dnd") "DragSource")
@@ -43,4 +44,7 @@
 	     (@ window -voxel-space-player) (require "voxel-player")
 	     (@ window d3) (require "d3"))
        (require "bootstrap/js/tooltip")
+       (require "script-loader!jquery-serializejson/jquery.serializejson.js")
+       ;; TODO: figure out how to do without the script-loader here, haven't been able to get the
+       ;; jQuery plugin to work otherwise due to scoping problems
        t)))

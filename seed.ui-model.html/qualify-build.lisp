@@ -17,7 +17,7 @@
 	  (lacks-required (loop :for criterion :in criteria
 			     :append (if (not (funcall command-exists (first criterion)))
 					 (list (second criterion))))))
-     (if lacks-required
+     (if nil;lacks-required
 	 (progn (princ (format nil "~%~%~a ~%~%The browser interface cannot be built because ~a missing. Correct the following problems and try again: ~{~%  ~a~}~%~%"
 			       ,(first failure)
 			       (if (< 1 (length lacks-required))

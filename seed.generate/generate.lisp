@@ -234,7 +234,6 @@
 (defgeneric get-portal-contact-branch-specs (portal contact-name))
 (defmethod get-portal-contact-branch-specs ((portal portal) contact-name)
   "Return a contact from a given portal whose system has the given name."
-  (print (list :eeg portal contact-name))
   (get-sprout-branch-specs (find-portal-contact-by-sprout-name portal contact-name)))
 
 #| 
@@ -429,9 +428,10 @@ inclusion of aport macro here just acts as passthrough
 							           ;; not defined as an ASDF system
 								   (let ((name-string (string-downcase contact)))
 								     (eval (first (load-exp-from-file
-										   ,name (format nil "../~a/~a.seed"
-												 name-string 
-												 name-string))))))))
+										   (intern (string-upcase name-string)
+											   "KEYWORD")
+										   (format nil "~a.seed"
+											   name-string))))))))
 							 (list ,@contacts))))
 				    :branches (list ,@(mapcar (lambda (branch)
 								`(make-instance 'branch

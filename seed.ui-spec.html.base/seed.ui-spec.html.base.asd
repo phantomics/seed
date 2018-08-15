@@ -6,7 +6,6 @@
   :license "GPL-3.0"
   :serial t
   :depends-on (#:symbol-munger)
-  :components 
-  ((:file "package")
-   (:file "html.base")))
+  :components ((:file "package")
+	       (:file "html.base")))
 
