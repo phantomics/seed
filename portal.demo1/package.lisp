@@ -11,4 +11,5 @@
 	#:seed.ui-spec.stage-menu.base
 	#:seed.foreign.browser-spec.script.base
 	#:seed.foreign.browser-spec.style.base
+	#:seed.app-model.site.base
 	#:quickproject #:prove #:parenscript #:panic))

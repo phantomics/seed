@@ -160,7 +160,7 @@
   (labels ((process-subcomponents (items &optional output)
 	     (if (not items)
 		 output (process-subcomponents (cddr items)
-					       (append (list (first items)
+					       (append (list (symbol-munger:lisp->camel-case (first items))
 							     (if (symbolp (second items))
 								 (macroexpand (list (second items)))
 								 (second items)))

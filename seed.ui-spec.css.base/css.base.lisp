@@ -159,7 +159,7 @@
 	 :bottom 0
 	 :width 100%
 	 (.title-container 
-	  :margin 0 12px 12px 0
+	  :margin 0 12px 5px 0
 	  :position relative
 	  (.title :font-size 1.2em
 		  :margin 0

@@ -1,19 +1,19 @@
 (IN-PACKAGE #:DEMO-SHEET)
 (DEFVAR GEN-SPACE-APL)
-(SETQ GEN-SPACE-APL "addWalls←{⍺,(⍵[;;1+⍳(3⌷⍴⍵)-2]),⍺}
+(SETQ GEN-SPACE-APL "addWalls←{⍺⍪⍵[1+⍳(1⌷⍴⍵)-2;;]⍪⍺}
 addFloor←{⍵[;⍳(2⌷⍴⍵)-1;],[2]⍺}
 
 field←16 16 16⍴0
-field←1 addWalls (2 addFloor field)
+field←1 addWalls 2 addFloor field
 field[;5 6;4]←3
-field[8;4;6]←4
+field[8;2;6]←4
 field[8;8;]←1
 field")
 (DEFVAR GENERATED-SPACE)
 (SETQ GENERATED-SPACE (ARRAY-TO-NESTED-VECTOR (APRIL GEN-SPACE-APL)))
 (DEFVAR DOCUMENT-CONTENT)
 (SETQ DOCUMENT-CONTENT
-        (SEED.APP-MODEL.DOCUMENT-SLATE.BASE:DOCUMENT-AS-HTML
+        (DOCUMENT-AS-HTML
          (:DOCUMENT
           (:NODES
            ((:NODES
@@ -29,7 +29,7 @@ field")
              ((:LEAVES
                ((:MARKS NIL :TEXT "This is " :KIND "leaf")
                 (:MARKS ((:DATA NIL :TYPE "bold" :KIND "mark")) :TEXT
-                 "a test, adding something, testing" :KIND "leaf"))
+                 "a test, adding" :KIND "leaf"))
                :KIND "text"))
              :DATA NIL :IS-VOID :FALSE :TYPE "paragraph" :KIND "block")
             (:NODES
@@ -287,11 +287,18 @@ field")
             (NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL
              (:DATA-COM (0) :TYPE :NUMBER) NIL NIL NIL NIL NIL NIL NIL NIL
              NIL)))
-(IN-TABLE MAIN-TABLE (CELL "a2" 36) (CELL "g9" (/ 6 2))
- (CELL "c1" (+ 8 (META 3 :COMMENT "This is a test comment.") 5)) (CELL "g5" 13)
- (CELL "d12" (- 20 6 (EXPT 2 3) 2)) (CELLS "c5" "e9" (+ 3 VAL-NUMBER))
- (CELL "b7" (LAMBDA (C) (+ 4 C)))
- (CELLS "e3" "l12" (+ 7 (* 1.25 VAL-NUMBER) VAL-NUMBER))
- (CELLS "g2" "h6" (+ 1 2 VAL-NUMBER)) (CELL "d13" (CELL-UP))
- (CELL "h13" (CELL-UP 8)) (ROW 11 (+ 1 (+ 1 VAL-NUMBER)))
- (COL "k" (* 2 VAL-NUMBER)) (CELL "d16" (FUNCALL (CELL "b7") (CELL "d12"))))
+(IN-TABLE MAIN-TABLE
+  (CELL "a2" 36)
+  (CELL "g9" (/ 6 2))
+  (CELL "c1" (+ 8 (META 3 :COMMENT "This is a test comment.") 5))
+  (CELL "g5" 13)
+  (CELL "d12" (- 20 6 (EXPT 2 3) 2))
+  (CELLS "c5" "e9" (+ 3 VAL-NUMBER))
+  (CELL "b7" (LAMBDA (C) (+ 4 C)))
+  (CELLS "e3" "l12" (+ 7 (* 1.25 VAL-NUMBER) VAL-NUMBER))
+  (CELLS "g2" "h6" (+ 1 2 VAL-NUMBER))
+  (CELL "d13" (CELL-UP))
+  (CELL "h13" (CELL-UP 8))
+  (ROW 11 (+ 1 (+ 1 VAL-NUMBER)))
+  (COL "k" (* 2 VAL-NUMBER))
+  (CELL "d16" (FUNCALL (CELL "b7") (CELL "d12"))))

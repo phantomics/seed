@@ -428,9 +428,11 @@ inclusion of aport macro here just acts as passthrough
 							           ;; not defined as an ASDF system
 								   (let ((name-string (string-downcase contact)))
 								     (eval (first (load-exp-from-file
-										   ,name (format nil "../~a/~a.seed"
-												 name-string 
-												 name-string))))))))
+										   (intern (string-upcase
+											    name-string)
+											   "KEYWORD")
+										   (format nil "~a.seed"
+											   name-string))))))))
 							 (list ,@contacts))))
 				    :branches (list ,@(mapcar (lambda (branch)
 								`(make-instance 'branch

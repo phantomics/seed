@@ -13,7 +13,7 @@
 	       #:seed.ui-model.keys #:seed.ui-model.html #:seed.ui-model.css
 	       #:seed.ui-model.react #:seed.ui-spec.stage.base
 	       #:seed.ui-spec.keys.base #:seed.ui-spec.keys.map-apl
-	       #:seed.ui-spec.html.base
+	       #:seed.ui-spec.html.base #:seed.ui-spec.display.common
 	       #:seed.ui-spec.react.base #:seed.ui-spec.css.base
 	       #:seed.ui-spec.css-vector.base
 	       #:seed.ui-spec.stage-menu.base
@@ -28,6 +28,7 @@
 	       #:seed.ui-effects.vector.base
 	       #:seed.foreign.browser-spec.script.base
 	       #:seed.foreign.browser-spec.style.base
+	       #:seed.app-model.site.base
 	       #:quickproject #:prove #:parenscript #:panic #:lass
 	       #:swank) ;; TODO: swank included only for demoSheet, are there other options?
   :components

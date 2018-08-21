@@ -23,6 +23,9 @@
 							  (component-set view-modes
 									 form-view-mode
 									 text-view-mode
+									 (html-view-mode
+									  :script-effects
+									  standard-form-effects)
 									 document-view-mode
 									 sheet-view-mode
 									 block-space-view-mode
@@ -51,12 +54,11 @@
 			   				 :green "#919637")))
 			   	       css-base css-overview css-adjunct css-column-view
 				       (css-form-view (with :palette-contexts (:holder)))
-			   	       css-text-view
-			   	       css-ivector-standard
+			   	       css-text-view css-ivector-standard
 				       css-symbol-style-camel-case)
 			   css-animation-silicon-sky)
 		   :foundation (:script (seed.foreign.browser-spec.script.base)
-				:style (seed.foreign.browser-spec.style.base)))
+					:style (seed.foreign.browser-spec.style.base)))
 
 (portal)
 
