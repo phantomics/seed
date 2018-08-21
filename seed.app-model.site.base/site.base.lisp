@@ -15,9 +15,6 @@
 			 (chain (chain element (find "button.submit"))
 				(on "click" (lambda (event)
 					      (chain event (prevent-default))
-					      ;; (chain console (log element (@ j-query fn)))
-					      ;; (chain console (log :el (chain (j-query (@ element 0))
-					      ;; 				     (serialize-j-s-o-n))))
 					      (chain console (log 515
 								  (chain element (serialize-j-s-o-n)))))))))))))
 
