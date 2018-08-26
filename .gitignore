@@ -38,3 +38,6 @@ seed.foreign*/package-lock.json
 *.sx32fsl
 *.wx64fsl
 *.wx32fsl
+
+# OSX folder metadata
+.DS_Store
