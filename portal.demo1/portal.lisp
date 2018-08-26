@@ -23,9 +23,8 @@
 							  (component-set view-modes
 									 form-view-mode
 									 text-view-mode
-									 (html-view-mode
-									  :script-effects
-									  standard-form-effects)
+									 (html-view-mode :script-effects
+											 standard-form-effects)
 									 document-view-mode
 									 sheet-view-mode
 									 block-space-view-mode

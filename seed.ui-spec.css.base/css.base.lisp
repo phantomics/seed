@@ -850,11 +850,12 @@
 	    (.status-bar :height 30px)))
 
 	  (.portal-column.html-element
-	   (|#branch-0-page|
-    	    (.html-display
-    	     :background "#fefefa"
-    	     :padding 12px
-    	     :font-family "Verdana")))
+	   (.html-display
+	    :background "#fefefa"
+	    :padding 12px
+	    :font-family "Verdana"
+	    (svg :height 100%
+		 :width 100%)))
 	  
 	  )))))
      )))

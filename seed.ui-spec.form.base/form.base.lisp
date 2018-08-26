@@ -37,7 +37,7 @@
        ;; 		(chain j-query (extend (@ self state point-attrs)
        ;; 				       (create index (@ props data meta point-to))))))
        ;; TODO: copy of point-to was eliminated here to prevent paradoxes; see if it's not needed
-       ;;(cl 15 (@ props data data))
+       ;; (cl 15 (@ props data data))
        (if (@ self props context set-interaction)
 	   (progn (chain self props context
 			 (set-interaction "commit" (lambda () (chain self state context methods
@@ -66,16 +66,23 @@
 				     (chain self
 					    (seek point (@ point 0) (@ self state space)
 						  (lambda (target target-list target-parent target-index path)
-						    (chain target-parent 0
-							   (md (lambda (data)
-								 (chain data
-									(splice (@ new-index ct) 0
-										(@ (chain data
-											  (splice (@ point 1) 1)
-											  0))))
-								 data)))
-						    ;; (cl :sorted target-parent (@ new-index ct) (@ point 1))
-						    (chain self state context methods (grow))))))
+						    (let ((from nil)
+							  (to nil))
+						      (loop for index from 1 to (1- (@ target-parent length))
+							 do (if (= (getprop target-parent index 0 "ct")
+								   (@ point 1))
+								(setq from index)
+								(if (= (getprop target-parent index 0 "ix")
+								       (@ new-index ix))
+								    (setq to index))))
+						      (chain target-parent 0
+							     (md (lambda (data)
+								   (chain data
+									  (splice to 0
+										  (@ (chain data (splice from 1)
+											    0))))
+								   data)))
+						      (chain self state context methods (grow)))))))
 			      delete-point (lambda (point) (chain self (delete-point point))))
 		      methods
 		      (create grow

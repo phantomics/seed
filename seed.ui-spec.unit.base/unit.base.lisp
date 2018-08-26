@@ -535,8 +535,7 @@
 			    (lambda (pd) nil)))
    :designate
    (lambda (item)
-     (chain this state data params (md (lambda (data) 
-					 (chain data (push (@ item value)))
+     (chain this state data params (md (lambda (data) (chain data (push (@ item value)))
 					 data)))
      (chain this state context methods (grow)))
    :component-will-receive-props
