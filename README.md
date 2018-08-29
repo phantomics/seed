@@ -25,9 +25,27 @@ Seed can be seen as a type of IDE. It integrates ASDF, the standard Common Lisp 
 
 Seed depends on Common Lisp, ASDF and Quicklisp. The only Common Lisp implementation tested so far has been Steel Bank Common Lisp (SBCL). Seed also requires Node.js, NPM and Gulp to build the Javascript that runs its Web interface. Install the required software if you don't have it, then clone this repository.
 
-#### Please Note
+#### Setting up Node.js and NPM
 
-**On some systems, the install process encounters errors compiling the static-vectors and fast-io packages. It's usually possible to complete the installation without problems by choosing to "continue" or "accept" when these errors occur. They appear to be connected to the presence of outdated packages in Quicklisp.**
+If you don't have Node.js installed, you can follow one of these links to set Node.js up within your operating system.
+
+* [Node.js packages for popular Linux distributions](https://github.com/nodesource/distributions)
+
+* [Node.js installers for Mac, Windows and binaries for Linux, plus source code](https://nodejs.org/en/download/)
+
+Note that a system-level installation of Node.js is needed; a Node.js installation created with the nvm (Node Version Manager) software is not compatible with Seed's build process.
+
+Once you have Node.js installed, you can install Gulp by running the command:
+
+```
+npm install -g gulp
+```
+
+You will probably need superuser-level permissions to do this, so on Linux and OSX the full command will probably be:
+
+```
+sudo npm install -g gulp
+```
 
 ### Preparing Quicklisp
 
@@ -83,7 +101,7 @@ If you create another portal, substitute that portal's name in the URI.
 
 ### [Tutorial](https://github.com/phantomics/seed/wiki/Introductory-Tutorial)
 
-[Click here](https://github.com/phantomics/seed/wiki/Introductory-Tutorial) for a tutorial to help you get started using Seed.
+[Follow this link](https://github.com/phantomics/seed/wiki/Introductory-Tutorial) for a tutorial to help you get started using Seed.
 
 ### Credit
 

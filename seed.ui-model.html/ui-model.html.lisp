@@ -44,8 +44,7 @@
 					(webpack (require "webpack"))
 					(gulp-webpack (require "gulp-webpack"))
 					(webpack-config (create context ,(namestring script-path)
-								entry (create ,script-output-filename
-									      "./src.js")
+								entry (create ,script-output-filename "./src.js")
 								resolve (create extensions (list "" ".js" ".json"))
 								node (create fs "empty" child_process "empty")
 								;; the above needed to prevent these modules
@@ -54,8 +53,7 @@
 								output (create filename "./[name].js")
 								module
 								(create loaders
-									(list (create test
-										      (regex "\.json$")
+									(list (create test (regex "\.json$")
 										      loaders
 										      (list "json-loader")))))))
 				    (chain gulp (task "dev" (lambda () ,@(gulp-build-script))))))))
