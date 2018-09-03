@@ -23,17 +23,19 @@ Seed can be seen as a type of IDE. It integrates ASDF, the standard Common Lisp 
 
 ## The First Step: Installing and Running Seed
 
-Seed depends on Common Lisp, ASDF and Quicklisp. The only Common Lisp implementation tested so far has been Steel Bank Common Lisp (SBCL). Seed also requires Node.js, NPM and Gulp to build the Javascript that runs its Web interface. Install the required software if you don't have it, then clone this repository.
+Seed depends on Common Lisp, ASDF and Quicklisp. The only Common Lisp implementation tested so far has been Steel Bank Common Lisp (SBCL). Seed also requires Node.js, NPM and Gulp to build parts of its Web interface. Install the required software if you don't have it, then clone this repository.
 
-#### Setting up Node.js and NPM
+### Setting up Node.js and NPM
 
-If you don't have Node.js installed, you can follow one of these links to set Node.js up within your operating system.
+If you don't have Node.js installed, you can follow one of these links to set Node.js up on your system.
+
+* [Node Version Manager (nvm), a tool to install Node.js](https://github.com/creationix/nvm)
 
 * [Node.js packages for popular Linux distributions](https://github.com/nodesource/distributions)
 
 * [Node.js installers for Mac, Windows and binaries for Linux, plus source code](https://nodejs.org/en/download/)
 
-Note that a system-level installation of Node.js is needed; a Node.js installation created with the nvm (Node Version Manager) software is not compatible with Seed's build process.
+Of the above choices, the first option to install Node.js using nvm is probably the best, since nvm makes it easy to install Node.js in a way that doesn't require administrator-level privileges on the system.
 
 Once you have Node.js installed, you can install Gulp by running the command:
 
@@ -41,7 +43,7 @@ Once you have Node.js installed, you can install Gulp by running the command:
 npm install -g gulp
 ```
 
-You will probably need superuser-level permissions to do this, so on Linux and OSX the full command will probably be:
+If you installed Node using the second or third option above, you will probably need administrator-level permissions to do this, so on Linux and OSX the full command will most likely be:
 
 ```
 sudo npm install -g gulp

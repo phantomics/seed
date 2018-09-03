@@ -24,6 +24,11 @@
 	 (script-output-path (format nil "~a/~a.js" output-path script-output-filename))
 	 (style-output-filename "main")
 	 (style-output-path (format nil "~a/~a.js" output-path style-output-filename))
+	 ;; check for the presence of an nvm-based Node.js installation
+	 (nvm-found (and (probe-file "~/.nvm")
+			 (probe-file "~/.nvm/nvm.sh")))
+	 ;; if nvm is present, this prefix must come before the invocation of Node build commands
+	 (nvm-prefix "export NVM_DIR=$HOME/.nvm && [ -s \"$NVM_DIR/nvm.sh\" ] && . $NVM_DIR/nvm.sh && ")
 	 (stream (gensym)))
     (flet ((gulp-build-script ()
 	     (if script `((chain gulp (src ,(namestring root-script))
@@ -65,10 +70,13 @@
 									      (string-upcase (first script)))))))))
 	    ,@(if script-path (list `(princ
 				      ,(format nil "~%Synchronizing source files for Javascript generation.~%"))
-				    (macroexpand (list 'synchronize-npm-modules script-path))))
+				    (macroexpand (list 'synchronize-npm-modules script-path
+						       (if nvm-found nvm-prefix "")))))
 	    (princ ,(format nil "~%Generating foundational Javascript via Gulp and Webpack.~%"))
 	    ;; run Gulp build process
-	    (uiop:run-program ,(format nil "gulp --gulpfile ~agulpfile.js dev" (namestring script-path))
+	    (uiop:run-program ,(format nil "~agulp --gulpfile ~agulpfile.js dev"
+				       (if nvm-found nvm-prefix "")
+				       (namestring script-path))
 			      :output *standard-output*)
 	                      ;; invoke cornerstone macro from style package to save compiled style file
 			      ;; TODO: reenable once character format issue with bootstrap CSS files is figured out
@@ -81,10 +89,13 @@
 	    				(concat (require "gulp-concat")))
 	    			    (chain gulp (task "dev" (lambda () ,@(gulp-build-style))))))))
 	    ,@(if style-path (list `(princ ,(format nil "~%Synchronizing source files for CSS generation.~%"))
-				   (macroexpand (list 'synchronize-npm-modules style-path))))
+				   (macroexpand (list 'synchronize-npm-modules style-path
+						      (if nvm-found nvm-prefix "")))))
 	    (princ ,(format nil "~%Generating CSS via Gulp and Webpack.~%"))
 	    ;; run Gulp build process
-	    (uiop:run-program ,(format nil "gulp --gulpfile ~agulpfile.js dev" (namestring style-path))
+	    (uiop:run-program ,(format nil "~agulp --gulpfile ~agulpfile.js dev"
+				       (if nvm-found nvm-prefix "")
+				       (namestring style-path))
 			      :output *standard-output*)
 	    ;; erase gulpfile and root Javascript source file when done
 	    (delete-file ,style-build-file)
@@ -99,11 +110,12 @@
 	      ,(list (intern "FOUND-INTERFACE" (package-name *package*)))))
 	 ("Foundation provisioning failed.")))))
 
-(defmacro synchronize-npm-modules (script-path)
+(defmacro synchronize-npm-modules (script-path &optional prefix)
   "Installs and/or updates required NPM modules in a Javascript package."
-  `(progn (princ "Processing NPM modules... ")
-	  (uiop:run-program ,(format nil "npm install --prefix \"~a\"" (namestring script-path)))
-	  (princ ,(format nil "done.~%"))))
+  (let ((prefix (if prefix prefix "")))
+    `(progn (princ "Processing NPM modules... ")
+	    (uiop:run-program ,(format nil "~anpm install --prefix \"~a\"" prefix (namestring script-path)))
+	    (princ ,(format nil "done.~%")))))
 
 (defmacro build-browser-markup (&rest form)
   "Render interface HTML to file. Assumes a flat structure for file storage; the portal directory is assumed to be one directory upstream from the current package directory."
