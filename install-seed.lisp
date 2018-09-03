@@ -2,9 +2,11 @@
 ;;; A discrete program to install Seed. If dependencies aren't met, it fails and gives instructions to remedy.
 
 (asdf:load-system 'uiop)
+
 (defpackage #:seed.ui-model.html
   (:export #:qualify-build)
   (:use #:cl))
+
 (load "./seed.ui-model.html/qualify-build.lisp")
 (use-package 'seed.ui-model.html)
 
