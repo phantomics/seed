@@ -11,6 +11,7 @@
 			      (interaction-data (chain element (attr "interaction")
 						       (split " "))))
 			 (chain console (log 9091 element interaction-data
+					     data
 					     (chain element (find "button.submit"))))
 			 (chain (chain element (find "button.submit"))
 				(on "click" (lambda (event)

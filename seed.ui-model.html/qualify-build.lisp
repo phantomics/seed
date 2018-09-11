@@ -24,8 +24,7 @@
 				    ,(first failure)))
 		     ,@(rest failure)))
 	     ((not (command-exists "gulp" (if nvm-found nvm-prefix "")))
-	      (progn (princ (format nil "~%~%~a ~%~%The browser interface cannot be built because Node.js and NPM are missing. Please install Node.js, either at the system level or locally using a node version manager like nvm."
+	      (progn (princ (format nil "~%~%~a ~%~%The browser interface cannot be built because Gulp is missing. Please install Node.js, either at the system level or locally using a node version manager like nvm."
 				    ,(first failure)))
 		     ,@(rest failure)))
 	     (t ,@success)))))
-	       

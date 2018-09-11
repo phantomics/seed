@@ -22,7 +22,6 @@
 	     (@ window -autosize-input) (getprop (require "react-input-autosize") "default")
 	     (@ window -autosize-textarea) (require "react-textarea-autosize")
 	     (@ window -select) (getprop (require "react-select") "default")
-	     (@ window array-move) (@ -sortable array-move)
 	     (@ window -react-d-n-d-html5-backend) (getprop (require "react-dnd-html5-backend") "default")
 	     (@ window -drag-drop-context) (getprop (require "react-dnd") "DragDropContext")
 	     (@ window -drag-source) (getprop (require "react-dnd") "DragSource")
@@ -43,4 +42,5 @@
 	     (@ window -voxel-space-player) (require "voxel-player")
 	     (@ window d3) (require "d3"))
        (require "bootstrap/js/tooltip")
+       (require "script-loader!jquery-serializejson/jquery.serializejson.js")
        t)))
