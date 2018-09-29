@@ -17,7 +17,7 @@
    :component-will-receive-props
    (lambda (next-props)
      (defvar self this)
-     (if (not (= "set" (@ next-props context mode)))
+     (if (/= "set" (@ next-props context mode))
 	 (chain this (set-state (chain this (initialize next-props)))))))
   (setq self this)
   (let* ((content (@ this state data content))
@@ -45,9 +45,7 @@
 							     :on-change
 							     (lambda (event)
 							       ;; assign both the local and parent state
-							       (let ((new-val (create vl (@ event
-											    target
-											    value))))
+							       (let ((new-val (create vl (@ event target value))))
 								 (extend-state :deep data
 									       (create content new-val))
 								 (chain self props context methods
@@ -60,34 +58,30 @@
 					       (@ content vl))
 					   (if (and (@ content pr)
 						    (@ content pr pkg)
-						    (not (= "common-lisp" (@ self props data
-										  content pr pkg)))
+						    (/= "common-lisp" (@ self props data content pr pkg))
 						    (or (not (@ content-meta breadth))
 							(= 1 (@ content-meta breadth))))
-					       (panic:jsl (:sup
-							   (:-overlay-trigger
-							    :placement "right"
-							    :overlay (panic:jsl
-								      (:-tooltip
-								       :id "package-info"
-								       (:span "package: ")
-								       (:-seed-symbol
-									:symbol (@ self props data
-											content
-											pr pkd))))
-							    (:span :class-name
-								   (+ "package-tag mini"
-								      (if (and
-									   (@ self props data content pr)
-									   (= (@ self props data
-										      content pr pkg)
-									      (@ self props context
-										      working-system)))
-									  " native" ""))
-								   (:span :class-name "regular"
-									  (@ content pr pkd 0 0 0))
-								   (:span :class-name "native"
-									  "●")))))))))
+					       (panic:jsl (:sup (:-overlay-trigger
+								 :placement "right"
+								 :overlay (panic:jsl
+									   (:-tooltip
+									    :id "package-info"
+									    (:span "package: ")
+									    (:-seed-symbol
+									     :symbol (@ self props data content
+											     pr pkd))))
+								 (:span :class-name
+									(+ "package-tag mini"
+									   (if (and (@ self props data content pr)
+										    (= (@ self props data
+											       content pr pkg)
+										       (@ self props context
+											       working-system)))
+									       " native" ""))
+									(:span :class-name "regular"
+									       (@ content pr pkd 0 0 0))
+									(:span :class-name "native"
+									       "●")))))))))
 		     (:div :class-name "breaker")
 		     (if (@ self props context is-point)
 			 (panic:jsl
@@ -126,16 +120,15 @@
 							(= (@ self props data content pr pkg)
 							   (@ self props context working-system)))
 						   " native" ""))
-					    (:span
-					     (:-seed-symbol
-					      :symbol (@ content pr pkd)
-					      :common (and (@ self props data content pr)
-							   (= "common-lisp"
-							      (@ self props data content pr pkg)))
-					      :native (and (@ self props data content pr)
-							   (= (@ self props data content pr pkg)
-							      (@ self props context
-								      working-system)))))))))
+					    (:span (:-seed-symbol
+						    :symbol (@ content pr pkd)
+						    :common (and (@ self props data content pr)
+								 (= "common-lisp"
+								    (@ self props data content pr pkg)))
+						    :native (and (@ self props data content pr)
+								 (= (@ self props data content pr pkg)
+								    (@ self props context
+									    working-system)))))))))
 		     (if (and (@ content mt)
 			      (or (@ content mt comment) (= "" (@ content mt comment))))
 			 (funcall (lambda (self)
@@ -143,7 +136,7 @@
 						:class-name (+ "meta-comment"
 							       (if (= 1 (@ self props context focus meta))
 								   " focus" ""))
-						:disabled (not (= 1 (@ self props context focus meta)))
+						:disabled (/= 1 (@ self props context focus meta))
 						:value (@ content mt comment)
 						:on-change
 						(lambda (event)
@@ -180,7 +173,7 @@
   (defvar self this)
   (panic:jsl (:div :class-name
 		   (+ "content type-"
-		      (if (not (= "undefined" (typeof (@ self props data content type))))
+		      (if (/= "undefined" (typeof (@ self props data content type)))
 			  (chain self props data content type (substr 2))
 			  ;; remove the first two characters; since this is a converted
 			  ;; keyword, they will always be "__"
@@ -227,12 +220,12 @@
 	      (lambda (pd) (@ pd data content vl))))
    :component-will-receive-props
    (lambda (next-props)
-     (if (not (= "set" (@ next-props context mode)))
+     (if (/= "set" (@ next-props context mode))
 	 (chain this (set-state (chain this (initialize next-props)))))))
   (let ((branch-index (@ this state data content mt branch-index))
 	(point-offset (@ this state data content mt point-offset))
-	(is-composite (not (= "undefined" (typeof (@ this state data content mt branch-index)))))
-	(sub-point-present (not (= "undefined" (typeof (@ this state data content mt point-offset))))))
+	(is-composite (/= "undefined" (typeof (@ this state data content mt branch-index))))
+	(sub-point-present (/= "undefined" (typeof (@ this state data content mt point-offset)))))
     (panic:jsl (:div
 		(:div :class-name (+ "bar"
 				     (if is-composite " composite" "")
@@ -266,7 +259,7 @@
    (lambda () (chain self (set-state (create open (not (@ self state open))))))
    :component-will-receive-props
    (lambda (next-props)
-     (if (not (= "set" (@ next-props context mode)))
+     (if (/= "set" (@ next-props context mode))
 	 (chain this (set-state (chain this (initialize next-props)))))))
   (let ((self this)
 	(content (@ this state data content))
@@ -277,10 +270,10 @@
 			    :placement "bottom" :trigger "click"
 			    :on-click
 			    (lambda ()
-			      (if (not (= (@ content vl)
-					  (@ self state space)))
-					  ;; TODO: BOTH OF THE BELOW ACTIONS ARE NEEDED
-					  ;; TO UPDATE THE VALUE ON THE SERVER AND CLIENT SIDES
+			      (if (/= (@ content vl)
+				      (@ self state space))
+				  ;; TODO: BOTH OF THE BELOW ACTIONS ARE NEEDED
+				  ;; TO UPDATE THE VALUE ON THE SERVER AND CLIENT SIDES
 				  (progn (setf (@ content vl) (@ self state space)
 					       (@ content pr) (create "rgb-string" (@ self state space)))
 					 (chain self state context methods (grow))
@@ -313,13 +306,13 @@
 	      (lambda (pd) (@ pd data content vl))))
    :designate
    (lambda (item)
-     (if (not (= (@ item value) (@ this state space)))
+     (if (/= (@ item value) (@ this state space))
 	 (progn (setf (@ this state data content vl) (@ item value 0 vl))
 		(chain this state context methods (grow))
 		(chain this props context methods (set-delta (create vl (@ item value 0 vl)))))))
    :component-will-receive-props
    (lambda (next-props)
-     (if (not (= "set" (@ next-props context mode)))
+     (if (/= "set" (@ next-props context mode))
 	 (chain this (set-state (chain this (initialize next-props)))))))
   (let ((self this))
     (panic:jsl (:div :class-name "content"
@@ -330,7 +323,7 @@
 						   (current-value (getprop (@ self state data content mt mode options)
 									   (chain values 
 										  (index-of (@ self state space))))))
-					      (if (not (= "undefined" (typeof current-value)))
+					      (if (/= "undefined" (typeof current-value))
 						  (funcall (lambda (item) (create label (@ item title)
 										  value (@ item value)))
 							   current-value)))
@@ -352,37 +345,28 @@
 	      (lambda (pd) (if (and (@ this state) (@ this state space))
 			       (@ this state space)
 			       nil))))
-   :designate
-   (lambda (item) 
-     (setf (@ this state data content vl) item)
-     (chain this state context methods (grow)))
    :component-will-receive-props
    (lambda (next-props)
-     (if (not (= "set" (@ next-props context mode)))
-   	 (chain this (set-state (chain this (initialize next-props))))))
-   )
-  (let ((self this))
+     (if (/= "set" (@ next-props context mode))
+   	 (chain this (set-state (chain this (initialize next-props)))))))
+  (let* ((self this)
+	 (content (@ self state data content)))
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "textfield-holder"
 			   (:input :class-name "textfield"
-				   :value (if (@ self state space)
-					      (@ self state space)
-					      (@ self state data content vl))
+				   :value (@ content vl)
 				   :on-change (lambda (event)
-					        (cl :ee)
-						(chain self (set-state (create space (@ event target value)))))
+						(extend-state :deep data
+							      (create content (create vl (@ event target value))))
+						(chain self props context methods
+						       (set-delta (create vl (@ event target value)))))
 				   :on-focus (lambda (event)
-					       (cl :eve event (@ self state data content vl))
-					       (chain self state context methods (set-mode "set"))
-					       ;; (chain self (set-state (create space
-					       ;; 				      (@ self state data content vl))))
-					       )
+					       (if (/= "set" (@ self state context mode))
+						   (chain self state context methods (set-mode "set"))))
 				   :on-blur (lambda (event)
-					      (cl :ab)
 				   	      (chain self state context methods (set-mode "move"))
 				   	      ;; (chain self (designate (@ self state space)))
-					      )
-				   ))))))
+					      (chain self state context methods (grow)))))))))
  
  ;; (textfield
  ;;  (:get-initial-state
@@ -444,7 +428,7 @@
    (lambda (item) (chain this state context methods (grow (create vl item))))
    :component-will-receive-props
    (lambda (next-props)
-     (if (not (= "set" (@ next-props context mode)))
+     (if (/= "set" (@ next-props context mode))
 	 (chain this (set-state (chain this (initialize next-props)))))))
   (let ((self this))
     (panic:jsl (:div :class-name "content"
@@ -464,7 +448,7 @@
 		     (:div :class-name "textarea-holder"
 			   (:-autosize-textarea
 			    :class-name "textarea"
-			    :type "bla"
+			    ;; :type "bla"
 			    :value (if (@ self state space)
 				       (@ self state space)
 				       (@ self state data content vl))
@@ -490,29 +474,25 @@
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
   (let* ((self this)
 	 (handle (chain self props (connect-drag-source (panic:jsl (:div :class-name "handle")))))
-	 (content (panic:jsl (:div (:div :class-name (+ "item-interface-holder"
-							(if (@ self state data data mt mode toggle)
-							    " with-toggle" ""))
-					 (if (@ self state data data mt mode toggle)
+	 (this-mode (@ self state data data mt mode))
+	 (content (panic:jsl (:div (:div :class-name (+ "item-interface-holder" (if (@ this-mode toggle)
+										    " with-toggle" ""))
+					 (if (@ this-mode toggle)
 					     (panic:jsl (:div :class-name "btn-group toggle"
 							      (:button :on-click
 								       (lambda (event)
-									 (setf (@ self state data data
-										       mt mode toggle)
-									       (if (= "__on" (@ self state data
-												     data mt mode
-												     toggle))
+									 (setf (@ this-mode toggle)
+									       (if (= "__on" (@ this-mode toggle))
 										   "__off" "__on"))
 									 (chain self state context methods
 										(grow)))
-								       (if (= "__on" (@ self state data data
-											     mt mode toggle))
+								       (if (= "__on" (@ this-mode toggle))
 									   "On" "Off")))))
 					 ((@ -react-bootstrap -panel)
 					  (:div :class-name "panel-heading"
 						handle
-						(:div :class-name "title" (@ self state data data mt mode title))
-						(if (@ self state data data mt mode removable)
+						(:div :class-name "title" (@ this-mode title))
+						(if (@ this-mode removable)
 						    (panic:jsl (:span :class-name "remove"
 								      :on-click
 								      (lambda (event)
@@ -522,8 +502,8 @@
 										      (@ self state data
 											      data ct)))))
 								      "X"))))))
-				   (@ self state data content)))))
-    ;; (cl :content (@ self state data content))
+				   (if (@ this-mode open)
+				       (panic:jsl (:div :class-name "content" (@ self state data content))))))))
     (chain self props (connect-drag-preview (chain self props (connect-drop-target content))))))
 
  (list

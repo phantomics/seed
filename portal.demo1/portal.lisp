@@ -56,8 +56,10 @@
 			   	       css-text-view css-ivector-standard
 				       css-symbol-style-camel-case)
 			   css-animation-silicon-sky)
-		   :foundation (:script (seed.foreign.browser-spec.script.base)
-					:style (seed.foreign.browser-spec.style.base)))
+		   :foundation ((:scripts seed.foreign.browser-spec.script.base
+					  ;;seed.foreign.browser-spec.script.form-dygraphs
+					  )
+				(:styles seed.foreign.browser-spec.style.base)))
 
 (portal)
 

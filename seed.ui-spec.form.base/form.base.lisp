@@ -63,26 +63,25 @@
 				     ;; NOTE: This function changes the state data in place as opposed to creating
 				     ;; a copy and feeding it to the grow function. The creation of the new copy
 				     ;; results in a cyclic reference in the JSON structure. Is this a problem?
-				     (chain self
-					    (seek point (@ point 0) (@ self state space)
-						  (lambda (target target-list target-parent target-index path)
-						    (let ((from nil)
-							  (to nil))
-						      (loop for index from 1 to (1- (@ target-parent length))
-							 do (if (= (getprop target-parent index 0 "ct")
-								   (@ point 1))
-								(setq from index)
-								(if (= (getprop target-parent index 0 "ix")
-								       (@ new-index ix))
-								    (setq to index))))
-						      (chain target-parent 0
-							     (md (lambda (data)
-								   (chain data
-									  (splice to 0
-										  (@ (chain data (splice from 1)
-											    0))))
-								   data)))
-						      (chain self state context methods (grow)))))))
+				     (chain self (seek point (@ point 0) (@ self state space)
+						       (lambda (target target-list target-parent target-index path)
+							 (let ((from nil)
+							       (to nil))
+							   (loop for index from 1 to (1- (@ target-parent length))
+							      do (if (= (getprop target-parent index 0 "ct")
+									(@ point 1))
+								     (setq from index)
+								     (if (= (getprop target-parent index 0 "ix")
+									    (@ new-index ix))
+									 (setq to index))))
+							   (chain target-parent 0
+								  (md (lambda (data)
+									(chain data
+									       (splice to 0
+										       (@ (chain data (splice from 1)
+												 0))))
+									data)))
+							   (chain self state context methods (grow)))))))
 			      delete-point (lambda (point) (chain self (delete-point point))))
 		      methods
 		      (create grow
@@ -352,6 +351,7 @@
        ;; the element-specs are set to nil whenever the table is rebuilt
        ;; so that new coordinates may be sent to the glyph-drawing component
        (setf (@ self element-specs) #())
+       ;; (cl :newspace new-space)
        (chain self
 	      (build-form new-space
 			  (lambda (meta state)
@@ -541,13 +541,13 @@
 								    (get-interaction
 								     (chain datum pr meta mode interaction 
 									    (substr 2))))))))
-				    ;;(cl :ababcd datum)
-				    (if interaction
+				    (if (and interaction (not (= null (typeof interaction))))
 					(funcall interaction self datum)
 					(let ((datum (chain j-query
 							    (extend (create)
 								    datum (create dp (@ datum ly))))))
-					  (chain self (set-point datum))))))
+					  (if (/= "set" (@ self state context mode))
+					      (chain self (set-point datum)))))))
 		      :id (+ (@ self state data id)
 			     "-atom-" (@ datum ix))
 		      :class-name (+ "atom-inner"
@@ -645,7 +645,7 @@
    (lambda (rows-input callback)
      (let ((self this)
 	   (count 0))
-       ;(chain console (log :ri rows-input))
+       ;;(chain console (log :ri rows-input))
        (labels ((process-list (input layer index output)
 		  (let ((layer (if layer layer 0))
 			(index (if index index 0))
@@ -685,8 +685,8 @@
 		       :ref (lambda (ref)
 			      (if (and ref (not (and (@ datum mt) (@ datum mt mode)
 						     (= "__item" (@ datum mt mode view)))))
-					;; don't assign element spec locations to items
-					;; within specially-rendered sub-lists
+				  ;; don't assign element spec locations to items
+				  ;; within specially-rendered sub-lists
 				  (labels ((pos (element offset)
 					     (let* ((offset (if offset offset (create left 0 top 0)))
 						    (this-offset (create left (+ (@ offset left)
@@ -695,7 +695,7 @@
 										(@ element 0 offset-top))
 									 height (@ element 0 client-height)
 									 width (@ element 0 client-width))))
-					;; return the offset if the measurement reaches the container
+					       ;; return the offset if the measurement reaches the container
 					       (if (= "pane" (chain (j-query element) (offset-parent) 
 								    (attr "class")))
 						   (setf (getprop (@ self element-specs) (@ datum ix))
@@ -713,10 +713,11 @@
 			      (@ datum ix))
 		       :col-span (- (@ self state meta max-depth) (@ datum ly))
 		       :row-span (@ datum br)
-					;; get the number of rows in the sub-list for the container rowspan
+		       ;; get the number of rows in the sub-list for the container rowspan
 		       (:div :class-name "spacer")
 		       (cond ((and (@ datum mt) (@ datum mt mode)
 				   (= "__list" (@ datum mt mode view)))
+			      ;;(cl :ls-cont content)
 			      (subcomponent (@ interface-units list)
 					    ;; remove the first element from the content,
 					    ;; since this element usually comes from after
@@ -726,33 +727,34 @@
 			     ((and (@ datum mt) (@ datum mt mode)
 				   (= "__item" (@ datum mt mode view)))
 			      (subcomponent (@ interface-units item)
-					    (create ;; content (chain self (render-table-body content))
+					    (create content (chain self (render-table-body content))
+						    ;; TEMP enabled
 						    data datum)))
 			     (t (chain self (render-table-body content))))))))
    :render-table-body
    (let ((table-index -1))
-   (lambda (rows is-root)
-     (let ((self this))
-       (setq table-index (1+ table-index))
-       ;; (cl :rrr rows)
-       (panic:jsl (:table :class-name (+ "form" (if is-root " root" ""))
-			  ;; the table-index is used for tables generated...
-			  :key (+ (if (= 0 (@ rows 0 length))
-				      (+ "index-" table-index)
-				      (@ rows 0 0 key))
-				  "-body")
-			  :ref (lambda (ref)
-				 (if ref (let ((elem (j-query ref)))
-					   (if is-root (setf (@ self root-params)
-							     (create parent-height
-								     (@ elem 0 offset-parent client-height)
-								     left (@ elem 0 offset-left)
-								     top (@ elem 0 offset-top)
-								     width (@ elem 0 client-width)
-								     height (@ elem 0 client-height)))))))
-			  (:tbody (chain rows (map (lambda (row-data index)
-						     (panic:jsl (:tr :key (+ "tr-" index)
-								     row-data)))))))))))
+     (lambda (rows is-root)
+       (let ((self this))
+	 (setq table-index (1+ table-index))
+	 ;; (cl :rrr rows)
+	 (panic:jsl (:table :class-name (+ "form" (if is-root " root" ""))
+			    ;; the table-index is used for tables generated...
+			    :key (+ (if (= 0 (@ rows 0 length))
+					(+ "index-" table-index)
+					(@ rows 0 0 key))
+				    "-body")
+			    :ref (lambda (ref)
+				   (if ref (let ((elem (j-query ref)))
+					     (if is-root (setf (@ self root-params)
+							       (create parent-height
+								       (@ elem 0 offset-parent client-height)
+								       left (@ elem 0 offset-left)
+								       top (@ elem 0 offset-top)
+								       width (@ elem 0 client-width)
+								       height (@ elem 0 client-height)))))))
+			    (:tbody (chain rows (map (lambda (row-data index)
+						       (panic:jsl (:tr :key (+ "tr-" index)
+								       row-data)))))))))))
    :render-table
    (lambda (rows-input callback)
      (defvar self this)
@@ -810,48 +812,95 @@
 						   " special-table" ""))
 				(chain self (render-atom datum)))))
 	      (process-rows (rows output)
-		(let ((cells (@ rows 0))
-		      (empty-rows #())
-		      (is-outer-form (if (not output)
-					 t false))
-		      (output (if output output (list #()))))
-		  (if (= 0 (@ rows length))
-		      (chain output (slice 0 (1- (@ output length))))
-		      ;; remove final empty list that gets appended to output before returning it
-		      (if (= 0 (@ cells length))
-			  (process-rows (chain rows (slice 1))
-					(chain output (concat (list #()))))
-			  (if (= "plain" (@ cells 0 ty 0))
-			      ;; create a sub-table for plain lists
+	      	(let ((cells (@ rows 0))
+	      	      (empty-rows #())
+	      	      (is-outer-form (if (not output)
+	      				 t false))
+	      	      (output (if output output (list #()))))
+	      	  (if (= 0 (@ rows length))
+	      	      (chain output (slice 0 (1- (@ output length))))
+	      	      ;; remove final empty list that gets appended to output before returning it
+	      	      (if (= 0 (@ cells length))
+	      		  (process-rows (chain rows (slice 1))
+	      				(chain output (concat (list #()))))
+	      		  (if (= "plain" (@ cells 0 ty 0))
+	      		      ;; create a sub-table for plain lists
+
 			      (process-rows
-			       (chain rows (slice (@ cells 0 br)))
-			       (let ((enclose-table (if is-outer-form
-							(lambda (input) (chain self (render-table-body input t)))
-							(lambda (input)
-							  (chain self (render-sub-list (@ cells 0)
-										       input))))))
-				 (loop for ix from 0 to (1- (@ cells 0 br))
-				    do (chain empty-rows (push #())))
-				 (chain output (slice 0 (1- (@ output length)))
-					(concat (list (chain
-						       (getprop output (1- (@ output length)))
-						       (concat (enclose-table
-								(process-rows
-								 (chain (list (chain cells (slice 1)))
-									(concat
-									 (chain rows (slice 1 (@ cells 0 br)))))
-					                         ;; add the blank output array so that the
-					                         ;; process-rows function knows that it is not
-					                         ;; the outer form
-								 (list #())))))))
-					(concat empty-rows))))
-					;; TODO: why are empty rows needed? If not appended, table is uneven
-			      (process-rows (chain (list (chain cells (slice 1)))
-						   (concat (chain rows (slice 1))))
-					    (chain output (slice 0 (1- (@ output length)))
-						   (concat
-						    (list (chain (getprop output (1- (@ output length)))
-								 (concat (generate-cell (@ cells 0))))))))))))))
+	      		       (chain rows (slice (+ (@ cells 0 br)
+						     (if (and (@ cells 0 pr meta mode)
+							      (@ cells 0 pr meta mode open))
+							 1 0))
+						  (- (@ rows length) 0)))
+	      		       (let* ((enclose-table
+				       (if is-outer-form
+					   (lambda (input) (chain self (render-table-body input t)))
+					   (lambda (input)
+					     (chain self (render-sub-list (@ cells 0)
+									  (chain input
+										 (slice 0 (@ input length))))))))
+	      		      	      (rows-to-process
+				       (chain (list (chain cells (slice 1)))
+					      (concat (chain rows
+							     (slice 1 (+ (if (and (@ cells 0 pr meta mode)
+										  (@ cells 0 pr meta mode open))
+									     1 0)
+									 (@ cells 0 br)))))))
+	      		      	      ;; add the blank output array so that the
+	      		      	      ;; process-rows function knows that it is not
+	      		      	      ;; the outer form
+	      		      	      (enclosed (enclose-table (process-rows rows-to-process (list #())))))
+	      		      	 (loop for ix from 0 to (1- (@ cells 0 br))
+	      		      	    do (chain empty-rows (push #())))
+	      		      	 (chain output (slice 0 (1- (@ output length)))
+	      		      		(concat (list (chain (getprop output (1- (@ output length)))
+	      		      				     (concat enclosed))))
+	      		      		(concat empty-rows))))
+			      
+	      		      ;; (process-rows
+	      		      ;;  (chain rows (slice (1+ (@ cells 0 br))))
+	      		      ;;  (let* ((enclose-table (if is-outer-form
+	      		      ;; 				 (lambda (input) (chain self (render-table-body input t)))
+	      		      ;; 				 (lambda (input) (chain self (render-sub-list (@ cells 0) input)))))
+	      		      ;; 	      (rows-to-process (chain (list (chain cells (slice 1)))
+	      		      ;; 				      (concat (chain rows (slice 1 (1+ (@ cells 0 br)))))))
+	      		      ;; 	      ;;(rows-to-process (chain rows (slice 1 (@ cells 0 br))))
+	      		      ;; 	      ;; add the blank output array so that the
+	      		      ;; 	      ;; process-rows function knows that it is not
+	      		      ;; 	      ;; the outer form
+	      		      ;; 	      (enclosed (enclose-table (process-rows rows-to-process (list #())))))
+	      		      ;; 	 (loop for ix from 0 to (1- (@ cells 0 br))
+	      		      ;; 	    do (chain empty-rows (push #())))
+	      		      ;; 	 (chain output (slice 0 (1- (@ output length)))
+	      		      ;; 		(concat (list (chain (getprop output (1- (@ output length)))
+	      		      ;; 				     (concat enclosed))))
+	      		      ;; 		(concat empty-rows))))
+			      ;; (process-rows
+	      		      ;;  (chain rows (slice (@ cells 0 br)))
+	      		      ;;  (let* ((enclose-table (if is-outer-form
+	      		      ;; 				 (lambda (input) (chain self (render-table-body input t)))
+	      		      ;; 				 (lambda (input)
+	      		      ;; 				   (cl :slc cells input (chain rows (slice 1 (@ cells 0 br))))
+	      		      ;; 				   (chain self (render-sub-list (@ cells 0) input)))))
+	      		      ;; 	      (rows-to-process (chain (list (chain cells (slice 1)))
+	      		      ;; 				      (concat (chain rows (slice 1 (+ 0 (@ cells 0 br)))))))
+	      		      ;; 	      ;; add the blank output array so that the
+	      		      ;; 	      ;; process-rows function knows that it is not
+	      		      ;; 	      ;; the outer form
+	      		      ;; 	      (enclosed (enclose-table (process-rows rows-to-process (list #())))))
+	      		      ;; 	 (loop for ix from 0 to (1- (@ cells 0 br))
+	      		      ;; 	    do (chain empty-rows (push #())))
+	      		      ;; 	 (cl :out output enclosed)
+	      		      ;; 	 (chain output (slice 0 (1- (@ output length)))
+	      		      ;; 		(concat (list (chain (getprop output (1- (@ output length)))
+	      		      ;; 				     (concat enclosed))))
+	      		      ;; 		(concat empty-rows))))
+	      		      ;; TODO: why are empty rows needed? If not appended, table is uneven
+	      		      (process-rows (chain (list (chain cells (slice 1)))
+	      					   (concat (chain rows (slice 1))))
+	      				    (chain output (slice 0 (1- (@ output length)))
+	      					   (concat (list (chain (getprop output (1- (@ output length)))
+	      								(concat (generate-cell (@ cells 0))))))))))))))
        (funcall callback (process-rows rows-input))))
 
    :component-will-receive-props
@@ -1037,7 +1086,7 @@
    :component-did-update
    (lambda ()
      (let ((self this))
-       ;(cl 5432 (@ self state action-registered))
+       ;; (cl 5432 (@ self state action-registered))
        ;; (if (= "short" (@ self props context view-scope))
        ;; 	  (cl :upd (@ self state point-attrs value) (jstr (@ self state point-attrs props))
        ;; 	      (@ self state point-attrs)))
@@ -1060,11 +1109,12 @@
 			 context (create current false)))
        (if (and (= "set" (@ self state context mode))
 		(@ self state context is-point)
-		(= null (@ self state point-attrs delta)))
+		;;(= null (@ self state point-attrs delta))
+		)
 	   (let* ((input-ref (chain (j-query (+ "#form-view-" (@ this state data id)
-						" .atom.mode-set.point .editor input"))))
+						" .atom.mode-set.point input"))))
 		  (temp-val (chain input-ref (val))))
-		  ;; need to momentarily blank the value so the cursor goes to the end on all browsers
+	     ;; need to momentarily blank the value so the cursor goes to the end on all browsers
 	     (chain input-ref (focus))
 	     (chain input-ref (val ""))
 	     (chain input-ref (val temp-val))))
