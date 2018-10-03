@@ -25,8 +25,10 @@
 	       #:seed.ui-spec.form.mode-sheet
 	       #:seed.ui-spec.form.mode-block-space
 	       #:seed.ui-spec.form.mode-shape-graph
+	       #:seed.ui-spec.form.mode-chart-dygraph
 	       #:seed.ui-effects.vector.base
 	       #:seed.foreign.browser-spec.script.base
+	       #:seed.foreign.browser-spec.ss.form-dygraphs
 	       #:seed.foreign.browser-spec.style.base
 	       #:seed.app-model.site.base
 	       #:quickproject #:prove #:parenscript #:panic #:lass

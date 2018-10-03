@@ -7,7 +7,7 @@
         :branches
         ((stage (in (set-time))
                 (out (set-type :stage)
-		     (display-params (:primary (:main :cells) (:doc :page) (:apl :space))
+		     (display-params (:primary (:main :cells) (:doc :page) (:apl :space) (:chart))
 				     (:adjunct (:clipboard :history)))
 		     (codec)))
          (main (in (contingencies :sheet-lock)
@@ -82,6 +82,9 @@
 	 	   (document-content)))
 	 (page (out (set-type :html-element)
 		    (get-value :document-content)))
+	 (chart (out (set-type :chart :dygraph)
+		     ;;(put-image (get-value ))
+		     ))
 	 (clipboard (in (set-time) (put-image (clipboard (get-image))))
                     (out (set-type :form) (clipboard)
                          (if-condition (is-image :not) (:then (put-image))

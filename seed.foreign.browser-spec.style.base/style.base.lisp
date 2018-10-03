@@ -4,7 +4,7 @@
 
 (defparameter *local-package-name* (package-name *package*))
 
-(defmacro cornerstone ()
+(defmacro foundational-browser-style-base ()
   "Generate the paths for the style source files."
   (mapcar (lambda (item) (asdf:system-relative-pathname (intern *local-package-name* "KEYWORD") item))
 	  (list "./node_modules/bootstrap/dist/css/bootstrap.min.css"

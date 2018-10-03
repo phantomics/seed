@@ -1,0 +1,14 @@
+{
+  "name": "seed-browserspec-ss-formdygraphs",
+  "version": "1.0.0",
+  "description": "Javascript and CSS modules for Seed's dygraphs interface.",
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "dygraphs": "^2.1.0",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-webpack": "^1.5.0",
+    "script-loader": "^0.7.2"
+  }
+}

@@ -2,7 +2,7 @@
 
 (in-package #:seed.foreign.browser-spec.script.base)
 
-(defmacro cornerstone ()
+(defmacro foundational-browser-script-base ()
   "Generate the content for the root script source file."
   `(parenscript:ps
      (let ((j-query (require "jquery/dist/jquery.min.js")))

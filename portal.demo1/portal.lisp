@@ -28,6 +28,7 @@
 									 document-view-mode
 									 sheet-view-mode
 									 block-space-view-mode
+									 dygraph-chart-view-mode
 									 (graph-shape-view-mode
 									  :effects standard-vector-effects))))
 				      :url "portal"
@@ -56,10 +57,10 @@
 			   	       css-text-view css-ivector-standard
 				       css-symbol-style-camel-case)
 			   css-animation-silicon-sky)
-		   :foundation ((:scripts seed.foreign.browser-spec.script.base
-					  ;;seed.foreign.browser-spec.script.form-dygraphs
-					  )
-				(:styles seed.foreign.browser-spec.style.base)))
+		   :foundation ((:scripts foundational-browser-script-base
+					  foundational-browser-script-dygraphs)
+				(:styles foundational-browser-style-base
+					 foundational-browser-style-dygraphs)))
 
 (portal)
 

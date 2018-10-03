@@ -440,13 +440,16 @@
 					 ;; the leading dash in -this-component is required so that the
 					 ;; JSL composition happens correctly; it expects the name of a component
 					 ;; to begin with a capital letter
-					 (subcomponent ;;-this-component
-					  (@ view-modes graph-shape-view)
-					  branch :context (index
-							   0
-							   set-interaction this-set-interaction
-							   parent-system
-							   (@ self props context working-system)))))
+					 (subcomponent (@ view-modes graph-shape-view)
+						       branch :context (index
+									0
+									set-interaction this-set-interaction
+									parent-system
+									(@ self props context working-system)))))
+				      ((and (= (@ branch type 0) "chart")
+					    (= (@ branch type 1) "dygraph"))
+				       (subcomponent (@ view-modes dygraph-chart-view)
+						     branch :context (index 0)))
 				      ((and (= (@ branch type 0) "graphic")
 					    (= (@ branch type 1) "bitmap"))
 				       (subcomponent (@ view-modes bitmap-display)

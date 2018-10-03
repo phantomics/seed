@@ -5,7 +5,7 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on (#:cl-who #:cl-ppcre #:parenscript #:lass #:symbol-munger)
+  :depends-on (#:cl-who #:cl-ppcre #:parenscript #:lass #:symbol-munger #:seed.modulate)
   :components 
   ((:file "package")
    (:file "qualify-build")
