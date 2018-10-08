@@ -182,18 +182,25 @@
 						 (macroexpand (list item)))))
 			      pairs))))))
 
-(defmacro react-ui (components &key (url nil) (component nil))
+(defmacro react-ui (options &rest components)
   "Generate a React-based Seed user interface."
-  (append (loop for comp in components append (macroexpand (if (listp comp)
-							       comp (list comp))))
-	  `((chain j-query
-		   (ajax (create url ,(concatenate 'string "../" url)
-				 type "POST"
-				 data-type "json"
-				 content-type "application/json; charset=utf-8"
-				 data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow")))
-				 success (lambda (data)
-					   ;; (chain console (log "DAT" data))
-					   (chain -react-d-o-m
-						  (render (panic:jsl (,component :data data))
-							  (chain document (get-element-by-id "main")))))))))))
+  (let* ((ops (rest options))
+	 (url (second (assoc :url ops)))
+	 (component (second (assoc :component ops)))
+	 (glyph-sets (rest (assoc :glyph-sets ops)))
+	 (glyph-forms (loop for set in glyph-sets append (macroexpand (list set))))
+	 (glyph-content (loop for form in glyph-forms append (list (first form)
+								   `(panic:jsl ,(second form))))))
+    (append `((defvar glyphs ,(cons 'create glyph-content)))
+	    (loop for comp in components append (macroexpand (if (listp comp)
+								 comp (list comp))))
+	    `((chain j-query
+		     (ajax (create url ,(concatenate 'string "../" url)
+				   type "POST"
+				   data-type "json"
+				   content-type "application/json; charset=utf-8"
+				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow")))
+				   success (lambda (data)
+					     (chain -react-d-o-m
+						    (render (panic:jsl (,component :data data))
+							    (chain document (get-element-by-id "main"))))))))))))

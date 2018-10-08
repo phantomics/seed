@@ -19,27 +19,27 @@
 		   (:script (key-ui keystroke-maps
 				    key-ui-base
 				    key-ui-map-apl-meta-specialized)
-			    (react-ui ((react-portal-core (component-set interface-units interface-units)
-							  (component-set view-modes
-									 form-view-mode
-									 text-view-mode
-									 (html-view-mode :script-effects
-											 standard-form-effects)
-									 document-view-mode
-									 sheet-view-mode
-									 block-space-view-mode
-									 dygraph-chart-view-mode
-									 (graph-shape-view-mode
-									  :effects standard-vector-effects))))
-				      :url "portal"
-				      :component :-portal))
+			    (react-ui (with (:url "portal")
+					    (:component :-portal)
+					    (:glyph-sets material-design-glyph-set-common))
+				      (react-portal-core (component-set interface-units interface-units)
+							 (component-set view-modes
+									form-view-mode
+									text-view-mode
+									(html-view-mode :script-effects
+											standard-form-effects)
+									document-view-mode
+									sheet-view-mode
+									block-space-view-mode
+									dygraph-chart-view-mode
+									(graph-shape-view-mode
+									 :effects standard-vector-effects)))))
 		   (:style (css-styles (with (:palettes (:standard palette-hicontrast-solarized)
 							(:adjunct palette-medcontrast-adjunct)
 							(:backdrop palette-medcontrast-dropcloth)))
 			   	       css-base css-overview css-adjunct css-column-view
-				       css-font-spec-ddin
 				       (css-form-view (with (:palette-contexts :holder)))
-			   	       css-text-view css-ivector-standard
+			   	       css-text-view css-ivector-standard css-font-spec-ddin
 				       css-symbol-style-camel-case)
 			   css-animation-silicon-sky)
 		   (:foundation (:scripts foundational-browser-script-base
