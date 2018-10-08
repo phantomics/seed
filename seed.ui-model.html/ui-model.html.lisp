@@ -215,7 +215,7 @@
 				 (list `(if (not (probe-file ,output-style-assets-path))
 					    (uiop:run-program ,(format nil "mkdir ~a" output-style-assets-path)
 							      :output *standard-output*))
-				       `(uiop:run-program ,(format nil "cp -rf ~a/* ~a" style-assets-path
+				       `(uiop:run-program ,(format nil "cp -rfH ~a/* ~a" style-assets-path
 								   output-style-assets-path))))
 			   ,@(if style-path
 				 (list `(princ ,(format nil "~%Synchronizing source files for CSS generation.~%"))
