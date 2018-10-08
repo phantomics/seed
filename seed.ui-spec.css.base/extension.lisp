@@ -8,6 +8,7 @@
 (export 'css-column-view)
 (export 'css-form-view)
 (export 'css-text-view)
+(export 'css-font-spec-ddin)
 (export 'css-symbol-style-dash-separated)
 (export 'css-symbol-style-underscore-separated)
 (export 'css-symbol-style-camel-case)

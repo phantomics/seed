@@ -5,7 +5,6 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on (:dufy :optima)
   :components ((:file "package")
                (:file "ui-model.css")))
 

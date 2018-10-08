@@ -2,12 +2,16 @@
 
 (in-package #:seed.ui-model.html)
 
-(defmacro browser-interface (&key (foundation nil) (markup nil) (script nil) (style nil))
+(defmacro browser-interface (&rest params)
   "Top-level macro to generate a browser interface."
-  `(progn ,@(if foundation (list (macroexpand (cons 'dig-foundation foundation))))
-	  ,@(if markup (list (macroexpand (cons 'build-browser-markup markup))))
-	  ,@(if script (list (macroexpand (cons 'build-browser-script script))))
-	  ,@(if style (list (macroexpand (cons 'build-browser-style style))))))
+  (let ((foundation (rest (assoc :foundation params)))
+	(markup (rest (assoc :markup params)))
+	(script (rest (assoc :script params)))
+	(style (rest (assoc :style params))))
+    `(progn ,@(if foundation (list (macroexpand (cons 'dig-foundation foundation))))
+	    ,@(if markup (list (macroexpand (cons 'build-browser-markup markup))))
+	    ,@(if script (list (macroexpand (cons 'build-browser-script script))))
+	    ,@(if style (list (macroexpand (cons 'build-browser-style style)))))))
 
 ;; (defmacro dig-foundation (&key (script nil) (style nil))
 ;;   "Compiles JavaScript and CSS to create the foundation for a Seed portal interface. Because this is time-consuming, it is only done by default if the main.js and main.css files are not present in the portal's package directory. If they are present, a rebuild of the JS and CSS can be done by evaluating the function foundInterface, which is declared in this macro."
@@ -114,6 +118,7 @@
 	 (local-package-name (intern (package-name *package*) "KEYWORD"))
 	 (output-script-path (asdf:system-relative-pathname local-package-name "./main.js"))
 	 (output-style-path (asdf:system-relative-pathname local-package-name "./main.css"))
+	 (output-style-assets-path (asdf:system-relative-pathname local-package-name "./style-assets"))
 	 ;; check for the presence of an nvm-based Node.js installation
 	 (nvm-found (and (probe-file "~/.nvm")
 			 (probe-file "~/.nvm/nvm.sh")))
@@ -189,6 +194,8 @@
 							 (trace-symbol style (package-name *package*)))
 							"KEYWORD"))
 			    (style-path (asdf:system-relative-pathname style-package-name "./"))
+			    (style-assets-path (asdf:system-relative-pathname style-package-name
+									      "./style-assets"))
 			    (output-path style-path)
 			    (style-build-file (asdf:system-relative-pathname style-package-name "./gulpfile.js"))
 			    (style-output-filename "main"))
@@ -204,7 +211,12 @@
 			     (format ,stream (ps (let ((gulp (require "gulp"))
 						       (concat (require "gulp-concat")))
 						   (chain gulp (task "dev" (lambda () ,@(gulp-build-style))))))))
-			   
+			   ,@(if (probe-file (asdf:system-relative-pathname style-package-name "./style-assets"))
+				 (list `(if (not (probe-file ,output-style-assets-path))
+					    (uiop:run-program ,(format nil "mkdir ~a" output-style-assets-path)
+							      :output *standard-output*))
+				       `(uiop:run-program ,(format nil "cp -rf ~a/* ~a" style-assets-path
+								   output-style-assets-path))))
 			   ,@(if style-path
 				 (list `(princ ,(format nil "~%Synchronizing source files for CSS generation.~%"))
 				       (macroexpand (list 'synchronize-npm-modules style-path

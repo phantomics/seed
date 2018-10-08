@@ -1,10 +1,10 @@
-(sprout :demo-image :system (:description "This is demoImage, a package demonstrating raster image editing with Seed."
+(sprout :demo-blog :system (:description "This is demoBlog, a package implementing a web publishing environment with Seed."
 					    :author "Andrew Sengul"
 					    :license "GPL-3.0") 
-	:package ((:use :common-lisp :seed.app-model.raster-layers.base)(:export))
+	:package ((:use :common-lisp)(:export))
         :branches ((stage (in (set-time))
                           (out (set-type :stage)
-			       (display-params (:primary (:main :image))
+			       (display-params (:primary (:main))
 					       (:adjunct (:clipboard :history)))
 			       (codec)))
                    (main (in (set-time)
@@ -26,9 +26,6 @@
 					    (:else (set-data (get-image)) (form)
 						   (if-condition (is-param :to-display)
 								 (:then (codec)))))))
-                   (image (out (set-type :graphic :bitmap)
-			       (if-condition (is-image :not)
-					     (:then (get-value :image-output-path)))))
                    (clipboard (in (set-time) (put-image (clipboard (get-image))))
                               (out (set-type :form) (clipboard)
                                    (if-condition (is-image :not) (:then (put-image))

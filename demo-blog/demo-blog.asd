@@ -1,11 +1,10 @@
-;;;; demo-image.asd
+;;;; demo-blog.asd
 
-(asdf:defsystem #:demo-image
-  :description "Sample Seed system implementing a raster image editor."
+(asdf:defsystem #:demo-blog
+  :description "Sample Seed system implementing a web publishing environemnt."
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on (:seed.app-model.raster-layers.base)
   :components ((:file "package")
                (:file "main")))
 

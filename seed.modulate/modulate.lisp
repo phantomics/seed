@@ -505,13 +505,16 @@
 	(plot-glyph type-list))
   glyph-array)
 
-(defmacro modes (&key (atom nil) (form nil) (meta nil))
-  `(progn ,@(if atom (macroexpand (cons 'set-atom-modes
-					(loop :for spec :in atom :append (macroexpand (list spec))))))
-	  ,@(if form (macroexpand (cons 'set-form-modes
-				        (loop :for spec :in form :append (macroexpand (list spec))))))
-	  ,@(if meta (macroexpand (cons 'set-meta-modes
-				        (loop :for spec :in meta :append (macroexpand (list spec))))))))
+(defmacro modes (&rest params)
+  (let ((atom (rest (assoc :atom params)))
+	(form (rest (assoc :form params)))
+	(meta (rest (assoc :meta params))))
+    `(progn ,@(if atom (macroexpand (cons 'set-atom-modes
+					  (loop :for spec :in atom :append (macroexpand (list spec))))))
+	    ,@(if form (macroexpand (cons 'set-form-modes
+					  (loop :for spec :in form :append (macroexpand (list spec))))))
+	    ,@(if meta (macroexpand (cons 'set-meta-modes
+					  (loop :for spec :in meta :append (macroexpand (list spec)))))))))
 
 (defmacro specify-atom-modes (name &rest params)
   "Define (part of) an atom mode specification to determine the behavior of seed.modulate."

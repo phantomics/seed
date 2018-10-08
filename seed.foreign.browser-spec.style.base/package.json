@@ -1,5 +1,5 @@
 {
-  "name": "seed-browserSpec-style-base",
+  "name": "seed-browserspec-style-base",
   "version": "1.0.0",
   "description": "Foundational CSS modules for Seed's user interface.",
   "main": "style.base.lisp",

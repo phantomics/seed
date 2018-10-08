@@ -5,8 +5,8 @@
 ;; Main CSS styles for Seed's interface.
 (specify-css-styles
  css-base
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :basic
  (``("/* Portal styles */
   @keyframes animatedBackground {
@@ -92,11 +92,81 @@
     	  ((:and .text :before)
     	   :content "\""))))))))))
 
+(specify-css-styles
+ css-font-spec-ddin
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
+ :basic
+ (``("/* D-DIN font specification */
+@font-face {
+    font-family: 'DDIN';
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;}
+
+@font-face {
+    font-family: 'DDINBold';
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN-Bold.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN-Bold.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;}
+
+@font-face {
+    font-family: 'DDINItalic';
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN-Italic.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN-Italic.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0/D-DIN-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;}
+
+@font-face {
+    font-family: 'DDINCondensed';
+    src: url('./style-assets/d-din-complete-v1.0/D-DINCondensed.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINCondensed.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINCondensed.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;}
+
+@font-face {
+    font-family: 'DDINCondensedBold';
+    src: url('./style-assets/d-din-complete-v1.0//D-DINCondensed-Bold.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0//D-DINCondensed-Bold.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0//D-DINCondensed-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;}
+
+@font-face {
+    font-family: 'DDINExp';
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;}
+
+@font-face {
+    font-family: 'DDINExpBold';
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Bold.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Bold.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;}
+
+@font-face {
+    font-family: 'DDINExpItalic';
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Italic.woff') format('woff');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Italic.woff2') format('woff2');
+    src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;}"
+     (body :font-family "'DDIN', Fallback, sans-serif"))))
 
 (specify-css-styles 
  css-overview
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :by-palette (``((.overview
 		  :background ,base3
 		  :border-right 2px solid ,base2
@@ -172,8 +242,8 @@
 
 (specify-css-styles 
  css-adjunct
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :by-palette (``((.adjunct-view
 		  :background ,base3
 		  :border-left 2px solid ,base2
@@ -202,9 +272,8 @@
 	(.view-section
 	 :margin 0 4px
 	 (.header :text-align right
-		  (.id-char ;; :color "#2e3135"
-			    :font-size 160%
-			    :line-height 1em))
+		  (.id-char :font-size 120%
+			    :line-height 1.25em))
 	 (.content
 	  (.bar.composite :float left)
 	  ((:or .bar .point-marker)
@@ -229,8 +298,8 @@
 
 (specify-css-styles 
  css-column-view
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :by-palette (``((.branches (.container :background ,base2
 					(.portal-column
 					 (.header
@@ -359,8 +428,8 @@
 
 (specify-css-styles
  css-form-view
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :by-palette (``((.matrix-view
 		  (table.form
 		   (.atom
@@ -804,8 +873,8 @@
 
 (specify-css-styles
  css-text-view
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :basic
  (``((|#main|
       (.portal
@@ -830,6 +899,8 @@
 	     :height "calc(100% - 30px)"
 	     :padding 4px 6px
 	     :color "#002b36"
+	     :font-size 16px
+	     :letter-spacing 0.03em
 	     (div.node-holder
 	      (div.glyph :cursor pointer :height "calc(3px + 1em)" :width 16px :float left
 			 :background "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='20' version='1.1'><g transform='translate(0,3)'><rect style='fill:%23839496;fill-opacity:1;stroke:none' x='0' y='0' width='2' height='15' /></g></svg>\") no-repeat")
@@ -862,8 +933,8 @@
 
 (specify-css-styles
  css-symbol-style-camel-case
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :basic
  (``((.seed-symbol
       ((:and span :|not(:first-child)|)
@@ -875,8 +946,8 @@
 
 (specify-css-styles
  css-symbol-style-dash-separated
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :basic
  (``((.seed-symbol
       ((:and span :|not(:first-child)|)
@@ -892,8 +963,8 @@
 
 (specify-css-styles
  css-symbol-style-underscore-separated
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
  :basic
  (``((.seed-symbol
       ((:and span :|not(:first-child)|)
