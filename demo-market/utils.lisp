@@ -36,13 +36,44 @@
 					       (aref datum 6)
 					       (aref datum 7)))))))
 
+(defun generate-data-jsform (data-array &optional array-length count output)
+  (let ((array-length (if array-length array-length (length data-array)))
+	(count (if count count 0))
+	(output (if output output)))
+    (if (> count (1- array-length))
+	(reverse output)
+	(let* ((datum (aref data-array count))
+	       (time-val (if (/= 0 count)
+			     (modulate-time (timestamp-to-unix
+					     (universal-to-timestamp (parse-date-time (aref datum 0))))
+					    *forex-time-modulation*)
+			     (aref datum 0))))
+	  (generate-data-jsform data-array array-length (1+ count)
+				(cons (list time-val (aref datum 1) (aref datum 4)
+					    (aref datum 2) (aref datum 3) (aref datum 5)
+					    (aref datum 8) (aref datum 6) (aref datum 7))
+				      output))))))
+
 ;; (- 1535907600 1535731200)
 ;; 1535108400,1.51620,1.51670,1.51359,1.51385,1.51612,1.51662,1.51354,1.51375
 ;; 1535104800
 ;; (- 1535302800 1535126400)
 ;; offset 144000
 ;; week 604800
-
+;; (setq cdata (aref (lquery:$ (initialize (asdf:system-relative-pathname :demo-market "eurcad.xml"))) 0))
+;; (setq rows (reverse (lquery:$ cdata "row")))
+;; (let ((rcount 0))
+;;   (map 'vector (lambda (i)
+;; 		 (incf rcount)
+;; 		 (if (= rcount (length rows))
+;; 		     (lquery:$ i "cell" "data" (html))
+;; 		     (let ((ccount 0))
+;; 		       (map 'vector (lambda (c)
+;; 				      (incf ccount)
+;; 				      (if (= 1 ccount)
+;; 					  c (parse-number c)))
+;; 			    (lquery:$ i "cell" "data" (html))))))
+;;        rows))
 #|
 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17
 
@@ -76,7 +107,9 @@
 				 :start (list 1087455600 1.52)
 				 :end (list 1087650000 1.48))))
 
-(setq chart-data (list :mods *forex-time-modulation*
-		       :content (generate-data-string (first (load-exp-from-file :demo-market "./data.sexp")))
-		       :entities chart-entities))
+(let ((cdata (generate-data-jsform (first (load-exp-from-file :demo-market "./data.sexp")))))
+  (setq chart-data (list :mods *forex-time-modulation*
+			 :content (rest cdata)
+			 :labels (first cdata)
+			 :entities chart-entities)))
 

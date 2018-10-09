@@ -1,0 +1,21 @@
+;;;; chart.base.lisp
+
+(in-package #:seed.ui-spec.stage.base)
+
+(defmacro stage-controls-chart-base (meta-symbol spec-symbol params-symbol output-symbol)
+  (declare (ignorable spec-symbol))
+  `(((eq :select (first ,params-symbol))
+     (cons `(,',meta-symbol :select :mode (:interaction :chart-select))
+	   ,output-symbol))
+    ((eq :line (first ,params-symbol))
+     (cons `(,',meta-symbol :line :mode (:interaction :chart-draw-line))
+	   ,output-symbol))
+    ((eq :retrace-x (first ,params-symbol))
+     (cons `(,',meta-symbol :retrace-x :mode (:interaction :chart-retrace-x))
+	   ,output-symbol))
+    ((eq :retrace-y (first ,params-symbol))
+     (cons `(,',meta-symbol :retrace-y :mode (:interaction :chart-retrace-y))
+	   ,output-symbol))
+    ((eq :zoom-real-size (first ,params-symbol))
+     (cons `(,',meta-symbol :zoom-real-size :mode (:interaction :chart-zoom-real-size))
+	   ,output-symbol))))

@@ -55,5 +55,6 @@
 					   :controls (stage-control-set :by-spec (stage-controls-base-contextual)
 									:by-parameters
 									(stage-controls-graph-base
-									 stage-controls-document-base)))
+									 stage-controls-document-base
+									 stage-controls-chart-base)))
 		     :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history))))

@@ -18,6 +18,7 @@
 	       #:seed.ui-spec.react.base #:seed.ui-spec.css-vector.base
 	       #:seed.ui-spec.stage-menu.base  #:seed.ui-spec.stage-controls.graph
 	       #:seed.ui-spec.stage-controls.document.base
+	       #:seed.ui-spec.stage-controls.chart.base
 	       #:seed.ui-spec.unit.base #:seed.ui-spec.form.base
 	       #:seed.ui-spec.html-css.glyph-set-mdi
 	       #:seed.ui-spec.form.mode-text

@@ -8,6 +8,8 @@
 					       (:adjunct (:clipboard :history)))
 			       (codec)))
                    (chart (out (set-type :chart :dygraph)
+			       (stage-params :primary-controls (:select :line :retrace-y :retrace-x)
+					     :secondary-controls (:zoom-real-size))
 			       (put-image (get-value :chart-data))
 			       (json-to-display)))
 		   (main (in (set-time)

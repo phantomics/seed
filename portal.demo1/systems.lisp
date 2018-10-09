@@ -1,6 +1,6 @@
 (META
  ((META :PORTAL.DEMO1 :MODE (:VIEW :PORTAL-NAME))
-  (META "demo-market" :MODE
+  (META "demo-sheet" :MODE
    (:VIEW :SELECT :OPTIONS
     ((:VALUE "demo-sheet" :TITLE "demoSheet")
      (:VALUE "demo-graph" :TITLE "demoGraph")
@@ -18,7 +18,7 @@
  :MODE
  (:VALUE NIL :MODEL
   ((META :PORTAL.DEMO1 :MODE (:VIEW :PORTAL-NAME))
-   (META "demo-market" :MODE
+   (META "demo-sheet" :MODE
     (:VIEW :SELECT :OPTIONS
      ((:VALUE "demo-sheet" :TITLE "demoSheet")
       (:VALUE "demo-graph" :TITLE "demoGraph")
