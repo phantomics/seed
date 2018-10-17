@@ -4,8 +4,8 @@
 
 (specify-css-styles
  css-ivector-standard
- (with :palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
-			       yellow orange red magenta violet blue cyan green))
+ (with (:palette-symbols (base3 base2 base1 base0 base00 base01 base02 base03
+				yellow orange red magenta violet blue cyan green)))
  :by-palette (``((.pane (svg (.link :stroke ,base1)
 
 			     (.icon-title-frame ((:or rect circle) :fill ,base0 :!important))

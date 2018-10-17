@@ -7,5 +7,6 @@
   :serial t
   :depends-on (:seed.app-model.raster-layers.base)
   :components ((:file "package")
-               (:file "main")))
+               (:file "main")
+	       (:file "utils")))
 

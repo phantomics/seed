@@ -443,6 +443,200 @@ inclusion of aport macro here just acts as passthrough
 										,@(build-branch (rest branch))))
 							      branches)))))))))
 
+
+;; (defmacro till (&rest media)
+;;   "Manifest the possible convolutions of the input/output channels that branches may implement."
+;;   (let ((dat-sym (gensym)))
+;;   (flet ((macro-media-builder (medium)
+;; 	   (let ((name (first medium)) (args (second medium))
+;; 		 (io-by-medium `(if (eq :in io) ,(third medium)
+;; 				    ,(if (fourth medium) (fourth medium) (third medium)))))
+;; 	     (macrolet ((prepend-args (&rest arg-list)
+;; 			  `(append (quote ,(cons 'io arg-list)) args)))
+;; 	       (cons name
+;; 		     ;; this conditional must cover a wide range of argument list taxonomies
+;; 		     (cond ((and (eq 'follows (first args))
+;; 				 (position 'reagent args))
+;; 			    `(,(prepend-args &optional)
+;; 			       (declare (ignorable follows reagent))
+;; 			       `(let ((,,dat-sym (funcall (lambda (data ,@(if reagent (list 'reagent)))
+;; 							    (declare (ignorable data
+;; 										,@(if reagent (list 'reagent))))
+;; 							    ,@,io-by-medium)
+;; 							  ,,dat-sym ,@(if reagent (list reagent)))))
+;; 				  (declare (ignorable ,,dat-sym))
+;; 				  ,(if follows follows ',dat-sym))))
+;; 			   ;; reagent functions transform data; note that the 'reagent' argument is evaluated
+;; 			   ;; since it is passed to the funcall
+
+;; 			   ((and (eq 'follows (first args))
+;; 				 (eq 'source (second args)))
+;; 			    `(,(prepend-args &optional)
+;; 			       (declare (ignorable follows source))
+;; 			       `(let ((,,dat-sym (funcall (lambda (data) (declare (ignorable data))
+;; 							    ,@,io-by-medium)
+;; 						    ,,dat-sym)))
+;; 				  (declare (ignorable ,,dat-sym))
+;; 				  ,(if follows follows ',dat-sym))))
+;; 			   ;; source functions retrieve data from some source
+
+;; 			   ((eq 'follows (first args))
+;; 			    `(,(prepend-args &optional)
+;; 			       ; all arguments after follows are ignorable
+;; 			       (declare (ignorable ,@(append (list 'follows)
+;; 							     (remove '&rest (rest args)))))
+;; 			       `(let ((,,dat-sym (funcall (lambda (data) (declare (ignorable data))
+;; 			   				    ,@,io-by-medium) ,,dat-sym)))
+;; 			   	  (declare (ignorable ,,dat-sym))
+;; 			   	  ,(if follows follows ',dat-sym))))
+
+;; 			   ;; ((eq 'follows (first args))
+;; 			   ;;  `(,(prepend-args &optional)
+;; 			   ;;     (let ((dat (gensym)))
+;; 			   ;; 	 (declare (ignorable follows))
+;; 			   ;; 	 `(let ((,dat (funcall (lambda (data) (declare (ignorable data))
+;; 			   ;; 				       ,@,io-by-medium)
+;; 			   ;; 			       ,dat)))
+;; 			   ;; 	    (declare (ignorable ,dat))
+;; 			   ;; 	    ,(if follows follows dat)))))
+
+;; 			   ;; regular functions may do something to the data and are then followed by another
+;; 			   ((or (eq 'source (first args))
+;; 			   	; the source may be optional or not
+;; 			   	(and (eq '&optional (first args))
+;; 			   	     (eq 'source (second args))))
+;; 			    `(,(prepend-args unused)
+;; 			       (declare (ignorable unused source))
+;; 			       `(,@,io-by-medium)))
+;; 			   ;; terminal source functions retrieve data from some source, with nothing following
+
+;; 			   ((eq 'condition (first args))
+;; 			    `(,(prepend-args follows)
+;; 			       `(let ((,,dat-sym (if ,condition ,@(funcall ,io-by-medium options))))
+;; 				  (declare (ignorable ,,dat-sym))
+;; 				  ,(if follows follows ',dat-sym))))
+;; 			   ;; condition functions do something based on conditions
+
+;; 			   ((eq 'true-or-not (first (last args)))
+;; 			    `(,(prepend-args unused &optional)
+;; 			       (declare (ignorable unused true-or-not))
+;; 			       (funcall (if (eq :not true-or-not)
+;; 					    (lambda (body) (list 'not body))
+;; 					    (lambda (body) body))
+;; 					`(funcall (lambda (data) (declare (ignorable data))
+;; 							  (not (not ,,io-by-medium))) ,,dat-sym))))
+;; 			   ;; boolean functions return true or false based on some condition; if there is
+;; 			   ;; an argument such as hash key the true-or-not variable comes afterward
+
+;; 			   (t (list args (third medium)))))))))
+;;   `(defmacro ,(intern "SPROUT" (package-name *package*))
+;;        ;; declare this sprout macro internal to the package where the till macro is invoked
+;;        (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
+;;      ;; generate list of nested macros from linear pipeline spec
+;;      (labels ((medium-spec (direction params)
+;; 		;; perhaps medium-spec should be sublimated into a more general 
+;; 		;; template for the foundation of a branch spec
+;; 		`(lambda (input params branch sprout callback)
+;; 		   (declare (ignorable input params branch sprout))
+;; 		   ;; input to function is either the user's input, in input mode,
+;; 		   ;; or the branch image in output mode
+;; 		   (funcall callback (flet ((get-param (key) (getf params key))
+;; 					    (set-param (key value) (setf (getf params key) value)))
+;; 				       (let ((dat ,(if (eq :in (intern (string-upcase direction) "KEYWORD"))
+;; 						       'input `(branch-image branch))))
+;; 					 (declare (ignorable dat))
+;; 					 ,(media-gen direction params)))
+;; 			    params)))
+;; 	      (media-gen (direction params)
+;; 		(let* ((operation (first params))
+;; 		       (media-registry ,(list 'quote (mapcar (lambda (m) (intern (string-upcase (first m))
+;; 										 "KEYWORD"))
+;; 							     media)))
+;; 		       (is-operation-registered (member (intern (string-upcase (first operation)) "KEYWORD")
+;; 							media-registry))
+;; 		       ;; reverse the direction used for this medium if :reverse is the final param
+;; 		       (this-direction (if (eq :reverse (first (last operation)))
+;; 					   (if (eq :in direction) :out :in)
+;; 					   direction))
+;; 		       ;; if that final :reverse param is there, remove it now that its purpose is served
+;; 		       (operation (if (eq :reverse (first (last operation)))
+;; 				      (butlast operation) operation)))
+;; 		  (if operation
+;; 		      (append (if is-operation-registered
+;; 				  (list (intern (string-upcase (first operation)) "SEED.GENERATE")
+;; 					(intern (string-upcase this-direction) "KEYWORD"))
+;; 				  (list (first operation)))
+;; 			      (if is-operation-registered
+;; 				  (list (if (rest params) (media-gen direction (rest params)))))
+;; 			      (mapcar (lambda (item)
+;; 					(if (listp item)
+;; 					    (let ((is-registered-macro (member (intern (string-upcase (first item))
+;; 										       "KEYWORD")
+;; 									       media-registry)))
+;; 					      (if (loop for i in item when (listp i) collect i)
+;; 					          ;; the list is processed as a macro with media arguments
+;; 						  ;; if the head is registered as a macro, otherwise the head
+;; 						  ;; is discarded and the subsequent items are processed
+;; 						  (media-gen direction
+;; 							     (if (member (intern (string-upcase (first item))
+;; 										 "KEYWORD")
+;; 									 media-registry)
+;; 								 (list item)
+;; 								 (rest item)))
+;; 						  (if is-registered-macro
+;; 						      (media-gen direction (list item))
+;; 						      item)))
+;; 					    item))
+;; 				      (rest operation))))))
+;; 	      (build-branch (params &optional output)
+;; 		(if params
+;; 		    (let* ((item (first params))
+;; 			   (name (intern (string-upcase (first item)) "KEYWORD")))
+;; 		      (build-branch (rest params)
+;; 				    ;; TODO: the conditional may need to be expanded if other modes are implemented
+;; 				    (append output (cons name (list (cond ((or (eq :in name)
+;; 									       (eq :out name))
+;; 									   (medium-spec name (rest item)))))))))
+;; 		    output)))
+;;        ;; the media macros are specified here - their arguments form the taxonomy for the code which wraps them
+;;        `(macrolet ,(quote ,(mapcar #'macro-media-builder media))
+;;           ;; create a sprout instance with the branches set up, including the input and output media
+;; 	  (germinate contacts
+;; 		     (make-instance (quote ,(if contacts 'portal 'sprout))
+;; 				    :name ,name :system (quote ,system) :meta (quote ,meta)
+;; 				    :package (quote ,package) :formats (quote ,formats)
+;; 				    ,@(if contacts
+;; 					  (list :contacts
+;; 						`(mapcar (lambda (contact)
+;; 							   ;; TODO: the below assumes a flat structure for the
+;; 							   ;; system file storage, improve the logic
+;; 							   (if (string= "SPROUT" (string-upcase (type-of contact)))
+;; 							       ;; if the item provided is an actual sprout object,
+;; 							       ;; simply pass it through, otherwise generate
+;; 					                       ;; the sprout as defined by its system's .seed file
+;; 							       contact
+;; 							       (if (handler-case (progn (asdf:find-system ,name) t)
+;; 								     (condition () nil))
+;; 							           ;; don't load the .seed file if the contact is
+;; 							           ;; not defined as an ASDF system
+;; 								   (let ((name-string (string-downcase contact)))
+;; 								     (eval (first (load-exp-from-file
+;; 										   (intern (string-upcase
+;; 											    name-string)
+;; 											   "KEYWORD")
+;; 										   (format nil "~a.seed"
+;; 											   name-string))))))))
+;; 							 (list ,@contacts))))
+;; 				    :branches (list ,@(mapcar (lambda (branch)
+;; 								`(make-instance 'branch
+;; 										:name ,(intern (string-upcase
+;; 												(first branch))
+;; 											       "KEYWORD")
+;; 										:spec (quote ,branch)
+;; 										,@(build-branch (rest branch))))
+;; 							      branches))))))))))
+
+
 (defmacro media (&rest media)
   "Top-level wrapper for the nested media specification functions, which turns the list of media specs into arguments to the till macro. The order of the media specs is reversed so that the arguments to manifestMedia are intuitively ordered with the foundational spec first, modified by the specs coming after it."
   (cons 'till (loop for media-spec in (reverse media) 

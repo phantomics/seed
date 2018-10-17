@@ -7,6 +7,7 @@
 (defmacro foundational-browser-script-dygraphs ()
   "Generate the content for the root script source file."
   `(parenscript:ps (setf (@ window -dygraph) (require "dygraphs"))
+		   (setf (@ window -dygraph-crosshair) (require "dygraphs/src/extras/crosshair"))
 		   t))
 
 (defmacro foundational-browser-style-dygraphs ()

@@ -39,7 +39,8 @@
 							(:backdrop palette-medcontrast-dropcloth)))
 			   	       css-base css-overview css-adjunct css-column-view
 				       (css-form-view (with (:palette-contexts :holder)))
-			   	       css-text-view css-ivector-standard css-font-spec-ddin
+			   	       css-text-view ;; css-ivector-standard
+				       css-font-spec-ddin
 				       css-symbol-style-camel-case)
 			   css-animation-silicon-sky)
 		   (:foundation (:scripts foundational-browser-script-base
