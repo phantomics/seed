@@ -551,6 +551,8 @@
 		      :id (+ (@ self state data id)
 			     "-atom-" (@ datum ix))
 		      :class-name (+ "atom-inner"
+				     (if (and (@ datum mt) (@ datum mt mode) (@ datum mt mode view))
+					 " custom-interface" "")
 				     ;; (+ " mode-" (@ self state context mode))
 				     ;; (+ " row-" (@ datum ct))
 				     ;; TODO: IS THERE A BETTER WAY TO HANDLE POINTS IN LISTS VS. FORMS?
@@ -794,6 +796,8 @@
 								   this-offset)))))
 					       (pos (j-query ref))))))
 				:class-name (+ "atom"
+					       (if (and (@ datum mt) (@ datum mt mode) (@ datum mt mode view))
+						   " custom-interface" "")
 					       (+ " mode-" (@ self state context mode))
 					       (+ " row-" (@ datum ct))
 					       (if (= (@ self state point-attrs index)

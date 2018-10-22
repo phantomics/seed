@@ -76,16 +76,15 @@
 			(if (@ ent in-flux)
 			    (let* ((ratio (- (/ (- (@ start 1) (@ end 1))
 						(- (@ end 0) (@ start 0)))))
-				   (sector (if (< 0 ratio)
-					       (if (< (@ start 0) (@ end 0))
-						   4 2)
-					       (if (< (@ start 0) (@ end 0))
-						   1 3))))
-			      (cl :rr ratio sector
-				  (* 0.5 (1- sector))
-				  (- (@ end 0) (@ start 0))
-				  (- (@ start 1) (@ end 1))
-				  (/ (tan ratio) pi))
+				   (x-len (- (@ end 0) (@ start 0)))
+				   (y-len (- (@ end 1) (@ start 1)))
+				   (r2 (acos (/ x-len (sqrt (+ (expt x-len 2)
+							       (expt y-len 2)))))))
+			      ;; (cl :rr ratio sector
+			      ;; 	  (* 0.5 (1- sector))
+			      ;; 	  (- (@ end 0) (@ start 0))
+			      ;; 	  (- (@ start 1) (@ end 1))
+			      ;; 	  (/ (tan ratio) pi))
 			      (setf (@ ctx stroke-style) "black"
 				    (@ ctx fill-style) "black"
 				    (@ ctx line-width) 0.5)
@@ -102,20 +101,18 @@
 			      (chain ctx (begin-path))
 			      (chain ctx (arc (@ end 0) (@ end 1) 5 0 (* pi 2) true))
 
+			      ;; cos theta = x/sqrt(x2+y2)
+			      ;; sin theta = y/sqrt(x2+y2)
+			      
 			      ;; (chain ctx (arc (@ end 0) (@ end 1) 12 (* 0.65 pi) (* 0.8 pi) true))
 			      ;; (chain ctx (arc (@ end 0) (@ end 1) 12 (* pi (+ 0.5 (- (* ratio 0.25)
 			      ;; 							     0.1)))
 			      ;; 		      (* pi (+ 0.5 (+ (* ratio 0.25)
 			      ;; 				      0.1)))
 			      ;; 		      true))
-			      ;; (chain ctx (arc (@ end 0) (@ end 1) 12 (* pi (+ (tan ratio)
-			      ;; 						      (- (* ratio 0.25)
-			      ;; 							 0.1)))
-			      ;; 		      (* pi (+ (tan ratio)
-			      ;; 			       (+ (* ratio 0.25)
-			      ;; 				  0.1)))
-			      ;; 		      true))
-			      ;; (chain ctx (close-path))
+			      ;; (cl :rr r2 x-len y-len)
+			      ;; (chain ctx (arc (@ end 0) (@ end 1) 12 (+ (- pi) (- r2 (* pi 0.10)))
+			      ;; 		      (+ (- pi) (+ r2 (* pi 0.10))) true))
 			      (chain ctx (stroke)))))
 
 		      (setf (@ ctx stroke-style) "black"
@@ -322,11 +319,11 @@
 			       (if (/= 0 remainder)
 				   (setf (@ data-pos 0) (- (@ data-pos 0) remainder)))
 			       (setf column-value (getprop (@ self state content-index) (@ data-pos 0)))
-			       (cl :cval data-pos column-value dom-coords)
+			       ;; (cl :cval data-pos column-value dom-coords)
 			       (loop for point in (@ ent points-in-flux)
 				  do (setf (getprop ent point) (list (@ event layer-x) (@ event layer-y))
 					   time-coord (chain chart (to-dom-y-coord (@ column-value 1))))
-				    (cl :tc time-coord (getprop ent point 1))
+				    ;; (cl :tc time-coord (getprop ent point 1))
 				    (if (> 8 (abs (- time-coord (getprop ent point 1))))
 					(progn (cl "Snapped!")
 					       (setf (getprop ent point 1) time-coord))))))
@@ -350,122 +347,16 @@
 			    temp-canvas ent chart))))))
    :interact-mousewheel
    (lambda (event chart context)
-     (cl :ev event)
-     (flet ((offset-to-percentage (ch offset-x offset-y)
-	      (let* ((x-offset (@ (chain ch (to-dom-coords (@ (chain ch (x-axis-range)) 0) nil)) 0))
-		     (yar0 (chain ch (y-axis-range 0)))
-		     (y-offset (@ (chain ch (to-dom-coords nil (@ yar0 1))) 1))
-		     (x (- offset-x x-offset))
-		     (y (- offset-y y-offset))
-		     (width (- (@ (chain ch (to-dom-coords (@ (chain ch (x-axis-range)) 1) null)) 0)
-			       x-offset))
-		     (height (- (@ (chain ch (to-dom-coords null (@ yar0 0))) 1)
-				y-offset))
-		     (x-pct (if (= 0 width) 0 (/ x width)))
-		     (y-pct (if (= 0 height) 0 (/ y height))))
-		(list x-pct (- 1 y-pct))))
-	    (zoom (ch zoom-in-percentage x-bias y-bias)
-	      (flet ((adjust-axis (axis zoom-in-percentage bias)
-		       (let* ((delta (- (@ axis 1) (@ axis 0)))
-			      (increment (* delta zoom-in-percentage))
-			      (foo (list (* increment bias) (* increment (- bias 1)))))
-			 (list (+ (@ axis 0) (@ foo 0))
-			       (- (@ axis 1) (@ foo 1))))))
-		(let ((x-bias (if x-bias x-bias 0.5))
-		      (y-bias (if y-bias y-bias 0.5))
-		      (y-axes (chain ch (y-axis-ranges)))
-		      (new-y-axes (list)))
-		  (loop for i from 0 to (1- (@ y-axes length))
-		     do (setf (getprop new-y-axes i)
-			      (adjust-axis (getprop y-axes i) zoom-in-percentage y-bias))
-		       (cl (chain ch (x-axis-range)))
-		       (chain ch (update-options (create date-window (adjust-axis (chain ch (x-axis-range))
-										  zoom-in-percentage x-bias)
-							 ;; value-range (@ new-y-axes 0)
-							 ))))))))
-     (let* ((normal (if (@ event detail) (* -1 (@ event detail))
-			(* 2 (@ event delta-y))))
-	    (percentage (/ normal 50)))
-       (if (not (and (@ event offset-x) (@ event offset-y)))
-	   (setf (@ event offset-x) (- (@ event layer-x) (@ event target offset-left))
-		 (@ event offset-y) (- (@ event layer-y) (@ event target offset-top))))
-       (let ((percentages (offset-to-percentage chart (@ event offset-x) (@ event offset-y))))
-	 (chain event (prevent-default))
-	 (chain event (stop-propagation))
-	 (zoom chart percentage (@ percentages 0) 0)
-	 (cl :percent percentages)))))
-   ;; function zoom(g, zoomInPercentage, xBias, yBias) {
-   ;; xBias = xBias || 0.5;
-   ;; yBias = yBias || 0.5;
-   ;; function adjustAxis(axis, zoomInPercentage, bias) {
-   ;; var delta = axis[1] - axis[0];
-   ;; var increment = delta * zoomInPercentage;
-   ;; var foo = [increment * bias, increment * (1-bias)];
-   ;; return [ axis[0] + foo[0], axis[1] - foo[1] ];
-   ;; }
-   ;; var yAxes = g.yAxisRanges();
-   ;; var newYAxes = [];
-   ;; for (var i = 0; i < yAxes.length; i++) {
-   ;; 	    newYAxes[i] = adjustAxis(yAxes[i], zoomInPercentage, yBias);
-   ;; 	    }
-   ;; 	    g.updateOptions({
-   ;; 			    dateWindow: adjustAxis(g.xAxisRange(), zoomInPercentage, xBias),
-   ;; 			    valueRange: newYAxes[0]
-   ;; 			    });
-   ;;          }
-   ;; function offsetToPercentage(g, offsetX, offsetY) {
-   ;; // This is calculating the pixel offset of the leftmost date.
-   ;; var xOffset = g.toDomCoords(g.xAxisRange()[0], null)[0];
-   ;; var yar0 = g.yAxisRange(0);
-
-   ;; // This is calculating the pixel of the higest value. (Top pixel)
-   ;; var yOffset = g.toDomCoords(null, yar0[1])[1];
-
-   ;; // x y w and h are relative to the corner of the drawing area,
-   ;; // so that the upper corner of the drawing area is (0, 0).
-   ;; var x = offsetX - xOffset;
-   ;; var y = offsetY - yOffset;
-
-   ;; // This is computing the rightmost pixel, effectively defining the
-   ;; // width.
-   ;; var w = g.toDomCoords(g.xAxisRange()[1], null)[0] - xOffset;
-
-   ;; // This is computing the lowest pixel, effectively defining the height.
-   ;; var h = g.toDomCoords(null, yar0[0])[1] - yOffset;
-
-   ;; // Percentage from the left.
-   ;; var xPct = w == 0 ? 0 : (x / w);
-   ;; // Percentage from the top.
-   ;; var yPct = h == 0 ? 0 : (y / h);
-
-   ;; // The (1-) part below changes it from "% distance down from the top"
-   ;; // to "% distance up from the bottom".
-   ;; return [xPct, (1-yPct)];
-   ;; }
-
-
-   ;; function scrollV3(event, g, context) {
-   ;; var today = new Date();
-   ;; milliseconds = today.getMilliseconds();
-
-   ;; var normal = event.detail ? event.detail * -1 : event.deltaY * 2;
-   ;; // For me the normalized value shows 0.075 for one click. If I took
-   ;; // that verbatim, it would be a 7.5%.
-   ;; var percentage = normal / 50;
-
-   ;; if (!(event.offsetX && event.offsetY)){
-   ;; event.offsetX = event.layerX - event.target.offsetLeft;
-   ;; event.offsetY = event.layerY - event.target.offsetTop;
-   ;; }
-
-   ;; var percentages = offsetToPercentage(g, event.offsetX, event.offsetY);
-   ;; var xPct = percentages[0];
-   ;; var yPct = percentages[1];
-
-   ;; zoom(g, percentage, xPct, yPct);
-   ;; event.preventDefault();
-   ;; event.stopPropagation();
-   ;; }   
+     ;; (cl :ev event)
+     (let* ((time-range (chain chart (x-axis-range)))
+	    (time-interval (- (@ time-range 1) (@ time-range 0)))
+	    (zoom-interval (* 0.05 time-interval))
+	    (wheel-delta (if (< 0 (@ event delta-y)) 1 -1)))
+       (chain chart (update-options (create date-window (list (if (= 1 wheel-delta)
+								  (- (@ time-range 0) zoom-interval)
+								  (+ (@ time-range 0) zoom-interval))
+							      (@ time-range 1))
+					    value-range (chain chart (y-axis-range)))))))
    :candle-plotter
    (lambda (e)
      (if (/= 0 (@ e series-index))
@@ -601,3 +492,121 @@
 		     				  (setf (@ self container-element)
 		     					ref)))
 		     	   :id (+ "dygraph-chart-" (@ this props data id))))))))
+
+
+     ;; (flet ((offset-to-percentage (ch offset-x offset-y)
+     ;; 	      (let* ((x-offset (@ (chain ch (to-dom-coords (@ (chain ch (x-axis-range)) 0) nil)) 0))
+     ;; 		     (yar0 (chain ch (y-axis-range 0)))
+     ;; 		     (y-offset (@ (chain ch (to-dom-coords nil (@ yar0 1))) 1))
+     ;; 		     (x (- offset-x x-offset))
+     ;; 		     (y (- offset-y y-offset))
+     ;; 		     (width (- (@ (chain ch (to-dom-coords (@ (chain ch (x-axis-range)) 1) null)) 0)
+     ;; 			       x-offset))
+     ;; 		     (height (- (@ (chain ch (to-dom-coords null (@ yar0 0))) 1)
+     ;; 				y-offset))
+     ;; 		     (x-pct (if (= 0 width) 0 (/ x width)))
+     ;; 		     (y-pct (if (= 0 height) 0 (/ y height))))
+     ;; 		(list x-pct (- 1 y-pct))))
+     ;; 	    (zoom (ch zoom-in-percentage x-bias y-bias)
+     ;; 	      (flet ((adjust-axis (axis zoom-in-percentage bias)
+     ;; 		       (let* ((delta (- (@ axis 1) (@ axis 0)))
+     ;; 			      (increment (* delta zoom-in-percentage))
+     ;; 			      (foo (list (* increment bias) (* increment (- bias 1)))))
+     ;; 			 (list (+ (@ axis 0) (@ foo 0))
+     ;; 			       (- (@ axis 1) (@ foo 1))))))
+     ;; 		(let ((x-bias (if x-bias x-bias 0.5))
+     ;; 		      (y-bias (if y-bias y-bias 0.5))
+     ;; 		      (y-axes (chain ch (y-axis-ranges)))
+     ;; 		      (new-y-axes (list)))
+     ;; 		  (loop for i from 0 to (1- (@ y-axes length))
+     ;; 		     do (setf (getprop new-y-axes i)
+     ;; 			      (adjust-axis (getprop y-axes i) zoom-in-percentage y-bias))
+     ;; 		       (cl (chain ch (x-axis-range)))
+     ;; 		       (chain ch (update-options (create date-window (adjust-axis (chain ch (x-axis-range))
+     ;; 										  zoom-in-percentage x-bias)
+     ;; 							 ;; value-range (@ new-y-axes 0)
+     ;; 							 ))))))))
+     ;; (let* ((normal (if (@ event detail) (* -1 (@ event detail))
+     ;; 			(* 2 (@ event delta-y))))
+     ;; 	    (percentage (/ normal 50)))
+     ;;   (if (not (and (@ event offset-x) (@ event offset-y)))
+     ;; 	   (setf (@ event offset-x) (- (@ event layer-x) (@ event target offset-left))
+;; 		 (@ event offset-y) (- (@ event layer-y) (@ event target offset-top))))
+;;   (let ((percentages (offset-to-percentage chart (@ event offset-x) (@ event offset-y))))
+;; 	 (chain event (prevent-default))
+;; 	 (chain event (stop-propagation))
+;; 	 (zoom chart percentage (@ percentages 0) 0)
+;; 	 (cl :percent percentages))))
+
+;; function zoom(g, zoomInPercentage, xBias, yBias) {
+;; xBias = xBias || 0.5;
+;; yBias = yBias || 0.5;
+;; function adjustAxis(axis, zoomInPercentage, bias) {
+   ;; var delta = axis[1] - axis[0];
+   ;; var increment = delta * zoomInPercentage;
+   ;; var foo = [increment * bias, increment * (1-bias)];
+   ;; return [ axis[0] + foo[0], axis[1] - foo[1] ];
+   ;; }
+   ;; var yAxes = g.yAxisRanges();
+   ;; var newYAxes = [];
+   ;; for (var i = 0; i < yAxes.length; i++) {
+   ;; 	    newYAxes[i] = adjustAxis(yAxes[i], zoomInPercentage, yBias);
+   ;; 	    }
+   ;; 	    g.updateOptions({
+   ;; 			    dateWindow: adjustAxis(g.xAxisRange(), zoomInPercentage, xBias),
+   ;; 			    valueRange: newYAxes[0]
+   ;; 			    });
+   ;;          }
+   ;; function offsetToPercentage(g, offsetX, offsetY) {
+   ;; // This is calculating the pixel offset of the leftmost date.
+   ;; var xOffset = g.toDomCoords(g.xAxisRange()[0], null)[0];
+   ;; var yar0 = g.yAxisRange(0);
+
+   ;; // This is calculating the pixel of the higest value. (Top pixel)
+   ;; var yOffset = g.toDomCoords(null, yar0[1])[1];
+
+   ;; // x y w and h are relative to the corner of the drawing area,
+   ;; // so that the upper corner of the drawing area is (0, 0).
+   ;; var x = offsetX - xOffset;
+   ;; var y = offsetY - yOffset;
+
+   ;; // This is computing the rightmost pixel, effectively defining the
+   ;; // width.
+   ;; var w = g.toDomCoords(g.xAxisRange()[1], null)[0] - xOffset;
+
+   ;; // This is computing the lowest pixel, effectively defining the height.
+   ;; var h = g.toDomCoords(null, yar0[0])[1] - yOffset;
+
+   ;; // Percentage from the left.
+   ;; var xPct = w == 0 ? 0 : (x / w);
+   ;; // Percentage from the top.
+   ;; var yPct = h == 0 ? 0 : (y / h);
+
+   ;; // The (1-) part below changes it from "% distance down from the top"
+   ;; // to "% distance up from the bottom".
+   ;; return [xPct, (1-yPct)];
+   ;; }
+
+
+   ;; function scrollV3(event, g, context) {
+   ;; var today = new Date();
+   ;; milliseconds = today.getMilliseconds();
+
+   ;; var normal = event.detail ? event.detail * -1 : event.deltaY * 2;
+   ;; // For me the normalized value shows 0.075 for one click. If I took
+   ;; // that verbatim, it would be a 7.5%.
+   ;; var percentage = normal / 50;
+
+   ;; if (!(event.offsetX && event.offsetY)){
+   ;; event.offsetX = event.layerX - event.target.offsetLeft;
+   ;; event.offsetY = event.layerY - event.target.offsetTop;
+   ;; }
+
+   ;; var percentages = offsetToPercentage(g, event.offsetX, event.offsetY);
+   ;; var xPct = percentages[0];
+   ;; var yPct = percentages[1];
+
+   ;; zoom(g, percentage, xPct, yPct);
+   ;; event.preventDefault();
+   ;; event.stopPropagation();
+   ;; }   

@@ -353,21 +353,32 @@
 	 (content (@ self state data content)))
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "textfield-holder"
-			   (:input :class-name "textfield"
-				   :value (@ content vl)
-				   :on-change (lambda (event)
-						(extend-state :deep data
-							      (create content (create vl (@ event target value))))
-						(chain self props context methods
-						       (set-delta (create vl (@ event target value)))))
-				   :on-focus (lambda (event)
-					       (if (/= "set" (@ self state context mode))
-						   (chain self state context methods (set-mode "set"))))
-				   :on-blur (lambda (event)
-				   	      (chain self state context methods (set-mode "move"))
-				   	      ;; (chain self (designate (@ self state space)))
-					      (chain self state context methods (grow)))))))))
- 
+			   (:div :class-name "input-group"
+				 (:div :class-name "input-wrapper"
+				       (:input :class-name "textfield"
+					       :value (@ content vl)
+					       :on-change (lambda (event)
+							    (extend-state
+							     :deep data
+							     (create content
+								     (create vl (@ event target value))))
+							    (chain self props context methods
+								   (set-delta (create vl (@ event target value)))))
+					       :on-focus (lambda (event)
+							   (if (/= "set" (@ self state context mode))
+							       (chain self state context methods
+								      (set-mode "set"))))
+					       :on-blur (lambda (event)
+							  (chain self state context methods (set-mode "move"))
+							  ;; (chain self (designate (@ self state space)))
+							  (chain self state context methods (grow)))))
+				 (if (and (@ self props data content pr)
+					  (@ self props data content pr meta)
+					  (@ self props data content pr meta mode)
+					  (@ self props data content pr meta mode title))
+				     (panic:jsl (:span :class-name "input-group-addon"
+						       (@ self props data content pr meta mode title))))))))))
+  
  ;; (textfield
  ;;  (:get-initial-state
  ;;   (lambda () (chain this (initialize (@ this props))))
@@ -475,8 +486,8 @@
   (let* ((self this)
 	 (handle (chain self props (connect-drag-source (panic:jsl (:div :class-name "handle")))))
 	 (this-mode (@ self state data data mt mode))
-	 (content (panic:jsl (:div (:div :class-name (+ "item-interface-holder" (if (@ this-mode toggle)
-										    " with-toggle" ""))
+	 (content (panic:jsl (:div (:div :class-name (+ "item-interface-holder element palette-adjunct"
+							(if (@ this-mode toggle) " with-toggle" ""))
 					 (if (@ this-mode toggle)
 					     (panic:jsl (:div :class-name "btn-group toggle"
 							      (:button :on-click
@@ -487,7 +498,8 @@
 									 (chain self state context methods
 										(grow)))
 								       (if (= "__on" (@ this-mode toggle))
-									   "On" "Off")))))
+									   "On" "Off")
+								       (:div :class-name "button-detail")))))
 					 ((@ -react-bootstrap -panel)
 					  (:div :class-name "panel-heading"
 						handle
@@ -521,7 +533,7 @@
    :component-will-receive-props
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
   (let ((self this))
-    (panic:jsl (:div :class-name "list-interface-holder"
+    (panic:jsl (:div :class-name "list-interface-holder element palette-adjunct"
 		     ((@ -react-bootstrap -panel)
 		      (:div :class-name "panel-heading"
 			    (:-select :name "form-select"

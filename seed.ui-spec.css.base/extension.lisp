@@ -7,6 +7,7 @@
 (export 'css-adjunct)
 (export 'css-column-view)
 (export 'css-form-view)
+(export 'css-form-view-interface-elements)
 (export 'css-text-view)
 (export 'css-font-spec-ddin)
 (export 'css-symbol-style-dash-separated)

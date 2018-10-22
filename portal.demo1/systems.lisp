@@ -1,12 +1,12 @@
 (META
  ((META :PORTAL.DEMO1 :MODE (:VIEW :PORTAL-NAME))
-  (META "demo-market" :MODE
-   (:VIEW :SELECT :OPTIONS
-    ((:VALUE "demo-sheet" :TITLE "demoSheet")
-     (:VALUE "demo-graph" :TITLE "demoGraph")
-     (:VALUE "demo-image" :TITLE "demoImage")
-     (:VALUE "demo-drawing" :TITLE "demoDrawing")
-     (:VALUE "demo-market" :TITLE "demoMarket"))))
+  (META "demo-sheet" :MODE
+        (:VIEW :SELECT :OPTIONS
+         ((:VALUE "demo-sheet" :TITLE "demoSheet")
+          (:VALUE "demo-graph" :TITLE "demoGraph")
+          (:VALUE "demo-image" :TITLE "demoImage")
+          (:VALUE "demo-drawing" :TITLE "demoDrawing")
+          (:VALUE "demo-market" :TITLE "demoMarket"))))
   (META
    ((META :MAIN :MODE (:TARGET :MAIN :VIEW :BRANCH-SELECTOR))
     (META :IMAGE :MODE (:TARGET :IMAGE :VIEW :BRANCH-SELECTOR)))
@@ -18,13 +18,13 @@
  :MODE
  (:VALUE NIL :MODEL
   ((META :PORTAL.DEMO1 :MODE (:VIEW :PORTAL-NAME))
-   (META "demo-market" :MODE
-    (:VIEW :SELECT :OPTIONS
-     ((:VALUE "demo-sheet" :TITLE "demoSheet")
-      (:VALUE "demo-graph" :TITLE "demoGraph")
-      (:VALUE "demo-image" :TITLE "demoImage")
-      (:VALUE "demo-drawing" :TITLE "demoDrawing")
-      (:VALUE "demo-market" :TITLE "demoMarket"))))
+   (META "demo-sheet" :MODE
+         (:VIEW :SELECT :OPTIONS
+          ((:VALUE "demo-sheet" :TITLE "demoSheet")
+           (:VALUE "demo-graph" :TITLE "demoGraph")
+           (:VALUE "demo-image" :TITLE "demoImage")
+           (:VALUE "demo-drawing" :TITLE "demoDrawing")
+           (:VALUE "demo-market" :TITLE "demoMarket"))))
    (META
     ((META :MAIN :MODE (:TARGET :MAIN :VIEW :BRANCH-SELECTOR))
      (META :IMAGE :MODE (:TARGET :IMAGE :VIEW :BRANCH-SELECTOR)))
