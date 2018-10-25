@@ -51,11 +51,34 @@
 		     active-entity nil
 		     entities-in-flux (list)
 		     entities (list))
-   #|
+#|
    Entities list exists in ephemera. When a save event happens, the static list is overwritten with it.
 |#
+   :modulate-methods
+   (lambda (methods)
+     (let* ((self this)
+	    (to-grow (if (@ self props context parent-system)
+	   		 (chain methods (in-context-grow (@ self props context parent-system)))
+	   		 (@ methods grow))))
+       (chain j-query
+   	      (extend methods
+   		      (create ;; grow
+		       ;; (lambda (data meta alternate-branch)
+		       ;; 	 (to-grow (if (= "undefined" (typeof alternate-branch))
+		       ;; 		      (@ self state data id)
+		       ;; 		      alternate-branch)
+		       ;; 	  	   ;; TODO: it may be desirable to add certain metadata to
+		       ;; 	  	   ;; the meta for each grow request, that's what the
+		       ;; 	  	   ;; derive-metadata function below may later be used for
+		       ;; 	  	   space meta)))
+		       grow-adding-entity
+		       (lambda (entity meta callback)
+			 (to-grow (@ self state data id)
+				  entity meta)))))))
    :commit-entities
-   (lambda () (chain self (set-state (create entities (@ self ephemera entities)))))
+   (lambda ()
+     (chain self state context methods (grow-adding-entity (@ self ephemera entities) (create save true)))
+     (chain self (set-state (create entities (@ self ephemera entities)))))
    :entity-methods
    (let ((draw-line (lambda (ctx ent chart)
 		      (if (@ ent in-flux)

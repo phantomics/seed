@@ -451,7 +451,9 @@
 				       (subcomponent (@ view-modes dygraph-chart-view)
 						     branch :context (index 0
 									    set-interaction
-									    this-set-interaction)))
+									    this-set-interaction
+									    parent-system
+									    (@ self props context working-system))))
 				      ((and (= (@ branch type 0) "graphic")
 					    (= (@ branch type 1) "bitmap"))
 				       (subcomponent (@ view-modes bitmap-display)

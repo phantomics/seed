@@ -288,7 +288,7 @@ field")
              (:DATA-COM (0) :TYPE :NUMBER) NIL NIL NIL NIL NIL NIL NIL NIL
              NIL)))
 (IN-TABLE MAIN-TABLE
-  (CELL "a2" 35)
+  (CELL "a2" 32)
   (CELL "g9" (/ 6 2))
   (CELL "c1" (+ 8 (META 3 :COMMENT "This is a test comment.") 5))
   (CELL "g5" 13)

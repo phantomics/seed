@@ -8,7 +8,7 @@
        (:form modes-form-base)
        (:meta modes-meta-common))
 
-(media media-spec-base media-spec-graph-garden-path)
+(media media-spec-base media-spec-chart-base media-spec-graph-garden-path)
 
 (glyphs glyphs-base)
 
@@ -16,8 +16,7 @@
 
 (browser-interface (:markup (html-index-header "Seed: Demo Portal")
 			    (html-index-body))
-		   (:script (key-ui keystroke-maps
-				    key-ui-base
+		   (:script (key-ui keystroke-maps key-ui-base
 				    key-ui-map-apl-meta-specialized)
 			    (react-ui (with (:url "portal")
 					    (:component :-portal)

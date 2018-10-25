@@ -1,20 +1,37 @@
 (IN-PACKAGE #:DEMO-MARKET)
-;; (META
-;;  5
-;;  :MODE
-;;  (:MODEL
-;;   ((META
-;;     (((META "First Post" :MODE
-;; 	    (:VIEW :TEXTFIELD :VALUE "First Post"))))
-;;     :MODE
-;;     (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T :FORMAT-PROPERTIES
-;;      (:TYPE :LOAD) :MODEL
-;;      (((META "First Post" :MODE
-;; 	     (:VIEW :TEXTFIELD :VALUE "First Post"))))
-;;      :VALUE NIL)))
-;;   :VIEW :LIST :FILL-BY :SELECT :REMOVABLE NIL :OPTIONS
-;;   ((:TITLE "New Blog Post" :VALUE
-;;     (META (((META "" :MODE (:VIEW :TEXTFIELD :VALUE "" :TITLE "Post Title")))) :MODE
-;;      (:VIEW :ITEM :TITLE "Post" :REMOVABLE T :FORMAT-PROPERTIES
-;;       (:TYPE :OUTPUT)))))
-;;   :FORMAT :BLOG-POST-LIST-EXPAND :VALUE NIL))
+(DEFVAR CHART-ENTITIES)
+(META
+ (SETQ CHART-ENTITIES
+         (LIST
+          (LIST :TYPE "line" :START (LIST 1087455600 1.5) :END
+                (LIST 1087650000 1.48))))
+ :MODE
+ (:VALUE NIL :FORMAT :CHART-ENTITIES-EXPAND :OPTIONS
+  ((:VALUE
+    (META
+     ((META "" :MODE (:VALUE "" :VIEW :TEXTFIELD :TITLE "Start Time"))
+      (META "" :MODE (:VALUE "" :VIEW :TEXTFIELD :TITLE "Start Price"))
+      (META "" :MODE (:VALUE "" :VIEW :TEXTFIELD :TITLE "End Time"))
+      (META "" :MODE (:VALUE "" :VIEW :TEXTFIELD :TITLE "End Price")))
+     :MODE
+     (:VIEW :ITEM :TITLE "Line" :REMOVABLE T :OPEN T :FORMAT-PROPERTIES
+      (:TYPE :LOAD)))
+    :TITLE "Line"))
+  :REMOVABLE NIL :FILL-BY :SELECT :VIEW :LIST :MODEL
+  ((META
+    ((META "1087455600" :MODE
+      (:VALUE "1087455600" :VIEW :TEXTFIELD :TITLE "Start Time"))
+     (META "1.50" :MODE (:VALUE "1.52" :VIEW :TEXTFIELD :TITLE "Start Price"))
+     (META "1087650000" :MODE
+      (:VALUE "1087650000" :VIEW :TEXTFIELD :TITLE "End Time"))
+     (META "1.48" :MODE (:VALUE "1.48" :VIEW :TEXTFIELD :TITLE "End Price")))
+    :MODE
+    (:VALUE NIL :MODEL
+     ((META "1087455600" :MODE
+       (:VALUE "1087455600" :VIEW :TEXTFIELD :TITLE "Start Time"))
+      (META "1.50" :MODE (:VALUE "1.52" :VIEW :TEXTFIELD :TITLE "Start Price"))
+      (META "1087650000" :MODE
+       (:VALUE "1087650000" :VIEW :TEXTFIELD :TITLE "End Time"))
+      (META "1.48" :MODE (:VALUE "1.48" :VIEW :TEXTFIELD :TITLE "End Price")))
+     :FORMAT-PROPERTIES (:TYPE :LINE) :TOGGLE :ON :REMOVABLE T :OPEN T :TITLE
+     "Line" :VIEW :ITEM)))))

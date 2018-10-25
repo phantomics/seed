@@ -7,6 +7,6 @@
   :serial t
   :depends-on (:local-time :cl-date-time-parser)
   :components ((:file "package")
-	       (:file "utils")
-               (:file "main")))
+	       (:file "main")
+               (:file "utils")))
 
