@@ -6,7 +6,7 @@
 	#:seed.express.glyphs.base #:seed.ui-model.stage
         #:seed.ui-model.keys #:seed.ui-model.html
 	#:seed.ui-model.css #:seed.ui-model.react
-	#:seed.ui-spec.html.base #:seed.ui-spec.color.base #:seed.ui-spec.react.base
+	#:seed.ui-spec.html.base #:seed.ui-spec.color.base ;; #:seed.ui-spec.react.base
 	#:seed.ui-spec.keys.base #:seed.ui-spec.keys.map-apl
 	#:seed.ui-spec.stage.base #:seed.ui-spec.stage-menu.base
 	#:seed.ui-spec.html-css.glyph-set-mdi

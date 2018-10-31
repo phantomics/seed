@@ -9,6 +9,7 @@
 (export 'css-form-view)
 (export 'css-form-view-interface-elements)
 (export 'css-text-view)
+(export 'css-glyph-display)
 (export 'css-font-spec-ddin)
 (export 'css-symbol-style-dash-separated)
 (export 'css-symbol-style-underscore-separated)

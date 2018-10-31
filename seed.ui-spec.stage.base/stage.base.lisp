@@ -18,12 +18,17 @@
 		 ,@(if branch-specs
 		       `((meta ,(of-sprout-meta ,portal :active-system)
 			       :mode (:options ,(mapcar (lambda (system-name)
-							`(:title ,(lisp->camel-case system-name)
-								 :value ,(string-downcase system-name)))
-						      (get-portal-contacts ,portal))
+							  `(:title ,(lisp->camel-case system-name)
+								   :value ,(string-downcase system-name)))
+							(get-portal-contacts ,portal))
 					     :view :select))))
 		 ,@(if branch-specs `((meta ,(funcall ,(macroexpand sub-nav)
-						      branch-specs)
+						      (loop for item in
+							   (rest (assoc :primary
+									(rest (first (find-form-in-spec
+										      'display-params
+										      (first branch-specs))))))
+							   append item))
 					    :mode (:view :system-branch-list :index 0 :sets (2))
 					    :each (:mode (:interaction :select-branch))))))
 		:mode (:view :vista :breadth :short :layout :column :name :portal-specs
@@ -99,9 +104,6 @@
 (defmacro simple-sub-navigation-layout (&key (omit nil))
   "List items for use as menu options for a nav menu displaying the visible branches within a Seed system."
   `(lambda (branch-specs)
-     (loop for branch in branch-specs append (let ((branch-name (intern (string-upcase (first branch)) "KEYWORD")))
-					       (if (not (find branch-name (list ,@omit)))
-						   (list `(meta ,branch-name
-								:mode (:view :branch-selector
-									   :target ,branch-name))))))))
+     (loop for branch in branch-specs collect `(meta ,branch :mode (:view :branch-selector
+									  :target ,branch)))))
 

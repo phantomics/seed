@@ -6,6 +6,6 @@
   :license "GPL-3.0"
   :serial t
   :depends-on (#:parenscript #:panic)
-  :components ((:file "package")
+  :components ((:file "extension")
                (:file "react.base")))
 

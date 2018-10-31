@@ -128,6 +128,7 @@
 					 (chain self props context methods
 						(set-branch-by-id (@ datum vl))))
 				 trigger-primary (lambda (self datum)
+						   (cl :tr)
 						   (chain self props context methods
 							  (set-branch-by-id (@ datum vl))))
 				 trigger-secondary (lambda (self datum)
@@ -166,6 +167,20 @@
 						      (setf (getprop target-parent target-index)
 							    (@ datum mt format)))))
 				(chain branch state context methods (grow new-space))))))
+   :interact
+   (lambda (datum alternative)
+     (let ((self this))
+       (if (and datum (@ datum pr) (@ datum pr meta)
+		(@ datum pr meta mode) (@ datum pr meta mode interaction)
+		(not (= "undefined" (typeof (getprop (@ self interactions)
+						     (chain datum pr meta mode interaction (substr 2))))))
+		(not (= "undefined" (typeof (getprop (@ self interactions)
+						     (chain datum pr meta mode interaction (substr 2))
+						     "triggerPrimary")))))
+	   (funcall (getprop (@ self interactions) (chain datum pr meta mode interaction (substr 2))
+			     "triggerPrimary")
+		    self datum)
+	   (funcall alternative))))
    :set-focus
    (lambda (key value)
      (let* ((self this)
@@ -1047,13 +1062,15 @@
        (trigger-secondary
 	(if (or (= "undefined" (typeof (@ next-props data meta)))
 		(not (= true (@ next-props data meta locked))))
-	    (progn (chain self (set-state (create action-registered nil)))
-		   (chain self state context methods (set-mode "set")))))
+	    (chain self (interact (@ self state point-data)
+				  (lambda () (chain self (set-state (create action-registered nil)))
+					  (chain self state context methods (set-mode "set")))))))
        (trigger-primary
 	(cond ((= "move" (@ self state context mode))
 	       (if (or (= "undefined" (typeof (@ next-props data meta)))
 		       (not (= true (@ next-props data meta locked))))
-		   (chain self state context methods (set-mode "set"))))
+		   (chain self (interact (@ self state point-data)
+					 (lambda () (chain self state context methods (set-mode "set")))))))
 	      ((= "set" (@ self state context mode))
 	       (chain self (set-state (create action-registered nil)))
 	       (chain self state context methods (grow (@ self state point-attrs delta)))

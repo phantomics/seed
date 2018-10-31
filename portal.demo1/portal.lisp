@@ -40,7 +40,7 @@
 				       (css-form-view (with (:palette-contexts :holder)))
 				       (css-form-view-interface-elements (with (:palette-contexts :element)))
 			   	       css-text-view css-ivector-standard css-font-spec-ddin
-				       css-symbol-style-camel-case)
+				       css-glyph-display css-symbol-style-camel-case)
 			   css-animation-silicon-sky)
 		   (:foundation (:scripts foundational-browser-script-base
 					  foundational-browser-script-dygraphs)

@@ -377,7 +377,9 @@
 					  (@ self props data content pr meta mode)
 					  (@ self props data content pr meta mode title))
 				     (panic:jsl (:span :class-name "input-group-addon"
-						       (@ self props data content pr meta mode title))))))))))
+						       (:span :class-name "label-holder"
+							      (@ self props data content
+								      pr meta mode title)))))))))))
   
  ;; (textfield
  ;;  (:get-initial-state
@@ -481,6 +483,32 @@
    (lambda (props) (funcall inherit this props
 			    (lambda (d) (@ d data))
 			    (lambda (pd) nil)))
+   :permute
+   (lambda (input)
+     (if (and (@ window -drag-source)
+	      (@ window -drop-target))
+	 (let* ((over-data nil)
+		(collect-source (lambda (connect monitor)
+				  (create connect-drag-source (chain connect (drag-source))
+					  connect-drag-preview (chain connect (drag-preview))
+					  is-dragging (chain monitor (is-dragging)))))
+		(collect-target (lambda (connect) (create connect-drop-target (chain connect (drop-target)))))
+		(item-source (create begin-drag (lambda (props) (create id (@ props data data ix)
+									ly (@ props data data ly)
+									ct (@ props data data ct)
+									original-index (@ props data data ct)))
+				     end-drag (lambda (props monitor component)
+						(if (chain monitor (did-drop))
+						    (let ((item (chain monitor (get-item)))
+							  (drop-result (chain monitor (get-drop-result))))
+						      (chain props context methods (sort (list (@ item ly)
+											       (@ item ct))
+											 over-data)))))))
+		(item-target (create can-drop (lambda (props) t)
+				     hover (lambda (props monitor) (setq over-data (@ props data data))))))
+	   (funcall (chain window (-drop-target "item" item-target collect-target))
+		    (funcall (chain window (-drag-source "item" item-source collect-source))
+			     input)))))
    :component-will-receive-props
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
   (let* ((self this)

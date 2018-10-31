@@ -13,6 +13,9 @@
    :component-will-receive-props
    (lambda (next-props) (chain this (set-state (create content-string (@ next-props data))))))
   (panic:jsl (:div :class-name "element-view"
+		   (seed-icon :face)
+		   (:div :style (create font-size "400%")
+			 (seed-icon :chart-editor))
 		   (:div :class-name "html-display"
 			 :dangerously-set-inner-h-t-m-l
 			 (create __html (@ this state content-string))))))

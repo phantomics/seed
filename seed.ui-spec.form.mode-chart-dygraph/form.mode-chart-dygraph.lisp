@@ -62,19 +62,10 @@
 	   		 (@ methods grow))))
        (chain j-query
    	      (extend methods
-   		      (create ;; grow
-		       ;; (lambda (data meta alternate-branch)
-		       ;; 	 (to-grow (if (= "undefined" (typeof alternate-branch))
-		       ;; 		      (@ self state data id)
-		       ;; 		      alternate-branch)
-		       ;; 	  	   ;; TODO: it may be desirable to add certain metadata to
-		       ;; 	  	   ;; the meta for each grow request, that's what the
-		       ;; 	  	   ;; derive-metadata function below may later be used for
-		       ;; 	  	   space meta)))
-		       grow-adding-entity
-		       (lambda (entity meta callback)
-			 (to-grow (@ self state data id)
-				  entity meta)))))))
+   		      (create grow-adding-entity
+			      (lambda (entity meta callback)
+				(to-grow (@ self state data id)
+					 entity meta)))))))
    :commit-entities
    (lambda ()
      (chain self state context methods (grow-adding-entity (@ self ephemera entities) (create save true)))
@@ -371,15 +362,25 @@
    :interact-mousewheel
    (lambda (event chart context)
      ;; (cl :ev event)
-     (let* ((time-range (chain chart (x-axis-range)))
-	    (time-interval (- (@ time-range 1) (@ time-range 0)))
-	    (zoom-interval (* 0.05 time-interval))
-	    (wheel-delta (if (< 0 (@ event delta-y)) 1 -1)))
-       (chain chart (update-options (create date-window (list (if (= 1 wheel-delta)
-								  (- (@ time-range 0) zoom-interval)
-								  (+ (@ time-range 0) zoom-interval))
-							      (@ time-range 1))
-					    value-range (chain chart (y-axis-range)))))))
+     (if (@ event shift-key)
+	 (let* ((price-range (chain chart (y-axis-range)))
+		(price-interval (- (@ price-range 0) (@ price-range 1)))
+		(zoom-interval (* 0.05 price-interval))
+		(wheel-delta (if (< 0 (@ event delta-y)) 1 -1)))
+	   (chain chart (update-options (create date-window (chain chart (x-axis-range))
+						value-range (list (if (= 1 wheel-delta)
+								      (- (@ price-range 0) zoom-interval)
+								      (+ (@ price-range 0) zoom-interval))
+								  (@ price-range 1))))))
+	 (let* ((time-range (chain chart (x-axis-range)))
+		(time-interval (- (@ time-range 1) (@ time-range 0)))
+		(zoom-interval (* 0.05 time-interval))
+		(wheel-delta (if (< 0 (@ event delta-y)) 1 -1)))
+	   (chain chart (update-options (create date-window (list (if (= 1 wheel-delta)
+								      (- (@ time-range 0) zoom-interval)
+								      (+ (@ time-range 0) zoom-interval))
+								  (@ time-range 1))
+						value-range (chain chart (y-axis-range))))))))
    :candle-plotter
    (lambda (e)
      (if (/= 0 (@ e series-index))

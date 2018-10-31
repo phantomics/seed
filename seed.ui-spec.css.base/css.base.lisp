@@ -160,7 +160,8 @@
     src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Italic.woff2') format('woff2');
     src: url('./style-assets/d-din-complete-v1.0/D-DINExp-Italic.ttf') format('truetype');
     font-weight: normal;
-    font-style: italic;}"
+    font-style: italic;}
+"
      (body :font-family "'DDIN', Fallback, sans-serif"))))
 
 (specify-css-styles 
@@ -382,16 +383,18 @@
 	     :font-family monospace
 	     :padding 0 6px
 	     :margin 0 2px
-	     (.locked-indicator
-	      :float right
-	      :font-weight bold
-	      :color "#dc322f"))
+	     (.branch-info
+	      :height 100%
+	      (.locked-indicator
+	       :float right
+	       :font-weight bold
+	       :color "#dc322f")))
 
 	    (.footer :margin 0 2px)
 
 	    (span.id
 	     :font-size 1.25em
-	     :line-height 48px)
+	     :line-height 40px)
 	    	  
 	    (.holder :height "calc(100% - 72px)"
 		     :position relative
@@ -819,7 +822,10 @@
 		  :|box-shadow| ,(format nil "2px 2px 0px ~a33" base1)
 		  (.input-wrapper
 		   :border-color ,base2
-		   (input :border-color ,base1)))
+		   (input :border-color ,base1))
+		  (.input-group-addon
+		   (.label-holder :color ,base0
+				  :border-color ,base1)))
 		 (.textarea-holder
 		  :color ,base00
 		  :border-color ,base2
@@ -933,12 +939,17 @@
 	       ;; :margin 1px 0 0 6px
 	       :background none
 	       :border-width 0 0 0 1px
+	       :border-style solid
 	       :margin 0
 	       :padding 0 4px))
 	     (.input-group-addon
 	      :border-radius 0
 	      :border-width 0
-	      :border-left-width 1px))
+	      :border-left-width 1px
+	      :padding 3px 6px
+	      (.label-holder :padding 0 0 0 6px
+			     :border-width 0 0 1px 0
+			     :border-style solid)))
 
 	    (.textarea-holder
 	     (textarea
@@ -1058,7 +1069,41 @@
 ;; 	      :padding 4px
 ;; 	      :border-radius 0 4px 4px 4px)))))))))))
 
-
+(specify-css-styles 
+ css-glyph-display
+ (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
+			 yellow orange red magenta violet blue cyan green))
+ :by-palette (``((.icon :color ,base0
+			(.spot :color ,red
+			       :text-shadow 2px 2px ,base3)
+			(.backdrop :color ,base2))))
+ :basic
+ (``((|#main|
+      (.portal
+       (.view
+	((:or div.icon-holder div.icon.simple) :display inline)
+	(div.icon
+	 ;; :display inline
+	 :position relative
+	 :width 2em
+	 (.main :margin 0
+		:position absolute
+		:z-index 200
+		(.material-icons :font-size 1em))
+	 (.hint
+	  :z-index 500
+	  :position absolute
+	  :top 0.4em
+	  :left -0.2em
+	  (.material-icons :font-size 0.6em))
+	 (.backdrop
+	  :z-index 100
+	  :position absolute
+	  (.material-icons :font-size 1em)
+	  ;; :right -0.2em
+	  ;; :top -0.2em
+	  )
+	 (div :display inline))))))))
 
 (specify-css-styles
  css-text-view

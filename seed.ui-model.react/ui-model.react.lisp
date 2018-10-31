@@ -2,6 +2,8 @@
 
 (in-package #:seed.ui-model.react)
 
+(defparameter *this-package-name* (package-name *package*))
+
 (defpsmacro handle-actions (action-obj state props &rest pairs)
   ;; Handle actions that propagate to a component according to the component's properties, 
   ;; such as whether it is currently the point or along the path of the point trace.
@@ -174,33 +176,59 @@
 						      (let ((subcomponents (create ,@(process-subcomponents
 										      (rest item)))))
 							,@(mapcar (lambda (item)
-								    `(defcomponent (@ pairs ,(first item))
-									 ,@(rest item)))
+								    (if (getf (second item) :permute)
+									`(progn (defcomponent
+										    (@ pairs ,(first item))
+										    ,@(rest item))
+										(setf (@ pairs ,(first item))
+										      (funcall
+										       ,(getf (second item)
+											      :permute)
+										       (@ pairs ,(first item)))))
+									`(defcomponent (@ pairs ,(first item))
+									     ,@(rest item))))
 								  (macroexpand (list (first item))))))))
-					 (mapcar (lambda (item) `(defcomponent (@ pairs ,(first item))
-								     ,@(rest item)))
+					 (mapcar (lambda (item)
+						   (if (getf (second item) :permute)
+						       `(progn (defcomponent
+								   (@ pairs ,(first item))
+								   ,@(rest item))
+							       (setf (@ pairs ,(first item))
+								     (funcall
+								      ,(getf (second item)
+									     :permute)
+								      (@ pairs ,(first item)))))
+						       `(defcomponent (@ pairs ,(first item))
+							    ,@(rest item))))
 						 (macroexpand (list item)))))
 			      pairs))))))
 
 (defmacro react-ui (options &rest components)
   "Generate a React-based Seed user interface."
-  (let* ((ops (rest options))
+  (let* ((id (gensym)) (params (gensym))
+	 (ops (rest options))
 	 (url (second (assoc :url ops)))
 	 (component (second (assoc :component ops)))
-	 (glyph-sets (rest (assoc :glyph-sets ops)))
-	 (glyph-forms (loop for set in glyph-sets append (macroexpand (list set))))
-	 (glyph-content (loop for form in glyph-forms append (list (first form)
-								   `(panic:jsl ,(second form))))))
-    (append `((defvar glyphs ,(cons 'create glyph-content)))
-	    (loop for comp in components append (macroexpand (if (listp comp)
-								 comp (list comp))))
-	    `((chain j-query
-		     (ajax (create url ,(concatenate 'string "../" url)
-				   type "POST"
-				   data-type "json"
-				   content-type "application/json; charset=utf-8"
-				   data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow")))
-				   success (lambda (data)
-					     (chain -react-d-o-m
-						    (render (panic:jsl (,component :data data))
-							    (chain document (get-element-by-id "main"))))))))))))
+	 (glyph-forms (loop :for set :in (rest (assoc :glyph-sets ops))
+			 :append (macroexpand (if (listp set)
+						  set (list set)))))
+	 (glyph-conditions (loop :for form :in glyph-forms :append `(((eq ,id ,(intern (string-upcase (first form))
+										       "KEYWORD"))
+								      (let ((,(second form) ,params))
+									`(panic:jsl ,,(third form))))))))
+    (list :prepend `((defpsmacro seed-icon (,id &rest ,params)
+		       (cond ,@glyph-conditions)))
+	  :content
+	  (append (loop for comp in components append (macroexpand (if (listp comp)
+								       comp (list comp))))
+		  `((chain j-query
+			   (ajax (create url ,(concatenate 'string "../" url)
+					 type "POST"
+					 data-type "json"
+					 content-type "application/json; charset=utf-8"
+					 data (chain -j-s-o-n (stringify (list (@ window portal-id) "grow")))
+					 success (lambda (data)
+						   (chain -react-d-o-m
+							  (render (panic:jsl (,component :data data))
+								  (chain document
+									 (get-element-by-id "main")))))))))))))
