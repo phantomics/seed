@@ -25,7 +25,19 @@
      (.portal
       :height 100%
       :width 100%
+      :padding 0
       :position relative
+
+      (.row :margin 0)
+      
+      (|.row > .vista|
+       :padding 0)
+
+      (.vista.full (.row :height 100%)
+		   (.col :padding 0
+			 :height 100%))
+      (.vista.brief.col-1 :flex 0 0 5.55555%
+			  :max-width 5.55555%)
 
       ;; universal form styles go here
       ((:or ul.form-view.short ul.form-view.brief)
@@ -90,7 +102,10 @@
     	 (.content.type-string
     	  (.text :color "#2aa198")
     	  ((:and .text :before)
-    	   :content "\""))))))))))
+    	   :content "\""))))))
+
+     (|.portal > .row|
+      :height 100%)))))
 
 (specify-css-styles
  css-font-spec-ddin
@@ -185,11 +200,12 @@
       (.portal
        (.overview
 	:font-family monospace
-	:position absolute
-	:top 0
-	:left 0
+	;;:position absolute
+	;;:top 0
+	;;:left 0
 	:height 100%
-	:width 16em
+	:width 100%
+	;;:width 16em
 	;; :background "#fafafa"
 	;; :color "#2e3135"
 	;; :border-right 3px solid ;; "#ebebeb" ;"#dadde2"
@@ -261,11 +277,7 @@
       (.portal
        ;; styles for the main adjunct view pane
        (.adjunct-view
-	:position absolute
-	:top 0
-	:right 0
 	:height 100%
-	:width 4em
 
 	(.status :min-height 10px
 		 :margin 0 4px)
@@ -333,7 +345,7 @@
       (.portal
        (.view
 	(.main
-	 :margin 0 4em 0 16em
+	 ;; :margin 0 4em 0 16em
 	 :position relative
 
 	 ;; (.status
@@ -364,11 +376,15 @@
 
 	  ;; styles for the top-level branch display elements
 	  (.container 
-	   :width 100%
+	   ;; :width 100%
 	   :height 100%
-	   :padding 8px 24px
+	   :padding 8px; 24px
+	   :margin 0
+	   :max-width 100%
 	   (.column-outer :padding-left 0
-			  :padding-right 8px)
+			  :padding-right 8px
+			  :display flex
+			  :flex-direction column)
 	   ((:and .column-outer :last-child) :padding-right 0)
 	   
 	   (.portal-column
@@ -801,12 +817,23 @@
  css-form-view-interface-elements
  (with (:palette-symbols base3 base2 base1 base0 base00 base01 base02 base03
 			 yellow orange red magenta violet blue cyan green))
- :by-palette (``(((:or .list-interface-holder .menu-holder .item-interface-holder)
+ :by-palette (``((.item-interface-holder
+		  :color ,base00
+		  :background-color ,base3
+		  :border-color ,base2
+		  :|box-shadow| ,(format nil "2px 2px 0px ~aaa" base1))
+		 ((:or .list-interface-holder .menu-holder .item-interface-holder)
 		  :color ,base0
-		  (.panel :color ,base00
-			  :background-color ,base3
-			  :border-color ,base2
-			  :|box-shadow| ,(format nil "2px 2px 0px ~a33" base1))
+		  (.navbar :color ,base00
+			   :background-color ,base3
+			   :border-color ,base2
+			   (.main :border-color ,base2))
+		  (.main ((:and .title :hover)
+			  :background-image ,(format nil "-webkit-repeating-linear-gradient(-45deg, ~a33, ~a33 25%, transparent 25%, transparent 50%, ~a33 50%)" base1 base1 base1)
+			  :background-image ,(format nil "-moz-repeating-linear-gradient(-45deg, ~a33, ~a33 25%, transparent 25%, transparent 50%, ~a33 50%)" base1 base1 base1)
+			  :background-image ,(format nil "-mz-repeating-linear-gradient(-45deg, ~a33, ~a33 25%, transparent 25%, transparent 50%, ~a33 50%)" base1 base1 base1)
+			  :background-image ,(format nil "-o-repeating-linear-gradient(-45deg, ~a33, ~a33 25%, transparent 25%, transparent 50%, ~a33 50%)" base1 base1 base1)
+			  :background-image ,(format nil "repeating-linear-gradient(-45deg, ~a33, ~a33 25%, transparent 25%, transparent 50%, ~a33 50%)" base1 base1 base1)))
 		  (button :color ,base00
 			  :background-color ,base3
 			  :border-color ,base2
@@ -815,152 +842,166 @@
 		   :color ,base00
 		   :background-color ,base2
 		   :border-right-color ,base1))
+		 (|.list-interface-holder > .navbar|
+		  :|box-shadow| ,(format nil "2px 2px 0px ~aaa" base1))
 		 (.textfield-holder
 		  :color ,base00
 		  :border-color ,base2
 		  :background-color ,base3
-		  :|box-shadow| ,(format nil "2px 2px 0px ~a33" base1)
+		  :|box-shadow| ,(format nil "2px 2px 0px ~aaa" base1)
 		  (.input-wrapper
 		   :border-color ,base2
 		   (input :border-color ,base1))
-		  (.input-group-addon
+		  (.input-group-append
+		   :background ,base2
 		   (.label-holder :color ,base0
 				  :border-color ,base1)))
 		 (.textarea-holder
 		  :color ,base00
 		  :border-color ,base2
 		  (input.textarea
-		   :background-color ,base3))))
+		   :background-color ,base3))
+		 
+		 (.menu-holder
+		  (.dropdown.btn-group
+		   :|box-shadow| ,(format nil "2px 2px 0px ~aaa" base1)
+		   (button :border-color ,base2)))))
  :basic
  (``((|#main|
       (.portal
-       (.view
-	(.main
-	 (.branches
-	  (div.pane
-	   (.form-view
-	    ((:or .list-interface-holder .menu-holder .item-interface-holder)
-	     (.panel
-	      :width "calc(100% - 12px)"
-	      :margin 3px 0 3px 12px
-	      :border-width 0
-	      :border-radius 0
-	      :border-width 0 0 1px 4px
-	      (.panel-body
-	       :padding 4px 8px 4px 0
-	       (.panel-heading
-		:padding 0
-		(.handle
-		 :float left
-		 :height 20px
-		 :width 24px
-		 :cursor grab
-		 :margin 0 0 0 4px
-		 :background-image "-webkit-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
-		 :background-image "-moz-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
-		 :background-image "-ms-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
-		 :background-image "-o-repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
-		 :background-image "repeating-linear-gradient(-45deg, rgba(0,0,0,0.20), rgba(0,0,0,0.20) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.20) 50%)"
-		 :background-size 4px 4px)))
-	      (.remove :float right :cursor pointer)
-	      (.title :float left
-		      :margin-left 8px)
-	      (.list-label :float right)
-	      (.list-info
-	       :float right
-	       :padding 8px 0
-	       (.remove :margin-left 8px))
-	      (.select
-	       :width 40%
-	       :float left
-	       ;; (.select-control
-	       ;; 	:background-color "#fafafa"
-	       ;; 	:border-color "#dadde2"
-	       ;; 	:margin 2px 0
-	       ;; 	:border-radius 0 4px 4px 0
-	       ;; 	:border-left none)
-	       (.select-control
-		:margin 2px 0
-		;; :border-radius 0 4px 4px 0
-		:border-radius 0
-		:border-width 0
-		:border-right-width 2px))))
+       (.form-view
+	(|.item > .content > table > tbody > tr > td|
+	 :padding 0)
+	(.item-interface-holder
+	 :margin 6px 12px 0 12px
+	 :padding 0
+	 :min-height 1.6rem
+	 :border-radius 0
+	 :border-width 0 0 1px 4px
+	 :border-style solid)
+	(.list-interface-holder
+	 (.navbar :margin 6px 12px 0 12px
+		  :padding 0
+		  ;; :min-height 1.8em
+		  :border-radius 0
+		  :border-width 0 0 1px 4px
+		  :border-style solid))
+	((:or .list-interface-holder .menu-holder .item-interface-holder)
+	 (.dropdown.btn-group
+	  (button :border-width 0 1px 0 0
+		  :border-radius 0
+		  :border-style solid
+		  :padding 0.2rem 0.6rem))
+	 (.dropdown.open.btn-group
+	  (.dropdown-menu :display block))
+	 (.main
+	  :height 1.6rem
+	  :flex 1 1 auto
+	  :border-style solid
+	  :border-width 0
+	  :margin 0
+	  (.sortable-glyph :float left
+			   :padding-top 1px)
+	  (.remove :float right :cursor pointer
+		   :padding-top 3px)
+	  (.title :float left
+		  :margin 2px 0 0 0
+		  :padding 2px 0 2px 2px
+		  :cursor grab
+		  :width 80%)
+	  ((:and .title :hover)
+	   :background-size 4px 4px)
+	  (.list-label :float right)
+	  (.list-info
+	   :float right
+	   :padding 8px 0
+	   (.remove :margin-left 8px
+		    :padding-top 3px))
+	  (.select
+	   :width 40%
+	   :float left
+	   ;; (.select-control
+	   ;; 	:background-color "#fafafa"
+	   ;; 	:border-color "#dadde2"
+	   ;; 	:margin 2px 0
+	   ;; 	:border-radius 0 4px 4px 0
+	   ;; 	:border-left none)
+	   (.select-control
+	    :margin 2px 0
+	    :border-radius 0
+	    :border-width 0
+	    :border-right-width 2px)))
 
-	    (.item-interface-holder
-	     :margin 6px 0 0 12px
-	     (.panel :float left
-		     :width "calc(100% - 12px)"
-		     :height 1.8em
-		     :margin 0)
-	     (.btn-group.toggle
-	      :float left
-	      :margin 0
-	      (button :width 3em
-		      :height 1.8em
-		      ;; :background "#fff"
-		      ;; :border "1px solid #ddd"
-		      :border-style solid
-		      :border-width 0
-		      ;; :|box-shadow| "0 1px 1px rgba(0,0,0,.05)"
-		      ;; :border-radius 4px 0 0 4px
-		      :border-radius 0
-		      :border-width 0 0 1px 4px
-		      :position relative
-		      (.button-detail :position absolute
-				      :bottom 2px
-				      :right 2px
-				      :height 5px
-				      :width 5px
-				      :border-style solid
-				      :border-width 1px 0 0 1px))
-	      ((:and button :active)
-	       (.button-detail :top 2px
-			       :left 2px
-			       :border-width 0 1px 1px 0))))
+	 (.btn-group.toggle
+	  :float left
+	  :margin 0
+	  (button :width 3em
+		  :height 1.6rem
+		  :border-width 0
+		  :border-radius 0
+		  :position relative
+		  (.button-detail :position absolute
+				  :bottom 2px
+				  :right 2px
+				  :height 5px
+				  :width 5px
+				  :border-style solid
+				  :border-width 1px 0 0 1px))
+	  ((:and button :active)
+	   (.button-detail :top 2px
+			   :left 2px
+			   :border-width 0 1px 1px 0)))
+	 (.list-info))
+	
+	(.item-interface-holder.with-toggle
+	 (.main :border-width 0 0 0 1px))
+	
+	(.textfield-holder
+	 (.input-wrapper
+	  :padding 4px
+	  :border-style solid
+	  :border-width 0 0 1px 2px
+	  :border-radius 0
+	  :height auto
+	  :background none
+	  (input.textfield
+	   :border-radius 0
+	   :width "calc(100% - 6px)"
+	   :background none
+	   :border-width 0 0 0 1px
+	   :border-style solid
+	   :margin 0
+	   :padding 0 4px))
+	 (.input-group-append
+	  :border-radius 0
+	  :border-width 0
+	  :border-left-width 1px
+	  :padding 3px 6px
+	  (.label-holder.input-group-text
+	   :padding 0 0 0 6px
+	   :border-width 0 0 1px 0
+	   :border-style solid
+	   :background none
+	   :border-radius 0)))
 
-	    ((:and .btn-group |:first-child|)
-	     (button :border-left-width 2px))
-	    
-	    (.item-interface-holder.with-toggle
-	     (.panel :width "calc(100% - 12px - 3em)"
-		     ;; :border-radius 0 4px 4px 0
-		     :border-left-width 1px))
-	    
-	    (.textfield-holder
-	     (.input-wrapper
-	      :padding 4px
-	      :border-style solid
-	      :border-width 0 0 1px 2px
-	      (input.textfield
-	       ;;:background-color "#fafafa"
-	       ;;:border "1px solid #dadde2"
-	       :border-radius 0
-	       :width "calc(100% - 6px)"
-	       ;; :margin 1px 0 0 6px
-	       :background none
-	       :border-width 0 0 0 1px
-	       :border-style solid
-	       :margin 0
-	       :padding 0 4px))
-	     (.input-group-addon
-	      :border-radius 0
-	      :border-width 0
-	      :border-left-width 1px
-	      :padding 3px 6px
-	      (.label-holder :padding 0 0 0 6px
-			     :border-width 0 0 1px 0
-			     :border-style solid)))
-
-	    (.textarea-holder
-	     (textarea
-	      :resize none
-	      :width 100%
-	      :margin 3px 0 3px 12px
-	      :border-style solid
-	      :margin 0
-	      :padding 4px
-	      :border-radius 0))))))))))))
-
+	(.textarea-holder
+	 (textarea
+	  :resize none
+	  :width 100%
+	  :margin 3px 0 3px 12px
+	  :border-style solid
+	  :margin 0
+	  :padding 4px
+	  :border-radius 0))
+	
+	(.menu-holder
+	 (.dropdown.btn-group
+	  (button :width 100%
+		  :border-width 1px 2px 1px 4px
+		  :border-radius 0
+		  :border-style solid))
+	 (.dropdown.btn-group.open (.dropdown-menu :display block)))
+	))))))
 
 ;; (specify-css-styles
 ;;  css-form-view-interface-elements
@@ -1324,7 +1365,7 @@
        :width 100%
        :z-index -1000
        :position relative
-       :margin-left 16em
+       ;; :margin-left 16em
        :overflow hidden
        (.title :color "#fff"
 	       :font-size 1.2em

@@ -98,7 +98,7 @@
 		(meta ,(prospec-adj branch-specs)
 		      :mode (:view :vista :name :branches-adjunct :breadth :brief
 				 :fill :fill-branches-adjunct :enclose :enclose-branches-adjunct)))
-	       :mode (:view :vista))))))
+	       :mode (:view :vista  :enclose :enclose-content))))))
 
 
 (defmacro simple-sub-navigation-layout (&key (omit nil))

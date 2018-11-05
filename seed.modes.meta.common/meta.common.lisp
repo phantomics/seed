@@ -45,11 +45,12 @@
                        (cond ((eq :off (getf (getf (cddr item) :mode) :toggle))
                               nil)
                              ((eq :line type)
+			      members
                               `((list :type "line"
-		       		      :start (list ,(parse-number (second start-time))
-		       				   ,(parse-number (second start-price)))
-		       		      :end (list ,(parse-number (second end-time))
-		       				 ,(parse-number (second end-price)))))))
+		       		      :points (list (list ,(parse-number (second start-time))
+							  ,(parse-number (second start-price)))
+						    (list ,(parse-number (second end-time))
+							  ,(parse-number (second end-price))))))))
 		       ))))
       `(setq ,(intern "CHART-ENTITIES" (package-name *package*))
 	     (list ,@output)))))

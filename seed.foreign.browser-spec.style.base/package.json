@@ -4,7 +4,7 @@
   "description": "Foundational CSS modules for Seed's user interface.",
   "main": "style.base.lisp",
   "dependencies": {
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^4.1.3",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.1",
     "react": "^16.0.0",

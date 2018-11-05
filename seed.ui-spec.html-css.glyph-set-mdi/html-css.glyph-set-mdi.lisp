@@ -7,13 +7,13 @@
 
 (defmacro composite-icon (&key (main nil) (hint nil) (backdrop nil))
   ``(:div :class-name "icon-holder"
-	   (:div :class-name "icon composition"
-		 ,,(if hint ``(:div :class-name "hint spot"
-				      (:i :class-name "material-icons" ,,(string-downcase hint))))
-		 (:div :class-name "main"
-		       (:i :class-name "material-icons" ,,(string-downcase main)))
-		 ,,(if hint ``(:div :class-name "backdrop"
-				      (:i :class-name "material-icons" ,,(string-downcase backdrop)))))))
+	  (:div :class-name "icon composition"
+		,,(if hint ``(:div :class-name "hint spot"
+				   (:i :class-name "material-icons" ,,(string-downcase hint))))
+		(:div :class-name "main"
+		      (:i :class-name "material-icons" ,,(string-downcase main)))
+		,,(if hint ``(:div :class-name "backdrop"
+				   (:i :class-name "material-icons" ,,(string-downcase backdrop)))))))
 
 (defmacro specify-icons (properties &rest icons)
   (let* ((properties (rest properties))
@@ -27,4 +27,6 @@
 		     (:params-symbol params))
 	       (face (simple-icon face))
 	       (cake (simple-icon cake))
+	       (close (simple-icon close))
+	       (sortable (simple-icon unfold_more))
 	       (chart-editor (composite-icon :main show_chart :hint add :backdrop crop_square)))

@@ -233,33 +233,40 @@
       (defun enclose-blank (self body)
 	body)
 
+      (defun enclose-content (self body)
+	(panic:jsl (:div :class-name "row" body)))
+      
       (defun enclose-branches-main (self body)
-      (labels ((find-selected-index (id)
-		 (let ((in-segment nil))
-		   (loop for segix from 1 to (1- (@ self props context meta index format length))
-		      do (if (let ((segment (getprop (@ self props context meta index format)
-						     segix))
-				   (found nil))
-			       (loop for index from 0 to (1- (@ segment length))
-				  do (if (= id (getprop segment index "vl"))
-					 (setq found true)))
-			       found)
-			     (setq in-segment segix)))
-		   (1- in-segment))))
-	(if (and (@ self props action)
-		 (= "setBranchById" (@ self props action id)))
-	    (setf (@ self props context meta point)
-		  (find-selected-index (@ self props action params id))))
-	(panic:jsl (:div :class-name "branch-segment" (getprop body (@ self props context meta point))))))
+	(labels ((find-selected-index (id)
+		   (let ((in-segment nil))
+		     (loop for segix from 1 to (1- (@ self props context meta index format length))
+			do (if (let ((segment (getprop (@ self props context meta index format)
+						       segix))
+				     (found nil))
+				 (loop for index from 0 to (1- (@ segment length))
+				    do (if (= id (getprop segment index "vl"))
+					   (setq found true)))
+				 found)
+			       (setq in-segment segix)))
+		     (1- in-segment))))
+	  (if (and (@ self props action)
+		   (= "setBranchById" (@ self props action id)))
+	      (setf (@ self props context meta point)
+		    (find-selected-index (@ self props action params id))))
+	  (panic:jsl (:div :class-name "branch-segment" (getprop body (@ self props context meta point))))))
 
       (defun enclose-branch-segment (self body)
 	(let ((portion (/ 12 (@ body length))))
 	  (panic:jsl (:div :class-name "view"
 			   (:div :class-name "main palette-backdrop"
 				 (:div :class-name "branches"
-				       (:-grid (:-row :class-name "show-grid"
+				       ((@ window -react-bootstrap -grid)
+					((@ window -react-bootstrap -row)
+					 :class-name "show-grid"
 						      (chain body (map (lambda (element index)
-									 (panic:jsl (:-col :md portion
+									 (panic:jsl ((@ window -react-bootstrap
+											       -col)
+										     :md portion
 											   :class-name
 											   "column-outer"
 											   :key (+ "branch-" index)
@@ -288,14 +295,14 @@
 					 (lambda (index) (chain self (set-state (create control-target index))))))))
       
       (defun enclose-overview (self body)
-	(panic:jsl (:div :class-name "palette-adjunct"
-			 (:div :class-name (+ "overview" (if (@ self state context on-trace)
+	(panic:jsl ;; (:div :class-name "palette-adjunct"
+			 (:div :class-name (+ "overview palette-adjunct" (if (@ self state context on-trace)
 							     " point" ""))
 			       (:div :class-name "overview-headspacer")
 			       body (:div :class-name "footer"
 					  (if (< 0 (@ self state data branches length))
 					      (panic:jsl (:div :class-name "title-container"
-							       (:h3 :class-name "title" "seed")))))))))
+							       (:h3 :class-name "title" "seed"))))))));)
 
     ;; (defun fill-main-stage (self space)
     ;;   (defvar stuff nil)
@@ -655,9 +662,15 @@
 			(if (or (not (@ this props data))
 				(= 0 (@ this props data length)))
 			    (panic:jsl (:div))
-			    (progn (setf (@ self rendered) (chain self props (fill self (@ self state space))))
-				   (panic:jsl (:div :class-name (+ "vista " (@ self props context breadth))
-						    (chain self props (enclose self (@ self rendered)))))))))))
+			    (let ((class1 (+ "vista " (@ self props context breadth)
+					     (if (= "short" (@ self props context breadth))
+						 " col-2"
+						 (if (= "brief" (@ self props context
+									breadth))
+						     " col-1" " col")))))
+			      (setf (@ self rendered) (chain self props (fill self (@ self state space))))
+			      (panic:jsl (:div :class-name class1
+					       (chain self props (enclose self (@ self rendered)))))))))))
 
      ;; (panic:defcomponent -vista
      ;; 	 (:get-initial-state
@@ -1081,16 +1094,18 @@
        ;(cl 888 (@ this state) (chain this (build-retracer 0 (create breadth "full") (@ this state space))))
        ;(cl 921 (@ this props) (@ this state) (@ this state space))
        (let* ((self this))
-	 (panic:jsl (:div :class-name "portal palette-standard"
-			  (chain this state space (map (generate-vistas self)))
-			  (if (= 0 (@ this state data branches length))
-			      (panic:jsl (:div :class-name "intro-animation"
-					       (:div :class-name "animation-inner"
-						     (funcall (lambda ()
-								(loop for n from 0 to 11 collect
-								     (panic:jsl (:div :key (+ "sc-" n)
-										      :id (+ "star-caster-" n)))))))
-					       (:h3 :class-name "title" "seed"))))))))
+	 (panic:jsl (:div :class-name "portal palette-standard container-fluid"
+			  (:div :class-name "row"
+				(chain this state space (map (generate-vistas self)))
+				(if (= 0 (@ this state data branches length))
+				    (panic:jsl (:div :class-name "intro-animation col"
+						     (:div :class-name "animation-inner"
+							   (funcall (lambda ()
+								      (loop for n from 0 to 11 collect
+									   (panic:jsl (:div :key (+ "sc-" n)
+											    :id (+ "star-caster-"
+												   n)))))))
+						     (:h3 :class-name "title" "seed")))))))))
 
       (setq -portal (chain ((chain window (-drag-drop-context (@ window -react-d-n-d-html5-backend)))
 			    -portal)))

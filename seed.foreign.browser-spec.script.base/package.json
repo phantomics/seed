@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Foundational Javascript modules for Seed's user interface.",
   "dependencies": {
-    "bootstrap": "^3.3.7",
+    "bootstrap": "^4.1.3",
     "classnames": "^2.2.5",
     "create-react-class": "^15.6.2",
     "d3": "^4.13.0",
@@ -14,7 +14,7 @@
     "jquery-serializejson": "^2.8.1",
     "keypress.js": "^2.1.4",
     "react": "^16.4.1",
-    "react-bootstrap": "^0.31.5",
+    "react-bootstrap": "^0.32.4",
     "react-codemirror": "^1.0.0",
     "react-color": "^2.13.8",
     "react-datasheet": "^1.2.14",

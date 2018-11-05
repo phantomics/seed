@@ -2,16 +2,6 @@
 
 (in-package #:seed.ui-model.css)
 
-;; (defmacro with-css-palettes (&rest specs)
-;;   (labels ((join-spec (spec &optional output)
-;; 	     (if (not spec)
-;; 		 output
-;; 		 (if (and (listp spec)
-;; 			  (string= "PALETTE" (string-upcase (first spec))))
-;; 		     (join-spec (rest specs)
-;; 				`(let ))))))
-;;     (join-spec specs)))
-
 (defun replace-keys-in-form (to-find to-replace-with form)
   (loop for item in form collect
        (cond ((listp item)
@@ -21,36 +11,6 @@
 	      (nth (position item to-find)
 		   to-replace-with))
 	     (t item))))
-
-;; (defmacro css-specs (&key (palettes nil) (templates nil))
-;;   (let ((palette-keys (list :base03 :base02 :base01 :base00 :base0 :base1 :base2 :base3
-;; 			    :yellow :orange :red :magenta :violet :blue :cyan :green)))
-;;     (loop for palette in palettes collect
-;; 	 (loop for template in templates collect `(replace-keys-in-form palette-keys palette template)))))
-
-
-;; (defmacro specify-css-styles (name params &key (by-palette nil) (basic nil))
-;;   "Define (part of) a component set specification to be used in building a React interface."
-;;   (let ((options (gensym)) (palette (gensym)) (palettes (gensym)) (palette-symbols (gensym))
-;; 	(pal-data (gensym)))
-;;     `(defmacro ,name (&optional ,options)
-;;        (let* ((,options (rest ,options))
-;; 	      (,palettes (getf ,options :palettes))
-;; 	      (,palette-symbols '(,@(getf (rest params) :palette-symbols))))
-;; 	 `(append ,@,(if (not (null by-palette))
-;; 		  	 `(if ,palettes
-;; 		  	      (loop :for ,palette :in ,palettes :append
-;; 		  		 `((let* ((,',pal-data ,(cons 'list (rest ,palette)))
-;; 		  			  ;;(pal-data ,(cons 'list (rest ,palette)))
-;; 		  			  ,@(loop :for symbol :in ,palette-symbols
-;; 		  			       :collect (list symbol `(getf ,',pal-data
-;; 		  							    ,(intern (string-upcase symbol)
-;; 		  								     "KEYWORD")))))
-;; 		  		     (declare (ignorable ,@(loop :for symbol :in ,palette-symbols
-;; 		  					      :collect symbol)))
-;; 		  		     (list `(,(intern (format nil ".PALETTE-~a" ,(first ,palette)))
-;; 		  			      ,@,,@by-palette)))))))
-;; 		  ,,@basic)))))
 
 (defmacro specify-css-styles (name params &key (by-palette nil) (basic nil))
   "Define (part of) a component set specification to be used in building a React interface."

@@ -56,32 +56,33 @@
 					   (if (@ content ti)
 					       (panic:jsl (:-seed-symbol :symbol (@ content ti)))
 					       (@ content vl))
-					   (if (and (@ content pr)
-						    (@ content pr pkg)
-						    (/= "common-lisp" (@ self props data content pr pkg))
-						    (or (not (@ content-meta breadth))
-							(= 1 (@ content-meta breadth))))
-					       (panic:jsl (:sup (:-overlay-trigger
-								 :placement "right"
-								 :overlay (panic:jsl
-									   (:-tooltip
-									    :id "package-info"
-									    (:span "package: ")
-									    (:-seed-symbol
-									     :symbol (@ self props data content
-											     pr pkd))))
-								 (:span :class-name
-									(+ "package-tag mini"
-									   (if (and (@ self props data content pr)
-										    (= (@ self props data
-											       content pr pkg)
-										       (@ self props context
-											       working-system)))
-									       " native" ""))
-									(:span :class-name "regular"
-									       (@ content pr pkd 0 0 0))
-									(:span :class-name "native"
-									       "●")))))))))
+					   ;; (if (and (@ content pr)
+					   ;; 	    (@ content pr pkg)
+					   ;; 	    (/= "common-lisp" (@ self props data content pr pkg))
+					   ;; 	    (or (not (@ content-meta breadth))
+					   ;; 		(= 1 (@ content-meta breadth))))
+					   ;;     (panic:jsl (:sup (:-overlay-trigger
+					   ;; 			 :placement "right"
+					   ;; 			 ;; :overlay (panic:jsl
+					   ;; 			 ;; 	   (:-tooltip
+					   ;; 			 ;; 	    :id "package-info"
+					   ;; 			 ;; 	    (:span "package: ")
+					   ;; 			 ;; 	    (:-seed-symbol
+					   ;; 			 ;; 	     :symbol (@ self props data content
+					   ;; 			 ;; 			     pr pkd))))
+					   ;; 			 (:span :class-name
+					   ;; 				(+ "package-tag mini"
+					   ;; 				   (if (and (@ self props data content pr)
+					   ;; 					    (= (@ self props data
+					   ;; 						       content pr pkg)
+					   ;; 					       (@ self props context
+					   ;; 						       working-system)))
+					   ;; 				       " native" ""))
+					   ;; 				(:span :class-name "regular"
+					   ;; 				       (@ content pr pkd 0 0 0))
+					   ;; 				(:span :class-name "native"
+					   ;; 				       "●"))))))
+					   )))
 		     (:div :class-name "breaker")
 		     (if (@ self props context is-point)
 			 (panic:jsl
@@ -103,32 +104,32 @@
 							    (:-popover 
 							     :class-name "menu-popover form-view"
 							     rendered-menu))))))))
-		     (if (and (@ content pr)
-			      (@ content pr pkg)
-			      (not editor-active)
-			      (@ content-meta breadth)
-			      (< 1 (@ content-meta breadth)))
-			 (panic:jsl (:-overlay-trigger
-				     :placement "right"
-				     :overlay (panic:jsl (:-tooltip
-							  :id "package-name-display"
-							  (:span "package: ")
-							  (:-seed-symbol :symbol (@ content pr pkd))))
-				     (:span :class-name
-					    (+ "package-tag"
-					       (if (and (@ self props data content pr)
-							(= (@ self props data content pr pkg)
-							   (@ self props context working-system)))
-						   " native" ""))
-					    (:span (:-seed-symbol
-						    :symbol (@ content pr pkd)
-						    :common (and (@ self props data content pr)
-								 (= "common-lisp"
-								    (@ self props data content pr pkg)))
-						    :native (and (@ self props data content pr)
-								 (= (@ self props data content pr pkg)
-								    (@ self props context
-									    working-system)))))))))
+		     ;; (if (and (@ content pr)
+		     ;; 	      (@ content pr pkg)
+		     ;; 	      (not editor-active)
+		     ;; 	      (@ content-meta breadth)
+		     ;; 	      (< 1 (@ content-meta breadth)))
+		     ;; 	 (panic:jsl (:-overlay-trigger
+		     ;; 		     :placement "right"
+		     ;; 		     ;; :overlay (panic:jsl (:-tooltip
+		     ;; 		     ;; 			  :id "package-name-display"
+		     ;; 		     ;; 			  (:span "package: ")
+		     ;; 		     ;; 			  (:-seed-symbol :symbol (@ content pr pkd))))
+		     ;; 		     (:span :class-name
+		     ;; 			    (+ "package-tag"
+		     ;; 			       (if (and (@ self props data content pr)
+		     ;; 					(= (@ self props data content pr pkg)
+		     ;; 					   (@ self props context working-system)))
+		     ;; 				   " native" ""))
+		     ;; 			    (:span (:-seed-symbol
+		     ;; 				    :symbol (@ content pr pkd)
+		     ;; 				    :common (and (@ self props data content pr)
+		     ;; 						 (= "common-lisp"
+		     ;; 						    (@ self props data content pr pkg)))
+		     ;; 				    :native (and (@ self props data content pr)
+		     ;; 						 (= (@ self props data content pr pkg)
+		     ;; 						    (@ self props context
+		     ;; 							    working-system)))))))))
 		     (if (and (@ content mt)
 			      (or (@ content mt comment) (= "" (@ content mt comment))))
 			 (funcall (lambda (self)
@@ -317,22 +318,45 @@
   (let ((self this))
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "menu-holder"
-			   (:-select :name "form-select"
-				     :value (let* ((values (chain self state data content mt mode options
-								  (map (lambda (item) (@ item value 0 vl)))))
-						   (current-value (getprop (@ self state data content mt mode options)
-									   (chain values 
-										  (index-of (@ self state space))))))
-					      (if (/= "undefined" (typeof current-value))
-						  (funcall (lambda (item) (create label (@ item title)
-										  value (@ item value)))
-							   current-value)))
-				     :options (chain self state data content mt mode options
-						     (map (lambda (item) (create label (@ item title)
-										 value (@ item value)))))
-				     :on-change (lambda (value)
-						  ;;(chain console (log :inter (@ self state) (@ self props) value))
-						  (chain self (designate value)))))))))
+			   (:div :class-name "dropdown"
+				 ((@ -react-bootstrap -dropdown-button)
+				  ;; :title (let* ((values (chain self state data content mt mode options
+				  ;; 			       (map (lambda (item) (@ item value 0 vl)))))
+				  ;; 		(current-value (getprop (@ self state data content mt mode options)
+				  ;; 					(chain values 
+				  ;; 					       (index-of (@ self state space))))))
+				  ;; 	   (if (/= "undefined" (typeof current-value))
+				  ;; 	       (funcall (lambda (item) (create label (@ item title)
+				  ;; 					       value (@ item value)))
+				  ;; 			current-value)))
+				  :title (@ self state data content vl)
+				  :id (+ "select-dropdown-" (@ self state data content ix))
+				  :key (+ "select-dropdown-" (@ self state data content ix))
+				  (chain self state data content mt mode options
+					 (map (lambda (item index)
+						(panic:jsl ((@ -react-bootstrap -menu-item)
+							    :event-key index
+							    :key index
+							    :on-click
+							    (lambda () (chain self (designate item)))
+							    (@ item title))))))))
+			   ;; (:-select :name "form-select"
+			   ;; 	     :value (let* ((values (chain self state data content mt mode options
+			   ;; 					  (map (lambda (item) (@ item value 0 vl)))))
+			   ;; 			   (current-value (getprop (@ self state data content mt mode options)
+			   ;; 						   (chain values 
+			   ;; 							  (index-of (@ self state space))))))
+			   ;; 		      (if (/= "undefined" (typeof current-value))
+			   ;; 			  (funcall (lambda (item) (create label (@ item title)
+			   ;; 							  value (@ item value)))
+			   ;; 				   current-value)))
+			   ;; 	     :options (chain self state data content mt mode options
+			   ;; 			     (map (lambda (item) (create label (@ item title)
+			   ;; 							 value (@ item value)))))
+			   ;; 	     :on-change (lambda (value)
+			   ;; 			  ;;(chain console (log :inter (@ self state) (@ self props) value))
+			   ;; 			  (chain self (designate value))))
+			   )))))
 
  (textfield
   (:get-initial-state
@@ -354,7 +378,7 @@
     (panic:jsl (:div :class-name "content"
 		     (:div :class-name "textfield-holder"
 			   (:div :class-name "input-group"
-				 (:div :class-name "input-wrapper"
+				 (:div :class-name "input-wrapper form-control"
 				       (:input :class-name "textfield"
 					       :value (@ content vl)
 					       :on-change (lambda (event)
@@ -376,8 +400,8 @@
 					  (@ self props data content pr meta)
 					  (@ self props data content pr meta mode)
 					  (@ self props data content pr meta mode title))
-				     (panic:jsl (:span :class-name "input-group-addon"
-						       (:span :class-name "label-holder"
+				     (panic:jsl (:span :class-name "input-group-append"
+						       (:span :class-name "label-holder input-group-text"
 							      (@ self props data content
 								      pr meta mode title)))))))))))
   
@@ -512,9 +536,11 @@
    :component-will-receive-props
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
   (let* ((self this)
-	 (handle (chain self props (connect-drag-source (panic:jsl (:div :class-name "handle")))))
 	 (this-mode (@ self state data data mt mode))
-	 (content (panic:jsl (:div (:div :class-name (+ "item-interface-holder element palette-adjunct"
+	 (handle (chain self props (connect-drag-source (panic:jsl (:span :class-name "title"
+									  (@ this-mode title))))))
+	 (content (panic:jsl (:div :class-name "item"
+				   (:div :class-name (+ "item-interface-holder element palette-adjunct navbar"
 							(if (@ this-mode toggle) " with-toggle" ""))
 					 (if (@ this-mode toggle)
 					     (panic:jsl (:div :class-name "btn-group toggle"
@@ -528,20 +554,20 @@
 								       (if (= "__on" (@ this-mode toggle))
 									   "On" "Off")
 								       (:div :class-name "button-detail")))))
-					 ((@ -react-bootstrap -panel)
-					  (:div :class-name "panel-heading"
-						handle
-						(:div :class-name "title" (@ this-mode title))
-						(if (@ this-mode removable)
-						    (panic:jsl (:span :class-name "remove"
-								      :on-click
-								      (lambda (event)
-									(chain self props context methods
-									       (delete-point
-										(list (@ self state data data ly)
-										      (@ self state data
-											      data ct)))))
-								      "X"))))))
+					 (:div :class-name "main"
+					       (:div :class-name "sortable-glyph"
+						     (seed-icon :sortable))
+					       handle
+					       (if (@ this-mode removable)
+						   (panic:jsl
+						    (:span :class-name "remove"
+							   :on-click
+							   (lambda (event)
+							     (chain self props context methods
+								    (delete-point
+								     (list (@ self state data data ly)
+									   (@ self state data data ct)))))
+							   (seed-icon :close))))))
 				   (if (@ this-mode open)
 				       (panic:jsl (:div :class-name "content" (@ self state data content))))))))
     (chain self props (connect-drag-preview (chain self props (connect-drop-target content))))))
@@ -561,29 +587,35 @@
    :component-will-receive-props
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
   (let ((self this))
-    (panic:jsl (:div :class-name "list-interface-holder element palette-adjunct"
-		     ((@ -react-bootstrap -panel)
-		      (:div :class-name "panel-heading"
-			    (:-select :name "form-select"
-				      :value (let ((values (chain self state data params mt mode options
-								  (map (lambda (item) (@ item value))))))
-					       (getprop (@ self state data params mt mode options)
-							(chain values (index-of (@ self state space)))))
-				      :options (chain self state data params mt mode options
-						      (map (lambda (item) (create label (@ item title)
-										  value (@ item value)))))
-				      :on-change (lambda (value) (chain self (designate value))))
-			    (:div :class-name "list-info"
-				  (if (@ self state data params mt mode removable)
-				      (panic:jsl (:span :class-name "remove" 
-							:on-click 
-							(lambda (event)
-							  (chain self props context methods
-								 (delete-point 
-								  (list (@ self state data params ly)
-									(@ self state data params ct)))))
-							"X")))
-				  (:div :class-name "list-label"
-					(+ (@ self state data params pr count)
-					   " items")))))
-		     (@ self state data content))))))
+    ;; (cl :aa (@ self state data))
+    (panic:jsl (:div :class-name "element palette-adjunct"
+		     (:div :class-name "list-interface-holder"
+			   (:div :class-name "navbar"
+				 (:div :class-name "dropdown"
+				       ((@ -react-bootstrap -dropdown-button)
+					:title "Select"
+					:id (+ "select-dropdown-" (@ self state data params ix))
+					:key (+ "select-dropdown-" (@ self state data params ix))
+					(chain self state data params mt mode options
+					       (map (lambda (item index)
+						      (panic:jsl ((@ -react-bootstrap -menu-item)
+								  :event-key index
+								  :key index
+								  :on-click
+								  (lambda () (chain self (designate item)))
+								  (@ item title))))))))
+				 (:div :class-name "list-info"
+				       (:span :class-name "list-label"
+					      (+ (@ self state data params pr count)
+						 (if (= 1 (@ self state data params pr count))
+						     " item" " items")))
+				       (if (@ self state data params mt mode removable)
+					   (panic:jsl (:span :class-name "remove" 
+							     :on-click 
+							     (lambda (event)
+							       (chain self props context methods
+								      (delete-point 
+								       (list (@ self state data params ly)
+									     (@ self state data params ct)))))
+							     (seed-icon :close))))))
+			   (@ self state data content)))))))
