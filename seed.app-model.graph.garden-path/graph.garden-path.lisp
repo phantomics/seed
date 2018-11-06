@@ -92,6 +92,14 @@
 			  (list (generate-blank-link meta))))))
   list)
 
+(defun connect-link (list node-id link-id destination-node-id meta)
+  "Connect a link to a node."
+  (loop for item in list when (eq node-id (getf item :id))
+     do (loop for link in (getf item :links) when (eq link-id (getf link :id))
+	   do (setf (getf link :to)
+		    destination-node-id)))
+  list)
+
 (defun remove-graph-element (list node-id &optional link-id)
   "Remove the node or link from the specified graph node list. The presence of the link-id argument means a link will be removed, otherwise the node with the specified id will be removed."
   (loop for node in list when (or link-id (not (eq node-id (getf node :id))))

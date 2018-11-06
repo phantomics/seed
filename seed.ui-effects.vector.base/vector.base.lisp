@@ -100,6 +100,11 @@
 		      (attr "cy" 0)
 		      (attr "cx" main-radius)
 		      (attr "r" (manifest-inner-circle-radius 0.5)))
+
+	       ;; .call(d3.drag()
+	       ;; 		    .on("start", dragstarted)
+	       ;; 		    .on("drag", dragged)
+	       ;; 		    .on("end", dragended))
 	       )))))
 
 (defvar expand-button-standard)

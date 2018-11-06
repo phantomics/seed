@@ -57,12 +57,13 @@
  (:html-form-components-expand
   (lambda (items)
     (let ((output (loop :for item :in items :append
-                     (let ((type (getf (getf (getf (cddr item) :mode) :format-properties) :type)))
+                     (let ((type (getf (getf (getf (cddr item) :mode) :format-properties) :type))
+			   (props (caadr item)))
                        (cond ((eq :section-title type)
-                              `((:h2 ,(second (caadr item)))))
+                              `((:h2 ,(second props))))
                              ((eq :form-field type)
-                              `((:div (:label ,(second (caadr item))) (:br)
-                                      (:input)))))))))
+                              `((:div (:label ,(second props)) (:br)
+                                      (:input :name ,(third props))))))))))
       (append (list (intern "GENERATE-HTML-FORM" (package-name *package*))
                     (intern "FORM-OUTPUT" (package-name *package*)))
               output)))))

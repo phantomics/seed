@@ -537,8 +537,10 @@
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))
   (let* ((self this)
 	 (this-mode (@ self state data data mt mode))
-	 (handle (chain self props (connect-drag-source (panic:jsl (:span :class-name "title"
-									  (@ this-mode title))))))
+	 (handle (if (@ window -drag-source)
+		     (chain self props (connect-drag-source (panic:jsl (:span :class-name "title"
+									      (@ this-mode title)))))
+		     (panic:jsl (:span :class-name "title" (@ this-mode title)))))
 	 (content (panic:jsl (:div :class-name "item"
 				   (:div :class-name (+ "item-interface-holder element palette-adjunct navbar"
 							(if (@ this-mode toggle) " with-toggle" ""))

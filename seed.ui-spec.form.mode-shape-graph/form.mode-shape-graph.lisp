@@ -87,11 +87,13 @@
 						   (if (= (@ node id) (@ self props meta change node-id))
 						       (setq new-link
 							     (build-root (list (getprop node "links"
-											(1- (@ node links
-												    length))))))))))
+											(1- (@ node
+											       links
+											       length))))))))))
 				     (chain original
 					    (each (lambda (node)
-						    (if (and (= (@ node data id) (@ self props meta change node-id))
+						    (if (and (= (@ node data id)
+								(@ self props meta change node-id))
 							     (not (@ node data to)))
 							(let ((this-link (chain j-query
 										(extend (create)
@@ -99,6 +101,31 @@
 							  (setf (@ this-link parent) node
 								(@ this-link depth) (1+ (@ node depth)))
 							  (chain node children (push this-link)))))))
+				     original))
+				  ((@ self props meta change link-connected)
+				   (let ((new-link nil))
+				     (chain extension
+					    (map (lambda (node)
+						   (if (= (@ node id) (@ self props meta change node-id))
+						       (loop for link in (@ node links)
+							  when (= (@ link id) (@ self props meta change link-id))
+							  do (setq new-link (build-root (list link))))))))
+				     (chain original
+					    (each (lambda (node)
+						    (if (and (= (@ node data id)
+								(@ self props meta change node-id))
+							     (not (@ node data to)))
+							(let ((this-link (chain j-query
+										(extend (create)
+											(@ new-link children 0)))))
+							  (setf (@ this-link parent) node
+								(@ this-link depth) (1+ (@ node depth)))
+							  (if (@ node children)
+							      (loop for lid from 0 to (1- (@ node children length))
+								 when (= (getprop node "children" lid "data" "id")
+									 (@ self props meta change link-id))
+								 do (setf (getprop node "children" lid)
+									  this-link))))))))
 				     original))
 				  ((@ self props meta change object-removed)
 				   (if (< 0 (@ self props meta change link-id length))
@@ -131,6 +158,51 @@
 				  (t original)))
 		     original)
 		 original)))))
+   :id-from-node-class
+   (lambda (class-string)
+     (let ((segments (chain class-string (split " ")))
+	   (id ""))
+       (loop for seg in segments when (= "id-" (chain seg (substr 0 3)))
+	  do (setq id (chain seg (substr 3))))
+       id))
+   :find-node-bounds
+   (lambda (item)
+     (let ((self this)
+	   (rects (list)))
+       (chain item parent-node parent-node child-nodes
+	      (map (lambda (g-item index)
+		     (if (and (= "g" (@ g-item node-name)))
+			 (chain g-item child-nodes
+				(map (lambda (c-item index)
+				       ;; (cl :gi g-item)
+				       (if (and (= "g" (@ c-item node-name))
+						(= "glyph"  (@ c-item props class-name)))
+					   (let ((ext (create id (chain self
+									(id-from-node-class (@ g-item
+											       props
+											       class-name))))))
+					     (chain rects
+						    (push (chain j-query (extend (chain c-item
+											(get-bounding-client-rect))
+										 ext)))))))))))))
+       rects))
+   :confirm-drop-target
+   (lambda (node callback)
+     (let* ((self this)
+	    (point (list (@ window d3 event source-event client-x)
+			 (@ window d3 event source-event client-y)))
+	    (targets (chain self (find-node-bounds node)))
+	    (destination-node-id (chain self (id-from-node-class (@ node parent-node props class-name))))
+	    (target-link nil))
+       (loop for target in targets when (and (not target-link)
+				   	     (<= (@ target left) (@ point 0) (@ target right))
+				   	     (<= (@ target top) (@ point 1) (@ target bottom)))
+	  do (setq target-link (@ target id)))
+       (let* ((segments (chain target-link (split "-")))
+	      (node-id (@ segments 0))
+	      (link-id (@ segments 1)))
+	 ;; (cl :drop node-id target-link)
+	 (if link-id (callback node-id link-id destination-node-id)))))
    :make-display
    (let ((display-model nil))
      (lambda (main-display callback)
@@ -277,16 +349,31 @@
 
 			(chain root (each (lambda (d) (setf (@ d x0) (@ d x)
 							    (@ d y0) (@ d y)))))
-
-			;; (let ((drag-handler (chain window d3 (drag)
-			;; 			   (on "drag" (lambda ()
-			;; 					(chain window d3 (select this)
-			;; 					       (attr "x" (@ window d3 event x))
-			;; 					       (attr "y" (@ window d3 event y))))))))
-			;;   (drag-handler (chain main-display (select-all "item"))))
-
+			
+			;; (let ((gg (chain main-display (select-all "g.glyph"))))
+			;;   (cl :gg gg
+			;;       (chain gg (enter))
+			;;       (chain gg (enter) (node))))
 			(if callback (funcall callback (create node node node-enter node-enter params params)))
 
+			(let* ((drag-handler (chain window d3 (drag)
+						    (on "end"
+							(lambda ()
+							  (chain self
+								 (confirm-drop-target this
+										      (@ self
+											 props
+											 link-connector))))))))
+			  ;; (cl :sa g-select (@ g-select _groups 0 0))
+			  ;; (if (@ g-select _groups 1)
+			  ;;     (chain g-select _groups 1 (map (lambda (item index)
+			  ;; 				       ;;(chain self props (connect-drag-source item))
+			  ;; 				       (if (@ item component)
+			  ;; 					   (cl :rect (chain item ;;component
+			  ;; 							    (get-bounding-client-rect))))
+			  ;; 				       ))))
+			  (drag-handler (chain main-display (select-all ".glyph"))))
+			
 			(chain self props (animate-faux-d-o-m (@ params duration)))))
 	      (diagonal (chain window d3 (link-horizontal)
 			       (x (lambda (d) (@ d y)))
@@ -303,6 +390,7 @@
 					    (setf (@ self container-element)
 						  ref)))
 		     (@ self props chart)))))
+
  (graph-shape-view
   (:get-initial-state
    (lambda ()
@@ -424,6 +512,18 @@
 				 (@ vector 0) (@ self state point)))))
        ;;(cl vector (@ self state point) new-point)
        (chain self (set-point new-point))))
+   :connect-link
+   (lambda (node-id link-id destination-node-id)
+     ;; (cl :to-target node-id link-id destination-node-id)
+     (let ((self this))
+       ;; (cl :st (@ self state)
+       ;; 	   (@ self props))
+       (chain self state context methods
+	      (grow #()
+		    (create connect-link true
+			    node-id node-id
+			    link-id link-id
+			    destination-node-id destination-node-id)))))
    :should-component-update
    (lambda (next-props next-state)
      ;;(cl :nxp next-props (@ this state) (@ this updated))
@@ -513,6 +613,7 @@
     (panic:jsl (:div :class-name "display-holder-outer"
 		     (:-renderer :point (@ self state point)
 				 :point-setter (@ self set-point)
+				 :link-connector (@ self connect-link)
 				 :updated (@ self props context updated)
 				 :data (@ self state space)
 				 :meta (@ self props data meta)))))))
