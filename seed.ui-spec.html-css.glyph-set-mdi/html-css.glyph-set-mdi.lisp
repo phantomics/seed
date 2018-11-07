@@ -21,7 +21,9 @@
 	 (macro-symbol (second (assoc :macro-symbol properties)))
 	 (icon-specs (loop for icon in icons collect (list (first icon)
 							   params-symbol (macroexpand (second icon))))))
-    `(defmacro ,macro-symbol () (quote ,icon-specs))))
+    `(defmacro ,macro-symbol ()
+       (declare (ignorable ,params-symbol))
+       (quote ,icon-specs))))
 
 (specify-icons (with (:macro-symbol material-design-glyph-set-common)
 		     (:params-symbol params))

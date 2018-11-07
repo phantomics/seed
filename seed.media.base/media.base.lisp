@@ -213,6 +213,14 @@
  (is-display-format (true-or-not)
 		    `(seed.modulate:display-format-predicate data))
 
+ ;; call a function within the system's package using given arguments,
+ ;; or the image and branch metadata if no arguments are provided
+ (call (follows reagent)
+       `((funcall (symbol-function (intern ,(string-upcase reagent)
+					   (string-upcase (sprout-name sprout))))
+		  (branch-image branch)
+		  (branch-meta branch))))
+ 
  ;; assign system's name as package name in Lisp file to be output
  (code-package (follows)
 	       `((cons (list 'in-package (make-symbol (string-upcase (sprout-name sprout)))) data))
