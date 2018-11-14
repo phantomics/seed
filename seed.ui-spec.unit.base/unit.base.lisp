@@ -485,7 +485,6 @@
 		     (:div :class-name "textarea-holder"
 			   (:-autosize-textarea
 			    :class-name "textarea"
-			    ;; :type "bla"
 			    :value (if (@ self state space)
 				       (@ self state space)
 				       (@ self state data content vl))
@@ -507,6 +506,27 @@
    (lambda (props) (funcall inherit this props
 			    (lambda (d) (@ d data))
 			    (lambda (pd) nil)))
+   :designate
+   (lambda (item)
+     
+     (chain this state data params (md (lambda (data)
+					 (chain data (push (@ item value)))
+					 data)))
+     (chain this state context methods (grow)))
+   :option-actions
+   (lambda ()
+     (let ((self this))
+       (create toggle-visibility
+	       (lambda (item)
+		 (let ((changed false))
+		   (if (and (@ self state data data mt)
+			    (@ self state data data mt each)
+			    (@ self state data data mt each visible-members))
+		       (progn (loop for member in (@ self state data data mt each visible-members)
+				 do (if (= (@ item name) (@ member name))
+					(setf (@ member state) "__on"
+					      changed true)))
+			      (if changed (chain self state context methods (grow))))))))))
    :permute
    (lambda (input)
      (if (and (@ window -drag-source)
@@ -541,6 +561,9 @@
 		     (chain self props (connect-drag-source (panic:jsl (:span :class-name "title"
 									      (@ this-mode title)))))
 		     (panic:jsl (:span :class-name "title" (@ this-mode title)))))
+	 (option-actions (chain self (option-actions)))
+	 (option-click (lambda (item) (lambda () (funcall (getprop option-actions (chain item action (substr 2)))
+							  item))))
 	 (content (panic:jsl (:div :class-name "item"
 				   (:div :class-name (+ "item-interface-holder element palette-adjunct navbar"
 							(if (@ this-mode toggle) " with-toggle" ""))
@@ -560,6 +583,21 @@
 					       (:div :class-name "sortable-glyph"
 						     (seed-icon :sortable))
 					       handle
+					       (if (@ this-mode options)
+						   (panic:jsl
+						    (:div :class-name "options"
+							  ((@ -react-bootstrap -dropdown-button)
+							   :title "Select"
+							   :id (+ "select-dropdown-" (@ self state data data ix))
+							   :key (+ "select-dropdown-" (@ self state data data ix))
+							   (chain this-mode options
+								  (map (lambda (item index)
+									 (panic:jsl ((@ -react-bootstrap
+											-menu-item)
+										     :event-key index
+										     :key index
+										     :on-click (option-click item)
+										     (@ item title))))))))))
 					       (if (@ this-mode removable)
 						   (panic:jsl
 						    (:span :class-name "remove"
@@ -569,9 +607,12 @@
 								    (delete-point
 								     (list (@ self state data data ly)
 									   (@ self state data data ct)))))
-							   (seed-icon :close))))))
+							   (seed-icon :close)))))
+					 
+					 )
 				   (if (@ this-mode open)
 				       (panic:jsl (:div :class-name "content" (@ self state data content))))))))
+    ;; (cl :ss self this-mode)
     (chain self props (connect-drag-preview (chain self props (connect-drop-target content))))))
 
  (list
@@ -584,7 +625,7 @@
    :designate
    (lambda (item)
      (chain this state data params (md (lambda (data) (chain data (push (@ item value)))
-					 data)))
+					       data)))
      (chain this state context methods (grow)))
    :component-will-receive-props
    (lambda (next-props) (chain this (set-state (chain this (initialize next-props))))))

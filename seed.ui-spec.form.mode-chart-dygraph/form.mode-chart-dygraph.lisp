@@ -24,7 +24,9 @@
 					  (lambda () (setf (@ self ephemera interaction) "select"))))
 		  (chain self props context
 			 (set-interaction "chartDrawLine"
-					  (lambda () (setf (@ self ephemera interaction) "draw"
+					  (lambda ()
+					    (cl :draw-clicked)
+					    (setf (@ self ephemera interaction) "draw"
 							   (@ self ephemera draw-entity) "line"))))
 		  (chain self props context
 			 (set-interaction "chartRetraceX"
@@ -91,23 +93,25 @@
 		       (if (@ ent in-flux)
 			   (setf (@ ctx line-width) 2))
 		       (chain ctx (begin-path))
-		       (let ((points (if points points (derive-points ent chart))))
+		       (let ((points (if points points (derive-points ent chart)))
+			     (circle-radius 5))
 			 (chain ctx (move-to (@ points 0 0) (@ points 0 1)))
 			 (chain ctx (line-to (@ points 1 0) (@ points 1 1)))
 			 (chain ctx (close-path))
 			 (chain ctx (stroke))
 			 (if (@ ent in-flux)
-			     (let* ((ratio (- (/ (- (@ points 0 1) (@ points 1 1))
-						 (- (@ points 1 0) (@ points 0 0)))))
-				    (x-len (- (@ points 1 0) (@ points 0 0)))
-				    (y-len (- (@ points 1 1) (@ points 0 1)))
-				    (r2 (acos (/ x-len (sqrt (+ (expt x-len 2)
-								(expt y-len 2)))))))
-			       ;; (cl :rr ratio sector
-			       ;; 	  (* 0.5 (1- sector))
-			       ;; 	  (- (@ points 1 0) (@ points 0 0))
-			       ;; 	  (- (@ points 0 1) (@ points 1 1))
-			       ;; 	  (/ (tan ratio) pi))
+			     (let* ((diffs (list (list (- (@ points 0 0) (@ points 1 0))
+						       (- (@ points 0 1) (@ points 1 1)))
+						 (list (- (@ points 1 0) (@ points 0 0))
+						       (- (@ points 1 1) (@ points 0 1)))))
+				    ;; numbers corresponding to radian intersections of line with arcs encircling
+				    ;; start (0) and end (1) points
+				    (ri (list (* (chain -math (sign (@ diffs 0 1)))
+						 (acos (/ (@ diffs 0 0) (sqrt (+ (expt (@ diffs 0 0) 2)
+										 (expt (@ diffs 0 1) 2))))))
+					      (* (chain -math (sign (@ diffs 1 1)))
+						 (acos (/ (@ diffs 1 0) (sqrt (+ (expt (@ diffs 1 0) 2)
+										 (expt (@ diffs 1 1) 2)))))))))
 			       (setf (@ ctx stroke-style) "black"
 				     (@ ctx fill-style) "black"
 				     (@ ctx line-width) 0.5)
@@ -119,23 +123,21 @@
 			       (chain ctx (fill))
 			       (chain ctx (begin-path))
 
-			       (chain ctx (arc (@ points 0 0) (@ points 0 1) 5 0 (* pi 2) true))
+			       ;; (chain ctx (arc (@ points 0 0) (@ points 0 1) 5 0 (* pi 2) true))
+			       ;; (chain ctx (stroke))
+			       ;; (chain ctx (begin-path))
+			       ;; (chain ctx (arc (@ points 1 0) (@ points 1 1) 5 0 (* pi 2) true))
+
+			       (chain ctx (arc (@ points 0 0) (@ points 0 1) circle-radius
+					       (+ (- pi) (- (@ ri 0) (* pi 0.20)))
+					       (+ (- pi) (+ (@ ri 0) (* pi 0.20)))
+					       true))
 			       (chain ctx (stroke))
 			       (chain ctx (begin-path))
-			       (chain ctx (arc (@ points 1 0) (@ points 1 1) 5 0 (* pi 2) true))
-
-			       ;; cos theta = x/sqrt(x2+y2)
-			       ;; sin theta = y/sqrt(x2+y2)
-			       
-			       ;; (chain ctx (arc (@ points 1 0) (@ points 1 1) 12 (* 0.65 pi) (* 0.8 pi) true))
-			       ;; (chain ctx (arc (@ points 1 0) (@ points 1 1) 12 (* pi (+ 0.5 (- (* ratio 0.25)
-			       ;; 							     0.1)))
-			       ;; 		      (* pi (+ 0.5 (+ (* ratio 0.25)
-			       ;; 				      0.1)))
-			       ;; 		      true))
-			       ;; (cl :rr r2 x-len y-len)
-			       ;; (chain ctx (arc (@ points 1 0) (@ points 1 1) 12 (+ (- pi) (- r2 (* pi 0.10)))
-			       ;; 		      (+ (- pi) (+ r2 (* pi 0.10))) true))
+			       (chain ctx (arc (@ points 1 0) (@ points 1 1) circle-radius
+					       (+ (- pi) (- (@ ri 1) (* pi 0.20)))
+					       (+ (- pi) (+ (@ ri 1) (* pi 0.20)))
+					       true))
 			       (chain ctx (stroke)))))
 
 		       (setf (@ ctx stroke-style) "black"
@@ -242,10 +244,8 @@
 			     (lambda (ent)
 			       (setf entity-clicked true
 				     (@ ent layer-points)
-				     (list (chain g (to-dom-coords (@ ent points 0 0)
-								   (@ ent points 0 1)))
-					   (chain g (to-dom-coords (@ ent points 1 0)
-								   (@ ent points 1 1)))))
+				     (list (chain g (to-dom-coords (@ ent points 0 0) (@ ent points 0 1)))
+					   (chain g (to-dom-coords (@ ent points 1 0) (@ ent points 1 1)))))
 			       (if (@ ent in-flux)
 				   (if (and (> 8 (abs (- (@ ent layer-points 0 0) (@ dom-coords 0))))
 					    (> 8 (abs (- (@ ent layer-points 0 1) (@ dom-coords 1)))))
@@ -301,7 +301,6 @@
 				      (@ ent points 1) (chain chart (to-data-coords (@ ent layer-points 1 0)
 									   (@ ent layer-points 1 1)))
 				      (@ ent layer-points) nil
-				      ;; (@ ent layer-points 1) nil
 				      (@ ent points-in-flux) (list))))
 		      (chain self (commit-entities))
 		      (chain chart (draw-graph_))))

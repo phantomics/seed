@@ -418,6 +418,7 @@
 				       (@ data 0 pr meta) (chain j-query (extend t (create)
 										 (@ data 0 mt each)
 										 (@ data 0 pr meta)))))))
+		  ;; (cl :data (@ data 0) each-meta)
 		  ;; assign atom properties from metadata
 		  (setf (@ data 0 ct) (@ state row)
 			(@ data 0 ly) (max 0 (1- (@ state column)))
@@ -429,88 +430,96 @@
 		  ;;     (cl :iio data))
 		  (chain data
 			 (map (lambda (datum index)
-				;; (if (and meta-mode-active (= 0 index))
-				;;     (progn (setf (@ datum inmt)
-				;; 		 (@ data 0 mt))))
-				(if (and (= 1 index)
-					 (not is-plain-list))
-				    (setf (@ state column) (1+ (@ state column))))
-				    ;; increment the column, but not for plain lists
-				(if (> (1+ (@ state column))
-				       (@ meta max-depth))
-				    (setf (@ meta max-depth) (1+ (@ state column))))
-				    ;; increment the maximum depth
-				(if (= "[object Array]" (chain -object prototype to-string (call datum)))
-				    ;; if this item is a list
+				;; (if (@ each-meta visible-members)
+				;;     (cl :atom (@ datum mt) each-meta))
+				;; if the atom is set to be invisible, do not process it for display
+				(if (or (not (@ each-meta visible-members))
+					(not (@ datum mt name))
+					(let ((visible t))
+					  (loop for member in (@ each-meta visible-members)
+					     do (if (= (@ datum mt name) (@ member name))
+						    (setq visible (and visible (= "__on" (@ member state))))))
+					  visible))
 				    (progn
-				      (if (and (or (and is-plain-list (< 0 index))
-					           ;; start incrementing right away in plain lists,
-					           ;; like the main form list
-						   (< 1 index))
-					       (not (and is-plain-list (= 1 index))))
-					  (setf (@ state row) (1+ (@ state row))))
-				      ;; increment the row, but not if this is the form at the beginning of
-				      ;; a plain list and this is not the plain list that encloses the
-				      ;; whole form; i.e. isStart is not true
-				      (if (or last-index (= 0 last-index))
-					  (setf (getprop meta "succession" last-index)
-						(@ datum 0 ix)))
-				      (setf last-index (@ datum 0 ix))
-				      ;; set succession data for drawing glyphs
-				      (chain self (build-form
-						   datum (lambda (output sub-state)
-							   (increment-breadth (1+ (- (@ sub-state row)
-										     (@ state row))))
-					                   ;; increment the breadth based on the difference
-					                   ;; between the current row and the row reached
-					                   ;; within the sub-list
-							   (setf (@ state row) (+ (@ sub-state row))))
-						   meta (chain j-query (extend (create)
-									       state (if is-plain-list
-											 (create)
-											 (create)))))))
-				    ;; if this item is an atom
-				    (let ((pr (chain j-query 
-						     (extend t (create)
-							     (create meta (chain j-query 
-										 (extend t (create)
-											 each-meta
-											 (@ datum mt))))
-							     (@ datum pr)))))
-				      (if (< 0 index)
-					  (progn (if (or last-index (= 0 last-index))
-						     (setf (getprop meta "succession" last-index)
-							   (@ datum ix)))
-						 (setf last-index (@ datum ix))))
-				      (if (< 0 index) (increment-breadth))
-				      (if (or (and is-plain-list (< 0 index))
-					      (< 1 index))
-					  (setf (@ state row) (1+ (@ state row))))
-				      (setf (@ datum ct) (@ state row)
-					    (@ datum ly) (@ state column)
-					    (@ datum pr) pr
-					    ;; concatenate macro styles if the atom
-					    ;; is within an existing macro
-					    (@ datum cx) (if (@ datum am)
-							     (if (@ state reader-context)
-								 (chain state reader-context
-									(concat (list (@ datum am) "start")))
-								 (list (@ datum am) "start"))
-							     (@ state reader-context)))
-				      ;; increment the column if the list head is a plain list marker
-				      ;; and this is not the plain list that encloses the form;
-				      ;; this ensures that the elements within the plain list will have
-				      ;; their layers correctly marked. x
-				      (if (and (not is-start)
-					       (= "plain" (@ datum ty 0)))
+				      (if (and (= 1 index)
+					       (not is-plain-list))
 					  (setf (@ state column) (1+ (@ state column))))
-				      ;; push datum to output array; the index is incremented because
-				      ;; the indices start with 0 but the array indices start with 1
-				      (if (= "undefined" (typeof (getprop meta "output" (@ state row))))
-					  (setf (getprop meta "output" (@ state row))
-						#()))
-				      (chain (getprop meta "output" (@ state row))
-					     (push datum)))))))
+				      ;; increment the column, but not for plain lists
+				      (if (> (1+ (@ state column))
+					     (@ meta max-depth))
+					  (setf (@ meta max-depth) (1+ (@ state column))))
+				      ;; increment the maximum depth
+				      (if (= "[object Array]" (chain -object prototype to-string (call datum)))
+					  ;; if this item is a list
+					  (progn (if (and (or (and is-plain-list (< 0 index))
+							      ;; start incrementing right away in plain lists,
+							      ;; like the main form list
+							      (< 1 index))
+							  (not (and is-plain-list (= 1 index))))
+						     (setf (@ state row) (1+ (@ state row))))
+						 ;; increment the row, but not if this is the form at the beginning of
+						 ;; a plain list and this is not the plain list that encloses the
+						 ;; whole form; i.e. isStart is not true
+						 (if (or last-index (= 0 last-index))
+						     (setf (getprop meta "succession" last-index)
+							   (@ datum 0 ix)))
+						 (setf last-index (@ datum 0 ix))
+						 ;; set succession data for drawing glyphs
+						 (chain self (build-form
+							      datum (lambda (output sub-state)
+								      (increment-breadth (1+ (- (@ sub-state row)
+												(@ state row))))
+								      ;; increment the breadth based on the difference
+								      ;; between the current row and the row reached
+								      ;; within the sub-list
+								      (setf (@ state row) (+ (@ sub-state row))))
+							      meta (chain j-query (extend (create)
+											  state (if is-plain-list
+												    (create)
+												    (create)))))))
+					  ;; if this item is an atom
+					  (let ((pr (chain j-query (extend t (create)
+									   (create meta (chain j-query 
+											       (extend t (create)
+												       each-meta
+												       (@ datum mt))))
+									   (@ datum pr)))))
+					    (if (< 0 index)
+						(progn (if (or last-index (= 0 last-index))
+							   (setf (getprop meta "succession" last-index)
+								 (@ datum ix)))
+						       (setf last-index (@ datum ix))))
+					    (if (< 0 index) (increment-breadth))
+					    (if (or (and is-plain-list (< 0 index))
+						    (< 1 index))
+						(setf (@ state row) (1+ (@ state row))))
+					    (setf (@ datum ct) (@ state row)
+						  (@ datum ly) (@ state column)
+						  (@ datum pr) pr
+						  ;; concatenate macro styles if the atom
+						  ;; is within an existing macro
+						  (@ datum cx) (if (@ datum am)
+								   (if (@ state reader-context)
+								       (chain state reader-context
+									      (concat (list (@ datum am) "start")))
+								       (list (@ datum am) "start"))
+								   (@ state reader-context)))
+					    ;; increment the column if the list head is a plain list marker
+					    ;; and this is not the plain list that encloses the form;
+					    ;; this ensures that the elements within the plain list will have
+					    ;; their layers correctly marked. x
+					    (if (and (not is-start)
+						     (= "plain" (@ datum ty 0)))
+						(setf (@ state column) (1+ (@ state column))))
+					    ;; push datum to output array; the index is incremented because
+					    ;; the indices start with 0 but the array indices start with 1
+					    (if (= "undefined" (typeof (getprop meta "output" (@ state row))))
+						(setf (getprop meta "output" (@ state row))
+						      #()))
+					    (chain (getprop meta "output" (@ state row))
+						   (push datum)))))
+				    (progn (setf (@ datum hide) t))))))
+			      
 		  (funcall callback meta state)))))
    :build-list
    (lambda (data atom-builder form-builder callback output)
@@ -1082,8 +1091,7 @@
 	(chain self (set-focus "meta" 0))
 	(chain self state context methods (set-delta nil))
 	(chain self state context methods (set-mode "move")))
-       ))
-     )
+       )))
    :component-did-mount
    (lambda () (chain this (build (@ this state))))
    :should-component-update
