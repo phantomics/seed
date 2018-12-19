@@ -414,7 +414,10 @@
 	    	  
 	    (.holder :height "calc(100% - 72px)"
 		     :position relative
-		     :margin 0 2px))
+		     :margin 0 2px)
+
+	    (.canvas-container :height 100%
+			       :width 100%))
 
 	   ((:or .portal-column.form .portal-column.spreadsheet)
 	    (.pane :padding-right 2px))

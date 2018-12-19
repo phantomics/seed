@@ -541,3 +541,50 @@
    `((setf (branch-image ,(if reagent `(find-branch-by-name ,reagent sprout)
 			      'branch))
 	   nil))))
+
+
+
+
+(setq mmm (macroexpand `(specify-media
+ media-spec-base
+ ;; read data from a file
+ (get-file (source)
+	   `(load-exp-from-file (sprout-name sprout)
+				,(if (symbolp source)
+				     `(concatenate 'string (string-downcase ,(if (eq :-self source)
+										 `(branch-name branch)
+										 `(quote ,source)))
+						   ".lisp")
+				     (if (stringp source)
+					 source))))
+ 
+ ;; read text from a file
+ (get-file-text (source)
+		`(load-string-from-file (sprout-name sprout)
+					,(if (symbolp source)
+					     `(concatenate 'string
+							   (string-downcase ,(if (eq :-self source)
+										 `(branch-name branch)
+										 `(quote ,source)))
+							   ".lisp")
+					     (if (stringp source)
+						 source))))
+
+ ;; write data to a file
+ (put-file (follows reagent file-name)
+	   `((file-output (exp-string reagent "")
+			  (asdf:system-relative-pathname 
+			   (sprout-name sprout)
+			   ;; (concatenate 'string (string-downcase ,(if (eq :-self file-name)
+			   ;; 					      `(branch-name branch)
+			   ;; 					      `(quote ,file-name)))
+			   ;; 		".lisp")
+			   ,(if (symbolp file-name)
+				`(concatenate 'string
+					      (string-downcase ,(if (eq :-self file-name)
+								    `(branch-name branch)
+								    `(quote ,file-name)))
+					      ".lisp")
+				(if (stringp file-name)
+				    file-name)))))))))
+

@@ -649,6 +649,80 @@ inclusion of aport macro here just acts as passthrough
 ;; 										,@(build-branch (rest branch))))
 ;; 							      branches))))))))))
 
+;;;
+
+;; (defmacro sprout (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
+;;   ;; generate list of nested macros from linear pipeline spec
+;;   ;; the media macros are specified here - their arguments form the taxonomy for the code which wraps them
+;;   ;; create a sprout instance with the branches set up, including the input and output media
+;;   `(germinate contacts
+;; 	      (make-instance (quote ,(if contacts 'portal 'sprout))
+;; 			     :name ,name :system (quote ,system) :meta (quote ,meta)
+;; 			     :package (quote ,package) :formats (quote ,formats)
+;; 			     ,@(if contacts
+;; 				   (list :contacts
+;; 					 `(mapcar (lambda (contact)
+;; 						    ;; TODO: the below assumes a flat structure for the
+;; 						    ;; system file storage, improve the logic
+;; 						    (if (string= "SPROUT" (string-upcase (type-of contact)))
+;; 							;; if the item provided is an actual sprout object,
+;; 							;; simply pass it through, otherwise generate
+;; 							;; the sprout as defined by its system's .seed file
+;; 							contact
+;; 							(if (handler-case (progn (asdf:find-system ,name) t)
+;; 							      (condition () nil))
+;; 							    ;; don't load the .seed file if the contact is
+;; 							    ;; not defined as an ASDF system
+;; 							    (let ((name-string (string-downcase contact)))
+;; 							      (eval (first (load-exp-from-file
+;; 									    (intern (string-upcase name-string)
+;; 										    "KEYWORD")
+;; 									    (format nil "~a.seed"
+;; 										    name-string))))))))
+;; 						  (list ,@contacts))))
+;; 			     :branches (list ,@(mapcar (lambda (branch)
+;; 							 `(make-instance 'branch
+;; 									 :name ,(intern (string-upcase
+;; 											 (first branch))
+;; 											"KEYWORD")
+;; 									 :spec (quote ,branch)
+;; 									 ,@(build-medium (rest branch))))
+;; 						       branches)))))
+
+
+;; (sprout :portal.demo1
+;;         :system (:description "This is a test portal.")
+;;         :package ((:use :cl))
+;;         :contacts (:demo-sheet :demo-graph :demo-image :demo-drawing :demo-market)
+;;         :branches ((systems (in (if-condition (is-display-format) (:then (codec)))
+;;                                 (put-image) (set-active-system-by-selection) (put-file (get-image) :-self))
+;;                             (out (set-type -o :form) (put-image (build-stage -o)) (codec -o)))))
+
+;; (defun thread-operation (input-symbol form &optional output)
+;;   (if (not form)
+;;       output (let ((head (first form)))
+;; 	       (thread-operation input-symbol (rest form)
+;; 				 (cons (first head)
+;; 				       (loop :for item :in (rest head)
+;; 					  :collect (cond ((listp item)
+;; 							  (thread-operation input-symbol (list item) output))
+;; 							 ((and (symbolp item)
+;; 							       (or (string= "-I" (string-upcase item))
+;; 								   (string= "-O" (string-upcase item))))
+;; 							  (if output output input-symbol))
+;; 							 (t item))))))))
+
+;; (defun build-medium (specs)
+;;   (loop :for spec :in specs
+;;      :append (list (intern (string-upcase (first spec)) "KEYWORD")
+;; 		   `(lambda (input params branch sprout callback)
+;; 		      ,(thread-operation 'input (rest spec))))))
+
+;; '((set-type -o :form) (put-image (build-stage -o)) (codec -o))
+
+
+;;;-
+
 
 (defmacro media (&rest media)
   "Top-level wrapper for the nested media specification functions, which turns the list of media specs into arguments to the till macro. The order of the media specs is reversed so that the arguments to manifestMedia are intuitively ordered with the foundational spec first, modified by the specs coming after it."

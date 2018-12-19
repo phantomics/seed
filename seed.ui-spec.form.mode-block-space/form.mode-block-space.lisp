@@ -94,12 +94,12 @@
    (lambda ()
      (let* ((self this)
 	    (cl #())
-	    ;; (error-found false)
 	    (space-length (@ self state space length))
 	    (section (/ space-length 4))
 	    (radius (/ space-length 2))
 	    (new-space (-voxel-space (create materials (list "#8baba8" "#f3827c" "#dfe0de" "#4f5e5d" "#000000")
 					     material-flat-color t
+					     sky-color 0x002b36
 					     chunk-size section
 					     lights-disabled t
 					     fog-disabled t
@@ -107,14 +107,25 @@
 							(getprop self "state" "space"
 								 (mod (+ radius x) space-length)
 								 (mod (+ radius y) space-length)
-								 (mod (+ radius z) space-length))))))
+								 (mod (+ radius z) space-length)))
+					     width (@ self container-element client-width))))
+	    (window-width (@ self container-element client-width))
+	    (window-height (@ self container-element client-height))
 	    (create-player (-voxel-space-player new-space))
 	    (new-player (create-player)))
        ;; (cl :coords cl)
        (chain new-player yaw position (set 0 0 0))
        ;;(chain new-player (subject-to (new (chain window three-js (-vector3 0 0 0)))))
        (chain new-player (possess))
-       (chain new-space (append-to (@ this container-element)))))
+       (setf (@ new-space width) (@ self container-element client-width))
+       ;; (cl :nn new-space)
+       (chain new-space (append-to (@ self container-element)))
+       (setf (@ self container-element children 0 client-width) window-width)
+       ;; (cl window-width window-height (j-query (@ self container-element)))
+       ;; (cl (@ self container-element children 0))
+       (setf (@ self container-element children 0 height) 400)
+       (chain (j-query (@ self container-element children 0))
+	      (width window-width))))
    ;; :component-did-update
    ;; (lambda ()
    ;;   (if (and (= "set" (@ this state context mode))
@@ -130,6 +141,6 @@
   ;;(let ((-data-sheet (new -react-data-sheet)))
   ;;(chain console (log :dd (@ self props context)))
   ;;(cl 90 (@ self state space))
-  (panic:jsl (:div :ref (lambda (ref)
-			  (if (not (@ self container-element))
-			      (setf (@ self container-element) ref)))))))
+  (panic:jsl (:div :class-name "canvas-container"
+		   :ref (lambda (ref) (if (not (@ self container-element))
+					  (setf (@ self container-element) ref)))))))
