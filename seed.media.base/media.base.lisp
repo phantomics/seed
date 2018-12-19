@@ -479,65 +479,112 @@
 			    (lambda (ifirst isecond) (> (second ifirst) (second isecond)))))))))
  )
 
-(defmacro specify-media2 (&rest stuff)
-  (declare (ignore stuff))
-  nil)
+;; (defmacro specify-media2 (&rest stuff)
+;;   (declare (ignore stuff))
+;;   nil)
 
 
-(specify-media2
- media-spec-base
- (with :tokens-symbol tokens :idiom-symbol idiom :space-symbol workspace
-       :properties-symbol properties :processor-symbol process)
- (defun get-file (data source)
-   `(load-exp-from-file (sprout-name sprout)
-			,(if (symbolp source)
-			     `(concatenate 'string (string-downcase ,(if (eq :-self source)
-									 `(branch-name branch)
-									 `(quote ,source)))
-					   ".lisp")
-			     (if (stringp source)
-				 source))))
- ;; read text from a file
- (defun get-file-text (data source)
-   `(load-string-from-file (sprout-name sprout)
-			   ,(if (symbolp source)
-				`(concatenate 'string
-					      (string-downcase ,(if (eq :-self source)
-								    `(branch-name branch)
-								    `(quote ,source)))
-					      ".lisp")
-				(if (stringp source)
-				    source))))
+;; (specify-media2
+;;  media-spec-base
+;;  (with :tokens-symbol tokens :idiom-symbol idiom :space-symbol workspace
+;;        :properties-symbol properties :processor-symbol process)
+;;  (defun get-file (data source)
+;;    `(load-exp-from-file (sprout-name sprout)
+;; 			,(if (symbolp source)
+;; 			     `(concatenate 'string (string-downcase ,(if (eq :-self source)
+;; 									 `(branch-name branch)
+;; 									 `(quote ,source)))
+;; 					   ".lisp")
+;; 			     (if (stringp source)
+;; 				 source))))
+;;  ;; read text from a file
+;;  (defun get-file-text (data source)
+;;    `(load-string-from-file (sprout-name sprout)
+;; 			   ,(if (symbolp source)
+;; 				`(concatenate 'string
+;; 					      (string-downcase ,(if (eq :-self source)
+;; 								    `(branch-name branch)
+;; 								    `(quote ,source)))
+;; 					      ".lisp")
+;; 				(if (stringp source)
+;; 				    source))))
 
- ;; write data to a file
- (defun put-file (data follows reagent file-name)
-   `((file-output (exp-string reagent "")
-		  (asdf:system-relative-pathname 
-		   (sprout-name sprout)
-		   ;; (concatenate 'string (string-downcase ,(if (eq :-self file-name)
-		   ;; 					      `(branch-name branch)
-		   ;; 					      `(quote ,file-name)))
-		   ;; 		".lisp")
-		   ,(if (symbolp file-name)
-			`(concatenate 'string
-				      (string-downcase ,(if (eq :-self file-name)
-							    `(branch-name branch)
-							    `(quote ,file-name)))
-				      ".lisp")
-			(if (stringp file-name)
-			    file-name))))))
+;;  ;; write data to a file
+;;  (defun put-file (data follows reagent file-name)
+;;    `((file-output (exp-string reagent "")
+;; 		  (asdf:system-relative-pathname 
+;; 		   (sprout-name sprout)
+;; 		   ;; (concatenate 'string (string-downcase ,(if (eq :-self file-name)
+;; 		   ;; 					      `(branch-name branch)
+;; 		   ;; 					      `(quote ,file-name)))
+;; 		   ;; 		".lisp")
+;; 		   ,(if (symbolp file-name)
+;; 			`(concatenate 'string
+;; 				      (string-downcase ,(if (eq :-self file-name)
+;; 							    `(branch-name branch)
+;; 							    `(quote ,file-name)))
+;; 				      ".lisp")
+;; 			(if (stringp file-name)
+;; 			    file-name))))))
 
- ;; get a branch image
- (defun get-image (data &optional source)
-   `(branch-image ,(if source `(find-branch-by-name ,source sprout)
-		       'branch)))
+;;  ;; get a branch image
+;;  (defun get-image (data &optional source)
+;;    `(branch-image ,(if source `(find-branch-by-name ,source sprout)
+;; 		       'branch)))
 
- ;; record a branch image
- (defun put-image (data follows reagent)
-   `((setf (branch-image branch) ,(if reagent 'reagent 'data))))
+;;  ;; record a branch image
+;;  (defun put-image (data follows reagent)
+;;    `((setf (branch-image branch) ,(if reagent 'reagent 'data))))
 
- ;; set the branch image to nil
- (defun nullify-image (data follows reagent)
-   `((setf (branch-image ,(if reagent `(find-branch-by-name ,reagent sprout)
-			      'branch))
-	   nil))))
+;;  ;; set the branch image to nil
+;;  (defun nullify-image (data follows reagent)
+;;    `((setf (branch-image ,(if reagent `(find-branch-by-name ,reagent sprout)
+;; 			      'branch))
+;; 	   nil))))
+
+
+
+
+;; (setq mmm (macroexpand `(specify-media
+;;  media-spec-base
+;;  ;; read data from a file
+;;  (get-file (source)
+;; 	   `(load-exp-from-file (sprout-name sprout)
+;; 				,(if (symbolp source)
+;; 				     `(concatenate 'string (string-downcase ,(if (eq :-self source)
+;; 										 `(branch-name branch)
+;; 										 `(quote ,source)))
+;; 						   ".lisp")
+;; 				     (if (stringp source)
+;; 					 source))))
+ 
+;;  ;; read text from a file
+;;  (get-file-text (source)
+;; 		`(load-string-from-file (sprout-name sprout)
+;; 					,(if (symbolp source)
+;; 					     `(concatenate 'string
+;; 							   (string-downcase ,(if (eq :-self source)
+;; 										 `(branch-name branch)
+;; 										 `(quote ,source)))
+;; 							   ".lisp")
+;; 					     (if (stringp source)
+;; 						 source))))
+
+;;  ;; write data to a file
+;;  (put-file (follows reagent file-name)
+;; 	   `((file-output (exp-string reagent "")
+;; 			  (asdf:system-relative-pathname 
+;; 			   (sprout-name sprout)
+;; 			   ;; (concatenate 'string (string-downcase ,(if (eq :-self file-name)
+;; 			   ;; 					      `(branch-name branch)
+;; 			   ;; 					      `(quote ,file-name)))
+;; 			   ;; 		".lisp")
+;; 			   ,(if (symbolp file-name)
+;; 				`(concatenate 'string
+;; 					      (string-downcase ,(if (eq :-self file-name)
+;; 								    `(branch-name branch)
+;; 								    `(quote ,file-name)))
+;; 					      ".lisp")
+;; 				(if (stringp file-name)
+;; 				    file-name)))))))))
+
