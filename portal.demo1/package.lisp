@@ -3,6 +3,7 @@
 (defpackage #:portal.demo1
   (:export #:grow)
   (:use #:common-lisp #:seed.generate #:seed.modulate
+	#:seed.media.base2
 	#:seed.express.glyphs.base #:seed.ui-model.stage
         #:seed.ui-model.keys #:seed.ui-model.html
 	#:seed.ui-model.css #:seed.ui-model.react

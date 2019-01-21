@@ -341,120 +341,121 @@ inclusion of aport macro here just acts as passthrough
 			     ;; an argument such as hash key the true-or-not variable comes afterward
 
 			     (t (list args (third medium)))))))))
-      `(defmacro ,(intern "SPROUT" (package-name *package*))
-	   ;; declare this sprout macro internal to the package where the till macro is invoked
-	   (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
-	 ;; generate list of nested macros from linear pipeline spec
-	 (labels ((,medium-spec (,direction params)
-		    ;; perhaps medium-spec should be sublimated into a more general 
-		    ;; template for the foundation of a branch spec
-		    `(lambda (input params branch sprout callback)
-		       (declare (ignorable input params branch sprout))
-		       ;; input to function is either the user's input, in input mode,
-		       ;; or the branch image in output mode
-		       (funcall callback (flet ((get-param (key) (getf params key))
-						(set-param (key value) (setf (getf params key) value)))
-					   (let ((dat ,(if (eq :in (intern (string-upcase ,direction) "KEYWORD"))
-							   'input `(branch-image branch))))
-					     (declare (ignorable dat))
-					     ,(,media-gen ,direction params)))
-				params)))
-		  (,media-gen (,direction ,params)
-		    (let* ((,operation (first ,params))
-			   (,media-registry ,(list 'quote (mapcar (lambda (m) (intern (string-upcase (first m))
-										     "KEYWORD"))
-								 media)))
-			   (,is-operation-registered (member (intern (string-upcase (first ,operation)) "KEYWORD")
-							    ,media-registry))
-			   ;; reverse the direction used for this medium if :reverse is the final param
-			   (,this-direction (if (eq :reverse (first (last ,operation)))
-					       (if (eq :in ,direction) :out :in)
-					       ,direction))
-			   ;; if that final :reverse param is there, remove it now that its purpose is served
-			   (,operation (if (eq :reverse (first (last ,operation)))
-					  (butlast ,operation) ,operation)))
-		      (if ,operation
-			  (append (if ,is-operation-registered
-				      (list (intern (string-upcase (first ,operation)) "SEED.GENERATE")
-					    (intern (string-upcase ,this-direction) "KEYWORD"))
-				      (list (first ,operation)))
-				  (if ,is-operation-registered
-				      (list (if (rest ,params) (,media-gen ,direction (rest ,params)))))
-				  (mapcar (lambda (,item)
-					    (if (listp ,item)
-						(let ((,is-registered-macro (member (intern (string-upcase
-											    (first ,item))
-											   "KEYWORD")
-										   ,media-registry)))
-						  (if (loop for i in ,item when (listp i) collect i)
-						      ;; the list is processed as a macro with media arguments
-						      ;; if the head is registered as a macro, otherwise the head
-						      ;; is discarded and the subsequent items are processed
-						      (,media-gen ,direction
-								 (if (member (intern (string-upcase (first ,item))
-										     "KEYWORD")
-									     ,media-registry)
-								     (list ,item)
-								     (rest ,item)))
-						      (if ,is-registered-macro
-							  (,media-gen ,direction (list ,item))
-							  ,item)))
-						,item))
-					  (rest ,operation))))))
-		  (,build-branch (,params &optional ,output)
-		    (if ,params
-			(let* ((,item (first ,params))
-			       (,name (intern (string-upcase (first ,item)) "KEYWORD")))
-			  (,build-branch (rest ,params)
-					 ;; TODO: the conditional may need to be expanded if other
-					 ;; modes are implemented
-					 (append ,output (cons ,name (list (cond ((or (eq :in ,name)
-										    (eq :out ,name))
-										(,medium-spec ,name
-											      (rest ,item)))))))))
-			,output)))
-	   ;; the media macros are specified here - their arguments form the taxonomy for the code which wraps them
-	   `(macrolet ,(quote ,(mapcar #'macro-media-builder media))
-	      ;; create a sprout instance with the branches set up, including the input and output media
-	      (germinate contacts
-			 (make-instance (quote ,(if contacts 'portal 'sprout))
-					:name ,name :system (quote ,system) :meta (quote ,meta)
-					:package (quote ,package) :formats (quote ,formats)
-					,@(if contacts
-					      (list :contacts
-						    `(mapcar (lambda (contact)
-							       ;; TODO: the below assumes a flat structure for the
-							       ;; system file storage, improve the logic
-							       (if (string= "SPROUT"
-									    (string-upcase (type-of contact)))
-								   ;; if the item provided is an actual sprout
-								   ;; object, simply pass it through, otherwise
-								   ;; generate the sprout as defined by its
-								   ;; system's .seed file
-								   contact
-								   (if (handler-case
-									   (progn (asdf:find-system ,name) t)
-									 (condition () nil))
-								       ;; don't load the .seed file if the contact
-								       ;; is not defined as an ASDF system
-								       (let ((name-string
-									      (string-downcase contact)))
-									 (eval (first (load-exp-from-file
-										       (intern (string-upcase
-												name-string)
-											       "KEYWORD")
-										       (format nil "~a.seed"
-											       name-string))))))))
-							     (list ,@contacts))))
-					:branches (list ,@(mapcar (lambda (branch)
-								    `(make-instance 'branch
-										    :name ,(intern (string-upcase
-												    (first branch))
-												   "KEYWORD")
-										    :spec (quote ,branch)
-										    ,@(,build-branch (rest
-												     branch))))
-								  branches))))))))))
+)))
+      ;; `(defmacro ,(intern "SPROUT" (package-name *package*))
+      ;; 	   ;; declare this sprout macro internal to the package where the till macro is invoked
+      ;; 	   (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
+      ;; 	 ;; generate list of nested macros from linear pipeline spec
+      ;; 	 (labels ((,medium-spec (,direction params)
+      ;; 		    ;; perhaps medium-spec should be sublimated into a more general 
+      ;; 		    ;; template for the foundation of a branch spec
+      ;; 		    `(lambda (input params branch sprout callback)
+      ;; 		       (declare (ignorable input params branch sprout))
+      ;; 		       ;; input to function is either the user's input, in input mode,
+      ;; 		       ;; or the branch image in output mode
+      ;; 		       (funcall callback (flet ((get-param (key) (getf params key))
+      ;; 						(set-param (key value) (setf (getf params key) value)))
+      ;; 					   (let ((dat ,(if (eq :in (intern (string-upcase ,direction) "KEYWORD"))
+      ;; 							   'input `(branch-image branch))))
+      ;; 					     (declare (ignorable dat))
+      ;; 					     ,(,media-gen ,direction params)))
+      ;; 				params)))
+      ;; 		  (,media-gen (,direction ,params)
+      ;; 		    (let* ((,operation (first ,params))
+      ;; 			   (,media-registry ,(list 'quote (mapcar (lambda (m) (intern (string-upcase (first m))
+      ;; 										     "KEYWORD"))
+      ;; 								 media)))
+      ;; 			   (,is-operation-registered (member (intern (string-upcase (first ,operation)) "KEYWORD")
+      ;; 							    ,media-registry))
+      ;; 			   ;; reverse the direction used for this medium if :reverse is the final param
+      ;; 			   (,this-direction (if (eq :reverse (first (last ,operation)))
+      ;; 					       (if (eq :in ,direction) :out :in)
+      ;; 					       ,direction))
+      ;; 			   ;; if that final :reverse param is there, remove it now that its purpose is served
+      ;; 			   (,operation (if (eq :reverse (first (last ,operation)))
+      ;; 					  (butlast ,operation) ,operation)))
+      ;; 		      (if ,operation
+      ;; 			  (append (if ,is-operation-registered
+      ;; 				      (list (intern (string-upcase (first ,operation)) "SEED.GENERATE")
+      ;; 					    (intern (string-upcase ,this-direction) "KEYWORD"))
+      ;; 				      (list (first ,operation)))
+      ;; 				  (if ,is-operation-registered
+      ;; 				      (list (if (rest ,params) (,media-gen ,direction (rest ,params)))))
+      ;; 				  (mapcar (lambda (,item)
+      ;; 					    (if (listp ,item)
+      ;; 						(let ((,is-registered-macro (member (intern (string-upcase
+      ;; 											    (first ,item))
+      ;; 											   "KEYWORD")
+      ;; 										   ,media-registry)))
+      ;; 						  (if (loop for i in ,item when (listp i) collect i)
+      ;; 						      ;; the list is processed as a macro with media arguments
+      ;; 						      ;; if the head is registered as a macro, otherwise the head
+      ;; 						      ;; is discarded and the subsequent items are processed
+      ;; 						      (,media-gen ,direction
+      ;; 								 (if (member (intern (string-upcase (first ,item))
+      ;; 										     "KEYWORD")
+      ;; 									     ,media-registry)
+      ;; 								     (list ,item)
+      ;; 								     (rest ,item)))
+      ;; 						      (if ,is-registered-macro
+      ;; 							  (,media-gen ,direction (list ,item))
+      ;; 							  ,item)))
+      ;; 						,item))
+      ;; 					  (rest ,operation))))))
+      ;; 		  (,build-branch (,params &optional ,output)
+      ;; 		    (if ,params
+      ;; 			(let* ((,item (first ,params))
+      ;; 			       (,name (intern (string-upcase (first ,item)) "KEYWORD")))
+      ;; 			  (,build-branch (rest ,params)
+      ;; 					 ;; TODO: the conditional may need to be expanded if other
+      ;; 					 ;; modes are implemented
+      ;; 					 (append ,output (cons ,name (list (cond ((or (eq :in ,name)
+      ;; 										    (eq :out ,name))
+      ;; 										(,medium-spec ,name
+      ;; 											      (rest ,item)))))))))
+      ;; 			,output)))
+      ;; 	   ;; the media macros are specified here - their arguments form the taxonomy for the code which wraps them
+      ;; 	   `(macrolet ,(quote ,(mapcar #'macro-media-builder media))
+      ;; 	      ;; create a sprout instance with the branches set up, including the input and output media
+      ;; 	      (germinate contacts
+      ;; 			 (make-instance (quote ,(if contacts 'portal 'sprout))
+      ;; 					:name ,name :system (quote ,system) :meta (quote ,meta)
+      ;; 					:package (quote ,package) :formats (quote ,formats)
+      ;; 					,@(if contacts
+      ;; 					      (list :contacts
+      ;; 						    `(mapcar (lambda (contact)
+      ;; 							       ;; TODO: the below assumes a flat structure for the
+      ;; 							       ;; system file storage, improve the logic
+      ;; 							       (if (string= "SPROUT"
+      ;; 									    (string-upcase (type-of contact)))
+      ;; 								   ;; if the item provided is an actual sprout
+      ;; 								   ;; object, simply pass it through, otherwise
+      ;; 								   ;; generate the sprout as defined by its
+      ;; 								   ;; system's .seed file
+      ;; 								   contact
+      ;; 								   (if (handler-case
+      ;; 									   (progn (asdf:find-system ,name) t)
+      ;; 									 (condition () nil))
+      ;; 								       ;; don't load the .seed file if the contact
+      ;; 								       ;; is not defined as an ASDF system
+      ;; 								       (let ((name-string
+      ;; 									      (string-downcase contact)))
+      ;; 									 (eval (first (load-exp-from-file
+      ;; 										       (intern (string-upcase
+      ;; 												name-string)
+      ;; 											       "KEYWORD")
+      ;; 										       (format nil "~a.seed"
+      ;; 											       name-string))))))))
+      ;; 							     (list ,@contacts))))
+      ;; 					:branches (list ,@(mapcar (lambda (branch)
+      ;; 								    `(make-instance 'branch
+      ;; 										    :name ,(intern (string-upcase
+      ;; 												    (first branch))
+      ;; 												   "KEYWORD")
+      ;; 										    :spec (quote ,branch)
+      ;; 										    ,@(,build-branch (rest
+      ;; 												     branch))))
+      ;; 								  branches))))))))))
 
 
 ;; (defmacro till (&rest media)
@@ -651,43 +652,43 @@ inclusion of aport macro here just acts as passthrough
 
 ;;;
 
-;; (defmacro sprout (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
-;;   ;; generate list of nested macros from linear pipeline spec
-;;   ;; the media macros are specified here - their arguments form the taxonomy for the code which wraps them
-;;   ;; create a sprout instance with the branches set up, including the input and output media
-;;   `(germinate contacts
-;; 	      (make-instance (quote ,(if contacts 'portal 'sprout))
-;; 			     :name ,name :system (quote ,system) :meta (quote ,meta)
-;; 			     :package (quote ,package) :formats (quote ,formats)
-;; 			     ,@(if contacts
-;; 				   (list :contacts
-;; 					 `(mapcar (lambda (contact)
-;; 						    ;; TODO: the below assumes a flat structure for the
-;; 						    ;; system file storage, improve the logic
-;; 						    (if (string= "SPROUT" (string-upcase (type-of contact)))
-;; 							;; if the item provided is an actual sprout object,
-;; 							;; simply pass it through, otherwise generate
-;; 							;; the sprout as defined by its system's .seed file
-;; 							contact
-;; 							(if (handler-case (progn (asdf:find-system ,name) t)
-;; 							      (condition () nil))
-;; 							    ;; don't load the .seed file if the contact is
-;; 							    ;; not defined as an ASDF system
-;; 							    (let ((name-string (string-downcase contact)))
-;; 							      (eval (first (load-exp-from-file
-;; 									    (intern (string-upcase name-string)
-;; 										    "KEYWORD")
-;; 									    (format nil "~a.seed"
-;; 										    name-string))))))))
-;; 						  (list ,@contacts))))
-;; 			     :branches (list ,@(mapcar (lambda (branch)
-;; 							 `(make-instance 'branch
-;; 									 :name ,(intern (string-upcase
-;; 											 (first branch))
-;; 											"KEYWORD")
-;; 									 :spec (quote ,branch)
-;; 									 ,@(build-medium (rest branch))))
-;; 						       branches)))))
+(defmacro sprout (name &key (system nil) (meta nil) (package nil) (formats nil) (branches nil) (contacts nil))
+  ;; generate list of nested macros from linear pipeline spec
+  ;; the media macros are specified here - their arguments form the taxonomy for the code which wraps them
+  ;; create a sprout instance with the branches set up, including the input and output media
+  `(germinate contacts
+	      (make-instance (quote ,(if contacts 'portal 'sprout))
+			     :name ,name :system (quote ,system) :meta (quote ,meta)
+			     :package (quote ,package) :formats (quote ,formats)
+			     ,@(if contacts
+				   (list :contacts
+					 `(mapcar (lambda (contact)
+						    ;; TODO: the below assumes a flat structure for the
+						    ;; system file storage, improve the logic
+						    (if (string= "SPROUT" (string-upcase (type-of contact)))
+							;; if the item provided is an actual sprout object,
+							;; simply pass it through, otherwise generate
+							;; the sprout as defined by its system's .seed file
+							contact
+							(if (handler-case (progn (asdf:find-system ,name) t)
+							      (condition () nil))
+							    ;; don't load the .seed file if the contact is
+							    ;; not defined as an ASDF system
+							    (let ((name-string (string-downcase contact)))
+							      (eval (first (load-exp-from-file
+									    (intern (string-upcase name-string)
+										    "KEYWORD")
+									    (format nil "~a.seed"
+										    name-string))))))))
+						  (list ,@contacts))))
+			     :branches (list ,@(mapcar (lambda (branch)
+							 `(make-instance 'branch
+									 :name ,(intern (string-upcase
+											 (first branch))
+											"KEYWORD")
+									 :spec (quote ,branch)
+									 ,@(build-medium (rest branch))))
+						       branches)))))
 
 
 ;; (sprout :portal.demo1
@@ -698,28 +699,54 @@ inclusion of aport macro here just acts as passthrough
 ;;                                 (put-image) (set-active-system-by-selection) (put-file (get-image) :-self))
 ;;                             (out (set-type -o :form) (put-image (build-stage -o)) (codec -o)))))
 
-;; (defun thread-operation (input-symbol form &optional output)
-;;   (if (not form)
-;;       output (let ((head (first form)))
-;; 	       (thread-operation input-symbol (rest form)
-;; 				 (cons (first head)
-;; 				       (loop :for item :in (rest head)
-;; 					  :collect (cond ((listp item)
-;; 							  (thread-operation input-symbol (list item) output))
-;; 							 ((and (symbolp item)
-;; 							       (or (string= "-I" (string-upcase item))
-;; 								   (string= "-O" (string-upcase item))))
-;; 							  (if output output input-symbol))
-;; 							 (t item))))))))
+(defun thread-operation (input-symbol form &optional output)
+  (if (not form)
+      output (let ((head (first form)))
+	       (thread-operation input-symbol (rest form)
+				 (cons (first head)
+				       (append (list 'sprout 'branch 'params)
+					       (loop :for item :in (rest head)
+						  :collect (cond ((listp item)
+								  (thread-operation input-symbol
+										    (list item) output))
+								 ((and (symbolp item)
+								       (or (string= "-I" (string-upcase item))
+									   (string= "-O" (string-upcase item))))
+								  (if output output input-symbol))
+								 (t item)))))))))
 
-;; (defun build-medium (specs)
-;;   (loop :for spec :in specs
-;;      :append (list (intern (string-upcase (first spec)) "KEYWORD")
-;; 		   `(lambda (input params branch sprout callback)
-;; 		      ,(thread-operation 'input (rest spec))))))
+(defun build-medium (specs)
+  (loop :for spec :in specs
+     :append (let ((direction (intern (string-upcase (first spec)) "KEYWORD")))
+	       (list direction `(lambda (input params branch sprout callback)
+				  (setf (getf params :direction) ,direction)
+				  (print (list :inp input ,direction (quote ,(thread-operation 'input (rest spec)))))
+				  ,(thread-operation 'input (rest spec)))))))
 
-;; '((set-type -o :form) (put-image (build-stage -o)) (codec -o))
+'((set-type -o :form) (put-image (build-stage -o)) (codec -o))
 
+(defmacro define-medium (name arguments &rest body)
+  `(defun ,(intern (string-upcase name) (package-name *package*))
+       ,(append (list 'sprout 'branch 'params)
+		arguments)
+     (declare (ignorable sprout branch params))
+     (print (list :test (quote ,(first body)) ,(and (listp (first body))
+			      (eql 'input (caar body)))))
+     ,@(if (and (listp (first body))
+		(eq :input (caar body)))
+	   `((if (print (eq :in (getf params :direction)))
+		 (progn ,@(rest (assoc :input body)))
+		 (progn ,@(rest (assoc :output body)))))
+	   body)))
+
+;; (define-medium codec (data)
+;;   (input (print data)
+;; 	 (seed.modulate:decode data))
+;;   (output (print (list :dd2 data))
+;; 	  (multiple-value-bind (output meta-form)
+;; 	      (seed.modulate:encode (sprout-name sprout) data)
+;; 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))
+;; 	    output)))
 
 ;;;-
 

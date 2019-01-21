@@ -5,7 +5,7 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on (#:seed.generate #:seed.media.base #:seed.media.chart.base
+  :depends-on (#:seed.generate #:seed.media.base #:seed.media.base2 #:seed.media.chart.base
 	       #:seed.media.graph.garden-path #:seed.modulate
 	       #:seed.modes.atom.base #:seed.modes.form.base
 	       #:seed.modes.meta.common
