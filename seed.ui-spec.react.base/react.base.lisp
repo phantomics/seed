@@ -756,7 +756,7 @@
      (panic:defcomponent -portal
 	 (:get-initial-state
 	  (lambda ()
-	    ;; (chain console (log 905 this))
+	    (chain console (log 905 this))
 	    (let* ((self this)
 		   (this-date (new (-date)))
 		   (modes (list "move" "set" "write"))
@@ -1092,7 +1092,7 @@
        ;(cl 234 (jstr (@ this state context)) (@ this state context))
        ;(chain this (build-retracer 0 (create breadth "full") (@ this state space)))
        ;(cl 888 (@ this state) (chain this (build-retracer 0 (create breadth "full") (@ this state space))))
-       ;(cl 921 (@ this props) (@ this state) (@ this state space))
+       (cl 921 (@ this props) (@ this state) (@ this state space))
        (let* ((self this))
 	 (panic:jsl (:div :class-name "portal palette-standard container-fluid"
 			  (:div :class-name "row"
