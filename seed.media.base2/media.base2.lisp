@@ -40,8 +40,8 @@
   (branch-image (if source (find-branch-by-name source sprout)
 		    branch)))
 
-(define-medium put-image (data reagent)
-  (setf (branch-image branch) (if reagent reagent data)))
+(define-medium put-image (data)
+  (setf (branch-image branch) data))
 
 (define-medium set-type (type data)
   (setf (getf seed.generate::params :type) type)

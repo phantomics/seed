@@ -704,7 +704,9 @@ inclusion of aport macro here just acts as passthrough
       output (let ((head (first form)))
 	       (thread-operation input-symbol (rest form)
 				 (cons (first head)
-				       (append (list 'sprout 'branch 'params)
+				       (append (if (eql :external (nth-value 1 (intern (string-upcase (first head))
+										       "SEED.MEDIA.BASE2")))
+						   (list 'sprout 'branch 'params))
 					       (loop :for item :in (rest head)
 						  :collect (cond ((listp item)
 								  (thread-operation input-symbol
@@ -723,7 +725,7 @@ inclusion of aport macro here just acts as passthrough
 				  (print (list :inp input ,direction (quote ,(thread-operation 'input (rest spec)))))
 				  ,(thread-operation 'input (rest spec)))))))
 
-'((set-type -o :form) (put-image (build-stage -o)) (codec -o))
+'((set-type -o :form) (put-image (build-stage)) (codec -o))
 
 (defmacro define-medium (name arguments &rest body)
   `(defun ,(intern (string-upcase name) (package-name *package*))
@@ -864,3 +866,7 @@ inclusion of aport macro here just acts as passthrough
 	  (load (asdf:system-relative-pathname
 		 (intern (package-name *package*))
 		 (concatenate 'string (string-downcase (package-name *package*)) ".seed")))))
+
+(defpackage #:seed.generate.special-access
+  (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name)
+  (:export #:branch-image #:branch-name #:find-branch-by-name))
