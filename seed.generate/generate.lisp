@@ -133,6 +133,9 @@
    (spec :accessor branch-spec
 	 :initform nil
 	 :initarg :spec)
+   (options :accessor branch-options
+	    :initform nil
+	    :initarg :options)
    (input :accessor branch-input
 	  :initform nil
 	  :initarg :in)
@@ -686,6 +689,7 @@ inclusion of aport macro here just acts as passthrough
 									 :name ,(intern (string-upcase
 											 (first branch))
 											"KEYWORD")
+									 ;; :options (quote ,(second branch))
 									 :spec (quote ,branch)
 									 ,@(build-medium (rest branch))))
 						       branches)))))
@@ -704,8 +708,8 @@ inclusion of aport macro here just acts as passthrough
       output (let ((head (first form)))
 	       (thread-operation input-symbol (rest form)
 				 (cons (first head)
-				       (append (if (eql :external (nth-value 1 (intern (string-upcase (first head))
-										       "SEED.MEDIA.BASE2")))
+				       (append (if (eq :external (nth-value 1 (intern (string-upcase (first head))
+										      "SEED.MEDIA.BASE2")))
 						   (list 'sprout 'branch 'params))
 					       (loop :for item :in (rest head)
 						  :collect (cond ((listp item)
@@ -719,14 +723,28 @@ inclusion of aport macro here just acts as passthrough
 
 (defun build-medium (specs)
   (loop :for spec :in specs
-     :append (let ((direction (intern (string-upcase (first spec)) "KEYWORD")))
+     :append (let ((direction (intern (string-upcase (first spec)) "KEYWORD"))
+		   (options (cdadr spec)))
 	       (list direction `(lambda (input params branch sprout callback)
 				  (setf (getf params :direction) ,direction)
+				  ;; (print (list :ops55 (quote ,options)
+				  ;; 	       (quote ,(if (listp (first options))
+				  ;; 			   (assoc :type options)))
+				  ;; 	       ))
+				  ,@(if (and (listp (first options))
+					     (assoc :type options))
+				  	`((setf (getf params :type)
+				  		(quote ,(rest (assoc :type options))))))
 				  (print (list :inp input ,direction (quote ,(thread-operation 'input (rest spec)))))
-				  (funcall callback ,(thread-operation 'input (rest spec))
+				  (funcall callback ,(thread-operation 'input (cddr spec))
 					   params))))))
 
 '((set-type -o :form) (put-image (build-stage)) (codec -o))
+
+'((set-type :graphic :bitmap)
+  (if (print (not (is-image)))
+      (get-value :image-output-path)
+      (get-image)))
 
 (defmacro display-params (input &rest params)
   (declare (ignore params))

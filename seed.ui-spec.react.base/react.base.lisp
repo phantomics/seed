@@ -318,8 +318,8 @@
       (let ((interactions (create))
 	    (branch-index (create)))
 	(defun fill-branch (self space)
-	  ;; (cl 22 self space)
-	  ;; (cl 21 (@ self state))
+	  (cl 22 self space)
+	  (cl 21 (@ self state))
 	  (if (and (@ self props action)
 		   (= "setBranchById" (@ self props action id)))
 	      (let* ((set-index nil))
@@ -346,6 +346,7 @@
 		    (setq fetch-pane-element (lambda (element) (if element
 								   (setf (@ self pane-element) element)
 								   (@ self pane-element)))))
+		(cl :br branch)
 		(let* ((index (@ self props context meta ct))
 		       (this-set-interaction (getprop branch-index (@ branch id) "setInteraction"))
 		       (this-get-interaction (getprop branch-index (@ branch id) "getInteraction"))
