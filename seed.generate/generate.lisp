@@ -723,9 +723,14 @@ inclusion of aport macro here just acts as passthrough
 	       (list direction `(lambda (input params branch sprout callback)
 				  (setf (getf params :direction) ,direction)
 				  (print (list :inp input ,direction (quote ,(thread-operation 'input (rest spec)))))
-				  ,(thread-operation 'input (rest spec)))))))
+				  (funcall callback ,(thread-operation 'input (rest spec))
+					   params))))))
 
 '((set-type -o :form) (put-image (build-stage)) (codec -o))
+
+(defmacro display-params (input &rest params)
+  (declare (ignore params))
+  input)
 
 (defmacro define-medium (name arguments &rest body)
   `(defun ,(intern (string-upcase name) (package-name *package*))
@@ -740,15 +745,6 @@ inclusion of aport macro here just acts as passthrough
 		 (progn ,@(rest (assoc :input body)))
 		 (progn ,@(rest (assoc :output body)))))
 	   body)))
-
-;; (define-medium codec (data)
-;;   (input (print data)
-;; 	 (seed.modulate:decode data))
-;;   (output (print (list :dd2 data))
-;; 	  (multiple-value-bind (output meta-form)
-;; 	      (seed.modulate:encode (sprout-name sprout) data)
-;; 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))
-;; 	    output)))
 
 ;;;-
 

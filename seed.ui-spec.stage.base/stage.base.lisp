@@ -25,7 +25,7 @@
 		 ,@(if branch-specs `((meta ,(funcall ,(macroexpand sub-nav)
 						      (loop for item in
 							   (rest (assoc :primary
-									(rest (first (find-form-in-spec
+									(cddr (first (find-form-in-spec
 										      'display-params
 										      (first branch-specs))))))
 							   append item))
@@ -80,19 +80,19 @@
 								  (find-spec target (rest specs))))))
 						 (find-spec section branch-specs))))))
 	      	  (mapcar #'process-section
-	      		  (rest (assoc :primary (rest (first (find-form-in-spec 'display-params
+	      		  (rest (assoc :primary (cddr (first (find-form-in-spec 'display-params
 	      									(first specs)))))))))
 	      
 	      (prospec-nav (specs)
-		(rest (assoc :primary (rest (first (find-form-in-spec 'display-params (first specs)))))))
+		(rest (assoc :primary (cddr (first (find-form-in-spec 'display-params (first specs)))))))
 
 	      (prospec-adj (specs) ;;(specs &optional output)
-		(second (assoc :adjunct (rest (first (find-form-in-spec 'display-params (first specs))))))))
+		(second (assoc :adjunct (cddr (first (find-form-in-spec 'display-params (first specs))))))))
        `((meta ((meta ,(prospec-segment branch-specs)
 		      :mode (:view :vista :name :branches :enclose :enclose-branches-main :point 0
 				 :index (:format
 					 ,(rest (assoc :primary
-						       (rest (first (find-form-in-spec 'display-params
+						       (cddr (first (find-form-in-spec 'display-params
 										       (first branch-specs)))))))
 				 :navigation (:format (,(prospec-nav branch-specs)))))
 		(meta ,(prospec-adj branch-specs)

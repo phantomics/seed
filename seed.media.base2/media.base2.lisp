@@ -43,15 +43,31 @@
 (define-medium put-image (data)
   (setf (branch-image branch) data))
 
-(define-medium set-type (type data)
-  (setf (getf seed.generate::params :type) type)
-  (print (list :pr type data seed.generate::params))
-  data)
+(define-medium set-type (&rest type-list)
+  (setf (getf seed.generate::params :type) type-list)
+  (print (list :pr type-list seed.generate::params)))
 
 
 (define-medium set-param (key value data)
   (setf (getf seed.generate::params key) value)
   data)
+
+(define-medium is-image ()
+  (not (null (branch-image branch))))
+
+(define-medium get-value (source)
+  (let ((val-sym (intern (string-upcase (if (eq :-self source)
+					    (branch-name branch)
+					    source))
+			 (string-upcase (sprout-name sprout)))))
+    (if (boundp val-sym) (eval val-sym))))
+
+ ;; (get-value (follows source)
+ ;; 	    `((let ((val-sym (intern (string-upcase ,(if (eq :-self source)
+ ;; 							 `(branch-name branch)
+ ;; 							 `(quote ,source)))
+ ;; 				     (string-upcase (sprout-name sprout)))))
+ ;; 		(if (boundp val-sym) (eval val-sym)))))
 
 ;; (set-media
 ;;  media-template-standard

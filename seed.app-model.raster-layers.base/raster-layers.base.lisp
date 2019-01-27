@@ -57,9 +57,9 @@
 				  ((eq layer-type :apl)
 				   `(funcall (lambda (,input)
 					       (type-array
-						,(eval (macroexpand `(april (set (:compile-only)
-										 (:state :in ((input ,input))
-											 :print-output nil))
+						,(eval (macroexpand `(april (with (:compile-only)
+										  (:state :in ((input ,input))
+											  :print-output nil))
 									    ,(getf layer-data :exp))))))
 					     ,output))
 				  ((eq layer-type :output)
