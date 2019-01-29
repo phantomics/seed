@@ -1283,7 +1283,7 @@
       (let ((display #()))
 	;(cl :scc (@ this state space))
 	(loop for glix from 0 to (1- (@ self state space length))
-	   do (if (getprop (@ self props data element-specs) glix)
+	   do (if (and (@ this state) (getprop (@ self props data element-specs) glix))
 		  (let* ((origin (getprop (@ self props data element-specs) glix))
 			 (successor (if (not (= "undefined" (getprop (@ self state data succession) glix)))
 					(getprop (@ self props data element-specs)
