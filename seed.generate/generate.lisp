@@ -882,5 +882,5 @@ inclusion of aport macro here just acts as passthrough
 		 (concatenate 'string (string-downcase (package-name *package*)) ".seed")))))
 
 (defpackage #:seed.generate.special-access
-  (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name)
-  (:export #:branch-image #:branch-name #:find-branch-by-name))
+  (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name #:branch-input #:load-exp-from-file)
+  (:export #:branch-image #:branch-name #:find-branch-by-name #:branch-input #:load-exp-from-file))
