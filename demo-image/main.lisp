@@ -2,61 +2,62 @@
 (DEFVAR IMAGE-OUTPUT-PATH)
 (META
  (RASTER-PROCESS-LAYERS (:LOAD :PATH "sample-image.jpg")
-  (:APL :EXP "0⌈255⌊⌈1.2×input") (:OUTPUT :PATH "sample-image-out.jpg"))
+  (:APL :EXP "0⌈255⌊⌈1.2×input") (:APL :EXP "input[;;1]←100 ◊ 0⌈255⌊⌈input")
+  (:OUTPUT :PATH "sample-image-out.jpg"))
  :MODE
- (:VALUE NIL :FORMAT :RASTER-PROCESS-LAYERS-EXPAND :OPTIONS
-  ((:VALUE
-    (META ((META "" :MODE (:VALUE "" :VIEW :TEXTFIELD :TITLE "File Path")))
-     :MODE
-     (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T :OPEN T :FORMAT-PROPERTIES
-      (:TYPE :LOAD)))
-    :TITLE "Load File")
-   (:VALUE
-    (META ((META "" :MODE (:VALUE "" :VIEW :TEXTFIELD :TITLE "APL"))) :MODE
-     (:VIEW :ITEM :TITLE "APL Mutation" :REMOVABLE T :OPEN T :FORMAT-PROPERTIES
-      (:TYPE :APL)))
-    :TITLE "APL Mutation")
-   (:VALUE
-    (META ((META "" :MODE (:VALUE "" :VIEW :TEXTFIELD :TITLE "File Path")))
-     :MODE
-     (:VIEW :ITEM :TITLE "Output to File" :REMOVABLE T :OPEN T
-      :FORMAT-PROPERTIES (:TYPE :OUTPUT)))
-    :TITLE "Output to File"))
-  :REMOVABLE NIL :FILL-BY :SELECT :VIEW :LIST :MODEL
+ (:MODEL
   ((META
     ((META "sample-image.jpg" :MODE
-      (:VALUE "sample-image.jpg" :VIEW :TEXTFIELD :TITLE "File Path")))
+           (:TITLE "File Path" :VIEW :TEXTFIELD :VALUE "sample-image.jpg")))
     :MODE
-    (:VALUE NIL :MODEL
+    (:VIEW :ITEM :TITLE "Load File" :OPEN T :REMOVABLE T :FORMAT-PROPERTIES
+     (:TYPE :LOAD) :MODEL
      ((META "sample-image.jpg" :MODE
-       (:VALUE "sample-image.jpg" :VIEW :TEXTFIELD :TITLE "File Path")))
-     :FORMAT-PROPERTIES (:TYPE :LOAD) :REMOVABLE T :OPEN T :TITLE "Load File"
-     :VIEW :ITEM))
-   (META
-    ((META "0⌈255⌊⌈1.2×input" :MODE
-      (:VALUE "0⌈255⌊⌈1.3×input" :VIEW :TEXTFIELD :TITLE "APL")))
-    :MODE
-    (:VALUE NIL :MODEL
-     ((META "0⌈255⌊⌈1.2×input" :MODE
-       (:VALUE "0⌈255⌊⌈1.3×input" :VIEW :TEXTFIELD :TITLE "APL")))
-     :FORMAT-PROPERTIES (:TYPE :APL) :TOGGLE :ON :REMOVABLE T :OPEN T :TITLE
-     "APL Mutation" :VIEW :ITEM))
-   (META
-    ((META "input[;;1]←100 ◊ 0⌈255⌊⌈input" :MODE
-      (:VALUE "" :VIEW :TEXTFIELD :TITLE "APL")))
-    :MODE
-    (:VIEW :ITEM :TOGGLE :OFF :TITLE "APL Mutation" :REMOVABLE T :OPEN T
-     :FORMAT-PROPERTIES (:TYPE :APL) :MODEL
-     ((META "input[;;1]←100 ◊ 0⌈255⌊⌈input" :MODE
-       (:VALUE "" :VIEW :TEXTFIELD :TITLE "APL")))
+            (:TITLE "File Path" :VIEW :TEXTFIELD :VALUE "sample-image.jpg")))
      :VALUE NIL))
    (META
-    ((META "sample-image-out.jpg" :MODE
-      (:VALUE "sample-image-out.jpg" :VIEW :TEXTFIELD :TITLE "File Path")))
+    ((META "0⌈255⌊⌈1.2×input" :MODE
+           (:TITLE "APL" :VIEW :TEXTFIELD :VALUE "0⌈255⌊⌈1.3×input")))
+    :MODE
+    (:VIEW :ITEM :TITLE "APL Mutation" :OPEN T :REMOVABLE T :TOGGLE :ON
+     :FORMAT-PROPERTIES (:TYPE :APL) :MODEL
+     ((META "0⌈255⌊⌈1.2×input" :MODE
+            (:TITLE "APL" :VIEW :TEXTFIELD :VALUE "0⌈255⌊⌈1.3×input")))
+     :VALUE NIL))
+   (META
+    ((META "input[;;1]←100 ◊ 0⌈255⌊⌈input" :MODE
+           (:TITLE "APL" :VIEW :TEXTFIELD :VALUE "")))
     :MODE
     (:VALUE NIL :MODEL
+     ((META "input[;;1]←100 ◊ 0⌈255⌊⌈input" :MODE
+            (:TITLE "APL" :VIEW :TEXTFIELD :VALUE "")))
+     :FORMAT-PROPERTIES (:TYPE :APL) :OPEN T :REMOVABLE T :TITLE "APL Mutation"
+     :TOGGLE :ON :VIEW :ITEM))
+   (META
+    ((META "sample-image-out.jpg" :MODE
+           (:TITLE "File Path" :VIEW :TEXTFIELD :VALUE
+            "sample-image-out.jpg")))
+    :MODE
+    (:VIEW :ITEM :TITLE "Output to File" :OPEN T :REMOVABLE T
+     :FORMAT-PROPERTIES (:TYPE :OUTPUT) :MODEL
      ((META "sample-image-out.jpg" :MODE
-       (:VALUE "sample-image-out.jpg" :VIEW :TEXTFIELD :TITLE "File Path")))
-     :FORMAT-PROPERTIES (:TYPE :OUTPUT) :REMOVABLE T :OPEN T :TITLE
-     "Output to File" :VIEW :ITEM)))))
+            (:TITLE "File Path" :VIEW :TEXTFIELD :VALUE
+             "sample-image-out.jpg")))
+     :VALUE NIL)))
+  :VIEW :LIST :FILL-BY :SELECT :REMOVABLE NIL :OPTIONS
+  ((:TITLE "Load File" :VALUE
+    (META ((META "" :MODE (:TITLE "File Path" :VIEW :TEXTFIELD :VALUE "")))
+          :MODE
+          (:VIEW :ITEM :TITLE "Load File" :REMOVABLE T :OPEN T
+           :FORMAT-PROPERTIES (:TYPE :LOAD))))
+   (:TITLE "APL Mutation" :VALUE
+    (META ((META "" :MODE (:TITLE "APL" :VIEW :TEXTFIELD :VALUE ""))) :MODE
+          (:VIEW :ITEM :TITLE "APL Mutation" :REMOVABLE T :OPEN T
+           :FORMAT-PROPERTIES (:TYPE :APL))))
+   (:TITLE "Output to File" :VALUE
+    (META ((META "" :MODE (:TITLE "File Path" :VIEW :TEXTFIELD :VALUE "")))
+          :MODE
+          (:VIEW :ITEM :TITLE "Output to File" :REMOVABLE T :OPEN T
+           :FORMAT-PROPERTIES (:TYPE :OUTPUT)))))
+  :FORMAT :RASTER-PROCESS-LAYERS-EXPAND :VALUE NIL))
 (SETQ IMAGE-OUTPUT-PATH "../demo-image/sample-image-out.jpg")

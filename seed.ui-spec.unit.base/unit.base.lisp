@@ -581,7 +581,8 @@
 								       (:div :class-name "button-detail")))))
 					 (:div :class-name "main"
 					       (:div :class-name "sortable-glyph"
-						     (seed-icon :sortable))
+						     ;;(seed-icon :sortable)
+						     )
 					       handle
 					       (if (@ this-mode options)
 						   (panic:jsl
@@ -607,7 +608,8 @@
 								    (delete-point
 								     (list (@ self state data data ly)
 									   (@ self state data data ct)))))
-							   (seed-icon :close)))))
+							   ;;(seed-icon :close)
+							   ))))
 					 
 					 )
 				   (if (@ this-mode open)
@@ -660,5 +662,6 @@
 								      (delete-point 
 								       (list (@ self state data params ly)
 									     (@ self state data params ct)))))
-							     (seed-icon :close))))))
+							     ;;(seed-icon :close)
+							     )))))
 			   (@ self state data content)))))))
