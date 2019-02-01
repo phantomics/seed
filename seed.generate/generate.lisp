@@ -735,7 +735,7 @@ inclusion of aport macro here just acts as passthrough
 					     (assoc :type options))
 				  	`((setf (getf params :type)
 				  		(quote ,(rest (assoc :type options))))))
-				  (print (list :inp input ,direction (quote ,(thread-operation 'input (rest spec)))))
+				  ;; (print (list :inp input ,direction (quote ,(thread-operation 'input (rest spec)))))
 				  (funcall callback ,(thread-operation 'input (cddr spec))
 					   params))))))
 
@@ -755,8 +755,8 @@ inclusion of aport macro here just acts as passthrough
        ,(append (list 'sprout 'branch 'params)
 		arguments)
      (declare (ignorable sprout branch params))
-     (print (list :test (quote ,(first body)) ,(and (listp (first body))
-			      (eql 'input (caar body)))))
+     ;; (print (list :test (quote ,(first body)) ,(and (listp (first body))
+     ;; 			      (eql 'input (caar body)))))
      ,@(if (and (listp (first body))
 		(eq :input (caar body)))
 	   `((if (print (eq :in (getf params :direction)))
@@ -765,7 +765,6 @@ inclusion of aport macro here just acts as passthrough
 	   body)))
 
 ;;;-
-
 
 (defmacro media (&rest media)
   "Top-level wrapper for the nested media specification functions, which turns the list of media specs into arguments to the till macro. The order of the media specs is reversed so that the arguments to manifestMedia are intuitively ordered with the foundational spec first, modified by the specs coming after it."

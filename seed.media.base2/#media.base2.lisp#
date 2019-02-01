@@ -154,7 +154,7 @@
 	     (if items (list items)))))
 
 ;; records input to system's history branch / fetches items from history branch for output
-(define-medium history (source)
+(define-medium history (input source)
   (:input (if (not (get-param :from-history))
 	      ;; don't do anything if the input came from a history movement - this prevents an infinite loop
 	      (if (get-param :vector)
@@ -177,7 +177,7 @@
 		    source)
 		  (progn (setf (getf source (getf seed.generate::params :origin-branch))
 			       (cons (list :time (get-param :time)
-					   :data source) ;; was data
+					   :data input) ;; was data
 				     (getf source (get-param :origin-branch))))
 			 source))
 	      source))
