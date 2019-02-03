@@ -727,6 +727,7 @@ inclusion of aport macro here just acts as passthrough
 		   (options (cdadr spec)))
 	       (list direction `(lambda (input params branch sprout callback)
 				  (setf (getf params :direction) ,direction)
+				  (print (list :top-params params (branch-name branch)))
 				  ;; (print (list :ops55 (quote ,options)
 				  ;; 	       (quote ,(if (listp (first options))
 				  ;; 			   (assoc :type options)))
@@ -735,7 +736,6 @@ inclusion of aport macro here just acts as passthrough
 					     (assoc :type options))
 				  	`((setf (getf params :type)
 				  		(quote ,(rest (assoc :type options))))))
-				  ;; (print (list :inp input ,direction (quote ,(thread-operation 'input (rest spec)))))
 				  (funcall callback ,(thread-operation 'input (cddr spec))
 					   params))))))
 
@@ -759,8 +759,10 @@ inclusion of aport macro here just acts as passthrough
      ;; 			      (eql 'input (caar body)))))
      ,@(if (and (listp (first body))
 		(eq :input (caar body)))
-	   `((if (print (eq :in (getf params :direction)))
-		 (progn ,@(rest (assoc :input body)))
+	   `(;;(print (list :parr params (quote ,name) (branch-name branch)))
+	     (if (eq :in (getf params :direction))
+		 (progn ;; (print (list :inp5 (branch-input branch) (branch-name branch)))
+			,@(rest (assoc :input body)))
 		 (progn ,@(rest (assoc :output body)))))
 	   body)))
 
@@ -881,5 +883,7 @@ inclusion of aport macro here just acts as passthrough
 		 (concatenate 'string (string-downcase (package-name *package*)) ".seed")))))
 
 (defpackage #:seed.generate.special-access
-  (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name #:branch-input #:load-exp-from-file)
-  (:export #:branch-image #:branch-name #:find-branch-by-name #:branch-input #:load-exp-from-file))
+  (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name #:branch-input
+		#:of-branch-meta #:load-exp-from-file)
+  (:export #:branch-image #:branch-name #:find-branch-by-name #:branch-input
+	   #:of-branch-meta #:load-exp-from-file))

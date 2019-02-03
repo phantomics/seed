@@ -1188,8 +1188,8 @@
 					   (panic:jsl (:div :class-name "matrix-view form-view"
 							    :id (+ "form-view-" (@ self state data id))
 							    :key (+ "form-view-" (@ self state data id))
-							    (subcomponent (@ view-modes glyph-display)
-									  glyph-content)
+							    ;; (subcomponent (@ view-modes glyph-display)
+							    ;; 		  glyph-content)
 							    rendered)))))))
 	    (t (chain self (render-list (@ this state space)
 					(lambda (rendered depth base-atom)

@@ -3,7 +3,7 @@
 (in-package #:seed.media.base2)
 
 (define-medium codec (data)
-  (:input ;;(print (list :dt2 data))
+  (:input ;;(print (list :dt2 data seed.generate::params (branch-name branch)))
 	  (seed.modulate:decode data))
   (:output ;;(print (list :dt data))
 	  (multiple-value-bind (output meta-form)
@@ -45,17 +45,38 @@
 (define-medium put-image (data)
   (setf (branch-image branch) data))
 
+;; set the branch image to nil
+(define-medium nullify-image (&optional branch-id)
+  (setf (branch-image (if (not branch-id)
+			  branch (find-branch-by-name branch-id sprout)))
+	nil))
+
 (define-medium set-type (&rest type-list)
   (setf (getf seed.generate::params :type) type-list)
-  (print (list :pr type-list seed.generate::params)))
+  ;; (print (list :pr type-list seed.generate::params))
+  )
 
 
 (define-medium set-param (key value data)
   (setf (getf seed.generate::params key) value)
   data)
 
+(define-medium is-param (key)
+  (getf seed.generate::params key))
+
 (define-medium is-image ()
   (not (null (branch-image branch))))
+
+;; set a branch's time parameter to the current time
+(define-medium set-time (data)
+  (setf (getf seed.generate::params :time)
+	(get-universal-time))
+  (print (list :set-time seed.generate::params))
+  data)
+
+;; designate a branch as stable or not
+(define-medium set-stable (&optional or-not)
+  (set-branch-meta branch :stable (not (eq :not or-not))))
 
 (define-medium get-value (source)
   (let ((val-sym (intern (string-upcase (if (eq :-self source)
@@ -70,20 +91,22 @@
 ;; transfer current input or output to another branch, forking its path
 (define-medium fork-to (input branch-to)
   (setf (getf seed.generate::params :origin-branch)
-	(branch-name branch))
+  	(branch-name branch))
+  (print (list :fork-to seed.generate::params branch-to (branch-input (find-branch-by-name branch-to sprout))))
   (funcall (branch-input (find-branch-by-name branch-to sprout))
-	   input seed.generate::params (find-branch-by-name branch-to sprout)
+	   input (append (list :direction :in) seed.generate::params)
+	   (find-branch-by-name branch-to sprout)
 	   sprout (lambda (dat par) (declare (ignorable dat par))))
   input)
 
 (define-medium form (data)
-  (:input (if (get-param :from-clipboard)
+  (:input (if (getf seed.generate::params :from-clipboard)
 	      (multiple-value-bind (output-form form-point)
-		  (follow-path (get-param :point-to)
+		  (follow-path (getf seed.generate::params :point-to)
 			       (branch-image branch)
 			       (lambda (point) 
 				 (declare (ignore point))
-				 (let* ((cb-input (get-param :clipboard-input))
+				 (let* ((cb-input (getf seed.generate::params :clipboard-input))
 					(cb-data (getf cb-input :data))
 					(type-settings (find-form-in-spec 'set-type 
 									  (branch-spec (find-branch-by-name
@@ -99,9 +122,9 @@
 		(declare (ignore form-point))
 		output-form)
 	      data))
-  (:output (if (get-param :from-clipboard)
+  (:output (if (getf seed.generate::params :from-clipboard)
 	       (multiple-value-bind (output-form from-point)
-		   (follow-path (get-param :point-to) 
+		   (follow-path (getf seed.generate::params :point-to) 
 				(branch-image branch)
 				(lambda (point) point))
 		 (declare (ignore output-form))
@@ -114,11 +137,11 @@
   (:output (rest data)))
 
 (define-medium clipboard (source)
-  (:input (let* ((vector (get-param :vector))
+  (:input (let* ((vector (getf seed.generate::params :vector))
 		 (cb-point-to (if (not (of-branch-meta branch :point-to))
 				  (set-branch-meta branch :point-to 0)
 				  (of-branch-meta branch :point-to)))
-		 (branch-key (intern (string-upcase (get-param :branch))
+		 (branch-key (intern (string-upcase (getf seed.generate::params :branch))
 				     "KEYWORD"))
 		 (associated-branch (find-branch-by-name branch-key sprout))
 		 (new-params seed.generate::params))
@@ -135,7 +158,7 @@
 			     nil new-params associated-branch
 			     sprout (lambda (data-output pr)
 				      (declare (ignorable pr))
-				      (cons (list :time (get-param :time)
+				      (cons (list :time (getf seed.generate::params :time)
 						  :origin branch-key
 						  :data data-output)
 					    source)))
@@ -154,16 +177,16 @@
 	     (if items (list items)))))
 
 ;; records input to system's history branch / fetches items from history branch for output
-(define-medium history (input source)
-  (:input (if (not (get-param :from-history))
+(define-medium history (source &optional input)
+  (:input (if (not (getf seed.generate::params :from-history))
 	      ;; don't do anything if the input came from a history movement - this prevents an infinite loop
-	      (if (get-param :vector)
+	      (if (getf seed.generate::params :vector)
 		  (let* ((points (of-branch-meta branch :points))
-			 (branch-key (intern (string-upcase (get-param :recall-branch))
+			 (branch-key (intern (string-upcase (getf seed.generate::params :recall-branch))
 					     "KEYWORD"))
 			 (history-index (setf (getf points branch-key)
 					      (min (max 0 (1- (length (getf source branch-key))))
-						   (max 0 (+ (first (get-param :vector))
+						   (max 0 (+ (first (getf seed.generate::params :vector))
 							     (if (getf points branch-key)
 								 (getf points branch-key)
 								 0)))))))
@@ -176,9 +199,9 @@
 			     sprout (lambda (dt pr) (declare (ignorable dt pr))))
 		    source)
 		  (progn (setf (getf source (getf seed.generate::params :origin-branch))
-			       (cons (list :time (get-param :time)
-					   :data input) ;; was data
-				     (getf source (get-param :origin-branch))))
+			       (cons (list :time (getf seed.generate::params :time)
+					   :data input)
+				     (getf source (getf seed.generate::params :origin-branch))))
 			 source))
 	      source))
   (:output (let ((branch-index 0))
@@ -188,8 +211,7 @@
 			      (setq branch-index (1+ branch-index))
 			      (process-each (cddr input)
 					    (append (mapcar (lambda (item index)
-							      (list 'meta
-								    (getf item :time)
+							      (list 'meta (getf item :time)
 								    :branch-reference (first input)
 								    :branch-index this-index
 								    :point-offset
