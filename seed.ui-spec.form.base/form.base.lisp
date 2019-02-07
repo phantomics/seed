@@ -1188,8 +1188,8 @@
 					   (panic:jsl (:div :class-name "matrix-view form-view"
 							    :id (+ "form-view-" (@ self state data id))
 							    :key (+ "form-view-" (@ self state data id))
-							    (subcomponent (@ view-modes glyph-display)
-									  glyph-content)
+							    ;; (subcomponent (@ view-modes glyph-display)
+							    ;; 		  glyph-content)
 							    rendered)))))))
 	    (t (chain self (render-list (@ this state space)
 					(lambda (rendered depth base-atom)
@@ -1204,6 +1204,7 @@
    (lambda () (chain this (initialize (@ this props))))
    :initialize
    (lambda (props)
+     (cl :glprops props)
      (let ((self this))
        (funcall inherit self props
 		(lambda (d) (@ d data))
@@ -1242,7 +1243,7 @@
   (defvar self this)
   ;; (chain console (log "RE" (@ self state just-updated)))
   ;; (cl 88 (jstr (chain -object (keys (@ self props table-refs)))) (@ self props glyphs))
-
+  ;; (cl 909 (@ self state) (@ self props data))
   (defun render-glyph (points con-height xos yos next-line nexcon-height next-xos next-yos is-last is-root)
     (let* ((height-factor (+ 1 (@ (j-query (+ "#branch-" (@ self props data branch-index)
 					      "-" (@ self props data branch-id)
@@ -1281,7 +1282,7 @@
 	   (@ this props data root-params top)
 	   (@ this props data element-specs))
       (let ((display #()))
-	;(cl :scc (@ this state space))
+	;; (cl :scc (@ this state space))
 	(loop for glix from 0 to (1- (@ self state space length))
 	   do (if (and (@ this state) (getprop (@ self props data element-specs) glix))
 		  (let* ((origin (getprop (@ self props data element-specs) glix))
@@ -1325,6 +1326,7 @@
 							(:g :key (+ "glyph-col-" glix)
 							    :class-name "glyph"
 							    (@ each-line 0)))))))))
+	(cl :disp display)
 	(panic:jsl (:svg :class-name "dendroglyphs"
 			 :id (+ "dend" (new (chain (-date) (get-time))))
 			 :style (create height (+ (@ self state dims 1) "px")
