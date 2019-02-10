@@ -2,10 +2,13 @@
 
 (in-package #:seed.media.base2)
 
+(define-symbol-macro bparams (seed.generate::branch-params seed.generate::branch))
+
+;; (seed.generate::branch-params seed.generate::branch)
 (define-medium codec (data)
-  (:input ;;(print (list :dt2 data seed.generate::params (branch-name branch)))
+  (:input (print (list :dt2 bparams (branch-name branch)))
 	  (seed.modulate:decode data))
-  (:output ;;(print (list :dt data))
+  (:output (print (list :dt bparams (branch-name branch)))
 	  (multiple-value-bind (output meta-form)
 	      (seed.modulate:encode (sprout-name sprout) data)
 	    (set-branch-meta branch :glyphs (getf meta-form :glyphs))
@@ -52,26 +55,26 @@
 	nil))
 
 (define-medium set-type (&rest type-list)
-  (setf (getf seed.generate::params :type) type-list)
-  ;; (print (list :pr type-list seed.generate::params))
+  (setf (getf bparams :type) type-list)
+  ;; (print (list :pr type-list bparams))
   )
 
 
 (define-medium set-param (key value data)
-  (setf (getf seed.generate::params key) value)
+  (setf (getf bparams key) value)
   data)
 
 (define-medium is-param (key)
-  (getf seed.generate::params key))
+  (getf bparams key))
 
 (define-medium is-image ()
   (not (null (branch-image branch))))
 
 ;; set a branch's time parameter to the current time
 (define-medium set-time (data)
-  (setf (getf seed.generate::params :time)
+  (print (list :data bparams))
+  (setf (getf bparams :time)
 	(get-universal-time))
-  (print (list :set-time seed.generate::params))
   data)
 
 ;; designate a branch as stable or not
@@ -90,23 +93,23 @@
 
 ;; transfer current input or output to another branch, forking its path
 (define-medium fork-to (input branch-to)
-  (setf (getf seed.generate::params :origin-branch)
+  (setf (getf bparams :origin-branch)
   	(branch-name branch))
-  (print (list :fork-to seed.generate::params branch-to (branch-input (find-branch-by-name branch-to sprout))))
+  ;; (print (list :fork-to bparams branch-to (branch-input (find-branch-by-name branch-to sprout))))
   (funcall (branch-input (find-branch-by-name branch-to sprout))
-	   input (append (list :direction :in) seed.generate::params)
+	   input (append (list :direction :in) bparams)
 	   (find-branch-by-name branch-to sprout)
 	   sprout (lambda (dat par) (declare (ignorable dat par))))
   input)
 
 (define-medium form (data)
-  (:input (if (getf seed.generate::params :from-clipboard)
+  (:input (if (getf bparams :from-clipboard)
 	      (multiple-value-bind (output-form form-point)
-		  (follow-path (getf seed.generate::params :point-to)
+		  (follow-path (getf bparams :point-to)
 			       (branch-image branch)
 			       (lambda (point) 
 				 (declare (ignore point))
-				 (let* ((cb-input (getf seed.generate::params :clipboard-input))
+				 (let* ((cb-input (getf bparams :clipboard-input))
 					(cb-data (getf cb-input :data))
 					(type-settings (find-form-in-spec 'set-type 
 									  (branch-spec (find-branch-by-name
@@ -121,10 +124,11 @@
 					 (t cb-data)))))
 		(declare (ignore form-point))
 		output-form)
-	      data))
-  (:output (if (getf seed.generate::params :from-clipboard)
+	      (progn (print (list :data-in data))
+		     data)))
+  (:output (if (getf bparams :from-clipboard)
 	       (multiple-value-bind (output-form from-point)
-		   (follow-path (getf seed.generate::params :point-to) 
+		   (follow-path (getf bparams :point-to) 
 				(branch-image branch)
 				(lambda (point) point))
 		 (declare (ignore output-form))
@@ -137,20 +141,19 @@
   (:output (rest data)))
 
 (define-medium clipboard (source)
-  (:input (let* ((vector (getf seed.generate::params :vector))
+  (:input (let* ((vector (getf bparams :vector))
 		 (cb-point-to (if (not (of-branch-meta branch :point-to))
 				  (set-branch-meta branch :point-to 0)
 				  (of-branch-meta branch :point-to)))
-		 (branch-key (intern (string-upcase (getf seed.generate::params :branch))
+		 (branch-key (intern (string-upcase (getf bparams :branch))
 				     "KEYWORD"))
 		 (associated-branch (find-branch-by-name branch-key sprout))
-		 (new-params seed.generate::params))
+		 (new-params bparams))
 	    (setf (getf new-params :from-clipboard) (branch-name branch))
 	    (if (= 0 (first vector))
 		;; if the horizontal motion is zero, change the point according to the vertical motion
-		(progn (set-branch-meta branch :point-to
-					(min (max 0 (1- (length source)))
-					     (max 0 (- cb-point-to (second vector)))))
+		(progn (set-branch-meta branch :point-to (min (max 0 (1- (length source)))
+							      (max 0 (- cb-point-to (second vector)))))
 		       source)
 		(if (< 0 (first vector))
 		    ;; if the horizontal motion is positive, enter the other branch's form at point
@@ -158,9 +161,8 @@
 			     nil new-params associated-branch
 			     sprout (lambda (data-output pr)
 				      (declare (ignorable pr))
-				      (cons (list :time (getf seed.generate::params :time)
-						  :origin branch-key
-						  :data data-output)
+				      (cons (list :time (getf bparams :time)
+						  :origin branch-key :data data-output)
 					    source)))
 		    ;; if the horizontal motion is negative, replace the other branch's form at point
 		    ;; with the clipboard item at point
@@ -178,30 +180,30 @@
 
 ;; records input to system's history branch / fetches items from history branch for output
 (define-medium history (source &optional input)
-  (:input (if (not (getf seed.generate::params :from-history))
+  (:input (if (not (getf bparams :from-history))
 	      ;; don't do anything if the input came from a history movement - this prevents an infinite loop
-	      (if (getf seed.generate::params :vector)
+	      (if (getf bparams :vector)
 		  (let* ((points (of-branch-meta branch :points))
-			 (branch-key (intern (string-upcase (getf seed.generate::params :recall-branch))
+			 (branch-key (intern (string-upcase (getf bparams :recall-branch))
 					     "KEYWORD"))
 			 (history-index (setf (getf points branch-key)
 					      (min (max 0 (1- (length (getf source branch-key))))
-						   (max 0 (+ (first (getf seed.generate::params :vector))
+						   (max 0 (+ (first (getf bparams :vector))
 							     (if (getf points branch-key)
 								 (getf points branch-key)
 								 0)))))))
 		    (set-branch-meta branch :points points)
 		    ;; (set-param :from-history t)
-		    (setf (getf seed.generate::params :from-history) t)
+		    (setf (getf bparams :from-history) t)
 		    (funcall (branch-input (find-branch-by-name branch-key sprout))
 			     (getf (nth history-index (getf source branch-key)) :data)
-			     seed.generate::params (find-branch-by-name branch-key sprout)
+			     bparams (find-branch-by-name branch-key sprout)
 			     sprout (lambda (dt pr) (declare (ignorable dt pr))))
 		    source)
-		  (progn (setf (getf source (getf seed.generate::params :origin-branch))
-			       (cons (list :time (getf seed.generate::params :time)
-					   :data input)
-				     (getf source (getf seed.generate::params :origin-branch))))
+		  (progn (setf (getf source (getf bparams :origin-branch))
+			       (cons (list :time (getf bparams :time)
+ 					   :data input)
+				     (getf source (getf bparams :origin-branch))))
 			 source))
 	      source))
   (:output (let ((branch-index 0))

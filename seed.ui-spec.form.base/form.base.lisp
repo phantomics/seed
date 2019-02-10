@@ -7,6 +7,7 @@
  (form-view
   (:get-initial-state
    (lambda ()
+     (cl :props (@ this props))
      (chain j-query (extend (create point (if (= "full" (@ this props context view-scope))
 					      #(0 0) #(0))
 				    point-attrs (create index 0 value nil delta nil start 0 fresh t
@@ -78,7 +79,8 @@
 								  (md (lambda (data)
 									(chain data
 									       (splice to 0
-										       (@ (chain data (splice from 1)
+										       (@ (chain data
+												 (splice from 1)
 												 0))))
 									data)))
 							   (chain self state context methods (grow)))))))
