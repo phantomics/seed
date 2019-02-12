@@ -49,10 +49,11 @@
   (setf (branch-image branch) data))
 
 ;; set the branch image to nil
-(define-medium nullify-image (&optional branch-id)
+(define-medium nullify-image (input &optional branch-id)
   (setf (branch-image (if (not branch-id)
 			  branch (find-branch-by-name branch-id sprout)))
-	nil))
+	nil)
+  input)
 
 (define-medium set-type (&rest type-list)
   (setf (getf bparams :type) type-list)
@@ -78,8 +79,9 @@
   data)
 
 ;; designate a branch as stable or not
-(define-medium set-stable (&optional or-not)
-  (set-branch-meta branch :stable (not (eq :not or-not))))
+(define-medium set-stable (input &optional or-not)
+  (set-branch-meta branch :stable (not (eq :not or-not)))
+  input)
 
 (define-medium get-value (source)
   (let ((val-sym (intern (string-upcase (if (eq :-self source)
