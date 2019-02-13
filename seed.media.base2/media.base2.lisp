@@ -73,7 +73,7 @@
 
 ;; set a branch's time parameter to the current time
 (define-medium set-time (data)
-  (print (list :data bparams))
+  (print (list :time-data bparams))
   (setf (getf bparams :time)
 	(get-universal-time))
   data)
@@ -142,7 +142,7 @@
   (:input (cons (list 'in-package (make-symbol (string-upcase (sprout-name sprout)))) data))
   (:output (rest data)))
 
-(define-medium clipboard (source)
+(define-medium clipboard (&optional source input)
   (:input (let* ((vector (getf bparams :vector))
 		 (cb-point-to (if (not (of-branch-meta branch :point-to))
 				  (set-branch-meta branch :point-to 0)
@@ -151,6 +151,7 @@
 				     "KEYWORD"))
 		 (associated-branch (find-branch-by-name branch-key sprout))
 		 (new-params bparams))
+	    (print (list :cbparams bparams))
 	    (setf (getf new-params :from-clipboard) (branch-name branch))
 	    (if (= 0 (first vector))
 		;; if the horizontal motion is zero, change the point according to the vertical motion
@@ -163,6 +164,7 @@
 			     nil new-params associated-branch
 			     sprout (lambda (data-output pr)
 				      (declare (ignorable pr))
+				      (print (list :ddd data-output))
 				      (cons (list :time (getf bparams :time)
 						  :origin branch-key :data data-output)
 					    source)))
@@ -177,7 +179,8 @@
 					     (declare (ignore data-output pr))
 					     source)))))))
   (:output (let ((items (mapcar (lambda (item) (getf item :time))
-				source))) ;; was data
+	   			(branch-image branch))))
+	     (print (list :sso (branch-name branch) (branch-image branch)))
 	     (if items (list items)))))
 
 ;; records input to system's history branch / fetches items from history branch for output

@@ -259,95 +259,95 @@ example:
 inclusion of aport macro here just acts as passthrough
 |#
 
-;; (defmacro till (&rest media)
-;;   "Manifest the possible convolutions of the input/output channels that branches may implement."
-;;   (let ((medium-spec (gensym)) (media-gen (gensym)) (build-branch (gensym))
-;; 	(operation (gensym)) (media-registry (gensym)) (is-operation-registered (gensym))
-;; 	(is-registered-macro (gensym)) (this-direction (gensym)) (direction (gensym)) (params (gensym))
-;; 	(output (gensym)) (item (gensym)) (name (gensym)) (dat (gensym)))
-;;     (flet ((macro-media-builder (medium)
-;; 	     (let ((name (first medium)) (args (second medium))
-;; 		   (io-by-medium `(if (eq :in io) ,(third medium)
-;; 				      ,(if (fourth medium) (fourth medium) (third medium)))))
-;; 	       (macrolet ((prepend-args (&rest arg-list)
-;; 			    `(append (quote ,(cons 'io arg-list)) args)))
-;; 		 (cons name
-;; 		       ;; this conditional must cover a wide range of argument list taxonomies
-;; 		       (cond ((and (eq 'follows (first args))
-;; 				   (position 'reagent args))
-;; 			      `(,(prepend-args &optional)
-;; 				 (declare (ignorable follows reagent))
-;; 				 `(let ((dat (funcall (lambda (data ,@(if reagent (list 'reagent)))
-;; 							(declare (ignorable data ,@(if reagent (list 'reagent))))
-;; 							,@,io-by-medium)
-;; 						      dat ,@(if reagent (list reagent)))))
-;; 				    (declare (ignorable dat))
-;; 				    ;; (print ,(quote ,dat))
-;; 				    ,(if follows follows 'dat))))
-;; 			     ;; reagent functions transform data; note that the 'reagent' argument is evaluated
-;; 			     ;; since it is passed to the funcall
+(defmacro till (&rest media)
+  "Manifest the possible convolutions of the input/output channels that branches may implement."
+  (let ((medium-spec (gensym)) (media-gen (gensym)) (build-branch (gensym))
+	(operation (gensym)) (media-registry (gensym)) (is-operation-registered (gensym))
+	(is-registered-macro (gensym)) (this-direction (gensym)) (direction (gensym)) (params (gensym))
+	(output (gensym)) (item (gensym)) (name (gensym)) (dat (gensym)))
+    (flet ((macro-media-builder (medium)
+	     (let ((name (first medium)) (args (second medium))
+		   (io-by-medium `(if (eq :in io) ,(third medium)
+				      ,(if (fourth medium) (fourth medium) (third medium)))))
+	       (macrolet ((prepend-args (&rest arg-list)
+			    `(append (quote ,(cons 'io arg-list)) args)))
+		 (cons name
+		       ;; this conditional must cover a wide range of argument list taxonomies
+		       (cond ((and (eq 'follows (first args))
+				   (position 'reagent args))
+			      `(,(prepend-args &optional)
+				 (declare (ignorable follows reagent))
+				 `(let ((dat (funcall (lambda (data ,@(if reagent (list 'reagent)))
+							(declare (ignorable data ,@(if reagent (list 'reagent))))
+							,@,io-by-medium)
+						      dat ,@(if reagent (list reagent)))))
+				    (declare (ignorable dat))
+				    ;; (print ,(quote ,dat))
+				    ,(if follows follows 'dat))))
+			     ;; reagent functions transform data; note that the 'reagent' argument is evaluated
+			     ;; since it is passed to the funcall
 
-;; 			     ((and (eq 'follows (first args))
-;; 				   (eq 'source (second args)))
-;; 			      `(,(prepend-args &optional)
-;; 				 (declare (ignorable follows source))
-;; 				 `(let ((dat (funcall (lambda (data) (declare (ignorable data))
-;; 							      ,@,io-by-medium)
-;; 						      dat)))
-;; 				    (declare (ignorable dat))
-;; 				    ,(if follows follows 'dat))))
-;; 			     ;; source functions retrieve data from some source
+			     ((and (eq 'follows (first args))
+				   (eq 'source (second args)))
+			      `(,(prepend-args &optional)
+				 (declare (ignorable follows source))
+				 `(let ((dat (funcall (lambda (data) (declare (ignorable data))
+							      ,@,io-by-medium)
+						      dat)))
+				    (declare (ignorable dat))
+				    ,(if follows follows 'dat))))
+			     ;; source functions retrieve data from some source
 
-;; 			     ((eq 'follows (first args))
-;; 			      `(,(prepend-args &optional)
-;; 					; all arguments after follows are ignorable
-;; 				 (declare (ignorable ,@(append (list 'follows)
-;; 							       (remove '&rest (rest args)))))
-;; 				 `(let ((dat (funcall (lambda (data) (declare (ignorable data))
-;; 							      ,@,io-by-medium) dat)))
-;; 				    (declare (ignorable dat))
-;; 				    ,(if follows follows 'dat))))
+			     ((eq 'follows (first args))
+			      `(,(prepend-args &optional)
+					; all arguments after follows are ignorable
+				 (declare (ignorable ,@(append (list 'follows)
+							       (remove '&rest (rest args)))))
+				 `(let ((dat (funcall (lambda (data) (declare (ignorable data))
+							      ,@,io-by-medium) dat)))
+				    (declare (ignorable dat))
+				    ,(if follows follows 'dat))))
 
-;; 			     ;; ((eq 'follows (first args))
-;; 			     ;;  `(,(prepend-args &optional)
-;; 			     ;;     (let ((dat (gensym)))
-;; 			     ;; 	 (declare (ignorable follows))
-;; 			     ;; 	 `(let ((,dat (funcall (lambda (data) (declare (ignorable data))
-;; 			     ;; 				       ,@,io-by-medium)
-;; 			     ;; 			       ,dat)))
-;; 			     ;; 	    (declare (ignorable ,dat))
-;; 			     ;; 	    ,(if follows follows dat)))))
+			     ;; ((eq 'follows (first args))
+			     ;;  `(,(prepend-args &optional)
+			     ;;     (let ((dat (gensym)))
+			     ;; 	 (declare (ignorable follows))
+			     ;; 	 `(let ((,dat (funcall (lambda (data) (declare (ignorable data))
+			     ;; 				       ,@,io-by-medium)
+			     ;; 			       ,dat)))
+			     ;; 	    (declare (ignorable ,dat))
+			     ;; 	    ,(if follows follows dat)))))
 
-;; 			     ;; regular functions may do something to the data and are then followed by another
-;; 			     ((or (eq 'source (first args))
-;; 					; the source may be optional or not
-;; 				  (and (eq '&optional (first args))
-;; 				       (eq 'source (second args))))
-;; 			      `(,(prepend-args unused)
-;; 				 (declare (ignorable unused source))
-;; 				 `(,@,io-by-medium)))
-;; 			     ;; terminal source functions retrieve data from some source, with nothing following
+			     ;; regular functions may do something to the data and are then followed by another
+			     ((or (eq 'source (first args))
+					; the source may be optional or not
+				  (and (eq '&optional (first args))
+				       (eq 'source (second args))))
+			      `(,(prepend-args unused)
+				 (declare (ignorable unused source))
+				 `(,@,io-by-medium)))
+			     ;; terminal source functions retrieve data from some source, with nothing following
 
-;; 			     ((eq 'condition (first args))
-;; 			      `(,(prepend-args follows)
-;; 				 `(let ((dat (if ,condition ,@(funcall ,io-by-medium options))))
-;; 				    (declare (ignorable dat))
-;; 				    ,(if follows follows 'dat))))
-;; 			     ;; condition functions do something based on conditions
+			     ((eq 'condition (first args))
+			      `(,(prepend-args follows)
+				 `(let ((dat (if ,condition ,@(funcall ,io-by-medium options))))
+				    (declare (ignorable dat))
+				    ,(if follows follows 'dat))))
+			     ;; condition functions do something based on conditions
 
-;; 			     ((eq 'true-or-not (first (last args)))
-;; 			      `(,(prepend-args unused &optional)
-;; 				 (declare (ignorable unused true-or-not))
-;; 				 (funcall (if (eq :not true-or-not)
-;; 					      (lambda (body) (list 'not body))
-;; 					      (lambda (body) body))
-;; 					  `(funcall (lambda (data) (declare (ignorable data))
-;; 							    (not (not ,,io-by-medium))) dat))))
-;; 			     ;; boolean functions return true or false based on some condition; if there is
-;; 			     ;; an argument such as hash key the true-or-not variable comes afterward
+			     ((eq 'true-or-not (first (last args)))
+			      `(,(prepend-args unused &optional)
+				 (declare (ignorable unused true-or-not))
+				 (funcall (if (eq :not true-or-not)
+					      (lambda (body) (list 'not body))
+					      (lambda (body) body))
+					  `(funcall (lambda (data) (declare (ignorable data))
+							    (not (not ,,io-by-medium))) dat))))
+			     ;; boolean functions return true or false based on some condition; if there is
+			     ;; an argument such as hash key the true-or-not variable comes afterward
 
-;; 			     (t (list args (third medium)))))))))
-;;       )))
+			     (t (list args (third medium)))))))))
+      )))
 
       ;; `(defmacro ,(intern "SPROUT" (package-name *package*))
       ;; 	   ;; declare this sprout macro internal to the package where the till macro is invoked
@@ -719,7 +719,7 @@ inclusion of aport macro here just acts as passthrough
 					   (append (if (eq :external
 							   (nth-value 1 (intern (string-upcase (first head))
 										"SEED.MEDIA.BASE2")))
-						       (list 'sprout 'branch)); 'params))
+						       (list 'sprout 'branch))
 						   (loop :for item :in (rest head)
 						      :collect (cond ((listp item)
 								      (thread-operation input-symbol
@@ -764,9 +764,9 @@ inclusion of aport macro here just acts as passthrough
 
 (defmacro define-medium (name arguments &rest body)
   `(defun ,(intern (string-upcase name) (package-name *package*))
-       ,(append (list 'sprout 'branch); 'params)
+       ,(append (list 'sprout 'branch)
 		arguments)
-     (declare (ignorable sprout branch))
+     (declare (ignorable sprout branch ,@arguments))
      ;; (print (list :test (quote ,(first body)) ,(and (listp (first body))
      ;; 			      (eql 'input (caar body)))))
      ,@(if (and (listp (first body))
@@ -897,6 +897,6 @@ inclusion of aport macro here just acts as passthrough
 
 (defpackage #:seed.generate.special-access
   (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name #:branch-input
-		#:of-branch-meta #:load-exp-from-file)
-  (:export #:branch-image #:branch-name #:find-branch-by-name #:branch-input
+		#:branch-output #:of-branch-meta #:load-exp-from-file)
+  (:export #:branch-image #:branch-name #:find-branch-by-name #:branch-input #:branch-output
 	   #:of-branch-meta #:load-exp-from-file))
