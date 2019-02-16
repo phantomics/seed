@@ -708,7 +708,7 @@ inclusion of aport macro here just acts as passthrough
 ;;                             (out (set-type -o :form) (put-image (build-stage -o)) (codec -o)))))
 
 (defun thread-operation (input-symbol form &optional output)
-  (print (list :ff form))
+  ;; (print (list :ff form))
   (if (not form)
       output (let ((head (first form)))
 	       (thread-operation input-symbol (rest form)
@@ -737,13 +737,14 @@ inclusion of aport macro here just acts as passthrough
 	       (list direction `(lambda (input params branch sprout callback)
 				  (setf (getf params :direction) ,direction)
 				  (setf (branch-params branch) params)
+				  (print (list :start params (branch-params branch) (branch-name branch)))
 				  ;; (print (list :top-params params (branch-name branch)))
 				  ;; (print (list :ops55 (quote ,options)
 				  ;; 	       (quote ,(if (listp (first options))
 				  ;; 			   (assoc :type options)))
 				  ;; 	       ))
-				  (print (list :received ,direction params
-					       (quote ,(thread-operation 'input (cddr spec))))) ;; input
+				  ;; (print (list :received ,direction params
+				  ;; 	       (quote ,(thread-operation 'input (cddr spec))))) ;; input
 				  ,@(if (and (listp (first options))
 					     (assoc :type options))
 				  	`((setf (getf params :type)
@@ -771,9 +772,9 @@ inclusion of aport macro here just acts as passthrough
      ;; 			      (eql 'input (caar body)))))
      ,@(if (and (listp (first body))
 		(eq :input (caar body)))
-	   `((print (list :parr (branch-params branch) (quote ,name) (branch-name branch)))
+	   `(;; (print (list :parr (branch-params branch) (quote ,name) (branch-name branch)))
 	     (if (eq :in (getf (branch-params branch) :direction))
-		 (progn (print (list :inp5 (branch-input branch) (branch-name branch)))
+		 (progn ;; (print (list :inp5 (branch-input branch) (branch-name branch)))
 			,@(rest (assoc :input body)))
 		 (progn ,@(rest (assoc :output body)))))
 	   body)))

@@ -91,6 +91,7 @@
     (if (boundp val-sym) (eval val-sym))))
 
 (define-medium set-data (data)
+  (print (list :set-data bparams))
   data)
 
 ;; transfer current input or output to another branch, forking its path
@@ -105,7 +106,8 @@
   input)
 
 (define-medium form (data)
-  (:input (if (getf bparams :from-clipboard)
+  (:input (print (list :bb bparams))
+	  (if (getf bparams :from-clipboard)
 	      (multiple-value-bind (output-form form-point)
 		  (follow-path (getf bparams :point-to)
 			       (branch-image branch)
@@ -125,15 +127,18 @@
 					      (if (getf cb-data :data-inp) (getf cb-data :data-inp))))
 					 (t cb-data)))))
 		(declare (ignore form-point))
+		(print (list :from-clipboard bparams))
 		output-form)
 	      (progn (print (list :data-in data))
 		     data)))
-  (:output (if (getf bparams :from-clipboard)
+  (:output (print (list :bb2 bparams))
+	   (if (getf bparams :from-clipboard)
 	       (multiple-value-bind (output-form from-point)
 		   (follow-path (getf bparams :point-to) 
 				(branch-image branch)
 				(lambda (point) point))
 		 (declare (ignore output-form))
+		 (print (list :from-clipboard2 bparams))
 		 from-point)
 	       data)))
 
@@ -164,7 +169,7 @@
 			     nil new-params associated-branch
 			     sprout (lambda (data-output pr)
 				      (declare (ignorable pr))
-				      (print (list :ddd data-output))
+				      (print (list :ddd new-params data-output))
 				      (cons (list :time (getf bparams :time)
 						  :origin branch-key :data data-output)
 					    source)))

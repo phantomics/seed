@@ -408,6 +408,7 @@
 				 nil new-params associated-branch
 				 sprout (lambda (data-output pr)
 					  (declare (ignorable pr))
+					  (print (list :datout data-output))
 					  (cons (list :time (get-param :time)
 						      :origin branch-key
 						      :data data-output)
