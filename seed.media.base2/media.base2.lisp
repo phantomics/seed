@@ -2,7 +2,8 @@
 
 (in-package #:seed.media.base2)
 
-(define-symbol-macro bparams (seed.generate::branch-params seed.generate::branch))
+(define-symbol-macro bparams (getf seed.generate::params :meta))
+;; (define-symbol-macro bparams1 seed.generate::params)
 
 ;; (seed.generate::branch-params seed.generate::branch)
 (define-medium codec (data)
@@ -20,6 +21,11 @@
 ;;   (with-open-file (data (asdf:system-relative-pathname package-name file-path))
 ;;     (when data (loop for line = (read data nil)
 ;; 		  while line collect line))))
+
+;; (seed.media.base2::codec (first (portal-contacts portal.demo1::*portal*)) (fifth (sprout-branches (first (portal-contacts portal.demo1::*portal*)))) par2 (seed.media.base2::set-time nil nil par2 '((55))))
+
+;; (defun q (i orig) (print (list :ii i)))
+;; (defun g (h) (incf (getf h :b) 3))
 
 (define-medium get-file (source)
   (load-exp-from-file (sprout-name sprout)
@@ -69,13 +75,14 @@
   (getf bparams key))
 
 (define-medium is-image ()
+  (print (list :eoeo (branch-name branch)
+	       (not (null (branch-image branch)))))
   (not (null (branch-image branch))))
 
 ;; set a branch's time parameter to the current time
 (define-medium set-time (data)
-  (print (list :time-data bparams))
-  (setf (getf bparams :time)
-	(get-universal-time))
+  (setf (getf bparams :time) (get-universal-time))
+  (print (list :time-data bparams1))
   data)
 
 ;; designate a branch as stable or not
@@ -113,21 +120,19 @@
 			       (branch-image branch)
 			       (lambda (point) 
 				 (declare (ignore point))
+				 (print (list :params-all seed.generate::params))
 				 (let* ((cb-input (getf bparams :clipboard-input))
 					(cb-data (getf cb-input :data))
-					(type-settings (find-form-in-spec 'set-type 
-									  (branch-spec (find-branch-by-name
-											(getf cb-input :origin)
-											sprout)))))
-				   (cond ((and (eq :matrix (cadar type-settings))
-					       (eq :spreadsheet (caddar type-settings)))
+					(type-settings (getf bparams :type)))
+				   (cond ((and (eq :matrix (first type-settings))
+					       (eq :spreadsheet (second type-settings)))
 					  ;; handle pasting spreadsheet values into forms
 					  (if (getf cb-data :data-com)
 					      (first (getf cb-data :data-com))
 					      (if (getf cb-data :data-inp) (getf cb-data :data-inp))))
 					 (t cb-data)))))
 		(declare (ignore form-point))
-		(print (list :from-clipboard bparams))
+		(print (list :from-clipboard bparams output-form))
 		output-form)
 	      (progn (print (list :data-in data))
 		     data)))
@@ -155,9 +160,11 @@
 		 (branch-key (intern (string-upcase (getf bparams :branch))
 				     "KEYWORD"))
 		 (associated-branch (find-branch-by-name branch-key sprout))
-		 (new-params bparams))
-	    (print (list :cbparams bparams))
-	    (setf (getf new-params :from-clipboard) (branch-name branch))
+		 (new-params seed.generate::params))
+	    (print (list :cbparams bparams branch-key associated-branch))
+	    (setf (getf (getf new-params :meta)
+			:from-clipboard)
+		  (branch-name branch))
 	    (if (= 0 (first vector))
 		;; if the horizontal motion is zero, change the point according to the vertical motion
 		(progn (set-branch-meta branch :point-to (min (max 0 (1- (length source)))
@@ -175,9 +182,12 @@
 					    source)))
 		    ;; if the horizontal motion is negative, replace the other branch's form at point
 		    ;; with the clipboard item at point
-		    (progn (setf (getf new-params :clipboard-input) (nth cb-point-to source)
+		    (progn (setf (getf (getf new-params :meta)
+				       :clipboard-input)
+				 (nth cb-point-to source)
 				 ;; nullify vector so history recording works properly
 				 (getf new-params :vector) nil)
+			   (print (list 6060 new-params associated-branch))
 			   (funcall (branch-input associated-branch)
 				    nil new-params associated-branch
 				    sprout (lambda (data-output pr)
@@ -192,7 +202,8 @@
 (define-medium history (source &optional input)
   (:input (if (not (getf bparams :from-history))
 	      ;; don't do anything if the input came from a history movement - this prevents an infinite loop
-	      (if (getf bparams :vector)
+	      (if (and (getf bparams :vector)
+		       (not (getf bparams :from-clipboard)))
 		  (let* ((points (of-branch-meta branch :points))
 			 (branch-key (intern (string-upcase (getf bparams :recall-branch))
 					     "KEYWORD"))
@@ -205,6 +216,9 @@
 		    (set-branch-meta branch :points points)
 		    ;; (set-param :from-history t)
 		    (setf (getf bparams :from-history) t)
+		    (print (list :history-1 bparams source input
+				 branch-key history-index (getf source branch-key)
+				 (nth history-index (getf source branch-key))))
 		    (funcall (branch-input (find-branch-by-name branch-key sprout))
 			     (getf (nth history-index (getf source branch-key)) :data)
 			     bparams (find-branch-by-name branch-key sprout)

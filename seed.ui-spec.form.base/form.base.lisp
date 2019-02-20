@@ -1166,6 +1166,7 @@
 	  (and (= "[object Array]" (chain -object prototype to-string (call (@ this state rendered-content))))
 	       (= 0 (@ this state rendered-content length))))
       (cond ((= "full" (@ this props context view-scope))
+	     (cl :mtv (@ self state data))
 	     (let* ((root-index (labels ((find-index (item)
 					   (if (= "[object Object]" (chain -object prototype to-string (call item)))
 					       (@ item ix)

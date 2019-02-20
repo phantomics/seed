@@ -3,14 +3,10 @@
         :package ((:use :cl))
         :contacts ;;(:demo-sheet :demo-graph :demo-image :demo-drawing :demo-market)
 	(:demo-image)
-        :branches ;; ((systems (in (if-condition (is-display-format) (:then (codec)))
-                  ;;               (put-image) (set-active-system-by-selection) (put-file (get-image) :-self))
-                  ;;           (out (set-type :form) (put-image (build-stage)) (codec))))
+        :branches
 	((systems ;; (in (if-condition (is-display-format) (:then (codec)))
-		  ;;     (put-image) (set-active-system-by-selection) (put-file (get-image) :-self))
+	  ;;     (put-image) (set-active-system-by-selection) (put-file (get-image) :-self))
 	  (out (with (:type :form))
 	       
 	       (set-type :form -o) (put-image (build-stage))
-	       (codec -o))))
-
-	)
+	       (codec -o)))))

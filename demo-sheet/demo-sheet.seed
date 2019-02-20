@@ -87,4 +87,5 @@
                          (if-condition (is-image :not) (:then (put-image))
 				       (codec))))
          (history (in (put-image (history (get-image))))
-                  (out (set-type :form) (history) (codec)))))
+                  (out (set-type :form) (history) (codec)))
+	 ))

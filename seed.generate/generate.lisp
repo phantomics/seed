@@ -136,9 +136,9 @@
    ;; (options :accessor branch-options
    ;; 	    :initform nil
    ;; 	    :initarg :options)
-   (params :accessor branch-params
-	   :initform nil
-	   :initarg :params)
+   ;; (params :accessor branch-params
+   ;; 	   :initform nil
+   ;; 	   :initarg :params)
    (input :accessor branch-input
 	  :initform nil
 	  :initarg :in)
@@ -719,7 +719,7 @@ inclusion of aport macro here just acts as passthrough
 					   (append (if (eq :external
 							   (nth-value 1 (intern (string-upcase (first head))
 										"SEED.MEDIA.BASE2")))
-						       (list 'sprout 'branch))
+						       (list 'sprout 'branch 'params))
 						   (loop :for item :in (rest head)
 						      :collect (cond ((listp item)
 								      (thread-operation input-symbol
@@ -735,29 +735,19 @@ inclusion of aport macro here just acts as passthrough
      :append (let ((direction (intern (string-upcase (first spec)) "KEYWORD"))
 		   (options (cdadr spec)))
 	       (list direction `(lambda (input params branch sprout callback)
-				  (setf (getf params :direction) ,direction)
-				  (setf (branch-params branch) params)
-				  (print (list :start params (branch-params branch) (branch-name branch)))
-				  ;; (print (list :top-params params (branch-name branch)))
-				  ;; (print (list :ops55 (quote ,options)
-				  ;; 	       (quote ,(if (listp (first options))
-				  ;; 			   (assoc :type options)))
-				  ;; 	       ))
-				  ;; (print (list :received ,direction params
-				  ;; 	       (quote ,(thread-operation 'input (cddr spec))))) ;; input
+				  (if (not (getf params :meta))
+				      (setq params (list :meta params)))
+				  (setf (getf (getf params :meta) :direction) ,direction)
+				  ;;(setf (branch-params branch) params)
+				  ;;(print (list :start params (branch-params branch) (branch-name branch)))
+				  (print (list :received ,direction params
+				  	       (quote ,(thread-operation 'input (cddr spec))))) ;; input
 				  ,@(if (and (listp (first options))
 					     (assoc :type options))
-				  	`((setf (getf params :type)
+				  	`((setf (getf (getf params :meta) :type)
 				  		(quote ,(rest (assoc :type options))))))
 				  (funcall callback ,(thread-operation 'input (cddr spec))
 					   params))))))
-
-'((set-type -o :form) (put-image (build-stage)) (codec -o))
-
-'((set-type :graphic :bitmap)
-  (if (print (not (is-image)))
-      (get-value :image-output-path)
-      (get-image)))
 
 (defmacro display-params (input &rest params)
   (declare (ignore params))
@@ -765,7 +755,7 @@ inclusion of aport macro here just acts as passthrough
 
 (defmacro define-medium (name arguments &rest body)
   `(defun ,(intern (string-upcase name) (package-name *package*))
-       ,(append (list 'sprout 'branch)
+       ,(append (list 'sprout 'branch 'params)
 		arguments)
      (declare (ignorable sprout branch ,@arguments))
      ;; (print (list :test (quote ,(first body)) ,(and (listp (first body))
@@ -773,11 +763,19 @@ inclusion of aport macro here just acts as passthrough
      ,@(if (and (listp (first body))
 		(eq :input (caar body)))
 	   `(;; (print (list :parr (branch-params branch) (quote ,name) (branch-name branch)))
-	     (if (eq :in (getf (branch-params branch) :direction))
+	     (if (eq :in ;; (getf (branch-params branch) :direction)
+		     (getf (getf params :meta) :direction))
 		 (progn ;; (print (list :inp5 (branch-input branch) (branch-name branch)))
 			,@(rest (assoc :input body)))
 		 (progn ,@(rest (assoc :output body)))))
 	   body)))
+
+'((set-type -o :form) (put-image (build-stage)) (codec -o))
+
+'((set-type :graphic :bitmap)
+  (if (print (not (is-image)))
+      (get-value :image-output-path)
+      (get-image)))
 
 ;;;-
 
@@ -872,7 +870,8 @@ inclusion of aport macro here just acts as passthrough
         					         ;; with string-downcase
 							 (list :|id| (string-downcase (branch-name ,branch))
 							       :|type| (mapcar #'string-downcase
-									       (getf ,params-out :type))
+									       (getf (getf ,params-out :meta)
+										     :type))
 							       :|data| ,data-out
 							       :|meta| (preprocess-structure
 									(branch-meta ,branch))))))
@@ -898,6 +897,6 @@ inclusion of aport macro here just acts as passthrough
 
 (defpackage #:seed.generate.special-access
   (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name #:branch-input
-		#:branch-output #:of-branch-meta #:load-exp-from-file)
+		#:branch-output #:of-branch-meta #:load-exp-from-file #:follow-path)
   (:export #:branch-image #:branch-name #:find-branch-by-name #:branch-input #:branch-output
-	   #:of-branch-meta #:load-exp-from-file))
+	   #:of-branch-meta #:load-exp-from-file #:follow-path))
