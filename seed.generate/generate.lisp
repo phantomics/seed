@@ -708,7 +708,6 @@ inclusion of aport macro here just acts as passthrough
 ;;                             (out (set-type -o :form) (put-image (build-stage -o)) (codec -o)))))
 
 (defun thread-operation (input-symbol form &optional output)
-  ;; (print (list :ff form))
   (if (not form)
       output (let ((head (first form)))
 	       (thread-operation input-symbol (rest form)
@@ -716,19 +715,18 @@ inclusion of aport macro here just acts as passthrough
 				     (thread-operation input-symbol (rest head)
 						       output)
 				     (cons (first head)
-					   (append (if (eq :external
-							   (nth-value 1 (intern (string-upcase (first head))
-										"SEED.MEDIA.BASE2")))
-						       (list 'sprout 'branch 'params))
-						   (loop :for item :in (rest head)
-						      :collect (cond ((listp item)
-								      (thread-operation input-symbol
-											(list item) output))
-								     ((and (symbolp item)
-									   (or (string= "-I" (string item))
-									       (string= "-O" (string item))))
-								      (if output output input-symbol))
-								     (t item))))))))))
+					   (loop :for item :in (rest head)
+					      :append (cond ((listp item)
+							     (list (thread-operation input-symbol
+										     (list item) output)))
+							    ((and (symbolp item)
+								  (string= "//" (string item)))
+							     (list 'sprout 'branch 'params))
+							    ((and (symbolp item)
+								  (or (string= "-I" (string item))
+								      (string= "-O" (string item))))
+							     (list (if output output input-symbol)))
+							    (t (list item))))))))))
 
 (defun build-medium (specs)
   (loop :for spec :in specs
@@ -737,15 +735,17 @@ inclusion of aport macro here just acts as passthrough
 	       (list direction `(lambda (input params branch sprout callback)
 				  (if (not (getf params :meta))
 				      (setq params (list :meta params)))
+				  (print (list :ii input params branch sprout))
 				  (setf (getf (getf params :meta) :direction) ,direction)
 				  ;;(setf (branch-params branch) params)
 				  ;;(print (list :start params (branch-params branch) (branch-name branch)))
-				  (print (list :received ,direction params
-				  	       (quote ,(thread-operation 'input (cddr spec))))) ;; input
 				  ,@(if (and (listp (first options))
 					     (assoc :type options))
-				  	`((setf (getf (getf params :meta) :type)
+				  	`(;; (print (list :type-set (quote ,(rest (assoc :type options)))))
+					  (setf (getf (getf params :meta) :type)
 				  		(quote ,(rest (assoc :type options))))))
+				  (print (list :received ,direction params (quote ,options)
+				  	       (quote ,(thread-operation 'input (cddr spec))))) ;; input
 				  (funcall callback ,(thread-operation 'input (cddr spec))
 					   params))))))
 
@@ -838,7 +838,6 @@ inclusion of aport macro here just acts as passthrough
 									(second ,list))
 								  (assign-meta-from-list (cddr ,list))))))
 					(assign-meta-from-list (getf ,params :meta)))
-				      (print (list :in-branch ,branch (branch-name ,branch)))
 				      (funcall (branch-input ,branch)
 					       ,data ,params ,branch ,sprout
 					       (lambda (,data-out ,params-out)
@@ -868,6 +867,9 @@ inclusion of aport macro here just acts as passthrough
 						       (lambda (,data-out ,params-out)
 					                 ;; format the id and type list for JSON conversion
         					         ;; with string-downcase
+							 (print (list :params-out
+								      (string-downcase (branch-name ,branch))
+								      ,params-out))
 							 (list :|id| (string-downcase (branch-name ,branch))
 							       :|type| (mapcar #'string-downcase
 									       (getf (getf ,params-out :meta)
@@ -897,6 +899,8 @@ inclusion of aport macro here just acts as passthrough
 
 (defpackage #:seed.generate.special-access
   (:import-from :seed.generate #:branch-image #:branch-name #:find-branch-by-name #:branch-input
-		#:branch-output #:of-branch-meta #:load-exp-from-file #:follow-path)
+		#:branch-output #:of-branch-meta #:load-exp-from-file #:follow-path #:preprocess-structure
+		#:array-to-list)
   (:export #:branch-image #:branch-name #:find-branch-by-name #:branch-input #:branch-output
-	   #:of-branch-meta #:load-exp-from-file #:follow-path))
+	   #:of-branch-meta #:load-exp-from-file #:follow-path #:preprocess-structure
+	   #:array-to-list))

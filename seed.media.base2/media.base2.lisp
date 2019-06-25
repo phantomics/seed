@@ -63,7 +63,7 @@
 
 (define-medium set-type (&rest type-list)
   (setf (getf bparams :type) type-list)
-  ;; (print (list :pr type-list bparams))
+   ;; (print (list :set-type type-list bparams))
   )
 
 
@@ -82,20 +82,13 @@
 ;; set a branch's time parameter to the current time
 (define-medium set-time (data)
   (setf (getf bparams :time) (get-universal-time))
-  (print (list :time-data bparams1))
+  (print (list :time-data bparams))
   data)
 
 ;; designate a branch as stable or not
 (define-medium set-stable (input &optional or-not)
   (set-branch-meta branch :stable (not (eq :not or-not)))
   input)
-
-(define-medium get-value (source)
-  (let ((val-sym (intern (string-upcase (if (eq :-self source)
-					    (branch-name branch)
-					    source))
-			 (string-upcase (sprout-name sprout)))))
-    (if (boundp val-sym) (eval val-sym))))
 
 (define-medium set-data (data)
   (print (list :set-data bparams))
@@ -147,10 +140,63 @@
 		 from-point)
 	       data)))
 
+(define-medium get-value (&optional source)
+  (let ((val-sym (intern (string-upcase (if source source (branch-name branch)))
+			 (string-upcase (sprout-name sprout)))))
+    (if (boundp val-sym)
+	(eval val-sym))))
+
 ;; assign system's name as package name in Lisp file to be output
 (define-medium code-package (data)
   (:input (cons (list 'in-package (make-symbol (string-upcase (sprout-name sprout)))) data))
   (:output (rest data)))
+
+ ;; contextualize a list of input
+(define-medium table-specs (input &optional data)
+  (:input (mapcar (lambda (item)
+		    (if (string= "IN-TABLE" (string-upcase (first item)))
+			(append (list (first item) (second item)) data)
+			item))
+		  reagent))
+  (:output (labels ((process (i)
+		      (if i (let ((point (first i)))
+			      (if (string= "IN-TABLE" (string-upcase (first point)))
+				  (cddr point)
+				  (process (rest i)))))))
+	     (process input))))
+
+(define-medium sheet (input)
+  ;; `((if (get-param :from-clipboard)
+  ;;       (let* ((cb-input (get-param :clipboard-input))
+  ;; 	     (cb-data (getf cb-input :data)))
+  ;; 	(setf (apply #'aref (cons (branch-image branch) (reverse (get-param :point))))
+  ;; 	      (let ((type-settings (find-form-in-spec 'set-type (branch-spec (find-branch-by-name 
+  ;; 									      (getf cb-input :origin)
+  ;; 									      sprout)))))
+  ;; 		(cond ((and (eq :matrix (cadar type-settings))
+  ;; 			    (eq :spreadsheet (caddar type-settings)))
+  ;; 		       ;; spreadsheet values are simply passed through, of course...
+  ;; 		       (if (getf cb-data :data-inp)
+  ;; 			   (list :type (getf cb-data :type)
+  ;; 				 :data-inp (getf cb-data :data-inp))
+  ;; 			   (list :type (getf cb-data :type)
+  ;; 				 :data-inp (first (getf cb-data :data-com)))))
+  ;; 		      ((eq :form (cadar type-settings))
+  ;; 		       (list :type (cond ((stringp cb-data) :string)
+  ;; 					 ((numberp cb-data) :number)
+  ;; 					 ((listp cb-data) :list)
+  ;; 					 ((symbolp cb-data) :symbol)
+  ;; 					 (t :number))
+  ;; 			     :data-inp cb-data))
+  ;; 		      (t cb-data))))
+  ;; 	(branch-image branch))
+  ;;       (array-map #'seed.app-model.sheet.base:interpret-cell
+  ;; 		 (array-map #'postprocess-structure (list-to-array data 2)))))
+  (:input )
+  (:output (if (getf bparams :from-clipboard)
+	       (apply #'aref (cons input (reverse (get-param :point))))
+	       (progn (print (list :in5 input))
+		      (print (array-to-list (aops:each #'preprocess-structure input)))))))
 
 (define-medium clipboard (&optional source input)
   (:input (let* ((vector (getf bparams :vector))
