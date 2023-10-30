@@ -1,0 +1,24 @@
+{
+  "name": "seed-ui-browser",
+  "version": "1.0.0",
+  "description": "Browser UI for Seed with simple client side",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "alpinejs": "^3.13.0",
+    "canvas-datagrid": "^0.4.6",
+    "codemirror": "^6.0.1",
+    "d3": "^7.8.5",
+    "fomantic-ui": "^2.9.3",
+    "htmx.org": "^1.9.6"
+  },
+  "devDependencies": {
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}

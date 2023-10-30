@@ -1,0 +1,171 @@
+body{
+    background: #f2f2f2;
+}
+
+#root{
+    width: 100%;
+}
+
+.container{
+    background: #fff;
+}
+
+.sidebar{
+    background: #d5d5d5;
+}
+
+.sidebar .heading{
+    font-size: 160%;
+    font-weight: bold;
+    padding: 8px;
+    margin-bottom: 6px;
+}
+
+.sidebar .form{
+    font-size: 120%;
+    font-weight: bold;
+    padding: 3px 12px;
+}
+
+.ui.grid{
+    height: 100%;
+}
+
+.ui.grid .group{
+    height: 100%;
+}
+
+.ui.grid-layout{
+    display: grid;
+    height: 100%;
+}
+
+.ui.grid-layout .container{
+    position: relative;
+    height: 100%;
+    display: grid;
+}
+
+.ui.grid-layout .container.column-inner{
+    padding: 0;
+    grid-template-rows: [header-start] auto [header-end] 1fr [footer-start] auto [footer-end];
+    grid-template-columns: 100%;
+}
+
+.ui.grid-layout .container.column-inner .header{
+    grid-row-start: header-start;
+    grid-row-end: header-end;
+}
+
+.ui.grid-layout .container.column-inner .sub-container{
+    grid-row-start: header-end;
+    grid-row-end: footer-start;
+}
+
+.ui.grid-layout.main{
+    grid-template-rows: 100%;
+    grid-template-columns: [start] 12% [start-end] 88%;
+}
+
+.ui.grid-layout.main > sidebar{
+    grid-column-start: 1;
+}
+
+.ui.grid-layout.main > main{
+    grid-column-start: 2;
+}
+
+.ui.grid-layout.workspace.even{
+    grid-template-columns: 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%;
+}
+
+.ui.grid-layout.workspace.even > .column:nth-child(1){
+    grid-column-start: 1;
+    grid-column-end: 7;
+}
+
+.ui.grid-layout.workspace.even > .column:nth-child(2){
+    grid-column-start: 7;
+    grid-column-end: 13;
+}
+
+
+
+.ui.grid-layout.workspace .column{
+    padding: 0 10px;
+}
+
+.ui.header,
+.ui.footer{
+    width: 100%;
+    padding: 8px;
+    margin: 0;
+    background: #eee;
+    display: grid;
+    grid-template-columns: 20% 80%;
+    grid-template-rows: 100%;
+}
+
+.ui.header{
+    border-bottom: 2px solid #ccc;
+}
+
+.ui.header h2.branch-name{
+    margin: 0;
+    grid-column-start: 1;
+}
+
+.ui.header .controls-holder{
+    text-align: right;
+    grid-column-end: 3;
+}
+
+.ui.footer{
+    bottom: 0;
+    border-top: 2px solid #ccc;
+}
+
+.d3view-graph-foldout,
+.svg-visualizer{
+    height: 100%;
+    width: 100%;
+}
+
+.d3view-graph-foldout .link,
+.svg-visualizer .link{
+    fill: none;
+    stroke: #bbb;
+    stroke-width: 1.5;
+}
+
+.d3view-graph-foldout .expand-control,
+.svg-visualizer .expand-control{
+    cursor: pointer;
+}
+
+.d3view-graph-foldout .expand-control .button-backing,
+.svg-visualizer .expand-control .button-backing{
+    fill: #fff;
+}
+
+.d3view-graph-foldout .expand-control .button-circle,
+.svg-visualizer .expand-control .button-circle{
+    fill: #bbb;
+}
+
+.d3view-graph-foldout .expand-control rect,
+.svg-visualizer .expand-control rect{
+    fill: #fff;
+}
+
+
+
+.d3view-graph-foldout .circle-glyph .outer-circle,
+.svg-visualizer .circle-glyph .outer-circle{
+    fill: #ccc;
+}
+
+.d3view-graph-foldout .circle-glyph .inner-circle,
+.svg-visualizer .circle-glyph .inner-circle{
+    fill: #fff;
+}

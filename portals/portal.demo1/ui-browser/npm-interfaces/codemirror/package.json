@@ -1,0 +1,20 @@
+{
+  "name": "seed.npm-interface.codemirror",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "codemirror": "^6.0.1",
+    "webpack": "^5.89.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}
