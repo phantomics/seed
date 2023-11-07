@@ -59,7 +59,7 @@
 	 (handler (clack:clackup (lack.builder:builder
 				  :session nil
 				  ;; (:static :path
-				  ;;          (lambda (path) (if (ppcre:scan "^(?:/static/|/sound-files/)" path)
+				  ;;          (lambda (path) (if (ppcre:scan "^(?:/static/|/files/)" path)
 				  ;;       		      path nil))
 				  ;;          :root root-path)
 				  service)
@@ -430,6 +430,8 @@
     (case section
       (:body (cl-who:with-html-output (stream-out)
                (:form :class "container" :hx-post "/render/" :hx-trigger "load, reload consume, submit"
+                      :x-init (psl (progn (push-form $el)
+                                          (setf (getprop (@ window seed-elements) (lisp branch)) $el)))
                       :id (format nil "branch-~a" (lisp->camel-case branch))
                       :hx-vals (json-convert-to (list :system system :branch branch)))))
       (:body-svg (let ((this-id (format nil "branch-~a" (lisp->camel-case branch))))
@@ -437,6 +439,7 @@
                      (:div :hx-post "/render/" :hx-trigger "load, reload consume"
                            :class "sub-container"
                            :x-init (psl (progn (chain console (log :eo))
+                                               (setf (getprop (@ window seed-elements) (lisp branch)) $el)
                                                (fetch-contact (lisp (string-upcase (getf props :system)))
                                                               (lisp (string-upcase (getf props :branch)))
                                                               (create height (@ $el offset-height)
@@ -451,6 +454,7 @@
          (:submit (cl-who:with-html-output (stream-out)
                     (:button :class "ui button"
                              ;; :|x-on:click| (lsk (fetch-contact ))
+                             :|x-on:click| (psl (submit-forms))
                              (str (string-downcase (getf props :subsection))))))
          (:save (cl-who:with-html-output (stream-out)
                   (:button :class "ui button"
@@ -460,11 +464,13 @@
 (defun branch-spec-codemirror-editor (stream-out section &rest props)
   (let ((token (format nil "cm-texteditor-~a-~a"
                        (string-downcase (getf props :system))
-                       (string-downcase (getf props :branch)))))
+                       (string-downcase (getf props :branch))))
+        (branch (string-downcase (getf props :branch))))
     (case section
       (:body (cl-who:with-html-output (stream-out)
                (:div :id (lisp token) :class (getf props :item-classes)
                      :x-init (psl (progn (setf (@ window codemirror) nil)
+                                         (setf (getprop (@ window seed-elements) (lisp branch)) $el)
                                          (fetch-contact (lisp (string-upcase (getf props :system)))
                                                         (lisp (string-upcase (getf props :branch)))
                                                         nil (lambda (data) 
@@ -493,11 +499,12 @@
   (let ((token (format nil "canvas-datagrid-~a-~a"
                        (string-downcase (getf props :system))
                        (string-downcase (getf props :branch))))
+        (branch (string-downcase (getf props :branch)))
         (mode (getf props :mode)))
     (case section
       (:body (cl-who:with-html-output (stream-out)
                (:div :id "datagrid-tree" :class (getf props :item-classes)
-                     :x-init
+                     :x-init ;; TODO: add branch push here
                      (psl (fetch-contact
                            (lisp (string-upcase (getf props :system)))
                            (lisp (string-upcase (getf props :branch)))
@@ -619,22 +626,24 @@
   (let ((token (format nil "canvas-datagrid-~a-~a"
                        (string-downcase (getf props :system))
                        (string-downcase (getf props :branch))))
+        (branch (string-downcase (getf props :branch)))
         (mode (getf props :mode)))
     (case section
       (:body (cl-who:with-html-output (stream-out)
                (:div :id "datagrid-cells" :class (getf props :item-classes)
                      :x-init
-                     (psl (fetch-contact
-                           (lisp (string-upcase (getf props :system)))
-                           (lisp (string-upcase (getf props :branch)))
-                           nil (lambda (data)
-                                 ;; (chain console (log :dd data))
-                                 (let ((grid (canvas-datagrid (create style (create cell-width 60)))))
-                                   (chain document (get-element-by-id "datagrid-cells")
-                                          (append-child grid))
-                                   (setf (@ grid data) (@ data ct)
-                                         (getprop (@ window seed-data) (lisp token))
-                                         grid))))))))
+                     (psl (progn (setf (getprop (@ window seed-elements) (lisp branch)) $el)
+                                 (fetch-contact
+                                  (lisp (string-upcase (getf props :system)))
+                                  (lisp (string-upcase (getf props :branch)))
+                                  nil (lambda (data)
+                                        ;; (chain console (log :dd data))
+                                        (let ((grid (canvas-datagrid (create style (create cell-width 60)))))
+                                          (chain document (get-element-by-id "datagrid-cells")
+                                                 (append-child grid))
+                                          (setf (@ grid data) (@ data ct)
+                                                (getprop (@ window seed-data) (lisp token))
+                                                grid)))))))))
       (:control
        (case (getf props :subsection)
          (:save (cl-who:with-html-output (stream-out)
@@ -656,33 +665,33 @@
                                          (lambda (data) (chain console (log :tb)))))
                      (str (string-downcase (getf props :subsection)))))))))))
 
-(defun branch-spec-d3 (stream-out section &rest props)
-  (let ((token (format nil "canvas-datagrid-~a-~a"
-                       (string-downcase (getf props :system))
-                       (string-downcase (getf props :branch))))
-        (mode (getf props :mode)))
-    (case section
-      (:body (cl-who:with-html-output (stream-out)
-               (:div :id "d3-container"
-                     :x-init
-                     (psl (let ((fetcher (lambda (builder data)
-                                           (fetch-contact
-                                            (lisp (string-upcase (getf props :system)))
-                                            (lisp (string-upcase (getf props :branch)))
-                                            data builder))))
-                            (funcall fetcher (chain window (d3-build fetcher))
-                                     nil))))))
-      (:control
-       (case (getf props :subsection)
-         (:save (cl-who:with-html-output (stream-out)
-                  (:button :class "ui button"
-                           :|x-on:click|
-                           (psl (fetch-contact (lisp (string-upcase (getf props :system)))
-                                               (lisp (string-upcase (getf props :branch)))
-                                               (@ (getprop (@ window seed-data) (lisp token))
-                                                  data)
-                                               (lambda (data) (chain console (log :sv)))))
-                           (str (string-downcase (getf props :subsection)))))))))))
+;; (defun branch-spec-d3 (stream-out section &rest props)
+;;   (let ((token (format nil "canvas-datagrid-~a-~a"
+;;                        (string-downcase (getf props :system))
+;;                        (string-downcase (getf props :branch))))
+;;         (mode (getf props :mode)))
+;;     (case section
+;;       (:body (cl-who:with-html-output (stream-out)
+;;                (:div :id "d3-container"
+;;                      :x-init
+;;                      (psl (let ((fetcher (lambda (builder data)
+;;                                            (fetch-contact
+;;                                             (lisp (string-upcase (getf props :system)))
+;;                                             (lisp (string-upcase (getf props :branch)))
+;;                                             data builder))))
+;;                             (funcall fetcher (chain window (d3-build fetcher))
+;;                                      nil))))))
+;;       (:control
+;;        (case (getf props :subsection)
+;;          (:save (cl-who:with-html-output (stream-out)
+;;                   (:button :class "ui button"
+;;                            :|x-on:click|
+;;                            (psl (fetch-contact (lisp (string-upcase (getf props :system)))
+;;                                                (lisp (string-upcase (getf props :branch)))
+;;                                                (@ (getprop (@ window seed-data) (lisp token))
+;;                                                   data)
+;;                                                (lambda (data) (chain console (log :sv)))))
+;;                            (str (string-downcase (getf props :subsection)))))))))))
 
 (defun render-html-interface (form &optional system-id meta path stream)
   (let ((strout (or stream (make-string-output-stream)))
@@ -749,6 +758,18 @@
                                                  :collect (format nil "~a " (string-downcase y))))))
                   (cl-who:with-html-output (strout)
                     (:div :class "container column-inner"
+                          :x-data (psl (let ((main-forms (list)))
+                                         (create push-form (lambda (item)
+                                                             (chain main-forms (push item)))
+                                                 submit-forms (lambda ()
+                                                                (chain console (log :mm main-forms))
+                                                                (chain main-forms
+                                                                       (for-each (lambda (form)
+                                                                                   (chain console (log :cc form))
+                                                                                   (chain htmx
+                                                                                          (trigger
+                                                                                           form
+                                                                                           "submit")))))))))
                           (if (not (assoc :header controls))
                               nil (htm (:div :class "ui medium header"
                                              (:h2 :class "branch-name" (str (lisp->camel-case branch)))
@@ -841,31 +862,31 @@
                                                          :do (branch-spec-cvdatagrid-sheet
                                                               strout :control :subsection c :system system-id
                                                                               :branch branch))))))))))
-               ((list :form :vector)
-                (let ((branch (second (assoc :access (getf form :mt))))
-                      (controls (rest (assoc :controls (getf form :mt))))
-                      (item-classes (apply #'concatenate 'string
-                                           (loop :for y :in (rest (assoc :type (getf form :mt)))
-                                                 :collect (format nil "~a " (string-downcase y))))))
-                  (cl-who:with-html-output (strout)
-                    (:div :class "container column-inner"
-                          (if (not (assoc :header controls))
-                              nil (htm (:div :class "ui medium header"
-                                             (:h2 :class "branch-name" (str (lisp->camel-case branch)))
-                                             (:div :class "controls-holder"
-                                                   (loop :for c :in (rest (assoc :header controls))
-                                                         :do (branch-spec-d3
-                                                              strout :control :subsection c :system system-id
-                                                                              :branch branch))))))
-                          (branch-spec-d3 strout :body :system system-id
-                                                       :branch branch :item-classes item-classes)
-                          (if (not (assoc :footer controls))
-                              nil (htm (:div :class "ui medium footer"
-                                             (:div :class "controls-holder"
-                                                   (loop :for c :in (rest (assoc :footer controls))
-                                                         :do (branch-spec-d3
-                                                              strout :control :subsection c :system system-id
-                                                                              :branch branch))))))))))
+               ;; ((list :form :vector)
+               ;;  (let ((branch (second (assoc :access (getf form :mt))))
+               ;;        (controls (rest (assoc :controls (getf form :mt))))
+               ;;        (item-classes (apply #'concatenate 'string
+               ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
+               ;;                                   :collect (format nil "~a " (string-downcase y))))))
+               ;;    (cl-who:with-html-output (strout)
+               ;;      (:div :class "container column-inner"
+               ;;            (if (not (assoc :header controls))
+               ;;                nil (htm (:div :class "ui medium header"
+               ;;                               (:h2 :class "branch-name" (str (lisp->camel-case branch)))
+               ;;                               (:div :class "controls-holder"
+               ;;                                     (loop :for c :in (rest (assoc :header controls))
+               ;;                                           :do (branch-spec-d3
+               ;;                                                strout :control :subsection c :system system-id
+               ;;                                                                :branch branch))))))
+               ;;            (branch-spec-d3 strout :body :system system-id
+               ;;                                         :branch branch :item-classes item-classes)
+               ;;            (if (not (assoc :footer controls))
+               ;;                nil (htm (:div :class "ui medium footer"
+               ;;                               (:div :class "controls-holder"
+               ;;                                     (loop :for c :in (rest (assoc :footer controls))
+               ;;                                           :do (branch-spec-d3
+               ;;                                                strout :control :subsection c :system system-id
+               ;;                                                                :branch branch))))))))))
                ((list :form (guard form-type (keywordp form-type)))
                 (let ((branch (second (assoc :access (getf form :mt))))
                       (item-classes (apply #'concatenate 'string
@@ -873,6 +894,7 @@
                                                  :collect (format nil "~a " (string-downcase y))))))
                   (cl-who:with-html-output (strout)
                     (:div :class item-classes :hx-trigger "load, reload"
+                          :x-init (psl (setf (getprop (@ window seed-elements) (lisp branch)) $el))
                           :hx-post "/render/" :hx-vals (json-convert-to (list :system :demo.sheet
                                                                               :branch branch))))))
                ((list* :group :linear _)
@@ -885,7 +907,7 @@
                                                               :append (list " " (string-downcase s)))))
                           :path path-string
                           (loop :for c :in contents :for m :in members :for w :in widths :for ix :from 0
-                                :do (let ((col-class (format nil "~a wide column" w))
+                                :do (let (;; (col-class (format nil "~a wide column" w))
                                           (item-classes
                                             (apply #'concatenate 'string
                                                    (loop :for y :in (rest (assoc :type (getf c :mt)))
@@ -943,31 +965,34 @@
                             ,@(funcall (if (and (listp item) (not multiple))
                                            input-processor #'identity)
                                        (if (and multiple (listp item))
-                                           item (list item)))))
-                   (build-elems (class item) (build-elem class item t)))
+                                           item (list item))))))
             (case (first type)
               (:set (case (second type)
                       (:form 
-                       (print (list :ty type))
                        `(:form :hx-post "/render/"
-                               :hx-trigger "reload, submit"
+                               :hx-trigger "reload consume, submit consume"
                                :x-data "{'thisForm': $el}"
+                               :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
+                                                        (push-form $el))))
                                :hx-vals ,(json-convert-to
                                           (list :system (string-upcase system)
                                                 :branch (string-upcase branch)))
-                               ,(funcall (case (third type)
-                                           (:tabular
-                                            (lambda (form)
-                                              (cons :table
-                                                    (loop :for row :in item
-                                                          :collect
-                                                          (cons :tr (loop :for cell :in row
-                                                                          :collect (list :td (htrender
-                                                                                              cell
-                                                                                              :params
-                                                                                              params))))))))
-                                           (t #'identity))
-                                         item)))
+                               ,@(funcall (case (third type)
+                                            (:tabular
+                                             (lambda (form)
+                                               (list
+                                                (cons :table
+                                                      (loop :for row :in item
+                                                            :collect
+                                                            (cons :tr (loop :for cell :in row
+                                                                            :collect (list :td (htrender
+                                                                                                cell
+                                                                                                :params
+                                                                                                params)))))))))
+                                            (t (lambda (form)
+                                                 (loop :for item :in form
+                                                       :collect (htrender item :params params)))))
+                                          item)))
                       ;; (:form (htrender
                       ;;         item :form-parameters :params params
                       ;;         (list :hx-post "/render/"
@@ -980,9 +1005,21 @@
                                                                    :collect (list :td (htrender
                                                                                        cell
                                                                                        :params params)))))))))
-              (:field (build-elem "ui input" (list :input :type "text"
-                                                          :name (symbol-munger:lisp->camel-case name)
-                                                          :value item)))
+              (:field
+               (let ((labeled  (member :labeled (rest type) :test #'eq))
+                     (is-block (member :block   (rest type) :test #'eq))
+                     (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
+                                                                            :test #'eq))
+                                                               name (first item)))))
+                 (if (member :pair (rest type) :test #'eq)
+                     `(:div :class ,(format nil "ui ~a~ainput"
+                                            (if labeled "labeled " "")
+                                            (if is-block "fluid " ""))
+                            ,@(if labeled `((:div :class "ui label" ,name)))
+                            (:input :type "text" :name ,name :value ,(rest item)))
+                     (build-elem "ui input" (list :input :type "text"
+                                                         :name (symbol-munger:lisp->camel-case name)
+                                                         :value item)))))
               (:select (case (second type)
                          (:dropdown
                           (let ((title (rest (assoc :title props)))
@@ -1141,7 +1178,7 @@
 ;;               ;;       :do (write-byte byte output))
 ;;               new-value))))
 
-(defmacro defvar-value (form)
+(defmacro setf-value (form)
   `(third ,form))
 
 (defmacro of-array-spec (key spec)
@@ -1189,26 +1226,20 @@
               (write-string after-string output)
               new-value))))
 
-;; (defmacro build-directed-graph (&rest nodes)
-;;   (let ((n (gensym)) (link (gensym)) (nodes-out (gensym)))
-;;     `(let ((,nodes-out (list ,@(loop :for node :in nodes
-;;                                      :collect (list 'list (cons 'list (mapcar (lambda (i) (cons 'list i))
-;;                                                                               (first node)))
-;;                                                     `(list (list ,@(mapcar (lambda (i) (cons 'list i))
-;;                                                                            (cdadr node)))
-;;                                                            ,(caadr node))
-;;                                                     )))))
-;;        (loop :for ,n :in ,nodes-out
-;;              :do (loop :for ,link :in (rest ,n)
-;;                        :do (rplacd ,link (nth (second ,link) ,nodes-out))))
-;;        ,nodes-out)))
-
-(defmacro build-directed-graph2 (&rest nodes)
+(defmacro build-directed-graph (&rest nodes)
   (let ((n (gensym)) (link (gensym)) (nodes-out (gensym)))
     `(let ((,nodes-out (list ,@(loop :for node :in nodes
-                                     :collect (list 'list (cons 'list (mapcar (lambda (i) (cons 'list i))
+                                     :collect (list 'list (cons 'list (mapcar (lambda (i)
+                                                                                (if (listp (rest i))
+                                                                                    (cons 'list i)
+                                                                                    (list 'cons (first i)
+                                                                                          (rest i))))
                                                                               (first node)))
-                                                    `(list (list ,@(mapcar (lambda (i) (cons 'list i))
+                                                    `(list (list ,@(mapcar (lambda (i)
+                                                                             (if (listp (rest i))
+                                                                                 (cons 'list i)
+                                                                                 (list 'cons (first i)
+                                                                                       (rest i))))
                                                                            (caadr node)))
                                                            ,(cadadr node)))))))
        (loop :for ,n :in ,nodes-out
@@ -1216,165 +1247,131 @@
                        :do (rplacd ,link (list (nth (second ,link) ,nodes-out)))))
        ,nodes-out)))
 
-;; '(build-directed-graph
-;;  (((:title "First node."))
-;;   (1 (:title "Link to second node.")))
-;;  (((:title "Second node."))
-;;   (2 (:title "Link to third node.")))
-;;  (((:title "Third node."))
-;;   (0 (:title "Link to first node.")))
-;;  )
+(defun format-graph-spec-to-edit (dgraph &optional initial)
+  (flet ((meta-strip (form)
+           (loop :for item :in form :collect (if (not (string= "META" (string (first item))))
+                                                 item (second item)))))
+    (loop :for node :in (copy-tree dgraph) :for nx :from 0
+          ;; remove (meta) forms; should this be factored into a dedicated function?
+          :collect (let ((node-contents (meta-strip (first node)))
+                         (link-contents (loop :for link :in (rest node)
+                                              :collect (cons (meta-strip (first link))
+                                                             (rest link)))))
+                     (cons (if initial (cons (cons :index nx) node-contents)
+                               node-contents)
+                           (loop :for link :in link-contents :collect (list :closed link)))))))
 
-'(build-directed-graph2
- (((:title "First node."))
-  (((:title "Link to second node."))
-   1))
- (((:title "Second node."))
-  (((:title "Link to third node."))
-   2))
- (((:title "Third node."))
-  (((:title "Link to first node."))
-   0))
- )
+(defun dgraph-interface (dgraph interface &key path to-open at-path)
+  (destructuring-bind (open-index &rest rest-indices) path
+    (let ((point (nth open-index interface)))
+      ;; next-interface
+      ;; (print (list :rr interface (nth open-index interface) rest-indices))
+      (if rest-indices
+          (progn (setf (nth open-index interface)
+                       (cons (first point)
+                             (dgraph-interface dgraph (rest point) :path rest-indices
+                                                                   :to-open to-open :at-path at-path)))
+                 interface)
+          (if (listp point)
+              (if to-open (list (if (not (eq :closed (first point)))
+                                    point (second point)))
+                  (if at-path (funcall at-path point)
+                      (list (list :closed point))))
+              (if (numberp point)
+                  (list (funcall (lambda (form) (if (not (eq :closed (first form)))
+                                                    form (second form)))
+                                 (nth point dgraph)))))))))
 
-;; (defun dgraph-interface (dgraph &optional interface &key (depth 0) open-path)
-;;   (print (list :dd interface))
-;;   (if (not interface)
-;;       (loop :for item :in dgraph :collect (cons (first item)
-;;                                                 (if (not (second item))
-;;                                                     nil (loop :for link :in (rest item)
-;;                                                               :collect :closed))))
-;;       (if (not open-path)
-;;           interface (destructuring-bind (open-index &rest rest-indices) open-path
-;;                       (print interface)
-;;                       (if rest-indices
-;;                           (dgraph-interface (nth open-index (if (zerop depth)
-;;                                                                 dgraph (rest dgraph)))
-;;                                             (nth open-index (if (zerop depth)
-;;                                                                 interface (rest interface)))
-;;                                             :depth (1+ depth) :open-path rest-indices)
-;;                           (setf (nth open-index (rest interface))
-;;                                 (let ((target (nth open-index (print (rest dgraph)))))
-;;                                   (print (list :tg (first target)))
-;;                                   (append (list (first target)
-;;                                                 (if (second target) :closed nil)))))
-;;                           )
-;;                       interface))))
+(defun svrender-graph (gmodel &key x-offset y-offset (path-string "")
+                                (height 400) (width 400))
+  (multiple-value-bind (nodes-markup y-offset)
+      (svrender-layer gmodel :x-offset x-offset :y-offset y-offset
+                             :path-string path-string :height height :width width)
+    `(:svg :class "svg-visualizer" :width ,width :height ,(max height y-offset)
+           :x-data (psl (create open-node     (lambda (path)
+                                                (fetch-contact
+                                                 "DEMO.SHEET" "GRAPH"
+                                                 (create action "open" path path)))
+                                expand-node   (lambda (path)
+                                                (fetch-contact
+                                                 "DEMO.SHEET" "GRAPH"
+                                                 (create action "expand" path path)
+                                                 (lambda (data)
+                                                   (chain htmx (trigger "#branch-graph" "reload")))))
+                                contract-node (lambda (path)
+                                                (fetch-contact
+                                                 "DEMO.SHEET" "GRAPH"
+                                                 (create action "contract" path path)
+                                                 (lambda (data)
+                                                   (chain htmx (trigger "#branch-graph" "reload")))))))
+           ,@nodes-markup)))
 
-;; (defun dgraph-interface (dgraph &optional interface &key (depth 0) open-path)
-;;   (print (list :dd interface))
-;;   (if (not interface)
-;;       (loop :for item :in dgraph :collect (cons (first item)
-;;                                                 (if (not (second item))
-;;                                                     nil (loop :for link :in (rest item)
-;;                                                               :collect :closed))))
-;;       (if (not open-path)
-;;           interface (destructuring-bind (open-index &rest rest-indices) open-path
-;;                       (print interface)
-;;                       (if (rest rest-indices)
-;;                           (dgraph-interface (nth open-index (if (zerop depth)
-;;                                                                 dgraph (rest dgraph)))
-;;                                             (nth open-index (if (zerop depth)
-;;                                                                 interface (rest interface)))
-;;                                             :depth (1+ depth) :open-path rest-indices)
-;;                           (let* ((last-index (first rest-indices))
-;;                                  (target (nth last-index (rest (nth open-index (rest dgraph))))))
-;;                             (print (list :nx last-index (nth open-index (rest interface))
-;;                                          (nth last-index (rest (nth open-index (rest interface))))
-;;                                          :ft (first target) target
-;;                                          ))
-;;                             (setf (nth last-index (rest (nth open-index (rest interface))))
-;;                                   (append (list (first target)
-;;                                                 (if (second target) :closed nil))))
-;;                             ;; (setf (nth open-index (rest interface))
-;;                             ;;       (let ((target (nth open-index (print (rest dgraph)))))
-;;                             ;;         (print (list :tg (first target)))
-;;                             ;;         (append (list (first target)
-;;                             ;;                     (if (second target) :closed nil)))))
-;;                             ))
-;;                       interface))))
-
-(defun dgraph-interface (dgraph &optional interface &key (depth 0) path to-open)
-  (if (not interface)
-      (loop :for item :in dgraph :collect (cons (first item)
-                                                (if (not (second item))
-                                                    nil (loop :for link :in (rest item)
-                                                              :collect :closed))))
-      (if (not path)
-          interface (let ((dgraph (if (zerop depth) (cons :head dgraph) dgraph))
-                          (interface (if (zerop depth) (cons :head interface) interface)))
-                      (destructuring-bind (open-index &rest rest-indices) path
-                        ;; (print (list :in interface))
-                        (if (rest rest-indices)
-                            (dgraph-interface (nth open-index (rest dgraph))
-                                              (nth open-index (rest interface))
-                                              :depth (1+ depth) :path rest-indices :to-open to-open)
-                            (let* ((last-index (first rest-indices))
-                                   (target (nth last-index (rest (nth open-index (rest dgraph))))))
-                              ;; (print (list :nx last-index (nth open-index (rest interface))
-                              ;;              (nth last-index (rest (nth open-index (rest interface))))
-                              ;;              :ft (first target) ; target
-                              ;;              ))
-                              
-                              (setf (nth last-index (rest (nth open-index (rest interface))))
-                                    (if to-open (append (list (first target)
-                                                              (if (second target) :closed nil)))
-                                        :closed))
-                              ))
-                        (if (zerop depth) (rest interface)
-                            interface))))))
-
-(let ((x-start 10) (y-start 30) (x-increment 40) (y-increment 40))
-  (defun svrender-graph (gmodel &key x-offset y-offset parent (path-string "")
-                                  (expand-control-format #'identity)
-                                  (contract-control-format #'identity))
+(let ((x-start 10) (y-start 30) (x-increment 40) (y-increment 40)
+      (expander-code   (psl (expand-node   (chain $el (get-attribute "path")))))
+      (contracter-code (psl (contract-node (chain $el (get-attribute "path"))))))
+  (defun svrender-layer (gmodel &key x-offset y-offset parent (path-string "")
+                                  (height 400) (width 400))
     (let ((y-offset (or y-offset y-start)) (x-offset (or x-offset x-start))
-          (radius 20) (output) (link-specs))
+          (main-radius 16) (output) (link-specs))
       (loop :for item :in gmodel :for ix :from 0 :when (listp item)
-            :do (let ((is-expandable (second item))
-                      (path-string (if (zerop (length path-string))
-                                       (format nil "~a 0 " ix)
-                                       (format nil "~a ~a " path-string ix))))
+            :do (let* ((is-expandable (or (and (listp (second item))
+                                               (caadr item))
+                                          (and (numberp (second item))
+                                               (second item))))
+                       (is-closed (or (eq :closed is-expandable)
+                                      (numberp is-expandable)))
+                       (path-string (if (zerop (length path-string))
+                                        (format nil "~a 0"  ix)
+                                        (format nil "~a ~a" path-string ix)))
+                       (title (rest (assoc :title (first item))))
+                       (index (or (rest (assoc :index (first item)))
+                                  (format nil "~a ~a" (third parent) ix))))
+                  ;; (print (list :tt item title))
                   (push `(:g :class "node-group"
                              :transform ,(format nil "translate(~a,~a)" x-offset y-offset)
                              (:g :class "title-frame"
+                                 :index ,index
                                  :transform ,(format nil "translate(36,-12)")
-                                 (:rect :x 0 :y 0 :fill "#efefef" :height 24 :width 200 :rx 12)
+                                 (:rect :x 0 :y 0 :height 24 :rx 12
+                                        :width ,(- width x-offset 36 20))
                                  (:g :class "description"
+                                     :|x-on:click| (psl (open-node ,index))
                                      (:text :class "title" :y 16 :x ,(if is-expandable 26 6)
-                                            ,(second (assoc :title (first item))))))
-                             (:g :class "circle-glyph"
-                                 (:circle :class "outer-circle" :cx 16 :cy 0 :r 16)
+                                            ,title)))
+                             (:g :class "circle-glyph" :index ,index
+                                 :|x-on:click| (psl (open-node ,index))
+                                 (:circle :class "outer-circle" :cx 16 :cy 0 :r ,main-radius)
                                  (:circle :class "inner-circle" :cx 16 :cy 0 :r 12))
                              ,@(if (not is-expandable)
-                                   nil (list (funcall
-                                              (if (eq :closed is-expandable)
-                                                  expand-control-format contract-control-format)
-                                              `(:g :class "expand-control" :path ,path-string
-                                                   (:circle :class "button-backing" :cx 48 :cy 0 :r 10)
-                                                   (:circle :class "button-circle"  :cx 48 :cy 0 :r 8)
-                                                   (:rect :class "indicator" :x 43.5 :y -1
-                                                          :height 3 :width 9)
-                                                   ,@(if (not (eq :closed is-expandable))
-                                                         nil `((:rect :class "indicator" :x 46.5 :y -4
-                                                                      :height 9 :width 3))))))))
+                                   nil `((:g :class "expand-control"
+                                             :path ,path-string
+                                             :|x-on:click| ,(if is-closed expander-code contracter-code)
+                                             (:circle :class "button-backing" :cx 48 :cy 0 :r 10)
+                                             (:circle :class "button-circle"  :cx 48 :cy 0 :r 8)
+                                             (:rect :class "indicator" :x 43.5 :y -1
+                                                    :height 3 :width 9)
+                                             ,@(if (not is-closed)
+                                                   nil `((:rect :class "indicator" :x 46.5 :y -4
+                                                                :height 9 :width 3)))))))
                         output)
                   
-                  (when parent (destructuring-bind (parent-x parent-y) parent
+                  (when parent (destructuring-bind (parent-x parent-y &rest _) parent
                                  (let ((mid-x (+ parent-x (* 0.5 (- x-offset parent-x)))))
                                    (push `(:path :class "link"
                                                  :d ,(format nil "M~a,~aC~a,~a,~a,~a,~a,~a"
                                                              parent-x parent-y mid-x parent-y
                                                              mid-x y-offset x-offset y-offset))
                                          link-specs))))
-                  (if (rest item)
+                  ;; (print (list :si parent (second item)))
+                  (if (and (rest item) (listp (second item))
+                           (not (eq :closed (caadr item))))
                       (multiple-value-bind (out-list new-y-offset new-link-specs)
-                          (svrender-graph
+                          (svrender-layer
                            (rest item) :x-offset (+ x-increment x-offset)
                                        :y-offset (+ y-increment y-offset)
-                           :path-string path-string :parent (list x-offset y-offset)
-                           :expand-control-format expand-control-format
-                           :contract-control-format contract-control-format)
+                                       :height height :width width
+                                       :path-string path-string :parent (list x-offset y-offset
+                                                                              index))
                         (setf output (append out-list output)
                               link-specs (append new-link-specs link-specs)
                               y-offset new-y-offset))

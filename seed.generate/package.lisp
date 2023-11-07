@@ -10,7 +10,7 @@
            #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
            #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender #:render-console #:meta-revise #:psl
-           #:from-system-file #:text-wrap #:defvar-value #:of-array-spec #:of-graph-spec)
+           #:from-system-file #:text-wrap #:setf-value #:of-array-spec #:of-graph-spec)
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)
   (:shadowing-import-from #:spinneret #:with-html #:with-html-string #:interpret-html-tree))

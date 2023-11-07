@@ -5,8 +5,6 @@
   devtool: "eval-source-map",
   entry: {
     iface: [ './node_modules/codemirror/dist/index.js', './cm-app.js' ],
-//  codemirror: './node_modules/codemirror/dist/index.js',
-//  cmApp: './cm-app.js'
   },
   output: {
     filename: '[name].bundle.js',

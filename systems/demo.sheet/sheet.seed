@@ -6,9 +6,9 @@
                  (lambda (input)
                    (-<> (uic-set ((:type :group :linear :workspace :even)
                                   (:members :column :column))
-                                 ;; (uic ((:type :form :text) (:access :main)
-                                 ;;       (:controls (:header :save)
-                                 ;;                  (:footer :save))))
+                                 (uic ((:type :form :text) (:access :main)
+                                       (:controls (:header :save)
+                                                  (:footer :save))))
                                  ;; (uic ((:type :form :tree) (:access :code)
                                  ;;       (:controls (:header :save)
                                  ;;                  (:footer :save))))
@@ -18,18 +18,21 @@
                                  ;; (uic ((:type :form :vector) (:access :graph)
                                  ;;       (:controls (:header :save)
                                  ;;                  (:footer :save))))
-                                 (uic ((:type :form :elem) (:access :graph)
-                                       (:controls (:header :save)
-                                                  (:footer :save))))
+                                 ;; (uic ((:type :form :elem) (:access :graph)
+                                 ;;       (:controls (:header :save)
+                                 ;;                  (:footer :save))))
                                  ;; (uic ((:type :form :elem) (:access :form)
                                  ;;       (:controls (:header :save)
                                  ;;                  (:footer :save))))
                                  ;; (uic ((:type :form :elem) (:access :table)
                                  ;;       (:controls (:header :submit)
                                  ;;                  (:footer :submit))))
-                                 (uic ((:type :form :cells) (:access :cells)
-                                       (:controls (:header :save :toggle-baseline)
+                                 (uic ((:type :form :elem) (:access :graphnode)
+                                       (:controls (:header :save)
                                                   (:footer :save))))
+                                 ;; (uic ((:type :form :cells) (:access :cells)
+                                 ;;       (:controls (:header :save :toggle-baseline)
+                                 ;;                  (:footer :save))))
                                  )
                      (in-system-context <> package)))
                  :main
@@ -38,7 +41,6 @@
                                                  (loop :for i :in input :append (list i '(#\Newline))))))
                                (setf (from-system-file package "sheet.lisp" :main :as-string t)
                                      (text-wrap input :syntax :progn))
-                               ;; (instantiate-priority-macro-reader (asdf:load-system package))
                                (load-seed-system package)
                                (list :text (text-wrap (from-system-file package "sheet.lisp"
                                                                         :main :as-string t)
@@ -67,7 +69,7 @@
                  :table
                  (let ((original (from-system-file package "sheet.lisp" :table)))
                    (lambda (input)
-                     (print (list :in input))
+                     ;; (print (list :in input))
                      (when (third input)
                        ;; only process input if fields apart form system/branch are present
                        (meta-revise (second (third original)) input)
@@ -79,137 +81,102 @@
                          (loop :while val-key :for ix :from 0
                                :do (setf val-key  (intern (format nil "V-~a" ix) "KEYWORD")
                                          unit-key (intern (format nil "U-~a" ix) "KEYWORD"))
-                                   (print (list :vk val-key unit-key))
+                                   ;; (print (list :vk val-key unit-key))
                                    (if (assoc val-key input)
                                        (progn (when (= 5 count)
                                                 (setf count 0)
-                                                (format vout "~%#~%"))
+                                                (format vout "~%#~%")
+                                                (format uout "~%#~%"))
                                               (format vout "  ~a  |"
                                                       (rest (assoc val-key  input)))
                                               (format uout " ~a |"
-                                                      (rest (assoc unit-key input)))
+                                                      (or (rest (assoc unit-key input))
+                                                          "nounit"))
                                               (incf count))
                                        (setf val-key nil)))
-                         ;; (print (list :st (concatenate 'string
-                         ;;                               (get-output-stream-string vout)
-                         ;;                               (get-output-stream-string uout))))
-                         )
-                       )
+                         (print (list :st (concatenate 'string
+                                                       (get-output-stream-string vout)
+                                                       (get-output-stream-string uout))))
+                         ))
                      (let ((out (make-string-output-stream)))
                        (spinneret:interpret-html-tree
                         (htrender (second (third original))
                                   :params (list :system package :branch :table))
                         :stream out)
                        (get-output-stream-string out))))
-                 ;; :graphone
-                 ;; (lambda (input)
-                 ;;   (let ((data '(build-directed-graph2
-                 ;;                 (((:title "First node."))
-                 ;;                  (((:title "Link to second node."))
-                 ;;                   1))
-                 ;;                 (((:title "Second node."))
-                 ;;                  (((:title "Link to third node."))
-                 ;;                   2))
-                 ;;                 (((:title "Third node."))
-                 ;;                  (((:title "Link to first node."))
-                 ;;                   0))
-                 ;;                 )))
-                 ;;     (if input (let ((index (rest (assoc "index" input :test #'string=))))
-                 ;;                 (of-graph-spec data index))
-                 ;;         (of-graph-spec data))))
                  :graph
-                 (let* ((data (seed.generate::build-directed-graph2
-                                 (((:title "First node."))
-                                  (((:title "Link to second node."))
-                                   1))
-                                 (((:title "Second node."))
-                                  (((:title "Link to third node."))
-                                   2))
-                                 (((:title "Third node."))
-                                  (((:title "Link to first node."))
-                                   0))
-                                 ))
-                        (formatted (seed.generate::dgraph-interface data))
-                        (el-width) (el-height))
-                   ;; (seed.generate::dgraph-interface data formatted :path '(0 0) :to-open t)
-                   ;; (seed.generate::dgraph-interface data formatted :path '(1 0) :to-open t)
+                 (let ((el-width) (el-height) (formatted) (graph-base) (graph-data))
                    (lambda (input)
                      ;; (print (list :in input))
-                     (when (and input (assoc "width" input :test #'string=))
-                       (setf el-width (rest (assoc "width" input :test #'string=))
-                             el-height (rest (assoc "height" input :test #'string=))))
-                     (when (and input (assoc "path" input :test #'string=))
-                       (let ((inst (make-string-input-stream
-                                    (rest (assoc "path" input :test #'string=)))))
-                         (seed.generate::dgraph-interface
-                          data formatted :path (loop :for c := (read inst nil)
-                                                     :while c :collect c)
-                          :to-open t)
-                         (close inst)))
-                     (when (and input (assoc "closePath" input :test #'string=))
-                       (let ((inst (make-string-input-stream
-                                    (rest (assoc "closePath" input :test #'string=)))))
-                         (seed.generate::dgraph-interface
-                          data formatted :path (loop :for c := (read inst nil)
-                                                     :while c :collect c)
-                          :to-open nil)
-                         (close inst)))
-                     ;; the *output-stream* is created in the seed package - best elsewhere?
-                     (when (assoc :system input)
-                       (setf *output-stream* (make-string-output-stream))
-                       (eval `(cl-who:with-html-output (*output-stream*)
-                                (:svg :class "svg-visualizer"
-                                      :width ,el-width :height ,el-height
-                                      ,@(seed.generate::svrender-graph
-                                         formatted
-                                         :expand-control-format
-                                         (lambda (form)
-                                           (setf (rest form)
-                                                 (append (list :|x-on:click|
-                                                               '(psl
-                                                                 (progn
-                                                                   (chain console
-                                                                          (log "click"
-                                                                               (chain $el (get-attribute
-                                                                                           "path"))))
-                                                                   (fetch-contact
-                                                                    "DEMO.SHEET" "GRAPH"
-                                                                    (create path
-                                                                            (chain $el (get-attribute
-                                                                                        "path")))
-                                                                    (lambda (data)
-                                                                      (chain htmx
-                                                                             (trigger "#branch-graph"
-                                                                                      "reload"))
-                                                                      )))))
-                                                         (rest form)))
-                                           form)
-                                         :contract-control-format
-                                         (lambda (form)
-                                           (setf (rest form)
-                                                 (append (list :|x-on:click|
-                                                               '(psl
-                                                                 (progn
-                                                                   (chain console
-                                                                          (log "click"
-                                                                               (chain $el (get-attribute
-                                                                                           "path"))))
-                                                                   (fetch-contact
-                                                                    "DEMO.SHEET" "GRAPH"
-                                                                    (create close-path
-                                                                            (chain $el (get-attribute
-                                                                                        "path")))
-                                                                    (lambda (data)
-                                                                      (chain htmx
-                                                                             (trigger "#branch-graph"
-                                                                                      "reload"))
-                                                                      )))))
-                                                         (rest form)))
-                                           form)
-                                         ))))
-                       (let ((output (get-output-stream-string *output-stream*)))
-                         (close *output-stream*)
-                         output))))
+                     (unless graph-base (setf graph-base (from-system-file package "sheet.lisp" :graph)
+                                              graph-data (seed.generate::format-graph-spec-to-edit
+                                                          (rest (third graph-base)) t)
+                                              formatted  (copy-tree graph-data)))
+                     (if (and (assoc "action" input :test #'string=)
+                              (string= "open" (rest (assoc "action" input :test #'string=))))
+                         (interface-interact :demo.sheet :graphnode input)
+                         (progn
+                           (when (and input (assoc "width" input :test #'string=))
+                             (setf el-width  (rest (assoc "width"  input :test #'string=))
+                                   el-height (rest (assoc "height" input :test #'string=))))
+                           (when (and input (assoc "path" input :test #'string=))
+                             (let ((action (rest (assoc "action" input :test #'string=)))
+                                   (inst (make-string-input-stream
+                                          (rest (assoc "path" input :test #'string=)))))
+                               (seed.generate::dgraph-interface
+                                graph-data formatted :path (loop :for c := (read inst nil)
+                                                                 :while c :collect c)
+                                :to-open (string= action "expand")
+                                :at-path (if (not (string= action "open"))
+                                             nil (lambda (item)
+                                                   (setf (symbol-value (intern "*ACTIVE-GRAPH-ITEM*"
+                                                                               (string package)))
+                                                         item))))
+                               ;; (print (list :ft formatted))
+                               ;; (close inst)
+                               ))
+
+                           ;; the *output-stream* is created in the seed package - best elsewhere?
+                           (if (assoc :system input)
+                               (progn (setf *output-stream* (make-string-output-stream))
+                                      (eval `(cl-who:with-html-output (*output-stream*)
+                                               ,(seed.generate::svrender-graph
+                                                 formatted :width el-width :height el-height)))
+                                      (let ((output (get-output-stream-string *output-stream*)))
+                                        (close *output-stream*)
+                                        output))
+                               '(:oob-reload #("graphnode")))))))
+                 :graphnode
+                 (let ((index 0) (sub-index) (nodes-base) (nodes-data))
+                   (lambda (input)
+                     (setf nodes-base (from-system-file package "sheet.lisp" :graph)
+                           nodes-data (rest (third nodes-base)))
+                     ;; (print (list :no nodes-data :in input
+                     ;;              (first (nth index nodes-data))))
+
+                     (if (and (assoc "action" input :test #'string=)
+                              (string= "open" (rest (assoc "action" input :test #'string=))))
+                         (let ((path (rest (assoc "path" input :test #'string=))))
+                           (if (numberp path) (setf index path sub-index nil)
+                               (let ((pathstr (make-string-input-stream path)))
+                                 (destructuring-bind (i si) (loop :for c := (read pathstr nil)
+                                                                  :while c :collect c)
+                                   (setf index i sub-index si)
+                                   (close pathstr))))
+                           '(:oob-reload #("graphnode")))
+                         (let ((out (make-string-output-stream)))
+                           (spinneret:interpret-html-tree
+                            (htrender `(meta ,(loop :for item
+                                                      :in (first (if sub-index
+                                                                     (nth sub-index
+                                                                          (rest (nth index
+                                                                                     nodes-data)))
+                                                                     (nth index nodes-data)))
+                                                    :collect item)
+                                             (:type :set :form))
+                                      :params (list :system package :branch :graphnode))
+                            :stream out)
+                           (get-output-stream-string out)))))
                  :cells
                  (let ((display-baseline))
                    (lambda (input)
@@ -218,7 +185,7 @@
                                    (cond ((string= "toggleBaseline" (caar input))
                                           (setf display-baseline (not display-baseline))))
                                    (let ((original (from-system-file package "sheet.lisp" :cells)))
-                                     (setf (of-array-spec :initial-contents (defvar-value original))
+                                     (setf (of-array-spec :initial-contents (setf-value original))
                                            `(quote ,(loop :for row :in input
                                                           :collect (loop :for cell :in row
                                                                          :collect (parse-number:parse-number
@@ -226,11 +193,11 @@
                                            (from-system-file package "sheet.lisp" :cells) original)
                                      ;; (instantiate-priority-macro-reader (asdf:load-system package))
                                      (load-seed-system package)))
-                         (if display-baseline (encode (symbol-value (intern "*CELL-MATRIX*"
-                                                                            (string package))))
+                         (if display-baseline
+                             (encode (symbol-value (intern "*CELL-MATRIX*" (string package))))
                              (list :ty :ar :ct
                                    (second (of-array-spec :initial-contents
-                                                          (defvar-value
-                                                              (from-system-file
-                                                               package "sheet.lisp" :cells)))))))))))
+                                                          (setf-value
+                                                           (from-system-file
+                                                            package "sheet.lisp" :cells)))))))))))
 

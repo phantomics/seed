@@ -10,6 +10,9 @@
   "author": "Andrew Sengul",
   "license": "GPL-3.0",
   "dependencies": {
+    "@codemirror/lang-python": "^6.1.3",
+    "@nextjournal/clojure-mode": "^0.1.0",
+    "@nextjournal/lezer-clojure": "^1.0.0",
     "codemirror": "^6.0.1",
     "webpack": "^5.89.0"
   },

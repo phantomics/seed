@@ -40,26 +40,39 @@ body{
     height: 100%;
 }
 
-.ui.grid-layout .container{
+.ui.grid-layout .column{
+    display: grid;
+    overflow: auto;
+    grid-template-rows: 1fr;
+}
+
+.ui.grid-layout .column .container{
     position: relative;
     height: 100%;
     display: grid;
 }
 
-.ui.grid-layout .container.column-inner{
+.ui.grid-layout .column .container.column-inner{
     padding: 0;
+    overflow: auto;
     grid-template-rows: [header-start] auto [header-end] 1fr [footer-start] auto [footer-end];
     grid-template-columns: 100%;
 }
 
-.ui.grid-layout .container.column-inner .header{
+.ui.grid-layout .column .container.column-inner .header{
     grid-row-start: header-start;
     grid-row-end: header-end;
 }
 
-.ui.grid-layout .container.column-inner .sub-container{
+.ui.grid-layout .column .container.column-inner .sub-container{
     grid-row-start: header-end;
     grid-row-end: footer-start;
+    overflow-y: auto;
+}
+
+.ui.grid-layout .column .container.column-inner .footer{
+    grid-row-start: footer-start;
+    grid-row-end: footer-end;
 }
 
 .ui.grid-layout.main{
@@ -125,9 +138,22 @@ body{
     border-top: 2px solid #ccc;
 }
 
+
+
+.form.text .cm-editor{
+    height: 100%;
+}
+
+form{
+    padding: 0.64em;
+}
+
+form .input.fluid{
+    margin-bottom: 0.32em;
+}
+
 .d3view-graph-foldout,
 .svg-visualizer{
-    height: 100%;
     width: 100%;
 }
 
@@ -138,34 +164,59 @@ body{
     stroke-width: 1.5;
 }
 
-.d3view-graph-foldout .expand-control,
-.svg-visualizer .expand-control{
+
+
+.d3view-graph-foldout .node-group .title-frame,
+.svg-visualizer .node-group .title-frame{
     cursor: pointer;
 }
 
-.d3view-graph-foldout .expand-control .button-backing,
-.svg-visualizer .expand-control .button-backing{
+.d3view-graph-foldout .node-group .title-frame rect,
+.svg-visualizer .node-group .title-frame rect{
+    opacity: 0;
+    fill: #efefef;
+}
+
+.d3view-graph-foldout .node-group .expand-control,
+.svg-visualizer .node-group .expand-control{
+    cursor: pointer;
+}
+
+.d3view-graph-foldout .node-group .expand-control .button-backing,
+.svg-visualizer .node-group .expand-control .button-backing{
     fill: #fff;
 }
 
-.d3view-graph-foldout .expand-control .button-circle,
-.svg-visualizer .expand-control .button-circle{
+.d3view-graph-foldout .node-group .expand-control .button-circle,
+.svg-visualizer .node-group .expand-control .button-circle{
     fill: #bbb;
 }
 
-.d3view-graph-foldout .expand-control rect,
-.svg-visualizer .expand-control rect{
+.d3view-graph-foldout .node-group .expand-control rect,
+.svg-visualizer .node-group .expand-control rect{
     fill: #fff;
 }
 
+.d3view-graph-foldout .node-group .circle-glyph,
+.svg-visualizer .node-group .circle-glyph{
+    cursor: pointer;
+}
 
-
-.d3view-graph-foldout .circle-glyph .outer-circle,
-.svg-visualizer .circle-glyph .outer-circle{
+.d3view-graph-foldout .node-group .circle-glyph .outer-circle,
+.svg-visualizer .node-group .circle-glyph .outer-circle{
     fill: #ccc;
 }
 
-.d3view-graph-foldout .circle-glyph .inner-circle,
-.svg-visualizer .circle-glyph .inner-circle{
+.d3view-graph-foldout .node-group .circle-glyph .inner-circle,
+.svg-visualizer .node-group .circle-glyph .inner-circle{
     fill: #fff;
+}
+
+
+
+
+
+.d3view-graph-foldout .node-group:hover .title-frame rect,
+.svg-visualizer .node-group:hover .title-frame rect{
+    opacity: 1;
 }
