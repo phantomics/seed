@@ -135,20 +135,6 @@
 
 ;; (build-static-page :portal.demo1 "ui-browser")
 
-
-;; (:script :src "./static/htmx.min.js")
-;; (:link :rel "stylesheet"
-;;        :href "./node_modules/fomantic-ui/dist/semantic.css")
-;; (:link :rel "stylesheet" :href "./build/vendor.css")
-
-;; (:script :src "./static/alpine.js")
-;; (:script
-;;  :src "./node_modules/canvas-datagrid/dist/canvas-datagrid.js")
-;; (:script :src "./node_modules/d3/dist/d3.min.js")
-
-;; (:script :src "./static/codemirror.bundle.js")
-;; (:script :src "./static/cmApp.bundle.js")
-
 (defun build-css (relative-path)
   (with-open-file (stream (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
                                                          (format nil "./~a/build/app.css" relative-path))
@@ -169,9 +155,8 @@
         (.form :font-size "120%" :font-weight "bold"
                :padding 3px 12px))
       
-      `(.ui.grid
-        :height "100%"
-        (.group :height "100%"))
+      `(.ui.grid :height "100%"
+                 (.group :height "100%"))
 
       `(.ui.grid-layout
         :display "grid" :height "100%"
@@ -251,18 +236,30 @@
       ;;   (.sub-container :height 100%
       ;;                   :width 100%))
 
-      `(form
-        :padding 0.64em
-        (.input.fluid :margin-bottom 0.32em))
+      `(form :padding 0.64em
+             (.input.fluid :margin-bottom 0.32em))
       
       ;; d3 graph view styles
       
       `((:or .d3view-graph-foldout .svg-visualizer)
         :width 100%
+        (.handle (.main :fill "#fff")
+                 (.center :fill "#ccc")
+                 (.arrow :fill none :stroke "#999" :stroke-width 2)
+                 (.outer-arrow :fill none :stroke "#bbb" :stroke-width 4))
         (.link :fill none :stroke "#bbb" :stroke-width 1.5)
         (.node-group
          (.title-frame :cursor "pointer"
-                       (rect :opacity 0 :fill "#efefef"))
+                       (rect :opacity 0 :fill "#efefef" :stroke "#ccc" :stroke-width 0)
+                       (.handle :opacity 0
+                                (.outer-arrow :opacity 0))
+                       ((:and .handle :hover)
+                        (.outer-arrow :opacity 1))                       
+                       (.linker :opacity 0
+                                (.main :fill "#fff")
+                                (.center :fill "#ccc")
+                                (.arrow :fill "#999")
+                                (.outer-arrow :opacity 0 :fill none :stroke "#bbb" :stroke-width 4)))
          (.expand-control :cursor "pointer"
                           (.button-backing :fill "#fff")
                           (.button-circle  :fill "#bbb")
@@ -270,10 +267,22 @@
          (.circle-glyph :cursor "pointer"
                         (.outer-circle :fill "#ccc")
                         (.inner-circle :fill "#fff")))
+        (.node-group.selected
+         (.title-frame (rect :opacity 1 :stroke-width 1)))
         ((:and .node-group :hover)
-         (.title-frame (rect :opacity 1))))
-      
-      ))))
+         (.title-frame (rect :opacity 1))
+         (.handle :opacity 1)
+         (.linker :opacity 1))
+        (.drag-indicator :opacity 0 :fill "#000")
+        (.mouse-transparent :pointer-events none))
+
+      `(.svg-visualizer.drag
+        ((:and .node-group :|not(.dragging)| :hover)
+         (.handle :opacity 0)
+         (.title-frame (rect :opacity 0))
+         ;; title frame doesn't show in drag-over mode
+         (.drag-indicator :opacity 0.2))
+        )))))
 
 ;; (build-css "ui-browser")
 
@@ -281,25 +290,31 @@
   (build-script-element
    :path (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
                                         "./ui-browser/npm-interfaces/codemirror/cm-app.js")
-   :imports `(((basic-setup -editor-view) "codemirror")
-              ((-editor-state -compartment -facet) "@codemirror/state")
+   :imports `(((minimal-setup -editor-view) "codemirror")
+              ;; ((basic-setup -editor-view) "codemirror")
+              ((highlight-active-line line-numbers highlight-active-line-gutter) "@codemirror/view")
+              ((-extension -editor-state -compartment -facet) "@codemirror/state")
+              ((close-brackets close-brackets-keymap) "@codemirror/autocomplete")
+              ((bracket-matching fold-gutter) "@codemirror/language")
               ((python) "@codemirror/lang-python")
-              ((-lisp) ;; ,(asdf:system-relative-pathname
-                       ;;   (intern (package-name *package*) "KEYWORD")
-                       ;;   "./ui-browser/npm-interfaces/llezer/dist/index.js")
-               "@codemirror/lang-lisp")
- 
-              ;; ((default_extensions) "@nextjournal/clojure-mode")
-              )
+              ((-lisp) "@codemirror/lang-lisp"))
    :constructors
    (list (lambda (stream)
            (format
             stream (paren6::ps
                      (defvar |*__PS_MV_REG*|)
+                     (defvar lisp-setup
+                       (funcall (lambda ()
+                                  (list (bracket-matching)
+                                        (close-brackets)
+                                        (line-numbers)
+                                        (highlight-active-line)
+                                        (highlight-active-line-gutter)
+                                        (fold-gutter)
+                                        )
+                                  )))
                      (setf (@ global python) python
-                           ;; (@ global parser) parser
-                           )
-                     (setf (@ global create-codemirror)
+                           (@ global create-codemirror)
                            (lambda (target data)
                              (let* ((language (new -compartment))
                                     (tab-size (new -compartment))
@@ -307,14 +322,15 @@
                                       (chain -editor-state
                                              (create (create doc data
                                                              extensions
-                                                             (list basic-setup
+                                                             (list minimal-setup
+                                                                   lisp-setup
+                                                                   ;; basic-setup
                                                                    (chain language (of (-lisp)))
                                                                    (chain tab-size
                                                                           (of (chain -editor-state
-                                                                                     tab-size (of 8)))))
+                                                                                     tab-size (of 4)))))
                                                              ))))
-                                    (setf (@ window bla) (chain language (of (-lisp))))
-                                    ;; (state (chain codemirror (create-editor-state data)))
+                                    ;; (setf (@ window bla) (chain language (of (-lisp))))
                                     (view (new (-editor-view (create state state
                                                                      parent target
                                                                      doc data)))))
@@ -396,7 +412,7 @@
   (:paths "./ui-browser/static/htmx.min.js" "./ui-browser/node_modules/d3/dist/d3.min.js" 
           "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
           "./ui-browser/static/alpine.js"
-          "./ui-browser/repos/scmindent/scmindent-client.js"
+          ;; "./ui-browser/repos/scmindent/scmindent-client.js"
           ;; "./ui-browser/node_modules/fomantic-ui/dist/semantic.js"
           )
   (:output-to . "./ui-browser/build/vendor.js"))

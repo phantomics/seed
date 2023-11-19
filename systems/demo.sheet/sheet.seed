@@ -5,10 +5,18 @@
       :branches (:view
                  (lambda (input)
                    (-<> (uic-set ((:type :group :linear :workspace :even)
-                                  (:members :column :column))
-                                 (uic ((:type :form :text) (:access :main)
-                                       (:controls (:header :save)
-                                                  (:footer :save))))
+                                  (:members :column :column)
+                                  (:layout ((:row ((:column) (:column)))
+                                            (:row ((:column))
+                                                  (:span . 2))
+                                            :divide
+                                            (:column)))
+                                  (:faces ((:format :dual-bank))
+                                          ((:format :dual-bank))
+                                          ((:format :single-bank))))
+                                 ;; (uic ((:type :form :text) (:access :main) (:name . :code)
+                                 ;;       (:controls (:header :save)
+                                 ;;                  (:footer :save))))
                                  ;; (uic ((:type :form :tree) (:access :code)
                                  ;;       (:controls (:header :save)
                                  ;;                  (:footer :save))))
@@ -18,16 +26,19 @@
                                  ;; (uic ((:type :form :vector) (:access :graph)
                                  ;;       (:controls (:header :save)
                                  ;;                  (:footer :save))))
-                                 ;; (uic ((:type :form :elem) (:access :graph)
-                                 ;;       (:controls (:header :save)
-                                 ;;                  (:footer :save))))
+                                 (uic ((:type :form :elem) (:access :graph)
+                                       (:name . :graph-overview)
+                                       (:controls (:header :save :add-node :add-link :delete-item)
+                                                  (:footer :save))))
                                  ;; (uic ((:type :form :elem) (:access :form)
                                  ;;       (:controls (:header :save)
                                  ;;                  (:footer :save))))
                                  ;; (uic ((:type :form :elem) (:access :table)
+                                 ;;       (:name . :solver-input)
                                  ;;       (:controls (:header :submit)
                                  ;;                  (:footer :submit))))
-                                 (uic ((:type :form :elem) (:access :graphnode)
+                                 (uic ((:type :form :elem) (:access :graph)
+                                       (:name . :graph-node)
                                        (:controls (:header :save)
                                                   (:footer :save))))
                                  ;; (uic ((:type :form :cells) (:access :cells)
@@ -70,7 +81,7 @@
                  (let ((original (from-system-file package "sheet.lisp" :table)))
                    (lambda (input)
                      ;; (print (list :in input))
-                     (when (third input)
+                     (when (fourth input)
                        ;; only process input if fields apart form system/branch are present
                        (meta-revise (second (third original)) input)
                        ;; (setf (from-system-file package "sheet.lisp" :table) original)
@@ -87,16 +98,26 @@
                                                 (setf count 0)
                                                 (format vout "~%#~%")
                                                 (format uout "~%#~%"))
-                                              (format vout "  ~a  |"
-                                                      (rest (assoc val-key  input)))
-                                              (format uout " ~a |"
-                                                      (or (rest (assoc unit-key input))
-                                                          "nounit"))
+                                              (format vout "  ~a  |" (rest (assoc val-key  input)))
+                                              (format uout " ~a |" (or (rest (assoc unit-key input))
+                                                                       "nounit"))
                                               (incf count))
                                        (setf val-key nil)))
-                         (print (list :st (concatenate 'string
-                                                       (get-output-stream-string vout)
-                                                       (get-output-stream-string uout))))
+                         ;; (print (list :st (concatenate 'string
+                         ;;                               (get-output-stream-string vout)
+                         ;;                               (get-output-stream-string uout))))
+                         (with-open-file (in-file "/tmp/input.txt"
+			                          :direction :output :if-exists :supersede
+                                                  :if-does-not-exist :create)
+                           (format in-file (get-output-stream-string vout))
+                           (format in-file (get-output-stream-string uout))
+                           ;; (loop :for char := (read-char vout) :while char :do (write-char char in-file))
+                           ;; (loop :for char := (read-char uout) :while char :do (write-char char in-file))
+                           )
+                         (uiop:run-program
+                          (format nil "faketime 15-11-05 ~a ~a solve /tmp/input.txt /tmp/out.txt"
+                                  "~/src/old/dpneo/ecalc/app/ecalc"
+                                  "~/src/old/dpneo/ecalc/app/uc.json"))
                          ))
                      (let ((out (make-string-output-stream)))
                        (spinneret:interpret-html-tree
@@ -105,17 +126,33 @@
                         :stream out)
                        (get-output-stream-string out))))
                  :graph
-                 (let ((el-width) (el-height) (formatted) (graph-base) (graph-data))
+                 (let ((el-width) (el-height) (formatted)
+                       (graph-base) (graph-data) (orig-data) (index 0) (sub-index) (nodes-order)
+                       (node-template (second (from-system-file package "sheet.lisp" :graph-node-template)))
+                       (link-template (second (from-system-file package "sheet.lisp" :graph-link-template)))
+                       (indices-form (from-system-file package "sheet.lisp" :graph-node-indices)))
                    (lambda (input)
-                     ;; (print (list :in input))
-                     (unless graph-base (setf graph-base (from-system-file package "sheet.lisp" :graph)
-                                              graph-data (seed.generate::format-graph-spec-to-edit
-                                                          (rest (third graph-base)) t)
-                                              formatted  (copy-tree graph-data)))
+                     ;; (print (list :in2 input))
+                     (unless graph-base
+                       (setf graph-base  (from-system-file package "sheet.lisp" :graph)
+                             orig-data   (rest (third graph-base))
+                             nodes-order (let* ((indices (second indices-form)))
+                                           (make-array (length indices) :initial-contents indices))
+                             graph-data  (seed.generate::format-graph-spec-to-edit
+                                          (copy-tree orig-data) nodes-order)
+                             formatted   (seed.generate::copy-graph-spec graph-data)))
                      (if (and (assoc "action" input :test #'string=)
                               (string= "open" (rest (assoc "action" input :test #'string=))))
-                         (interface-interact :demo.sheet :graphnode input)
-                         (progn
+                         (let* ((path-str (make-string-input-stream
+                                           (rest (assoc "path" input :test #'string=))))
+                                (path (loop :for c := (read path-str nil) :while c :collect c)))
+                           ;; (print (list :pa path))
+                           (if (not (second path)) (setf index (first path) sub-index nil)
+                               (destructuring-bind (i si) path
+                                 (setf index i sub-index si)))
+                           ;; (close path-str)
+                           '(:oob-reload #("graphNode")))
+                         (let ((network-changed))
                            (when (and input (assoc "width" input :test #'string=))
                              (setf el-width  (rest (assoc "width"  input :test #'string=))
                                    el-height (rest (assoc "height" input :test #'string=))))
@@ -124,59 +161,199 @@
                                    (inst (make-string-input-stream
                                           (rest (assoc "path" input :test #'string=)))))
                                (seed.generate::dgraph-interface
-                                graph-data formatted :path (loop :for c := (read inst nil)
-                                                                 :while c :collect c)
+                                graph-data formatted nodes-order
+                                :path (loop :for c := (read inst nil) :while c :collect c)
                                 :to-open (string= action "expand")
                                 :at-path (if (not (string= action "open"))
                                              nil (lambda (item)
-                                                   (setf (symbol-value (intern "*ACTIVE-GRAPH-ITEM*"
-                                                                               (string package)))
-                                                         item))))
+                                                   ;; (setf (symbol-value
+                                                   ;;        (intern "*ACTIVE-GRAPH-ITEM*" (string package)))
+                                                   ;;       item)
+                                                   )))
+                               (setf network-changed t)
                                ;; (print (list :ft formatted))
                                ;; (close inst)
                                ))
 
-                           ;; the *output-stream* is created in the seed package - best elsewhere?
-                           (if (assoc :system input)
-                               (progn (setf *output-stream* (make-string-output-stream))
-                                      (eval `(cl-who:with-html-output (*output-stream*)
-                                               ,(seed.generate::svrender-graph
-                                                 formatted :width el-width :height el-height)))
-                                      (let ((output (get-output-stream-string *output-stream*)))
-                                        (close *output-stream*)
-                                        output))
-                               '(:oob-reload #("graphnode")))))))
-                 :graphnode
-                 (let ((index 0) (sub-index) (nodes-base) (nodes-data))
-                   (lambda (input)
-                     (setf nodes-base (from-system-file package "sheet.lisp" :graph)
-                           nodes-data (rest (third nodes-base)))
-                     ;; (print (list :no nodes-data :in input
-                     ;;              (first (nth index nodes-data))))
+                           ;; (print (list :abc graph-base))
 
-                     (if (and (assoc "action" input :test #'string=)
-                              (string= "open" (rest (assoc "action" input :test #'string=))))
-                         (let ((path (rest (assoc "path" input :test #'string=))))
-                           (if (numberp path) (setf index path sub-index nil)
-                               (let ((pathstr (make-string-input-stream path)))
-                                 (destructuring-bind (i si) (loop :for c := (read pathstr nil)
-                                                                  :while c :collect c)
-                                   (setf index i sub-index si)
-                                   (close pathstr))))
-                           '(:oob-reload #("graphnode")))
-                         (let ((out (make-string-output-stream)))
-                           (spinneret:interpret-html-tree
-                            (htrender `(meta ,(loop :for item
-                                                      :in (first (if sub-index
-                                                                     (nth sub-index
-                                                                          (rest (nth index
-                                                                                     nodes-data)))
-                                                                     (nth index nodes-data)))
-                                                    :collect item)
-                                             (:type :set :form))
-                                      :params (list :system package :branch :graphnode))
-                            :stream out)
-                           (get-output-stream-string out)))))
+                           (when (and (assoc :action input :test #'eq)
+                                      (string= "formSubmit" (rest (assoc :action input :test #'eq))))
+                               (meta-revise (rest (first (if sub-index
+                                                             (nth sub-index (rest (nth index formatted)))
+                                                             (nth index formatted))))
+                                            input t)
+                               (meta-revise (first (if sub-index
+                                                       (nth sub-index (rest (nth index orig-data)))
+                                                       (nth index orig-data)))
+                                            input t)
+                               (setf network-changed t
+                                     (from-system-file package "sheet.lisp" :graph) graph-base)
+                               (print (list :nod formatted graph-base)))
+                           
+                           (when (assoc "action" input :test #'string=)
+                             (when (string= "addNode" (rest (assoc "action" input :test #'string=)))
+                               ;; add newest node index to end of indices
+                               (rplacd (last formatted)
+                                       (list (list (cons (cons :index (length (second indices-form)))
+                                                         (first node-template)))))
+                               (rplacd (last (second indices-form))
+                                       (list (length (second indices-form))))
+                               (rplacd (last orig-data) (list node-template))
+                               (setf nodes-order (let* ((indices (second indices-form)))
+                                                   (make-array (length indices)
+                                                               :initial-contents indices)))
+                               ;; (print (list :an graph-base orig-data formatted indices-form))
+                               )
+                             (when (string= "addLink" (rest (assoc "action" input :test #'string=)))
+                               (if sub-index (rplacd (nth sub-index (rest (nth index orig-data)))
+                                                     (cons link-template
+                                                           (nthcdr (1+ sub-index)
+                                                                   (rest (nth index orig-data)))))
+                                   (rplacd (last (rest (nth index orig-data))) (list link-template)))
+                               (if sub-index (rplacd (nth sub-index (rest (nth index formatted)))
+                                                     (cons link-template
+                                                           (nthcdr (1+ sub-index)
+                                                                   (rest (nth index formatted)))))
+                                   (rplacd (last (rest (nth index formatted))) (list link-template)))
+                               (print (list :al graph-base)))
+                             (when (string= "deleteItem" (rest (assoc "action" input :test #'string=)))
+                               (if sub-index (rplaca (nth sub-index (rest (nth index orig-data)))
+                                                     (nth (1+ sub-index)
+                                                          (rest (nth index orig-data))))
+                                   (rplaca (nth index orig-data) (nth (1+ index) orig-data)))
+                               (if sub-index (rplaca (nth sub-index (rest (nth index formatted)))
+                                                     (nth (1+ sub-index)
+                                                          (rest (nth index formatted))))
+                                   (rplaca (nth index formatted) (nth (1+ index) formatted))))
+                             (when (string= "shiftNode" (rest (assoc "action" input :test #'string=)))
+                               ;; add newest node index to end of indices
+                               (let ((index (read-from-string
+                                             (rest (assoc "index" input :test #'string=))))
+                                     (position (read-from-string
+                                                (rest (assoc "target" input :test #'string=)))))
+                                 (print (list :ii index position input))
+
+                                 (let ((original (nth index (second indices-form)))
+                                       (orig-node (nth index formatted))
+                                       (orig-gnode (nth index graph-data)))
+
+                                   (if (zerop index)
+                                       (setf formatted (rest formatted))
+                                       (rplacd (nthcdr (1- index) formatted)
+                                               (rest (nthcdr index formatted))))
+
+                                   (if (zerop position)
+                                       (setf formatted (cons orig-node formatted))
+                                       (rplacd (nthcdr (1- position) formatted)
+                                               (cons orig-node (nthcdr position formatted))))
+
+                                   (if (zerop index)
+                                       (setf graph-data (rest graph-data))
+                                       (rplacd (nthcdr (1- index) graph-data)
+                                               (rest (nthcdr index graph-data))))
+
+                                   (if (zerop position)
+                                       (setf graph-data (cons orig-node graph-data))
+                                       (rplacd (nthcdr (1- position) graph-data)
+                                               (cons orig-node (nthcdr position graph-data))))
+
+                                   (if (zerop index)
+                                       (setf (second indices-form) (cdadr indices-form))
+                                       (rplacd (nthcdr (1- index) (second indices-form))
+                                               (rest (nthcdr index (second indices-form)))))
+
+                                   (if (zerop position)
+                                       (setf (second indices-form) (cons original (second indices-form)))
+                                       (rplacd (nthcdr (1- position) (second indices-form))
+                                               (cons original (nthcdr position
+                                                                      (second indices-form)))))
+                                   
+                                   (setf nodes-order (let* ((indices (second indices-form)))
+                                                       (make-array (length indices)
+                                                                   :initial-contents indices)))
+                                   (print (list :ii formatted indices-form nodes-order))
+                                   )))
+
+                             (when (string= "connect" (rest (assoc "action" input :test #'string=)))
+                               (let ((this-index (read-from-string
+                                                  (rest (assoc "index" input :test #'string=)))))
+                                 (labels ((relink (form new ix subix)
+                                            (if (and (eq :index (caaar form))
+                                                     (= ix (cdaar form)))
+                                                (setf (second (nth subix (rest form))) new)
+                                                (loop :for item :in (rest form)
+                                                      :do (if (listp (second item))
+                                                              (relink (second item) new ix subix)
+                                                              (setf (second item) new))))))
+                                   
+                                   (setf (second (nth sub-index (rest (nth index orig-data))))
+                                         (aref nodes-order this-index))
+                                   (loop :for item :in formatted
+                                         :do (relink formatted (nth (aref nodes-order this-index)
+                                                                    graph-data)
+                                                     index sub-index))
+                                   
+                                   (print (list :nnn (aref nodes-order this-index)
+                                                orig-data index sub-index
+                                                formatted))
+                                   ))))
+                           
+                           ;; (print (list :af (assoc :face input :test #'eq)))
+                           ;; the *output-stream* is created in the seed package - best elsewhere?
+                           (if (and (assoc :face input :test #'eq)
+                                    (string= "graphNode" (rest (assoc :face input :test #'eq))))
+                               (let ((out (make-string-output-stream)))
+                                 ;; (print (list :gd graph-data))
+                                 (spinneret:interpret-html-tree
+                                  ;; enclose the contents in a (meta) form if this is the initial load;
+                                  ;; i.e. the network has not changed
+                                  (funcall
+                                   (if (not network-changed)
+                                       #'identity
+                                       (lambda (form)
+                                         (append (list (first form)
+                                                       `(:div :style "display: none"
+                                                              :x-init
+                                                              ,(psl (chain
+                                                                     htmx
+                                                                     (trigger
+                                                                      (getprop
+                                                                       (@ window seed-elements)
+                                                                       "graphOverview")
+                                                                      "reload")))))
+                                                 (cons '(meta (:stuff . "Test")
+                                                         (:type :field :text :pair :block :labeled))
+                                                       (rest form)))))
+                                   (htrender (funcall (if network-changed
+                                                          #'list (lambda (items)
+                                                                   `(meta ,items (:type :set :form))))
+                                                      (loop :for item
+                                                              :in (funcall
+                                                                   ;; nodes have an (index . N)
+                                                                   ;; form to omit, links don't
+                                                                   (if sub-index #'identity #'rest)
+                                                                   (first (if sub-index
+                                                                              (nth sub-index
+                                                                                   (rest (nth index
+                                                                                              formatted)))
+                                                                              (nth index formatted))))
+                                                            :collect item))
+                                             :params (list :system package :branch :graph)))
+                                   :stream out)
+                                 (get-output-stream-string out))
+                               (if (or network-changed (assoc :system input))
+                                   (progn (setf *output-stream* (make-string-output-stream))
+                                          ;; (print (list :nc input))
+                                          (eval `(cl-who:with-html-output (*output-stream*)
+                                                   ,(seed.generate::svrender-graph
+                                                     formatted :width el-width :height el-height
+                                                     :point (list index sub-index))))
+                                          (let ((output (get-output-stream-string *output-stream*)))
+                                            ;; (print (list :out output))
+                                            ;; (close *output-stream*)
+                                            output))
+                                   '(:oob-reload #("graphNode"))))))))
                  :cells
                  (let ((display-baseline))
                    (lambda (input)
@@ -201,3 +378,109 @@
                                                            (from-system-file
                                                             package "sheet.lisp" :cells)))))))))))
 
+;; :graph2
+;; (let ((el-width) (el-height) (formatted) (graph-base) (graph-data))
+;;   (lambda (input)
+;;     (print (list :in input))
+;;     (unless graph-base (setf graph-base (from-system-file package "sheet.lisp" :graph)
+;;                              graph-data (seed.generate::format-graph-spec-to-edit
+;;                                          (rest (third graph-base)) t)
+;;                              formatted  (copy-tree graph-data)))
+
+;;     (when (and (< 3 (length input))
+;;                (assoc :action input :test #'eq)
+;;                (string= "formSubmit" (rest (assoc :action input :test #'eq))))
+;;       (meta-revise (first (if sub-index (nth sub-index (rest (nth index graph-data)))
+;;                               (nth index graph-data)))
+;;                    input t)
+;;       (setf (rest (third nodes-base)) graph-data
+;;             (from-system-file package "sheet.lisp" :graph) graph-base)
+;;       ;; (print (list :nod nodes-data))
+;;       )
+    
+;;     (if (and (assoc "action" input :test #'string=)
+;;              (string= "open" (rest (assoc "action" input :test #'string=))))
+;;         (interface-interact :demo.sheet :graphnode input)
+;;         (progn
+;;           (when (and input (assoc "width" input :test #'string=))
+;;             (setf el-width  (rest (assoc "width"  input :test #'string=))
+;;                   el-height (rest (assoc "height" input :test #'string=))))
+;;           (when (and input (assoc "path" input :test #'string=))
+;;             (let ((action (rest (assoc "action" input :test #'string=)))
+;;                   (inst (make-string-input-stream
+;;                          (rest (assoc "path" input :test #'string=)))))
+;;               (seed.generate::dgraph-interface
+;;                graph-data formatted :path (loop :for c := (read inst nil)
+;;                                                 :while c :collect c)
+;;                :to-open (string= action "expand")
+;;                :at-path (if (not (string= action "open"))
+;;                             nil (lambda (item)
+;;                                   (setf (symbol-value (intern "*ACTIVE-GRAPH-ITEM*"
+;;                                                               (string package)))
+;;                                         item))))
+;;               ;; (print (list :ft formatted))
+;;               ;; (close inst)
+;;               ))
+
+;;           ;; the *output-stream* is created in the seed package - best elsewhere?
+;;           (if (assoc :system input)
+;;               (progn (setf *output-stream* (make-string-output-stream))
+;;                      (eval `(cl-who:with-html-output (*output-stream*)
+;;                               ,(seed.generate::svrender-graph
+;;                                 formatted :width el-width :height el-height)))
+;;                      (let ((output (get-output-stream-string *output-stream*)))
+;;                        ;; (close *output-stream*)
+;;                        output))
+;;               '(:oob-reload #("graphnode")))))))
+;; :graphnode2
+;; (let ((index 0) (sub-index) (nodes-base) (nodes-data))
+;;   (lambda (input)
+;;     (setf nodes-base (from-system-file package "sheet.lisp" :graph)
+;;           nodes-data (rest (third nodes-base)))
+;;     ;; (meta-revise (second (third nodes-data)) input t)
+;;     (print (list :i input))
+;;     ;; (print (list :no nodes-data :in input
+;;     ;;              (first (nth index nodes-data))))
+
+;;     (let ((node-changed))
+;;       (when (and (< 3 (length input))
+;;                  (assoc :action input :test #'eq)
+;;                  (string= "formSubmit" (rest (assoc :action input :test #'eq))))
+;;         (meta-revise (first (if sub-index
+;;                                 (nth sub-index
+;;                                      (rest (nth index
+;;                                                 nodes-data)))
+;;                                 (nth index nodes-data)))
+;;                      input t)
+;;         (setf (rest (third nodes-base)) nodes-data
+;;               (from-system-file package "sheet.lisp" :graph) nodes-base
+;;               node-changed t)
+;;         (print (list :nod nodes-data)))
+      
+;;       (if (and (assoc "action" input :test #'string=)
+;;                (string= "open" (rest (assoc "action" input :test #'string=))))
+;;           (let ((path (rest (assoc "path" input :test #'string=))))
+;;             (if (numberp path) (setf index path sub-index nil)
+;;                 (let ((pathstr (make-string-input-stream path)))
+;;                   (destructuring-bind (i si) (loop :for c := (read pathstr nil)
+;;                                                    :while c :collect c)
+;;                     (setf index i sub-index si)
+;;                     ;; (close pathstr)
+;;                     )))
+;;             '(:oob-reload #("graphnode")))
+;;           (let ((out (make-string-output-stream)))
+;;             (interface-interact :demo.sheet :graph (append `((:action . :node-edit)
+;;                                                              (:path ,index ,sub-index))
+;;                                                            input))
+;;             (spinneret:interpret-html-tree
+;;              (htrender `(meta ,(loop :for item
+;;                                        :in (first (if sub-index
+;;                                                       (nth sub-index
+;;                                                            (rest (nth index
+;;                                                                       nodes-data)))
+;;                                                       (nth index nodes-data)))
+;;                                      :collect item)
+;;                               (:type :set :form))
+;;                        :params (list :system package :branch :graphnode))
+;;              :stream out)
+;;             (get-output-stream-string out))))))

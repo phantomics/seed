@@ -157,6 +157,32 @@ form .input.fluid{
     width: 100%;
 }
 
+
+
+.d3view-graph-foldout .handle .main,
+.svg-visualizer .handle .main{
+    fill: #fff;
+}
+
+.d3view-graph-foldout .handle .center,
+.svg-visualizer .handle .center{
+    fill: #ccc;
+}
+
+.d3view-graph-foldout .handle .arrow,
+.svg-visualizer .handle .arrow{
+    fill: none;
+    stroke: #999;
+    stroke-width: 2;
+}
+
+.d3view-graph-foldout .handle .outer-arrow,
+.svg-visualizer .handle .outer-arrow{
+    fill: none;
+    stroke: #bbb;
+    stroke-width: 4;
+}
+
 .d3view-graph-foldout .link,
 .svg-visualizer .link{
     fill: none;
@@ -175,6 +201,53 @@ form .input.fluid{
 .svg-visualizer .node-group .title-frame rect{
     opacity: 0;
     fill: #efefef;
+    stroke: #ccc;
+    stroke-width: 0;
+}
+
+.d3view-graph-foldout .node-group .title-frame .handle,
+.svg-visualizer .node-group .title-frame .handle{
+    opacity: 0;
+}
+
+.d3view-graph-foldout .node-group .title-frame .handle .outer-arrow,
+.svg-visualizer .node-group .title-frame .handle .outer-arrow{
+    opacity: 0;
+}
+
+
+
+.d3view-graph-foldout .node-group .title-frame .handle:hover .outer-arrow,
+.svg-visualizer .node-group .title-frame .handle:hover .outer-arrow{
+    opacity: 1;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker,
+.svg-visualizer .node-group .title-frame .linker{
+    opacity: 0;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .main,
+.svg-visualizer .node-group .title-frame .linker .main{
+    fill: #fff;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .center,
+.svg-visualizer .node-group .title-frame .linker .center{
+    fill: #ccc;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .arrow,
+.svg-visualizer .node-group .title-frame .linker .arrow{
+    fill: #999;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .outer-arrow,
+.svg-visualizer .node-group .title-frame .linker .outer-arrow{
+    opacity: 0;
+    fill: none;
+    stroke: #bbb;
+    stroke-width: 4;
 }
 
 .d3view-graph-foldout .node-group .expand-control,
@@ -216,7 +289,56 @@ form .input.fluid{
 
 
 
+.d3view-graph-foldout .node-group.selected .title-frame rect,
+.svg-visualizer .node-group.selected .title-frame rect{
+    opacity: 1;
+    stroke-width: 1;
+}
+
+
+
+
+
 .d3view-graph-foldout .node-group:hover .title-frame rect,
 .svg-visualizer .node-group:hover .title-frame rect{
     opacity: 1;
+}
+
+.d3view-graph-foldout .node-group:hover .handle,
+.svg-visualizer .node-group:hover .handle{
+    opacity: 1;
+}
+
+.d3view-graph-foldout .node-group:hover .linker,
+.svg-visualizer .node-group:hover .linker{
+    opacity: 1;
+}
+
+.d3view-graph-foldout .drag-indicator,
+.svg-visualizer .drag-indicator{
+    opacity: 0;
+    fill: #000;
+}
+
+.d3view-graph-foldout .mouse-transparent,
+.svg-visualizer .mouse-transparent{
+    pointer-events: none;
+}
+
+
+
+
+
+.svg-visualizer.drag .node-group:not(.dragging):hover .handle{
+    opacity: 0;
+}
+
+
+
+.svg-visualizer.drag .node-group:not(.dragging):hover .title-frame rect{
+    opacity: 0;
+}
+
+.svg-visualizer.drag .node-group:not(.dragging):hover .drag-indicator{
+    opacity: 0.2;
 }
