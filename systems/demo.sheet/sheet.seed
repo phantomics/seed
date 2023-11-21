@@ -141,6 +141,7 @@
                              graph-data  (seed.generate::format-graph-spec-to-edit
                                           (copy-tree orig-data) nodes-order)
                              formatted   (seed.generate::copy-graph-spec graph-data)))
+                     (print (list :abcd orig-data graph-data formatted))
                      (if (and (assoc "action" input :test #'string=)
                               (string= "open" (rest (assoc "action" input :test #'string=))))
                          (let* ((path-str (make-string-input-stream
@@ -156,6 +157,9 @@
                            (when (and input (assoc "width" input :test #'string=))
                              (setf el-width  (rest (assoc "width"  input :test #'string=))
                                    el-height (rest (assoc "height" input :test #'string=))))
+
+                           (print (list :f1 formatted))
+                           
                            (when (and input (assoc "path" input :test #'string=))
                              (let ((action (rest (assoc "action" input :test #'string=)))
                                    (inst (make-string-input-stream
@@ -175,6 +179,8 @@
                                ;; (close inst)
                                ))
 
+                           (print (list :ff formatted))
+
                            ;; (print (list :abc graph-base))
 
                            (when (and (assoc :action input :test #'eq)
@@ -187,11 +193,13 @@
                                                        (nth sub-index (rest (nth index orig-data)))
                                                        (nth index orig-data)))
                                             input t)
-                               (setf network-changed t
-                                     (from-system-file package "sheet.lisp" :graph) graph-base)
-                               (print (list :nod formatted graph-base)))
+                               ;; (print (list :nod formatted graph-base))
+                               )
+
+                           ;; (print :gg)
                            
                            (when (assoc "action" input :test #'string=)
+                             (setf network-changed t)
                              (when (string= "addNode" (rest (assoc "action" input :test #'string=)))
                                ;; add newest node index to end of indices
                                (rplacd (last formatted)
@@ -211,12 +219,18 @@
                                                            (nthcdr (1+ sub-index)
                                                                    (rest (nth index orig-data)))))
                                    (rplacd (last (rest (nth index orig-data))) (list link-template)))
+                               (if sub-index (rplacd (nth sub-index (rest (nth index graph-data)))
+                                                     (cons link-template
+                                                           (nthcdr (1+ sub-index)
+                                                                   (rest (nth index graph-data)))))
+                                   (rplacd (last (rest (nth index graph-data))) (list link-template)))
                                (if sub-index (rplacd (nth sub-index (rest (nth index formatted)))
                                                      (cons link-template
                                                            (nthcdr (1+ sub-index)
                                                                    (rest (nth index formatted)))))
                                    (rplacd (last (rest (nth index formatted))) (list link-template)))
-                               (print (list :al graph-base)))
+                               ;; (print (list :al graph-base))
+                               )
                              (when (string= "deleteItem" (rest (assoc "action" input :test #'string=)))
                                (if sub-index (rplaca (nth sub-index (rest (nth index orig-data)))
                                                      (nth (1+ sub-index)
@@ -228,11 +242,13 @@
                                    (rplaca (nth index formatted) (nth (1+ index) formatted))))
                              (when (string= "shiftNode" (rest (assoc "action" input :test #'string=)))
                                ;; add newest node index to end of indices
+                               (setf network-changed nil)
+                               ;; (print (list :bbb))
                                (let ((index (read-from-string
                                              (rest (assoc "index" input :test #'string=))))
                                      (position (read-from-string
                                                 (rest (assoc "target" input :test #'string=)))))
-                                 (print (list :ii index position input))
+                                 (print (list :ia index position input))
 
                                  (let ((original (nth index (second indices-form)))
                                        (orig-node (nth index formatted))
@@ -259,6 +275,18 @@
                                                (cons orig-node (nthcdr position graph-data))))
 
                                    (if (zerop index)
+                                       (setf graph-data (rest orig-data))
+                                       (rplacd (nthcdr (1- index) orig-data)
+                                               (rest (nthcdr index orig-data))))
+
+                                   (if (zerop position)
+                                       (setf graph-data (cons orig-gnode orig-data))
+                                       (rplacd (nthcdr (1- position) orig-data)
+                                               (cons orig-gnode (nthcdr position orig-data))))
+
+                                   ;; (print (list :odd orig-data))
+
+                                   (if (zerop index)
                                        (setf (second indices-form) (cdadr indices-form))
                                        (rplacd (nthcdr (1- index) (second indices-form))
                                                (rest (nthcdr index (second indices-form)))))
@@ -271,33 +299,53 @@
                                    
                                    (setf nodes-order (let* ((indices (second indices-form)))
                                                        (make-array (length indices)
-                                                                   :initial-contents indices)))
-                                   (print (list :ii formatted indices-form nodes-order))
+                                                                   :initial-contents indices))
+                                         (from-system-file package "sheet.lisp" :graph-node-indices)
+                                         indices-form)
+                                   ;; (print (list :ii formatted indices-form nodes-order))
                                    )))
 
                              (when (string= "connect" (rest (assoc "action" input :test #'string=)))
                                (let ((this-index (read-from-string
                                                   (rest (assoc "index" input :test #'string=)))))
                                  (labels ((relink (form new ix subix)
-                                            (if (and (eq :index (caaar form))
-                                                     (= ix (cdaar form)))
-                                                (setf (second (nth subix (rest form))) new)
-                                                (loop :for item :in (rest form)
-                                                      :do (if (listp (second item))
-                                                              (relink (second item) new ix subix)
-                                                              (setf (second item) new))))))
+                                            (print (list :fo form new ix subix))
+                                            (if (eq :closed (first form))
+                                                (if (listp (second form))
+                                                    (if (second form)
+                                                        (relink (second form) new ix subix)
+                                                        (rplacd form (list new)))
+                                                    (setf (second form) new))
+                                                (if (and (eq :index (caaar form))
+                                                         (= ix (cdaar form)))
+                                                    (setf (second (nth subix (rest form))) new)
+                                                    (loop :for item :in (rest form) :when (listp item)
+                                                          :do (if (listp (second item))
+                                                                  (if (second item)
+                                                                      (relink (second item) new ix subix)
+                                                                      (rplacd item (list new)))
+                                                                  (setf (second item) new)))))))
                                    
                                    (setf (second (nth sub-index (rest (nth index orig-data))))
+                                         (aref nodes-order this-index)
+                                         (cadadr (nth sub-index (rest (nth index graph-data))))
                                          (aref nodes-order this-index))
-                                   (loop :for item :in formatted
-                                         :do (relink formatted (nth (aref nodes-order this-index)
-                                                                    graph-data)
-                                                     index sub-index))
                                    
-                                   (print (list :nnn (aref nodes-order this-index)
-                                                orig-data index sub-index
-                                                formatted))
-                                   ))))
+                                   (loop :for item :in formatted
+                                         :do (relink item (nth this-index graph-data)
+                                                     index sub-index))
+
+                                   ;; (print :eeo)
+                                   
+                                   ;; (print (list :nnn (aref nodes-order this-index)
+                                   ;;              orig-data index sub-index
+                                   ;;              formatted
+                                   ;;              graph-data))
+                                   
+                                   )))
+                             (when network-changed
+                               (setf (from-system-file package "sheet.lisp" :graph) graph-base))
+                             )
                            
                            ;; (print (list :af (assoc :face input :test #'eq)))
                            ;; the *output-stream* is created in the seed package - best elsewhere?

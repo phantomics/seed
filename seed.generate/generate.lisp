@@ -1334,14 +1334,15 @@
 
 (defun copy-graph-spec (original)
   (loop :for item :in original
-        :collect (list (first item)
+        :collect (cons (first item)
                        (loop :for item :in (rest item)
-                             :append (list (first item)
-                                           (second item))))))
+                             :collect (list (first item)
+                                            (second item))))))
 
 (defun dgraph-interface (dgraph interface orig-indices &key path to-open at-path)
   (destructuring-bind (open-index &rest rest-indices) path
     (let ((point (nth open-index interface)))
+      (print (list :po point dgraph))
       ;; next-interface
       (if rest-indices
           (progn (setf (nth open-index interface)
@@ -1350,8 +1351,11 @@
                                                :path rest-indices :to-open to-open :at-path at-path)))
                  interface)
           (if (listp point)
-              (if to-open (list (if (not (eq :closed (first point)))
-                                    point (second point)))
+              (if to-open ;; (list (if (not (eq :closed (first point)))
+                          ;;           point (second point)))
+                  (if (not (eq :closed (first point)))
+                      (list point)
+                      (mapcar #'second interface))
                   (if at-path (funcall at-path point)
                       (list (list :closed point))))
               (if (numberp point)
@@ -1515,7 +1519,7 @@
                                     (height 400) (width 400))
       (let ((y-offset (or y-offset y-start)) (x-offset (or x-offset x-start))
             (main-radius 16) (output) (link-specs))
-        ;; (print (list :gg gmodel))
+        (print (list :gg gmodel))
         ;; (print (list :aa point parent))
         (loop :for item :in gmodel :for ix :from 0 :when (listp item)
               :do (let* ((is-expandable (or (and (listp (second item))
