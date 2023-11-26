@@ -435,6 +435,7 @@
                                           (setf (getprop (@ window seed-elements) (lisp face))
                                                 $el)))
                       :id (format nil "branch-~a" face)
+                      :x-data (psl (create branch-frame $el))
                       :hx-vals (json-convert-to (list :system system :branch branch
                                                       :action :form-submit :face face)))))
       (:body-svg (let ((this-id (format nil "branch-~a" face)))
@@ -451,7 +452,8 @@
                                                                                     (@ $el offset-height)))
                                                                 ))))
                            :id this-id :hx-vals (json-convert-to (list :system system :branch branch
-                                                                       :face face))))))
+                                                                       :face face))
+                           :x-data (psl (create branch-frame $el))))))
       (:control
        (case (getf props :subsection)
          (:submit (cl-who:with-html-output (stream-out)
@@ -1017,6 +1019,7 @@
               (:set (case (second type)
                       (:form
                        `(:form :hx-post "/render/"
+                               ;; :hx-trigger "reload consume, submit"
                                :hx-trigger "reload consume, submit"
                                :x-data ,(psl (create this-form $el action "formSubmit"))
                                :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
@@ -1285,24 +1288,56 @@
 
 (defmacro build-directed-graph (&rest nodes)
   (let ((n (gensym)) (link (gensym)) (nodes-out (gensym)))
-    `(let ((,nodes-out (list ,@(loop :for node :in nodes
-                                     :collect (list 'list (cons 'list (mapcar (lambda (i)
-                                                                                (if (listp (rest i))
-                                                                                    (cons 'list i)
-                                                                                    (list 'cons (first i)
-                                                                                          (rest i))))
-                                                                              (first node)))
-                                                    `(list (list ,@(mapcar (lambda (i)
-                                                                             (if (listp (rest i))
-                                                                                 (cons 'list i)
-                                                                                 (list 'cons (first i)
-                                                                                       (rest i))))
-                                                                           (caadr node)))
-                                                           ,(cadadr node)))))))
-       (loop :for ,n :in ,nodes-out
-             :do (loop :for ,link :in (rest ,n)
-                       :do (rplacd ,link (list (nth (second ,link) ,nodes-out)))))
-       ,nodes-out)))
+    (labels ((inline-list (list)
+               (cons 'list (loop :for item :in list
+                                 :collect (if (listp item)
+                                              (if (listp (rest item))
+                                                  (inline-list item)
+                                                  (list 'cons (first item) (rest item)))
+                                              item)))))
+      `(let ((,nodes-out (list ,@(loop :for node :in nodes
+                                       :collect (list 'list ;; (cons 'list (mapcar (lambda (i)
+                                                            ;;                       (print (list :ii i))
+                                                            ;;                       (if (listp (rest i))
+                                                            ;;                           (cons 'list i)
+                                                            ;;                           (list 'cons (first i)
+                                                            ;;                                 (rest i))))
+                                                            ;;                     (first node)))
+                                                      (inline-list (first node))
+                                                      `(list ;; (list ,@(mapcar (lambda (i)
+                                                             ;;                   (if (listp (rest i))
+                                                             ;;                       (cons 'list i)
+                                                             ;;                       (list 'cons (first i)
+                                                             ;;                             (rest i))))
+                                                             ;;                 (caadr node)))
+                                                             ,(inline-list (caadr node))
+                                                             ,(cadadr node)))))))
+         (loop :for ,n :in ,nodes-out
+               :do (loop :for ,link :in (rest ,n)
+                         :do (rplacd ,link (list (nth (second ,link) ,nodes-out)))))
+         ,nodes-out))))
+
+;; (defmacro build-directed-graph (&rest nodes)
+;;   (let ((n (gensym)) (link (gensym)) (nodes-out (gensym)))
+;;     `(let ((,nodes-out (list ,@(loop :for node :in nodes
+;;                                      :collect (list 'list (cons 'list (mapcar (lambda (i)
+;;                                                                                 (print (list :ii i))
+;;                                                                                 (if (listp (rest i))
+;;                                                                                     (cons 'list i)
+;;                                                                                     (list 'cons (first i)
+;;                                                                                           (rest i))))
+;;                                                                               (first node)))
+;;                                                     `(list (list ,@(mapcar (lambda (i)
+;;                                                                              (if (listp (rest i))
+;;                                                                                  (cons 'list i)
+;;                                                                                  (list 'cons (first i)
+;;                                                                                        (rest i))))
+;;                                                                            (caadr node)))
+;;                                                            ,(cadadr node)))))))
+;;        (loop :for ,n :in ,nodes-out
+;;              :do (loop :for ,link :in (rest ,n)
+;;                        :do (rplacd ,link (list (nth (second ,link) ,nodes-out)))))
+;;        ,nodes-out)))
 
 ;; (defun format-graph-spec-to-edit (dgraph &optional initial)
 ;;   (flet ((meta-strip (form)
@@ -1324,45 +1359,169 @@
 ;;         :collect (cons (cons (cons :index nx) (first node))
 ;;                        (loop :for link :in (rest node) :collect (list :closed link)))))
 
+;; (defun format-graph-spec-to-edit (dgraph order)
+;;   (let ((nodes (copy-tree dgraph)))
+;;     (loop :for index :across order :for nx :from 0
+;;           ;; remove (meta) forms; should this be factored into a dedicated function?
+;;           :collect (let ((node (nth index nodes)))
+;;                      (cons (cons (cons :index nx) (first node))
+;;                            (loop :for link :in (rest node) :collect (list :closed link)))))))
+
+;; (defun copy-graph-spec (original)
+;;   (loop :for item :in original
+;;         :collect (cons (first item)
+;;                        (loop :for item :in (rest item)
+;;                              :collect (list (first item)
+;;                                             (second item))))))
+
+;; (defun format-graph-spec-to-edit (dgraph order)
+;;   (let ((nodes (copy-tree (rest dgraph))))
+;;     (cons (first dgraph)
+;;           (loop :for index :across order :for nx :from 0
+;;                 ;; remove (meta) forms; should this be factored into a dedicated function?
+;;                 :collect (let ((node (nth index nodes)))
+;;                            (cons (cons (cons :index nx) (first node))
+;;                                  (loop :for link :in (rest node) :collect (list :closed link))))))))
+
 (defun format-graph-spec-to-edit (dgraph order)
-  (let ((nodes (copy-tree dgraph)))
-    (loop :for index :across order :for nx :from 0
-          ;; remove (meta) forms; should this be factored into a dedicated function?
-          :collect (let ((node (nth index nodes)))
-                     (cons (cons (cons :index nx) (first node))
-                           (loop :for link :in (rest node) :collect (list :closed link)))))))
+  (let ((nodes (copy-tree (rest dgraph))))
+    (cons (first dgraph)
+          (loop :for index :across order :for nx :from 0
+                ;; remove (meta) forms; should this be factored into a dedicated function?
+                :collect (let ((node (nth index nodes)))
+                           (cons (cons (cons :index nx) (first node))
+                                 (cons :closed (rest node))))))))
 
 (defun copy-graph-spec (original)
-  (loop :for item :in original
-        :collect (cons (first item)
-                       (loop :for item :in (rest item)
-                             :collect (list (first item)
-                                            (second item))))))
+  (cons (first original)
+        (loop :for item :in (rest original)
+              :collect (cons (first item)
+                             (loop :for sub-item :in (rest item)
+                                   :collect (if (not (listp sub-item))
+                                                sub-item (list (first sub-item)
+                                                               (second sub-item))))))))
 
 (defun dgraph-interface (dgraph interface orig-indices &key path to-open at-path)
-  (destructuring-bind (open-index &rest rest-indices) path
-    (let ((point (nth open-index interface)))
-      (print (list :po point dgraph))
-      ;; next-interface
-      (if rest-indices
-          (progn (setf (nth open-index interface)
-                       (cons (first point)
-                             (dgraph-interface dgraph (rest point) orig-indices
-                                               :path rest-indices :to-open to-open :at-path at-path)))
-                 interface)
-          (if (listp point)
-              (if to-open ;; (list (if (not (eq :closed (first point)))
-                          ;;           point (second point)))
-                  (if (not (eq :closed (first point)))
-                      (list point)
-                      (mapcar #'second interface))
-                  (if at-path (funcall at-path point)
-                      (list (list :closed point))))
-              (if (numberp point)
-                  (list (funcall (lambda (form) (if (not (eq :closed (first form)))
-                                                    form (second form)))
-                                 (print (nth (aref orig-indices point)
-                                             dgraph))))))))))
+  (if (rest path)
+      (setf (nth (first path) (rest interface))
+            (dgraph-interface dgraph (nth (first path) (rest interface))
+                              orig-indices :path (rest path) :to-open to-open :at-path at-path))
+      (let ((point (nth (first path) (rest interface)))
+            (output (cons (first interface) (rest interface))))
+        (setf (nth (first path) (rest output))
+              (if (numberp (second point))
+                  (list (first point)
+                        (nth (aref orig-indices (second point)) (rest dgraph)))
+                  (cons (first point)
+                        (if at-path (rest point)
+                            (if to-open (if (not (eq :closed (second point)))
+                                            (rest point) (cddr point))
+                                (if (eq :closed (second point))
+                                    (rest point) (cons :closed (rest point)))))))
+              interface output)))
+  interface)
+
+;; (defun dgraph-interface (dgraph interface orig-indices &key path to-open at-path)
+;;   ;; (print (list :ii interface))
+;;   (if (rest path)
+;;       (setf (nth (first path) (rest interface))
+;;             (dgraph-interface dgraph (print (nth (first path) (rest interface)))
+;;                               orig-indices :path (rest path) :to-open to-open :at-path at-path))
+;;       (let ((point (nth (first path) (rest interface)))
+;;             (output (cons (first interface) (rest interface))))
+;;         (setf (nth (first path) (rest output))
+;;               (if (listp (second point))
+;;                   (cons (first point)
+;;                         (if at-path (rest point)
+;;                             (loop :for item :in (rest point)
+;;                                   :collect (if (not (and (listp item) (eq :closed (first item))))
+;;                                                item (second item)))))
+;;                   (let ((index (second point)))
+;;                     (list (first point)
+;;                           (nth (aref orig-indices index) (rest dgraph)))))
+;;               interface output)))
+;;   interface)
+
+;; (defun dgraph-interface (dgraph interface orig-indices &key path to-open at-path)
+;;   (print (list :ii interface))
+;;   (if path
+;;       (progn (setf (nth (first path) (rest interface))
+;;                    (dgraph-interface dgraph (nth (first path) (rest interface))
+;;                                      orig-indices :path (rest path) :to-open to-open :at-path at-path))
+;;              interface)
+;;       (if (listp (second interface))
+;;           (cons (first interface)
+;;                 (if at-path (rest interface)
+;;                     (loop :for item :in (rest interface)
+;;                           :collect (if (not (and (listp item) (eq :closed (first item))))
+;;                                        item (second item)))))
+;;           (let ((index (second interface)))
+;;             (setf (second interface) (nth (aref orig-indices index) (rest dgraph)))
+;;             interface))))
+
+;; (defun dgraph-interface (dgraph interface orig-indices &key path to-open at-path)
+;;   (print (list :ii interface))
+;;   (if path (setf (nth (first path) (rest interface))
+;;                  (dgraph-interface dgraph (nth (first path) (rest interface))
+;;                                     orig-indices :path (rest path) :to-open to-open :at-path at-path))
+;;       (if (listp (second interface))
+;;           (cons (first interface)
+;;                 (if at-path (rest interface)
+;;                     (loop :for item :in (rest interface)
+;;                           :collect (if (not (and (listp item) (eq :closed (first item))))
+;;                                        item (second item)))))
+;;           (let ((index (second interface)))
+;;             (setf (second interface) (nth (aref orig-indices index) (rest dgraph)))
+;;             interface))))
+
+;; (destructuring-bind (open-index &rest rest-indices) path
+;;   (let ((point (nth open-index interface)))
+;;     (print (list :po point dgraph))
+;;     ;; next-interface
+;;     (if rest-indices
+;;         (progn (setf (nth open-index interface)
+;;                      (cons (first point)
+;;                            (dgraph-interface dgraph (rest point) orig-indices
+;;                                              :path rest-indices :to-open to-open :at-path at-path)))
+;;                interface)
+;;         (if (listp point)
+;;             (if to-open ;; (list (if (not (eq :closed (first point)))
+;;                         ;;           point (second point)))
+;;                 (if (not (eq :closed (first point)))
+;;                     (list point)
+;;                     (mapcar #'second interface))
+;;                 (if at-path (funcall at-path point)
+;;                     (list (list :closed point))))
+;;             (if (numberp point)
+;;                 (list (funcall (lambda (form) (if (not (eq :closed (first form)))
+;;                                                   form (second form)))
+;;                                (print (nth (aref orig-indices point)
+;;                                            dgraph))))))))))
+
+;; (defun dgraph-interface (dgraph interface orig-indices &key path to-open at-path)
+;;   (destructuring-bind (open-index &rest rest-indices) path
+;;     (let ((point (nth open-index interface)))
+;;       (print (list :po point dgraph))
+;;       ;; next-interface
+;;       (if rest-indices
+;;           (progn (setf (nth open-index interface)
+;;                        (cons (first point)
+;;                              (dgraph-interface dgraph (rest point) orig-indices
+;;                                                :path rest-indices :to-open to-open :at-path at-path)))
+;;                  interface)
+;;           (if (listp point)
+;;               (if to-open ;; (list (if (not (eq :closed (first point)))
+;;                           ;;           point (second point)))
+;;                   (if (not (eq :closed (first point)))
+;;                       (list point)
+;;                       (mapcar #'second interface))
+;;                   (if at-path (funcall at-path point)
+;;                       (list (list :closed point))))
+;;               (if (numberp point)
+;;                   (list (funcall (lambda (form) (if (not (eq :closed (first form)))
+;;                                                     form (second form)))
+;;                                  (print (nth (aref orig-indices point)
+;;                                              dgraph))))))))))
 
 ;; (defun dgraph-interface2 (interface &key root path to-open at-path)
 ;;   (destructuring-bind (open-index &rest rest-indices) path
@@ -1421,7 +1580,7 @@
                                             (lambda (data)
                                               (chain htmx (trigger "#branch-graphOverview" "reload")))))
                            enable-drag   (lambda (svg)
-                                           (let ((selected-element null)
+                                           (let ((selected-element null) (dragging-link false)
                                                  (drag-node null) (dragging-index nil))
                                              (defun shift-node (index target)
                                                (fetch-contact
@@ -1441,6 +1600,14 @@
                                                            (when (chain event target class-list
                                                                         (contains "draggable"))
                                                              (chain $el class-list (add "drag"))
+
+                                                             (if (chain event target class-list
+                                                                        (contains "for-node"))
+                                                                 (chain $el class-list (add "for-node"))
+                                                                 (progn (chain $el class-list
+                                                                               (add "for-link"))
+                                                                        (setf dragging-link true)))
+                                                             
                                                              (setf selected-element
                                                                    (chain event target parent-node
                                                                           (clone-node true))
@@ -1454,8 +1621,7 @@
                                                              (chain drag-node class-list (add "dragging"))
                                                              (chain selected-element class-list
                                                                     (add "mouse-transparent"))
-                                                             (chain svg (append-child selected-element))
-                                                             ))))
+                                                             (chain svg (append-child selected-element))))))
                                              
                                              (chain svg (add-event-listener
                                                          "mousemove"
@@ -1469,9 +1635,8 @@
                                                                (chain selected-element
                                                                       (set-attribute-n-s
                                                                        null "transform"
-                                                                       (+ "translate("
-                                                                          (@ coord x) ","
-                                                                          (@ coord y) ")"))))))))
+                                                                       (+ "translate(" (@ coord x)
+                                                                          "," (@ coord y) ")"))))))))
                                              
                                              (chain svg (add-event-listener
                                                          "mouseup"
@@ -1479,10 +1644,21 @@
                                                            (when (/= selected-element null)
                                                              (when (chain event target class-list
                                                                           (contains "drag-target"))
-                                                               (shift-node dragging-index
-                                                                           (chain event target
-                                                                                  (get-attribute
-                                                                                   "index")))
+
+                                                               (if (and (not dragging-link)
+                                                                        (chain event target class-list
+                                                                          (contains "for-node")))
+                                                                   (shift-node dragging-index
+                                                                               (chain event target
+                                                                                      (get-attribute
+                                                                                       "index")))
+                                                                   (if (and dragging-link
+                                                                            (chain event target class-list
+                                                                                   (contains "for-link")))
+                                                                       (shift-node dragging-index
+                                                                                   (chain event target
+                                                                                          (get-attribute
+                                                                                       "index")))))
                                                                ;; (chain console
                                                                ;;        (log :ii dragging-index
                                                                ;;             (chain event target
@@ -1491,6 +1667,9 @@
                                                                ;;                    )))
                                                                )
                                                              (chain $el class-list (remove "drag"))
+                                                             (chain $el class-list (remove "for-node"))
+                                                             (chain $el class-list (remove "for-link"))
+                                                             (setf dragging-link false)
                                                              (chain selected-element (remove))
                                                              (chain drag-node class-list (remove "dragging"))
                                                              (setf selected-element null
@@ -1500,6 +1679,9 @@
                                                          (lambda ()
                                                            (when (/= selected-element null)
                                                              (chain $el class-list (remove "drag"))
+                                                             (chain $el class-list (remove "for-node"))
+                                                             (chain $el class-list (remove "for-link"))
+                                                             (setf dragging-link false)
                                                              (chain selected-element (remove))
                                                              (chain drag-node class-list (remove "dragging"))
                                                              (setf selected-element null
@@ -1516,41 +1698,51 @@
            (loop :for item :in form :collect (if (not (string= "META" (string (first item))))
                                                  item (second item)))))
     (defun svrender-layer (gmodel &key x-offset y-offset parent point (path-string "")
-                                    (height 400) (width 400))
+                                    (height 400) (width 400) (depth 1)
+                                    (depth-store (cons :depth 0)))
       (let ((y-offset (or y-offset y-start)) (x-offset (or x-offset x-start))
-            (main-radius 16) (output) (link-specs))
-        (print (list :gg gmodel))
+            (main-radius 16) (output) (link-specs) (l2-specs) (interval (/ (- width 350))))
+        ;; (print (list :gg gmodel))
         ;; (print (list :aa point parent))
+        (setf (rest depth-store)
+              (max depth (rest depth-store)))
         (loop :for item :in gmodel :for ix :from 0 :when (listp item)
-              :do (let* ((is-expandable (or (and (listp (second item))
+              :do (let* ((is-expandable (or (and (eq :closed (second item))
+                                                 (second item))
+                                            (and (listp (second item))
                                                  (caadr item))
                                             (and (numberp (second item))
                                                  (second item))))
                          (is-root (zerop (length path-string)))
                          (is-closed (or (eq :closed is-expandable)
                                         (numberp is-expandable)))
-                         (path-string (if is-root (format nil "~a 0"  ix)
+                         (path-string (if is-root (format nil "~a"  ix)
                                           (format nil "~a ~a" path-string ix)))
                          (title (rest (assoc :title (meta-strip (first item)))))
                          (num-index (rest (assoc :index (first item))))
+                         (is-link (not num-index))
                          (index (or num-index (format nil "~a ~a" (third parent) ix)))
-                         (group-class (format nil "node-group ~a"
+                         (group-class (format nil "node-group~a~a"
                                               (if (or (and (not (second point))
                                                            (and num-index (= index (first point))))
                                                       (and (second point)
                                                            (= ix (second point))
                                                            (numberp (third parent))
                                                            (= (third parent) (first point))))
-                                                  "selected" ""))))
+                                                  " selected" "")
+                                              (if is-link " link-group" ""))))
                     (push `(:g :class ,group-class
                                :transform ,(format nil "translate(~a,~a)" x-offset y-offset)
                                (:g :class "title-frame"
                                    :transform ,(format nil "translate(36,-12)")
                                    (:rect :x 0 :y 0 :height 24 :rx 12
-                                          ,@(if (not is-root)
-                                                nil (list :index num-index :class "drag-target"))
+                                          :|x-on:click| ,opener-code
+                                          ,@(if (not (or is-root (and is-link (/= 1 (length gmodel)))))
+                                                nil (list :index index :class (format nil "drag-target ~a"
+                                                                                      (if is-root "for-node"
+                                                                                          "for-link"))))
                                           :width ,(- width x-offset 36 20))
-                                   ,@(if (not is-root)
+                                   ,@(if (not (or is-root (and is-link (/= 1 (length gmodel)))))
                                          nil `((:g :class "handle" ;; drag control
                                                    :transform ,(format nil "translate(~a,12)"
                                                                        (- width x-offset 52 40))
@@ -1562,8 +1754,10 @@
                                                           :d "M-6,-6 0,-12 6,-6")
                                                    (:path :class "outer-arrow"
                                                           :d "M-6,6 0,12 6,6")
-                                                   (:circle :class "draggable" :index ,num-index
-                                                            :cx 0 :cy 0 :r 10 :opacity 0 ))))
+                                                   (:circle :class ,(format nil "draggable ~a"
+                                                                            (if is-root "for-node"
+                                                                                "for-link"))
+                                                            :index ,index :cx 0 :cy 0 :r 10 :opacity 0 ))))
                                    ,@(if (not (and num-index (second point))) ;; linking control
                                          nil `((:g :class "linker"
                                                    :transform ,(format nil "translate(~a,12)"
@@ -1571,13 +1765,11 @@
                                                    (:circle :class "main"   :cx 0 :cy 0 :r 9)
                                                    (:circle :class "center" :cx 0 :cy 0 :r 2)
                                                    (:path :class "arrow" :d "M-3,6 3,0 -3,-6 -3,6")
-                                                   (:circle :index ,num-index
-                                                            :cx 0 :cy 0 :r 10 :opacity 0
-                                                            :|x-on:click| ,connector-code))))
+                                                   (:circle :index ,num-index :cx 0 :cy 0 :r 10
+                                                            :opacity 0 :|x-on:click| ,connector-code))))
                                    (:g :class "description"
-                                       :index ,index :|x-on:click| ,opener-code
-                                       (:text :class "title" :y 16 :x ,(if is-expandable 26 6)
-                                              ,title)))
+                                       :index ,index (:text :class "title" :y 16
+                                                            :x ,(if is-expandable 26 6) ,title)))
                                (:g :class "circle-glyph" :index ,index
                                    (:circle :class "outer-circle" :cx 16 :cy 0 :r ,main-radius)
                                    (:circle :class "inner-circle" :cx 16 :cy 0 :r 12))
@@ -1590,9 +1782,11 @@
                                                ,@(if (not is-closed)
                                                      nil `((:rect :class "indicator" :x 46.5 :y -4.5
                                                                   :height 9 :width 3))))))
-                               ,@(if (not is-root)
+                               ,@(if (not (or is-root (and is-link (/= 1 (length gmodel)))))
                                      nil `((:rect :x 32 :y -17 :height 3 :width ,(- width x-offset 36 28)
-                                                  :rx 1 :class "drag-indicator"))))
+                                                  :rx 1 :class ,(format nil "drag-indicator ~a"
+                                                                        (if is-root "for-node"
+                                                                            "for-link"))))))
                           output)
                     
                     (when parent (destructuring-bind (parent-x parent-y &rest _) parent
@@ -1601,69 +1795,84 @@
                                                    :d ,(format nil "M~a,~aC~a,~a,~a,~a,~a,~a"
                                                                parent-x parent-y mid-x parent-y
                                                                mid-x y-offset x-offset y-offset))
-                                           link-specs))))
+                                           link-specs)
+                                     (push (list parent-x parent-y)
+                                           l2-specs))))
                     ;; (print (list :si parent (second item)))
                     (if (and (rest item) (listp (second item))
                              (not (eq :closed (caadr item))))
                         (multiple-value-bind (out-list new-y-offset new-link-specs)
                             (svrender-layer
                              (rest item) :x-offset (+ x-increment x-offset)
-                             :y-offset (+ y-increment y-offset)
-                             :height height :width width :point point
-                             :path-string path-string :parent (list x-offset y-offset
-                                                                    index))
-                          (setf output (append out-list output)
+                             :y-offset (+ y-increment y-offset) :depth (1+ depth)
+                             :height height :width width :point point :depth-store depth-store
+                             :path-string path-string :parent (list x-offset y-offset index))
+                          (setf output     (append out-list output)
                                 link-specs (append new-link-specs link-specs)
-                                y-offset new-y-offset))
+                                y-offset   new-y-offset))
                         (incf y-offset y-increment))))
-        (values (if (zerop (length path-string))
-                    ;; link specs are appended at the final stage, the reversal causes
-                    ;; them to be drawn first so they'll be underneath the node graphics
-                    (reverse (append output link-specs))
-                    output)
-                y-offset link-specs)))))
+        ;; (print (list :dep depth-store))
+        (flet ((build-link (spec)
+                 (destructuring-bind (parent-x parent-y) spec
+                   (let ((mid-x (+ parent-x (* 0.5 (- x-offset parent-x)))))
+                     (list :path :class "link"
+                                 :d (format nil "M~a,~aC~a,~a,~a,~a,~a,~a"
+                                            parent-x parent-y mid-x parent-y
+                                            mid-x y-offset x-offset y-offset))))))
+          (values (if (not (zerop (length path-string)))
+                      ;; link specs are appended at the final stage, the reversal causes
+                      ;; them to be drawn first so they'll be underneath the node graphics
+                      output (reverse (append output link-specs)))
+                  y-offset link-specs))))))
+
+(defun graph-walker (graph)
+  (let ((primary (first graph))
+        (options (mapcar #'first (rest graph))))
+    (print (list :pri primary options))
+    (values (list primary options)
+            (lambda (index) (graph-walker (nth index (rest graph)))))))
 
 ;; (dgraph-interface iii bla :open-path '(0 0))
 ;; (dgraph-interface iii bla :open-path '(1 0 0))
 
-(defun of-graph-spec (spec &optional index)
-  (labels ((alist-to-plist (form)
-             (loop :for item :in form
-                   :append (list (first item)
-                                 (if (not (third item))
-                                     (second item) (rest item)))))
-           (listing-format (form)
-             (append (alist-to-plist (first form))
-                     (list :children (loop :for link :in (rest form)
-                                           :collect (append (alist-to-plist (first link))
-                                                            (list :to (second link))))))))
-    (if index (listing-format (nth index (rest spec)))
-        (list :title "root" 
-              :children (mapcar #'listing-format (rest spec))))))
+;; (defun of-graph-spec (spec &optional index)
+;;   (labels ((alist-to-plist (form)
+;;              (loop :for item :in form
+;;                    :append (list (first item)
+;;                                  (if (not (third item))
+;;                                      (second item) (rest item)))))
+;;            (listing-format (form)
+;;              (append (alist-to-plist (first form))
+;;                      (list :children (loop :for link :in (rest form)
+;;                                            :collect (append (alist-to-plist (first link))
+;;                                                             (list :to (second link))))))))
+;;     (if index (listing-format (nth index (rest spec)))
+;;         (list :title "root" 
+;;               :children (mapcar #'listing-format (rest spec))))))
 
-(defun graph-spec-to-json (spec &optional index)
-  (let ((stream (make-string-output-stream)))
-    (flet ((listing-format (form)
-             (com.inuoe.jzon:with-object*
-               (com.inuoe.jzon:write-key* :data)
-               (alist-to-json (first form) stream)
-               (com.inuoe.jzon:write-key* :children)
-               (com.inuoe.jzon:with-array*
-                 (loop :for link :in (rest form)
-                       :do (com.inuoe.jzon:with-object*
-                             (com.inuoe.jzon:write-key* :data)
-                             (alist-to-json (rest link) stream)
-                             (com.inuoe.jzon:write-key* :to)
-                             (com.inuoe.jzon:write-value* (first link))))))))
-      (com.inuoe.jzon:with-writer* (:stream stream :pretty nil)
-        (if index (listing-format (nth index (rest spec)))
-            (com.inuoe.jzon:with-object*
-              (com.inuoe.jzon:write-key* :data)
-              (alist-to-json '((:title "root")) stream)
-              (com.inuoe.jzon:write-key* :children)
-              (com.inuoe.jzon:with-array*
-                (mapcar #'listing-format (rest spec))))))
-      (get-output-stream-string stream))))
+;; (defun graph-spec-to-json (spec &optional index)
+;;   (let ((stream (make-string-output-stream)))
+;;     (flet ((listing-format (form)
+;;              (com.inuoe.jzon:with-object*
+;;                (com.inuoe.jzon:write-key* :data)
+;;                (alist-to-json (first form) stream)
+;;                (com.inuoe.jzon:write-key* :children)
+;;                (com.inuoe.jzon:with-array*
+;;                  (loop :for link :in (rest form)
+;;                        :do (com.inuoe.jzon:with-object*
+;;                              (com.inuoe.jzon:write-key* :data)
+;;                              (alist-to-json (rest link) stream)
+;;                              (com.inuoe.jzon:write-key* :to)
+;;                              (com.inuoe.jzon:write-value* (first link))))))))
+;;       (com.inuoe.jzon:with-writer* (:stream stream :pretty nil)
+;;         (if index (listing-format (nth index (rest spec)))
+;;             (com.inuoe.jzon:with-object*
+;;               (com.inuoe.jzon:write-key* :data)
+;;               (alist-to-json '((:title "root")) stream)
+;;               (com.inuoe.jzon:write-key* :children)
+;;               (com.inuoe.jzon:with-array*
+;;                 (mapcar #'listing-format (rest spec))))))
+;;       (get-output-stream-string stream))))
 
 ;; (defun alist-to-json (form &optional stream)
 ;;   (let ((stream (or stream (make-string-output-stream))))

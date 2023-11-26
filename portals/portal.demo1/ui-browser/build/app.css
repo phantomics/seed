@@ -329,16 +329,34 @@ form .input.fluid{
 
 
 
-.svg-visualizer.drag .node-group:not(.dragging):hover .handle{
+.svg-visualizer.for-node.drag .node-group:not(.dragging):hover .handle{
     opacity: 0;
 }
 
 
 
-.svg-visualizer.drag .node-group:not(.dragging):hover .title-frame rect{
+.svg-visualizer.for-node.drag .node-group:not(.dragging):hover .title-frame rect{
     opacity: 0;
 }
 
-.svg-visualizer.drag .node-group:not(.dragging):hover .drag-indicator{
+.svg-visualizer.for-node.drag .node-group:not(.dragging):hover .drag-indicator.for-node{
+    opacity: 0.2;
+}
+
+
+
+
+
+.svg-visualizer.for-link.drag .node-group.link-group:not(.dragging):hover .handle{
+    opacity: 0;
+}
+
+
+
+.svg-visualizer.for-link.drag .node-group.link-group:not(.dragging):hover .title-frame rect{
+    opacity: 0;
+}
+
+.svg-visualizer.for-link.drag .node-group.link-group:not(.dragging):hover .drag-indicator{
     opacity: 0.2;
 }

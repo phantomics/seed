@@ -276,13 +276,21 @@
         (.drag-indicator :opacity 0 :fill "#000")
         (.mouse-transparent :pointer-events none))
 
-      `(.svg-visualizer.drag
+      `(.svg-visualizer.for-node.drag
         ((:and .node-group :|not(.dragging)| :hover)
          (.handle :opacity 0)
          (.title-frame (rect :opacity 0))
          ;; title frame doesn't show in drag-over mode
+         (.drag-indicator.for-node :opacity 0.2)))
+
+      `(.svg-visualizer.for-link.drag
+        ((:and .node-group.link-group :|not(.dragging)| :hover)
+         (.handle :opacity 0)
+         (.title-frame (rect :opacity 0))
+         ;; title frame doesn't show in drag-over mode
          (.drag-indicator :opacity 0.2))
-        )))))
+        )
+      ))))
 
 ;; (build-css "ui-browser")
 
