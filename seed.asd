@@ -6,6 +6,6 @@
   :license ""
   :version "0.0.1"
   :serial t
-  :depends-on ("arrow-macros" "seed.generate" "seed.sublimate") ;  "seed.modulate")
+  :depends-on ("arrow-macros" "seed.generate" "seed.sublimate" "seed.admit") ;  "seed.modulate")
   :components ((:file "package")
                (:file "seed")))

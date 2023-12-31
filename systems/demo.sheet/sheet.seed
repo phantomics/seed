@@ -4,47 +4,48 @@
       :bindings (:package package :system system :portal-name portal-name)
       :branches (:view
                  (lambda (input)
-                   (-<> (uic-set ((:type :group :linear :workspace :even)
-                                  (:members :column :column)
-                                  (:layout ((:row ((:column) (:column)))
-                                            (:row ((:column))
-                                                  (:span . 2))
-                                            :divide
-                                            (:column)))
-                                  (:faces ((:format :dual-bank))
-                                          ((:format :dual-bank))
-                                          ((:format :single-bank))))
-                                 ;; (uic ((:type :form :text) (:access :main) (:name . :code)
-                                 ;;       (:controls (:header :save)
-                                 ;;                  (:footer :save))))
-                                 ;; (uic ((:type :form :tree) (:access :code)
-                                 ;;       (:controls (:header :save)
-                                 ;;                  (:footer :save))))
-                                 ;; (uic ((:type :form :vector) (:access :code) ;; what's this?
-                                 ;;       (:controls (:header :save)
-                                 ;;                  (:footer :save))))
-                                 ;; (uic ((:type :form :vector) (:access :graph)
-                                 ;;       (:controls (:header :save)
-                                 ;;                  (:footer :save))))
-                                 (uic ((:type :form :elem) (:access :graph)
-                                       (:name . :graph-overview)
-                                       (:controls (:header :save :add-node :add-link :delete-item)
-                                                  (:footer :save))))
-                                 ;; (uic ((:type :form :elem) (:access :form)
-                                 ;;       (:controls (:header :save)
-                                 ;;                  (:footer :save))))
-                                 ;; (uic ((:type :form :elem) (:access :table)
-                                 ;;       (:name . :solver-input)
-                                 ;;       (:controls (:header :submit)
-                                 ;;                  (:footer :submit))))
-                                 (uic ((:type :form :elem) (:access :graph)
-                                       (:name . :graph-node)
-                                       (:controls (:header :save)
-                                                  (:footer :save))))
-                                 ;; (uic ((:type :form :cells) (:access :cells)
-                                 ;;       (:controls (:header :save :toggle-baseline)
-                                 ;;                  (:footer :save))))
-                                 )
+                   (-<> (uic ((:type :set :linear :columnar :workspace :even)
+                              (:members :column :column)
+                              (:layout ((:row ((:column) (:column)))
+                                        (:row ((:column))
+                                              (:span . 2))
+                                        :divide
+                                        (:column)))
+                              (:faces ((:format :dual-bank))
+                                      ((:format :dual-bank))
+                                      ((:format :single-bank))))
+                             (uic ((:type :form :text) (:access :main) (:name . :code)
+                                   (:controls (:header :save)
+                                              (:footer :save))))
+                             (uic ((:type :form :cells) (:access :cells) (:name . :cells)
+                                   (:controls (:header :save :toggle-baseline)
+                                              (:footer :save))))
+                             :partition
+                             ;; (uic ((:type :form :tree) (:access :code)
+                             ;;       (:controls (:header :save)
+                             ;;                  (:footer :save))))
+                             ;; (uic ((:type :form :vector) (:access :code) ;; what's this?
+                             ;;       (:controls (:header :save)
+                             ;;                  (:footer :save))))
+                             ;; (uic ((:type :form :vector) (:access :graph)
+                             ;;       (:controls (:header :save)
+                             ;;                  (:footer :save))))
+                             (uic ((:type :form :elem) (:access :graph)
+                                   (:name . :graph-overview)
+                                   (:controls (:header :save :add-node :add-link :delete-item)
+                                              (:footer :save))))
+                             (uic ((:type :form :elem) (:access :graph)
+                                   (:name . :graph-node)
+                                   (:controls (:header :save)
+                                              (:footer :save))))
+                             ;; (uic ((:type :form :elem) (:access :form)
+                             ;;       (:controls (:header :save)
+                             ;;                  (:footer :save))))
+                             ;; (uic ((:type :form :elem) (:access :table)
+                             ;;       (:name . :solver-input)
+                             ;;       (:controls (:header :submit)
+                             ;;                  (:footer :submit))))
+                             )
                      (in-system-context <> package)))
                  :main
                  (lambda (input)
@@ -444,7 +445,8 @@
                            (when network-changed
                              ;; (print (list :ch "CHANGED" graph-base))
                              (setf (from-system-file package "sheet.lisp" :graph) graph-base)
-                             (instantiate-priority-macro-reader (asdf:load-system package)))
+                             (instantiate-priority-macro-reader (asdf:load-system package))
+                             )
                            
                            ;; (print (list :af (assoc :face input :test #'eq)))
                            ;; the *output-stream* is created in the seed package - best elsewhere?
@@ -506,32 +508,48 @@
                  :play
                  (let ((state) (node) (selector))
                    (lambda (input)
+                     (unless (and (find-package 'demo.sheet)
+                                  (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
+                       (instantiate-priority-macro-reader (asdf:load-system package)))
                      (unless node (multiple-value-bind (this-node selector-out)
                                       (seed.generate::graph-walker
-                                       (first (symbol-value 'demo.sheet::*graph-nodes*)))
-                                    (print (list :tn this-node input))
+                                       (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
+                                    ;; (print (list :tn1 this-node input))
                                     (setf node this-node selector selector-out)))
                      (when (assoc :index input :test #'eq)
                        (multiple-value-bind (this-node selector-out)
                            (funcall selector (read-from-string (rest (assoc :index input :test #'eq))))
+                         ;; (print (list :oo this-node))
                          (setf node this-node selector selector-out)))
-                     ;; (print (list :bc input))
+                     ;; (print (list :bc input node))
                      (let ((out (make-string-output-stream))
                            (dialog (rest (assoc :dialog (first node))))
+                           (image (rest (assoc :image (first node))))
                            (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
                                               (second node))))
-                       ;; (print (list :dia dialog))
+                       ;; (print (list :dia dialog node responses
+                       ;;              :image image))
                        (spinneret:interpret-html-tree
-                        `(:div (:div ,dialog)
-                               (:ol ,@(loop :for response :in responses :for ix :from 0
+                        `(:div :class "scenario-frame"
+                               (:div :class "setting" (:div :class "dialog" ,dialog))
+                               (:ol :class "responses"
+                                    ,@(loop :for response :in responses :for ix :from 0
                                             :collect
                                             (list :li :|x-on:click|
                                                   (psl (chain htmx (trigger $el "reload")))
                                                   :hx-trigger "reload" :hx-post "/render/"
                                                   :hx-vals (seed.generate::json-convert-to
                                                             (list :index ix))
-                                                  response))
-                                ))
+                                                  response)))
+                               ,@(unless (string= image "no-image")
+                                   `((:div :class "background-image"
+                                           :style
+                                           ,(format nil " position: absolute; top: 0; left: 0;
+                                                          margin-top: ~a; pointer-events: none;"
+                                                    (if (string= image "image-resting")
+                                                        "-200px" "-600px"))
+                                           (:img :src ,(format nil "./static/~a.png" image)))))
+                               )
                         :stream out)
                        (get-output-stream-string out))))
                  :cells
@@ -557,6 +575,40 @@
                                                           (setf-value
                                                            (from-system-file
                                                             package "sheet.lisp" :cells)))))))))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ;; :graph2

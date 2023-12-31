@@ -8,7 +8,7 @@
   (:export #:seed-instance #:system #:seed #:in-system-context #:interact #:with-meta
            #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web #:of-system
            #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
-           #:form-as-vectors #:interface-format-form #:render-html-interface
+           #:form-as-vectors #:interface-format-form #:render-html-interface #:render-nav-menu
            #:htrender #:render-console #:meta-revise #:psl
            #:from-system-file #:text-wrap #:setf-value #:of-array-spec #:of-graph-spec)
   (:shadowing-import-from #:parse-number #:parse-number)

@@ -55,8 +55,8 @@ body{
 .ui.grid-layout .column .container.column-inner{
     padding: 0;
     overflow: auto;
-    grid-template-rows: [header-start] auto [header-end] 1fr [footer-start] auto [footer-end];
     grid-template-columns: 100%;
+    grid-template-rows: [header-start] auto [header-end] 1fr [footer-start] auto [footer-end];
 }
 
 .ui.grid-layout .column .container.column-inner .header{
@@ -152,6 +152,11 @@ form .input.fluid{
     margin-bottom: 0.32em;
 }
 
+form .ui.selection.dropdown{
+    min-height: 3em;
+    margin-bottom: 0.32em;
+}
+
 .d3view-graph-foldout,
 .svg-visualizer{
     width: 100%;
@@ -203,6 +208,11 @@ form .input.fluid{
     fill: #efefef;
     stroke: #ccc;
     stroke-width: 0;
+}
+
+.d3view-graph-foldout .node-group .title-frame .description,
+.svg-visualizer .node-group .title-frame .description{
+    pointer-events: none;
 }
 
 .d3view-graph-foldout .node-group .title-frame .handle,
@@ -359,4 +369,42 @@ form .input.fluid{
 
 .svg-visualizer.for-link.drag .node-group.link-group:not(.dragging):hover .drag-indicator{
     opacity: 0.2;
+}
+
+.scenario-frame{
+    height: 100%;
+    display: grid;
+    grid-template-columns: 100%;
+    background: #000;
+    color: #ddd;
+    font-family: serif;
+    font-weight: bold;
+    line-height: 2.6em;
+    grid-template-rows: [dialog-start] 60% [dialog-end] 40% [response-end];
+    text-shadow: 2px 2px 0 #333;
+}
+
+.scenario-frame .setting{
+    grid-row-end: dialog-end;
+    position: relative;
+}
+
+.scenario-frame .setting .dialog{
+    position: absolute;
+    bottom: 0;
+    z-index: 6000;
+    font-size: 32px;
+    padding: 12px;
+}
+
+.scenario-frame .responses{
+    grid-row-start: dialog-end;
+    grid-row-end: response-end;
+    z-index: 5000;
+    font-size: 22px;
+    padding: 16px 64px;
+}
+
+.scenario-frame .responses li{
+    cursor: pointer;
 }

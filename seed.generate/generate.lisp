@@ -47,73 +47,73 @@
   (append (list (first spec) (second spec))
           (cons (cons :system system-name) (cddr spec))))
 
-(defmacro manifest-portal-contact-web (&rest options)
-  (let ((pname (package-name *package*)))
-    (cons 'portal-contact-web (append options (list :package-name (intern pname "KEYWORD")
-                                                    :main-interface (intern "*SEED-INTERFACES*" pname))))))
+;; (defmacro manifest-portal-contact-web (&rest options)
+;;   (let ((pname (package-name *package*)))
+;;     (cons 'portal-contact-web (append options (list :package-name (intern pname "KEYWORD")
+;;                                                     :main-interface (intern "*SEED-INTERFACES*" pname))))))
 
-(defun portal-contact-web (&key (port 8080) package-name
-                             main-interface static-provider output-process)
-  (let* ((root-path (asdf:system-relative-pathname package-name "./"))
-	 (service (make-instance 'ningle::app))
-	 (handler (clack:clackup (lack.builder:builder
-				  :session nil
-				  ;; (:static :path
-				  ;;          (lambda (path) (if (ppcre:scan "^(?:/static/|/files/)" path)
-				  ;;       		      path nil))
-				  ;;          :root root-path)
-				  service)
-				 :port port :server :woo :address "0.0.0.0")))
-    (setf (ningle:route service "/" :accept '("text/html" "text/xml"))
-	  (lambda (params)
-            (let ((portal-sym (intern (string-upcase (rest (assoc :portal params))) "KEYWORD")))
-              (funcall static-provider))))
-    (setf (ningle:route service "/:portal/" :accept '("text/html" "text/xml"))
-	  (lambda (params)
-            (let ((portal-sym (intern (string-upcase (rest (assoc :portal params))) "KEYWORD")))
-              ;; (print (list :ee portal-sym (getf main-interface portal-sym)))
-              ;; (print (list :ff ;; (funcall (getf (getf (getf main-interface portal-sym) :branches)
-              ;;                  ;;                :systems))
-              ;;              ))
-              (com.inuoe.jzon:stringify (funcall (getf (getf (getf main-interface portal-sym) :branches)
-                                                       :systems))))))
-    ;; (setf (ningle:route service "/" :accept '("text/html" "text/xml"))
-    ;;       #'present-main-interface)
-    ;; (setf (ningle:route service "/enter" :method :POST)
-    ;;       (lambda (params)
-    ;;         (handler-case
-    ;;     	(let* ((original-params params)
-    ;;     	       (username (cdr (assoc "username" params :test #'string=)))
-    ;;     	       (password (cdr (assoc "password" params :test #'string=))))
-    ;;     	  (login (list :|username| username :|password| password)
-    ;;     		 (redirect-to "/")
-    ;;     		 (present-login-interface (cons '("message" . "Wrong username or password.")
-    ;;     						original-params))
-    ;;     		 (present-login-interface (cons '("message" . "Wrong username or password.")
-    ;;     						original-params))))
-    ;;           (error (c)
-    ;;     	(format t "Caught a condition: ~&")
-    ;;     	(values (jonathan:to-json '(:|error| t))
-    ;;     		c)))))
-    ;; (setf (ningle:route service "/exit" :method :GET)
-    ;;   (lambda (params)
-    ;;     (handler-case
-    ;;         (logout (present-login-interface (cons '("message" . "You are now logged out.") params))
-    ;;     	    (present-login-interface (cons '("message" . "You are not logged in.") params)))
-    ;;       (error (c)
-    ;;         (format t "Caught a condition: ~&")
-    ;;         (values (jonathan:to-json '(:|error| t))
-    ;;     	    c)))))
-    (setf (ningle:route service "/:portal/:contact/grow/" :method :port :accept "application/json")
-	  (lambda (params)
-	    (handler-case (interact portal :systems params)
-	      (error (c)
-		(format t "Caught a condition: ~&")
-		(values 5 ; (jonathan:to-json '(:|error| t))
-			c)))))
-    (values (setq *stop-server* (lambda () (clack:stop handler)))
-	    (setq *restart-server* (lambda () (clack:stop handler)
-					   (clack:clackup service :port port :server :woo))))))
+;; (defun portal-contact-web (&key (port 8080) package-name
+;;                              main-interface static-provider output-process)
+;;   (let* ((root-path (asdf:system-relative-pathname package-name "./"))
+;; 	 (service (make-instance 'ningle::app))
+;; 	 (handler (clack:clackup (lack.builder:builder
+;; 				  :session nil
+;; 				  ;; (:static :path
+;; 				  ;;          (lambda (path) (if (ppcre:scan "^(?:/static/|/files/)" path)
+;; 				  ;;       		      path nil))
+;; 				  ;;          :root root-path)
+;; 				  service)
+;; 				 :port port :server :woo :address "0.0.0.0")))
+;;     ;; (setf (ningle:route service "/" :accept '("text/html" "text/xml"))
+;;     ;;       (lambda (params)
+;;     ;;         (let ((portal-sym (intern (string-upcase (rest (assoc :portal params))) "KEYWORD")))
+;;     ;;           (funcall static-provider))))
+;;     ;; (setf (ningle:route service "/:portal/" :accept '("text/html" "text/xml"))
+;;     ;;       (lambda (params)
+;;     ;;         (let ((portal-sym (intern (string-upcase (rest (assoc :portal params))) "KEYWORD")))
+;;     ;;           ;; (print (list :ee portal-sym (getf main-interface portal-sym)))
+;;     ;;           ;; (print (list :ff ;; (funcall (getf (getf (getf main-interface portal-sym) :branches)
+;;     ;;           ;;                  ;;                :systems))
+;;     ;;           ;;              ))
+;;     ;;           (com.inuoe.jzon:stringify (funcall (getf (getf (getf main-interface portal-sym) :branches)
+;;     ;;                                                    :systems))))))
+;;     ;; (setf (ningle:route service "/" :accept '("text/html" "text/xml"))
+;;     ;;       #'present-main-interface)
+;;     ;; (setf (ningle:route service "/enter" :method :POST)
+;;     ;;       (lambda (params)
+;;     ;;         (handler-case
+;;     ;;     	(let* ((original-params params)
+;;     ;;     	       (username (cdr (assoc "username" params :test #'string=)))
+;;     ;;     	       (password (cdr (assoc "password" params :test #'string=))))
+;;     ;;     	  (login (list :|username| username :|password| password)
+;;     ;;     		 (redirect-to "/")
+;;     ;;     		 (present-login-interface (cons '("message" . "Wrong username or password.")
+;;     ;;     						original-params))
+;;     ;;     		 (present-login-interface (cons '("message" . "Wrong username or password.")
+;;     ;;     						original-params))))
+;;     ;;           (error (c)
+;;     ;;     	(format t "Caught a condition: ~&")
+;;     ;;     	(values (jonathan:to-json '(:|error| t))
+;;     ;;     		c)))))
+;;     ;; (setf (ningle:route service "/exit" :method :GET)
+;;     ;;   (lambda (params)
+;;     ;;     (handler-case
+;;     ;;         (logout (present-login-interface (cons '("message" . "You are now logged out.") params))
+;;     ;;     	    (present-login-interface (cons '("message" . "You are not logged in.") params)))
+;;     ;;       (error (c)
+;;     ;;         (format t "Caught a condition: ~&")
+;;     ;;         (values (jonathan:to-json '(:|error| t))
+;;     ;;     	    c)))))
+;;     (setf (ningle:route service "/:portal/:contact/grow/" :method :port :accept "application/json")
+;; 	  (lambda (params)
+;; 	    (handler-case (interact portal :systems params)
+;; 	      (error (c)
+;; 		(format t "Caught a condition: ~&")
+;; 		(values 5 ; (jonathan:to-json '(:|error| t))
+;; 			c)))))
+;;     (values (setq *stop-server* (lambda () (clack:stop handler)))
+;; 	    (setq *restart-server* (lambda () (clack:stop handler)
+;; 					   (clack:clackup service :port port :server :woo))))))
 
 (defun interact (portal branch &optional input)
   (funcall (getf (getf portal :branches) branch)
@@ -378,19 +378,17 @@
 ;; (defmacro >> (&rest items)
 ;;   (cons 'vector items))
 
-(defmacro uic (props &optional item)
-  `(generate-uic ',props ,item))
+(defmacro uic (props &rest items)
+  `(generate-uic ',props ,@items))
 
-(defmacro uic-set (props &rest clauses)
-  `(generate-uic-set ',props ,@clauses))
+(defun generate-uic (props &rest items)
+  `(meta ,(if (rest items) items (first items)) ,@props))
 
-(defun generate-uic (props &optional item)
-  `(meta ,item ,@(loop :for clause :in props :collect (if (or t (not (listp clause))
-                                                              (not (keywordp (first clause))))
-                                                          clause (list 'quote clause)))))
-
-(defun generate-uic-set (props &rest clauses)
-  `(meta ,clauses ,@props))
+;; (defun generate-uic (props &rest items)
+;;   `(meta ,(if (rest items) items (first items))
+;;          ,@(loop :for clause :in props :collect (if (or t (not (listp clause))
+;;                                                         (not (keywordp (first clause))))
+;;                                                     clause (list 'quote clause)))))
 
 (defun interface-format-form (form spec)
   (if (and (listp form) (listp (first form)))
@@ -747,8 +745,8 @@
         (path-string (apply #'concatenate 'string
                             (loop :for item :in (reverse path)
                                   :append (list (write-to-string item) " ")))))
+    ;; (print (list :fo form))
     (case (getf form :ty)
-      ;; (print (list :mm meta))
       (:sy (if (not (getf meta :app))
                (write-string (getf form :ct) strout)
                (case (getf meta :app)
@@ -769,6 +767,11 @@
                                        (then (lambda (response) (chain response (json))))
                                        (then (lambda (data) (chain htmx (trigger "#main" "reload"))))))
                            (str (lisp->camel-case (getf form :ct))))))
+                 ;; (:set-nav-point
+                 ;;  (print (list :forma form))
+                 ;;  (if form (cl-who:with-html-output (strout)
+                 ;;             (:h4 (str (getf form :ct))))
+                 ;;      (cl-who:with-html-output (strout) (:p "abcd"))))
                  (t (write-string (getf form :ct) strout)))))
       (:ar (when (stringp (getf form :ct))
              (write-string (getf form :ct) strout)))
@@ -796,6 +799,13 @@
                                                    (render-html-interface c system-id this-meta
                                                                           (cons ix path)
                                                                           strout)))))))))
+               ((list :form :branch-navigation)
+                (print (list :con contents))
+                (cl-who:with-html-output (strout)
+                  (:div :path path-string
+                        (loop :for c :in contents :for ix :from 0
+                              :do (if c (htm (:h4 (str (getf c :ct))))
+                                      (htm (:hr)))))))
                ((list :form :elem)
                 (let ((branch (second (assoc :access (getf form :mt))))
                       (controls (rest (assoc :controls (getf form :mt))))
@@ -947,6 +957,7 @@
                           :hx-post "/render/" :hx-vals (json-convert-to (list :system :demo.sheet
                                                                               :branch branch))))))
                ((list* :group :linear _)
+                (print :eee)
                 (let ((widths (if (eq :sidebar (first members))
                                   '("two" "fourteen") '("seven" "seven"))))
                   (cl-who:with-html-output (strout)
@@ -968,6 +979,31 @@
                                                  (render-html-interface c system-id nil
                                                                         (cons ix path)
                                                                         strout)))))))))
+               ((list* :set set-subtypes)
+                (match set-subtypes
+                  ((list* :linear linear-subtypes)
+                   (let ((widths (if (eq :sidebar (first members))
+                                     '("two" "fourteen") '("seven" "seven"))))
+                     
+                     (cl-who:with-html-output (strout)
+                       (:div :class (format nil "ui grid-layout ~a"
+                                            (apply #'concatenate
+                                                   'string (loop :for s :in (cddr type)
+                                                                 :append (list " " (string-downcase s)))))
+                             :path path-string
+                             (loop :for c :in contents :for ix :from 0
+                                   ;; stop at the partition keyword
+                                   :while (not (and (getf c :ty) (string= "KEYWORD" (getf c :pk))
+                                                    (string= "PARTITION" (getf c :ct))))
+                                   :do (let ((item-classes
+                                               (apply #'concatenate 'string
+                                                      (loop :for y :in (rest (assoc :type (getf c :mt)))
+                                                            :collect (format nil "~a " y)))))
+                                         (htm (:div :class (format nil "~acolumn"
+                                                                   (string-downcase item-classes))
+                                                    (render-html-interface c system-id nil
+                                                                           (cons ix path)
+                                                                           strout)))))))))))
                ((list :group :stack)
                 (cl-who:with-html-output (strout)
                   (:div :path path-string
@@ -981,6 +1017,11 @@
                                                                       (cons ix path)
                                                                       strout))))))))))))
     (if stream nil (get-output-stream-string strout))))
+
+(defun render-nav-menu (form)
+  (loop :for item :in (second form)
+        :collect (if (eq item :partition)
+                     nil (rest (assoc :name (cddr item))))))
 
 (defun render-console (form &key branch)
   "Render a 'console'; a set of fields that independently update the server state when changed as opposed to requiring a specific 'submit' action to update all field values."
@@ -1076,6 +1117,19 @@
                           (let ((title (rest (assoc :title props)))
                                 (options (rest (assoc :options props)))
                                 (action (rest (assoc :action props))))
+                            ;; `(:div :class "ui labeled button dropdown"
+                            ;;        (:span :class "text" ,name)
+                            ;;        (:div :class "menu"
+                            ;;              ,@(if (not (eq action :branch-reload))
+                            ;;                    nil (list :|x-on:change|
+                            ;;                              (psl (progn
+                            ;;                                     (chain console (log this-form))
+                            ;;                                     (chain htmx (trigger this-form "submit"))))))
+                            ;;              ,@(loop :for o :in options
+                            ;;                      :collect `(:option :value ,o
+                            ;;                                         ,@(if (not (string= o item))
+                            ;;                                               nil `(:selected 1))
+                            ;;                                         ,o)))
                             `(:select :class "ui selection dropdown"
                                :name ,name
                                ,@(if (not (eq action :branch-reload))
@@ -1085,20 +1139,22 @@
                                                       (chain htmx (trigger this-form "submit"))))))
                                ,@(loop :for o :in options
                                        :collect `(:option :value ,o
-                                                          ,@(if (not (string= o item))
+                                                          ,@(if (not (string= o (rest item)))
                                                                 nil `(:selected 1))
                                                           ,o)))
-                            ;; `(:div :class "ui vertical menu"
-                            ;;        (:div :class "ui dropdown item"
-                            ;;              ,(rest (assoc :title props))
-                            ;;              (:i :class "dropdown icon")
-                            ;;              (:div :class "menu"
-                            ;;                    ,@(loop :for o :in options
-                            ;;                            :collect `(:a :class "item" ,o)))))
                             ))))
               (:trigger `(:button :class "ui button" ,title))
               (:boolean `(:button :class "ui button" ,title))
               (:submit-control `(:button :class "ui button" :type "submit" "Submit"))))))))
+
+
+;; `(:div :class "ui vertical menu"
+;;        (:div :class "ui dropdown item"
+;;              ,(rest (assoc :title props))
+;;              (:i :class "dropdown icon")
+;;              (:div :class "menu"
+;;                    ,@(loop :for o :in options
+;;                            :collect `(:a :class "item" ,o)))))
 
 (defun set-in-element-spec (name form value)
   (if (not (listp form))
@@ -1296,22 +1352,30 @@
                                                   (list 'cons (first item) (rest item)))
                                               item)))))
       `(let ((,nodes-out (list ,@(loop :for node :in nodes
-                                       :collect (list 'list ;; (cons 'list (mapcar (lambda (i)
+                                       :collect (cons 'list ;; (cons 'list (mapcar (lambda (i)
                                                             ;;                       (print (list :ii i))
                                                             ;;                       (if (listp (rest i))
                                                             ;;                           (cons 'list i)
                                                             ;;                           (list 'cons (first i)
                                                             ;;                                 (rest i))))
                                                             ;;                     (first node)))
-                                                      (inline-list (first node))
-                                                      `(list ;; (list ,@(mapcar (lambda (i)
-                                                             ;;                   (if (listp (rest i))
-                                                             ;;                       (cons 'list i)
-                                                             ;;                       (list 'cons (first i)
-                                                             ;;                             (rest i))))
-                                                             ;;                 (caadr node)))
-                                                             ,(inline-list (caadr node))
-                                                             ,(cadadr node)))))))
+                                                      (cons (inline-list (first node))
+                                                            (loop :for item :in (rest node) :when (second item)
+                                                               :collect `(list ,(inline-list (first item)) ,(second item)))
+                                                            ;; (mapcar (lambda (item)
+                                                            ;;           `(list ,(inline-list (first item)) ,(second item)))
+                                                            ;;         (rest node))
+                                                            )
+                                                      ;; `(list ;; (list ,@(mapcar (lambda (i)
+                                                      ;;        ;;                   (if (listp (rest i))
+                                                      ;;        ;;                       (cons 'list i)
+                                                      ;;        ;;                       (list 'cons (first i)
+                                                      ;;        ;;                             (rest i))))
+                                                      ;;        ;;                 (caadr node)))
+                                                      ;;        ,(inline-list (caadr node))
+                                                      ;;        ,(cadadr node))
+                                                      )))))
+         (print (list :no ,nodes-out))
          (loop :for ,n :in ,nodes-out
                :do (loop :for ,link :in (rest ,n)
                          :do (rplacd ,link (list (nth (second ,link) ,nodes-out)))))
@@ -1736,11 +1800,11 @@
                                (:g :class "title-frame"
                                    :transform ,(format nil "translate(36,-12)")
                                    (:rect :x 0 :y 0 :height 24 :rx 12
-                                          :|x-on:click| ,opener-code
+                                          :|x-on:click| ,opener-code :index ,index
                                           ,@(if (not (or is-root (and is-link (/= 1 (length gmodel)))))
-                                                nil (list :index index :class (format nil "drag-target ~a"
-                                                                                      (if is-root "for-node"
-                                                                                          "for-link"))))
+                                                nil (list :class (format nil "drag-target ~a"
+                                                                         (if is-root "for-node"
+                                                                             "for-link"))))
                                           :width ,(- width x-offset 36 20))
                                    ,@(if (not (or is-root (and is-link (/= 1 (length gmodel)))))
                                          nil `((:g :class "handle" ;; drag control
@@ -1828,9 +1892,9 @@
 (defun graph-walker (graph)
   (let ((primary (first graph))
         (options (mapcar #'first (rest graph))))
-    (print (list :pri primary options))
+    ;; (print (list :pri primary options))
     (values (list primary options)
-            (lambda (index) (graph-walker (nth index (rest graph)))))))
+            (lambda (index) (graph-walker (second (nth index (rest graph))))))))
 
 ;; (dgraph-interface iii bla :open-path '(0 0))
 ;; (dgraph-interface iii bla :open-path '(1 0 0))

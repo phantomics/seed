@@ -10,6 +10,7 @@
                       "symbol-munger"
                       "cl-who" ;; "trivia"
                       "parenscript" "paren6" "lass"
+                      ;; "seed.admit"
                       "seed.contact.http")
   :components ((:file "package")
                (:file "demo1")))

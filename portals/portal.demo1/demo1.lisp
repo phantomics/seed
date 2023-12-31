@@ -2,7 +2,26 @@
 
 (in-package #:portal.demo1)
 
+(defvar *users*)
+(defvar *state-api* nil)
 (defvar *pksym* (intern (package-name *package*) "KEYWORD"))
+
+(setf *users* (make-hash-table :test #'equal))
+
+(defun get-data (user &optional property)
+  (if property (getf (gethash user *users*) property)
+      (gethash user *users*)))
+
+;; (print "abcde")
+
+;; (defvar *portal.demo1.session* nil)
+
+;; (setf *portal.demo1.session* (make-hash-table :test #'equal))
+
+;; (auth-setup *portal.demo1.session* #'get-data)
+
+(defmacro get-user (username)
+  `(gethash ,username *users*))
 
 (defun contact-stop ())
 (defun contact-restart ())
@@ -12,15 +31,17 @@
     (multiple-value-bind (stopper restarter)
         (http-contact-service-start
          :package-name pkg-name :port 9090
-         :interactor-fetch (lambda (params)
-                             ;; (print (list :par params))
+         :interactor-fetch (lambda (params env-session)
+                             (unless *state-api* (setf *state-api* (lambda () env-session)))
                              (let* ((portal-form (rest (assoc "portal" params :test #'string=)))
                                     (branch-form (rest (assoc "branch" params :test #'string=)))
                                     (input (rest (assoc "input" params :test #'string=)))
                                     (portal (when portal-form (intern portal-form "KEYWORD")))
                                     (branch (when branch-form (intern branch-form "KEYWORD"))))
                                (json-convert-to (interface-interact portal branch input))))
-         :renderer-fetch (lambda (params)
+         :renderer-fetch (lambda (params env-session)
+                           (print (list :par params env-session))
+                           (unless *state-api* (setf *state-api* (lambda () env-session)))
                            (let* ((system-form (string-upcase (rest (assoc "system" params
                                                                            :test #'string=))))
                                   (branch-form (string-upcase (rest (assoc "branch" params
@@ -31,89 +52,8 @@
                                   (system (when system-form (intern system-form "KEYWORD")))
                                   (branch (when branch-form (intern branch-form "KEYWORD"))))
                              (interface-interact system branch input))))
-      (setf (symbol-function 'contact-stop) stopper
+      (setf (symbol-function 'contact-stop)    stopper
             (symbol-function 'contact-restart) restarter))))
-
-(defpsmacro sub-view (symbol state)
-  (list symbol :form state))
-
-(defpsmacro pcl (&rest items)
-  `(chain console (log ,@items)))
-
-(defpsmacro undefp (item)
-  `(= "undefined" (typeof ,item)))
-
-;; React stuff
-
-(defpsmacro define-fetch ()
-  '(defun transact (portal branch input next-success)
-    (chain j-query
-     (ajax (create
-	    url "./contact/"
-	    type "POST"
-	    data-type "json"
-	    content-type "application/json; charset=utf-8"
-            async false
-	    data (chain -j-s-o-n (stringify (create portal portal branch branch input input)))
-	    success next-success
-	    error (lambda (data err) (chain console (log 11 data err))))))))
-
-(defpsmacro define-component-view ()
-  '(progn
-    (paren6:defclass6 (-seed-view (@ -react -component))
-     (defun constructor (props)
-       (let ((self this))
-         (if (undefp (@ props data))
-             (transact "PORTAL.DEMO1" "VIEW"
-                       (create interface-spec (list "browser" "react"))
-                       (lambda (data)
-                         (pcl :dt data)
-                         (setf (@ self state) (create data data))))
-             (setf (@ self state)
-                   (create data (@ props data))))
-         (pcl :load)))
-
-     (defun manifest (item)
-       (let ((component (getprop components (@ item mt react-component))))
-         ;; (pcl :abc item (@ item mt) (@ item mt react-component) component)
-         (if (undefp component)
-             (if (and (= "ar" (@ item ty))
-                      (stringp (@ item ct)))
-                 (let ((class-name (chain item mt classes (join " "))))
-                   (panic:jsl (:h1 :class-name class-name (@ item ct))))
-                 "abc")
-             (chain -react (create-element component (create data item))))))
-     
-     (defun layout-stacked (self elements meta)
-       (panic:jsl (:-c-container
-                   (chain elements (map (lambda (item index)
-                                          (let ((lspec (getprop (@ meta specs) index)))
-                                            (panic:jsl (:div :key (+ "view-tier-" index)
-                                                             (chain self (manifest item))
-                                                             )))))))))
-     
-     (defun layout-columnar (self elements meta)
-       (panic:jsl (:-c-container
-                   (:-c-row (chain elements (map (lambda (item index)
-                                                   (let ((lspec (getprop (@ meta specs) index))
-                                                         (class-name (when (not (undefp (@ item mt type)))
-                                                                       (chain item mt type (join " ")))))
-                                                     (panic:jsl (:-c-col :md (@ lspec width)
-                                                                         :class-name (if (undefp class-name)
-                                                                                         "" class-name)
-                                                                         :key (+ "view-column-" index)
-                                                                         (chain self (manifest item))
-                                                                         ))))))))))
-
-     (defun render ()
-       (let* ((self this)
-              (content (and (@ this state) (@ this state data) (@ this state data ct)))
-              (meta (and (@ this state) (@ this state data) (@ this state data mt)))
-              (builder (getprop self (@ meta builder))))
-         (pcl :cl self content meta)
-         (if (undefp builder) "abc"
-             (funcall builder self content meta)))))
-    (setf (@ components -seed-view) -seed-view)))
 
 (defun build-static-page (portal-sym relative-path)
   (with-open-file (stream (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
@@ -152,11 +92,9 @@
         :background "#d5d5d5"
         (.heading :font-size "160%" :font-weight "bold"
                   :padding 8px :margin-bottom 6px)
-        (.form :font-size "120%" :font-weight "bold"
-               :padding 3px 12px))
+        (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
       
-      `(.ui.grid :height "100%"
-                 (.group :height "100%"))
+      `(.ui.grid :height "100%" (.group :height "100%"))
 
       `(.ui.grid-layout
         :display "grid" :height "100%"
@@ -164,22 +102,16 @@
          :display grid :overflow auto :grid-template-rows 1fr
          (.container :position "relative" :height "100%" :display grid)
          (.container.column-inner
-          :padding 0 :overflow auto
+          :padding 0 :overflow auto :grid-template-columns "100%"
           :grid-template-rows "[header-start] auto [header-end] 1fr [footer-start] auto [footer-end]"
-          :grid-template-columns "100%"
           
-          (.header :grid-row-start "header-start"
-                   :grid-row-end   "header-end")
+          (.header :grid-row-start "header-start" :grid-row-end "header-end")
           ;; (.container-wrap
           ;; :grid-row-start "header-end"
           ;; :grid-row-end   "footer-start"
-          (.sub-container ;; :height 100% :overflow auto
-                          :grid-row-start "header-end"
-                          :grid-row-end   "footer-start"
-                          :overflow-y auto
-                          ) ;)
-          (.footer :grid-row-start "footer-start"
-                   :grid-row-end   "footer-end")
+          (.sub-container :grid-row-start "header-end" :grid-row-end   "footer-start"
+                          :overflow-y auto)
+          (.footer :grid-row-start "footer-start" :grid-row-end "footer-end")
           ;; ((:and .container.column (:nth-child 1))
           ;;  :grid-row-start "header-start")
           ;; ((:and .container.column (:nth-child 2))
@@ -203,25 +135,18 @@
       
       `((:and (.ui.grid-layout.workspace.even > .column)
               (:nth-child 1))
-        :grid-column-start 1
-        :grid-column-end 7)
+        :grid-column-start 1 :grid-column-end 7)
       
       `((:and (.ui.grid-layout.workspace.even > .column)
               (:nth-child 2))
-        :grid-column-start 7
-        :grid-column-end 13)
+        :grid-column-start 7 :grid-column-end 13)
 
       `(.ui.grid-layout.workspace
         (.column :padding 0 10px))
       
       `((:or .ui.header .ui.footer)
-        :width "100%"
-        :padding 8px
-        :margin 0
-        :background "#eee"
-        :display grid
-        :grid-template-columns "20% 80%"
-        :grid-template-rows 100%)
+        :width "100%" :padding 8px :margin 0 :background "#eee"
+        :display grid :grid-template-columns "20% 80%" :grid-template-rows 100%)
 
       `(.ui.header
         :border-bottom "2px solid #ccc"
@@ -237,7 +162,9 @@
       ;;                   :width 100%))
 
       `(form :padding 0.64em
-             (.input.fluid :margin-bottom 0.32em))
+             (.input.fluid :margin-bottom 0.32em)
+             (.ui.selection.dropdown :min-height 3em :margin-bottom 0.32em)
+             )
       
       ;; d3 graph view styles
       
@@ -251,8 +178,8 @@
         (.node-group
          (.title-frame :cursor "pointer"
                        (rect :opacity 0 :fill "#efefef" :stroke "#ccc" :stroke-width 0)
-                       (.handle :opacity 0
-                                (.outer-arrow :opacity 0))
+                       (.description :pointer-events none)
+                       (.handle :opacity 0 (.outer-arrow :opacity 0))
                        ((:and .handle :hover)
                         (.outer-arrow :opacity 1))                       
                        (.linker :opacity 0
@@ -288,8 +215,22 @@
          (.handle :opacity 0)
          (.title-frame (rect :opacity 0))
          ;; title frame doesn't show in drag-over mode
-         (.drag-indicator :opacity 0.2))
-        )
+         (.drag-indicator :opacity 0.2)))
+
+      `(.scenario-frame
+        :height "100%" :display grid :grid-template-columns "100%"
+        :background "#000" :color "#ddd" :font-family serif :font-weight bold
+        :line-height 2.6em
+        :grid-template-rows "[dialog-start] 60% [dialog-end] 40% [response-end]"
+        :text-shadow "2px 2px 0 #333"
+        (.setting :grid-row-end "dialog-end" :position relative
+                  (.dialog :position absolute :bottom 0 :z-index 6000
+                           :font-size 32px :padding 12px))
+        (.responses :grid-row-start "dialog-end" :grid-row-end "response-end"
+                    :z-index 5000
+                    :font-size 22px :padding "16px 64px"
+                    (li :cursor pointer)))
+      
       ))))
 
 ;; (build-css "ui-browser")
@@ -389,21 +330,20 @@
     :complete))
 
 (defmacro provide-browser-script (package-sym &rest tasks)
-  (cons
-   'progn
-   (loop :for task :in tasks
-         :collect (destructuring-bind (task-id &rest params) task
-                    (case task-id
-                      (:run-process
-                       `(uiop:run-program (format nil ,@params)))
-                      (:concat-static
-                       `(concat-files ,(asdf:system-relative-pathname
-                                        (intern (string package-sym) "KEYWORD")
-                                        (rest (assoc :output-to params)))
-                                      ,@(mapcar (lambda (p)
-                                                  (asdf:system-relative-pathname
-                                                   (intern (string package-sym) "KEYWORD") p))
-                                                (rest (assoc :paths params))))))))))
+  (cons 'progn
+        (loop :for task :in tasks
+              :collect (destructuring-bind (task-id &rest params) task
+                         (case task-id
+                           (:run-process
+                            `(uiop:run-program (format nil ,@params)))
+                           (:concat-static
+                            `(concat-files ,(asdf:system-relative-pathname
+                                             (intern (string package-sym) "KEYWORD")
+                                             (rest (assoc :output-to params)))
+                                           ,@(mapcar (lambda (p)
+                                                       (asdf:system-relative-pathname
+                                                        (intern (string package-sym) "KEYWORD") p))
+                                                     (rest (assoc :paths params))))))))))
 
 (provide-browser-script
  :portal.demo1
@@ -428,6 +368,100 @@
   (:paths "./ui-browser/node_modules/fomantic-ui/dist/semantic.css")
   (:output-to . "./ui-browser/build/vendor.css"))
  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(defpsmacro sub-view (symbol state)
+  (list symbol :form state))
+
+(defpsmacro pcl (&rest items)
+  `(chain console (log ,@items)))
+
+(defpsmacro undefp (item)
+  `(= "undefined" (typeof ,item)))
+
+;; React stuff
+
+(defpsmacro define-fetch ()
+  '(defun transact (portal branch input next-success)
+    (chain j-query
+     (ajax (create
+	    url "./contact/"
+	    type "POST"
+	    data-type "json"
+	    content-type "application/json; charset=utf-8"
+            async false
+	    data (chain -j-s-o-n (stringify (create portal portal branch branch input input)))
+	    success next-success
+	    error (lambda (data err) (chain console (log 11 data err))))))))
+
+(defpsmacro define-component-view ()
+  '(progn
+    (paren6:defclass6 (-seed-view (@ -react -component))
+     (defun constructor (props)
+       (let ((self this))
+         (if (undefp (@ props data))
+             (transact "PORTAL.DEMO1" "VIEW"
+                       (create interface-spec (list "browser" "react"))
+                       (lambda (data)
+                         (pcl :dt data)
+                         (setf (@ self state) (create data data))))
+             (setf (@ self state)
+                   (create data (@ props data))))
+         (pcl :load)))
+
+     (defun manifest (item)
+       (let ((component (getprop components (@ item mt react-component))))
+         ;; (pcl :abc item (@ item mt) (@ item mt react-component) component)
+         (if (undefp component)
+             (if (and (= "ar" (@ item ty))
+                      (stringp (@ item ct)))
+                 (let ((class-name (chain item mt classes (join " "))))
+                   (panic:jsl (:h1 :class-name class-name (@ item ct))))
+                 "abc")
+             (chain -react (create-element component (create data item))))))
+     
+     (defun layout-stacked (self elements meta)
+       (panic:jsl (:-c-container
+                   (chain elements (map (lambda (item index)
+                                          (let ((lspec (getprop (@ meta specs) index)))
+                                            (panic:jsl (:div :key (+ "view-tier-" index)
+                                                             (chain self (manifest item))
+                                                             )))))))))
+     
+     (defun layout-columnar (self elements meta)
+       (panic:jsl (:-c-container
+                   (:-c-row (chain elements (map (lambda (item index)
+                                                   (let ((lspec (getprop (@ meta specs) index))
+                                                         (class-name (when (not (undefp (@ item mt type)))
+                                                                       (chain item mt type (join " ")))))
+                                                     (panic:jsl (:-c-col :md (@ lspec width)
+                                                                         :class-name (if (undefp class-name)
+                                                                                         "" class-name)
+                                                                         :key (+ "view-column-" index)
+                                                                         (chain self (manifest item))
+                                                                         ))))))))))
+
+     (defun render ()
+       (let* ((self this)
+              (content (and (@ this state) (@ this state data) (@ this state data ct)))
+              (meta (and (@ this state) (@ this state data) (@ this state data mt)))
+              (builder (getprop self (@ meta builder))))
+         (pcl :cl self content meta)
+         (if (undefp builder) "abc"
+             (funcall builder self content meta)))))
+    (setf (@ components -seed-view) -seed-view)))
 
 ;; (defvar d3-effects
 ;;   (create text-label
