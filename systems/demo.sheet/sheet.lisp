@@ -4,6 +4,7 @@
 (in-package #:demo.sheet)
 (defvar *profile* nil)
 (defvar *graph-nodes* nil)
+(defvar *esgraph-nodes* nil)
 (defvar *active-graph-item* nil)
 (defvar *input* nil)
 
@@ -242,6 +243,43 @@
                (:type :field :text :pair :block :labeled))
          (meta (:dialog . "")
                (:type :field :text :pair :block :labeled)))))
+:esgraph-node-template
+(quote (((meta (:title . "Untitled node")
+               (:type :field :text :pair :block :labeled))
+         (meta (:code . "")
+               (:type :code-area :lang-apl)))))
+:esgraph-link-template
+(quote (((meta (:title . "Untitled link")
+               (:type :field :text :pair :block :labeled)))))
+:esgraph-node-indices
+'(0 1 2)
+:esgraph
+(setf *esgraph-nodes*
+        (seed.generate::build-directed-graph
+         (((meta (:title . "Untitled node 1")
+            (:type :field :text :pair :block :labeled))
+           (meta (:code . "myNS←baseManifest myNS")
+            (:type :code-area :lang-apl)))
+          (((meta (:title . "To node 2")
+             (:type :field :text :pair :block :labeled)))
+           1)
+          (((meta (:title . "To node 2 second")
+             (:type :field :text :pair :block :labeled)))
+           1))
+         (((meta (:title . "Untitled node 2")
+            (:type :field :text :pair :block :labeled))
+           (meta (:code . "myNS←reduceRadiiLogical myNS")
+            (:type :code-area :lang-apl)))
+          (((meta (:title . "To node 3")
+             (:type :field :text :pair :block :labeled)))
+           2))
+         (((meta (:title . "Untitled node 3")
+            (:type :field :text :pair :block :labeled))
+           (meta (:code . "myNS←reduceSlotConductorsWhole myNS")
+            (:type :code-area :lang-apl)))
+          (((meta (:title . "Back to start")
+             (:type :field :text :pair :block :labeled)))
+           0))))
 :table
 (setf *input*
       '(meta (((meta nil (:name . :to-solve) (:title . "? Flow Rate") (:type :trigger))

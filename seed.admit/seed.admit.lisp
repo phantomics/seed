@@ -9,13 +9,20 @@
 ;;        (present-login-interface (cons '("message" . "Wrong username or password.")
 ;; 				      original-params)))
 
-(defmacro authorize (list env-api &body clauses)
+(defmacro register (&rest args)
+  (cons 'read-keys-from-file args))
+
+(defun read-keys-from-file (file-path session)
+  (with-open-file (input file-path)
+    (let ((in-form (read input)))
+      (print in-form)
+      (loop :for item :in in-form :do (setf (gethash (first item) session) (rest item))))))
+
+(defmacro authorize (condition &body clauses)
   (destructuring-bind (confirmed denied) clauses
-    (let ((session (gensym)) (user-info (gensym)))
-      `(let ((,session (funcall ,env-api)))
-         (print (list :ss ,session))
-         (let ((,user-info (gethash :remote-user ,session)))
-           (if ,user-info ,confirmed ,denied))))))
+    (let ((session (gensym)))
+      `(let ((,session ,condition))
+         (if ,session ,confirmed ,denied)))))
 
 ;; (defmacro defauth (to-authorize to-admit session-sym)
 ;;   (let ((pass-hash (gensym)) (account (gensym)))
@@ -34,7 +41,7 @@
 ;;            )))
 
 ;; (defmacro auth-setup (session-symbol getter)
-;;   (let ((user (gensym)))
+;;   (let ((user (gensym "USER")))
 ;;     `(hermetic:setup :user-p     (lambda (,user) (funcall ,getter ,user))
 ;;                      :user-pass  (lambda (,user) (funcall ,getter ,user :pass))
 ;;                      :user-roles (lambda (,user) (funcall ,getter ,user :roles))

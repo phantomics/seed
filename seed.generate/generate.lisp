@@ -41,7 +41,8 @@
                    :collect (list value (case key (:package (intern (string name) "KEYWORD"))
                                               (:system `(getf ,si-sym ,(intern (string name) "KEYWORD")))
                                               (:portal-name name))))
-         (setf (getf ,psym :branches) ,(cons 'list branches))))))
+         (setf (getf ,psym :branches) ,(cons 'list branches)
+               (getf ,psym :sessions) (make-hash-table :test #'eq))))))
 
 (defun in-system-context (spec system-name)
   (append (list (first spec) (second spec))
@@ -758,8 +759,7 @@
                                                       body (chain -j-s-o-n
                                                                   (stringify
                                                                    (create
-                                                                    portal (lisp (string-upcase
-                                                                                  system-id))
+                                                                    portal (lisp (string-upcase system-id))
                                                                     BRANCH "SYSTEMS"
                                                                     input (ps:lisp (getf form :ct)))))
                                                       headers (create "Content-type"
@@ -800,14 +800,15 @@
                                                                           (cons ix path)
                                                                           strout)))))))))
                ((list :form :branch-navigation)
-                (print (list :con contents))
+                ;; (print (list :con contents))
                 (cl-who:with-html-output (strout)
                   (:div :path path-string
                         (loop :for c :in contents :for ix :from 0
                               :do (if c (htm (:h4 (str (getf c :ct))))
-                                      (htm (:hr)))))))
+                                      (htm (:hr :class "divider")))))))
                ((list :form :elem)
                 (let ((branch (second (assoc :access (getf form :mt))))
+                      (name (rest (assoc :name (getf form :mt))))
                       (controls (rest (assoc :controls (getf form :mt))))
                       (item-classes (apply #'concatenate 'string
                                            (loop :for y :in (rest (assoc :type (getf form :mt)))
@@ -830,7 +831,7 @@
                                                                                            "submit")))))))))
                           (if (not (assoc :header controls))
                               nil (htm (:div :class "ui medium header"
-                                             (:h2 :class "branch-name" (str (lisp->camel-case branch)))
+                                             (:h2 :class "branch-name" (str (lisp->camel-case name)))
                                              (:div :class "controls-holder"
                                                    (loop :for c :in (rest (assoc :header controls))
                                                          :do (branch-spec-form
@@ -848,6 +849,7 @@
                                                               :branch branch :name iface-name))))))))))
                ((list :form :text)
                 (let ((branch (second (assoc :access (getf form :mt))))
+                      (name (rest (assoc :name (getf form :mt))))
                       (controls (rest (assoc :controls (getf form :mt))))
                       (item-classes (apply #'concatenate 'string
                                            (loop :for y :in (rest (assoc :type (getf form :mt)))
@@ -856,7 +858,7 @@
                     (:div :class "container column-inner"
                           (if (not (assoc :header controls))
                               nil (htm (:div :class "ui medium header"
-                                             (:h2 :class "branch-name" (str (lisp->camel-case branch)))
+                                             (:h2 :class "branch-name" (str (lisp->camel-case name)))
                                              (:div :class "controls-holder"
                                                    (loop :for c :in (rest (assoc :header controls))
                                                          :do (branch-spec-codemirror-editor
@@ -873,6 +875,7 @@
                                                                               :branch branch))))))))))
                ((list :form :tree)
                 (let ((branch (second (assoc :access (getf form :mt))))
+                      (name (rest (assoc :name (getf form :mt))))
                       (controls (rest (assoc :controls (getf form :mt))))
                       (item-classes (apply #'concatenate 'string
                                            (loop :for y :in (rest (assoc :type (getf form :mt)))
@@ -881,7 +884,7 @@
                     (:div :class "container column-inner"
                           (if (not (assoc :header controls))
                               nil (htm (:div :class "ui medium header"
-                                             (:h2 :class "branch-name" (str (lisp->camel-case branch)))
+                                             (:h2 :class "branch-name" (str (lisp->camel-case name)))
                                              (:div :class "controls-holder"
                                                    (loop :for c :in (rest (assoc :header controls))
                                                          :do (branch-spec-cvdatagrid-tree
@@ -898,6 +901,7 @@
                                                                               :branch branch))))))))))
                ((list :form :cells)
                 (let ((branch (second (assoc :access (getf form :mt))))
+                      (name (rest (assoc :name (getf form :mt))))
                       (controls (rest (assoc :controls (getf form :mt))))
                       (item-classes (apply #'concatenate 'string
                                            (loop :for y :in (rest (assoc :type (getf form :mt)))
@@ -906,7 +910,7 @@
                     (:div :class "container column-inner"
                           (if (not (assoc :header controls))
                               nil (htm (:div :class "ui medium header"
-                                             (:h2 :class "branch-name" (str (lisp->camel-case branch)))
+                                             (:h2 :class "branch-name" (str (lisp->camel-case name)))
                                              (:div :class "controls-holder"
                                                    (loop :for c :in (rest (assoc :header controls))
                                                          :do (branch-spec-cvdatagrid-sheet
@@ -957,7 +961,6 @@
                           :hx-post "/render/" :hx-vals (json-convert-to (list :system :demo.sheet
                                                                               :branch branch))))))
                ((list* :group :linear _)
-                (print :eee)
                 (let ((widths (if (eq :sidebar (first members))
                                   '("two" "fourteen") '("seven" "seven"))))
                   (cl-who:with-html-output (strout)
@@ -974,7 +977,6 @@
                                                          :collect (format nil "~a " y)))))
                                       (htm (:div :class (format nil "~a ~a"
                                                                 (string-downcase item-classes)
-                                                                ;; col-class
                                                                 (string-downcase m))
                                                  (render-html-interface c system-id nil
                                                                         (cons ix path)
@@ -1001,10 +1003,9 @@
                                                             :collect (format nil "~a " y)))))
                                          (htm (:div :class (format nil "~acolumn"
                                                                    (string-downcase item-classes))
-                                                    (render-html-interface c system-id nil
-                                                                           (cons ix path)
+                                                    (render-html-interface c system-id nil (cons ix path)
                                                                            strout)))))))))))
-               ((list :group :stack)
+               ((list* :group :stack _)
                 (cl-who:with-html-output (strout)
                   (:div :path path-string
                         (loop :for c :in contents :for m :in members :for ix :from 0
@@ -1013,8 +1014,7 @@
                                                  (loop :for y :in (rest (assoc :type (getf c :mt)))
                                                        :collect (format nil "~a " (string-downcase y))))))
                                     (htm (:div :class item-classes
-                                               (render-html-interface c system-id nil
-                                                                      (cons ix path)
+                                               (render-html-interface c system-id nil (cons ix path)
                                                                       strout))))))))))))
     (if stream nil (get-output-stream-string strout))))
 
@@ -1038,6 +1038,7 @@
             :branch branch))
 
 (defun htrender (form &key branch input-processor form-parameters params)
+  (print (list :fo form))
   (if (listp (first form))
       (cons :div (loop :for f :in form :collect (htrender f :input-processor input-processor
                                                             :form-parameters form-parameters
@@ -1050,41 +1051,44 @@
               (system (getf params :system))
               (branch (getf params :branch)))
           (labels ((build-elem (class item &optional multiple)
-                     `(:div :class ,class
-                            ,@(if (not title) nil `((:span :class "title" ,title)))
+                     `(:div :class ,class ,@(if (not title) nil `((:span :class "title" ,title)))
                             ,@(funcall (if (and (listp item) (not multiple))
                                            input-processor #'identity)
                                        (if (and multiple (listp item))
                                            item (list item))))))
+            ;; (print (list :sys system item))
             (case (first type)
               (:set (case (second type)
                       (:form
-                       `(:form :hx-post "/render/"
-                               ;; :hx-trigger "reload consume, submit"
-                               :hx-trigger "reload consume, submit"
-                               :x-data ,(psl (create this-form $el action "formSubmit"))
-                               :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
-                                                        (push-form $el))))
-                               :hx-vals ,(json-convert-to
-                                          (list :system (string-upcase system)
-                                                :branch (string-upcase branch)
-                                                :action :form-submit))
-                               ,@(funcall (case (third type)
-                                            (:tabular
-                                             (lambda (form)
-                                               (list
-                                                (cons :table
-                                                      (loop :for row :in item
-                                                            :collect
-                                                            (cons :tr (loop :for cell :in row
-                                                                            :collect (list :td (htrender
-                                                                                                cell
-                                                                                                :params
-                                                                                                params)))))))))
-                                            (t (lambda (form)
-                                                 (loop :for item :in form
-                                                       :collect (htrender item :params params)))))
-                                          item)))
+                       (if (not system)
+                           `(:div ,@(loop :for sub-item :in item
+                                          :append (let ((output (htrender sub-item :params params)))
+                                                    (if (not output) nil (list output)))))
+                           `(:form :hx-post "/render/"
+                                   :hx-trigger "reload consume, submit"
+                                   :x-data ,(psl (create this-form $el action "formSubmit"))
+                                   :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
+                                                            (push-form $el))))
+                                   :hx-vals ,(json-convert-to
+                                              (list :system (string-upcase system)
+                                                    :branch (string-upcase branch)
+                                                    :action :form-submit))
+                                   ,@(funcall (case (third type)
+                                                (:tabular
+                                                 (lambda (form)
+                                                   (list
+                                                    (cons :table
+                                                          (loop :for row :in item
+                                                                :collect
+                                                                (cons :tr (loop :for cell :in row
+                                                                                :collect
+                                                                                (list :td (htrender
+                                                                                           cell :params
+                                                                                           params)))))))))
+                                                (t (lambda (form)
+                                                     (loop :for item :in form
+                                                           :collect (htrender item :params params)))))
+                                              item))))
                       ;; (:form (htrender
                       ;;         item :form-parameters :params params
                       ;;         (list :hx-post "/render/"
@@ -1104,14 +1108,27 @@
                                                                             :test #'eq))
                                                                name (first item)))))
                  (if (member :pair (rest type) :test #'eq)
-                     `(:div :class ,(format nil "ui ~a~ainput"
-                                            (if labeled "labeled " "")
+                     `(:div :class ,(format nil "ui ~a~ainput" (if labeled "labeled " "")
                                             (if is-block "fluid " ""))
                             ,@(if labeled `((:div :class "ui label" ,name)))
                             (:input :type "text" :name ,name :value ,(rest item)))
                      (build-elem "ui input" (list :input :type "text"
                                                          :name (symbol-munger:lisp->camel-case name)
                                                          :value item)))))
+              (:code-area
+               (let ((labeled  (member :labeled (rest type) :test #'eq))
+                     (is-block (member :block   (rest type) :test #'eq))
+                     (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
+                                                                            :test #'eq))
+                                                               name (first item)))))
+                 `(:div ;; :class (getf props :item-classes)
+                   :id "abc"
+                   :x-init ,(psl (progn (setf (@ window codemirror) nil)
+                                       (setf (getprop (@ window seed-elements) (lisp branch)) $el)
+                                       (setf (getprop (@ window seed-data) (lisp "abc"))
+                                             (create-codemirror
+                                              (chain document (get-element-by-id (lisp "abc")))
+                                              (lisp (rest item)))))))))
               (:select (case (second type)
                          (:dropdown
                           (let ((title (rest (assoc :title props)))
@@ -1375,7 +1392,6 @@
                                                       ;;        ,(inline-list (caadr node))
                                                       ;;        ,(cadadr node))
                                                       )))))
-         (print (list :no ,nodes-out))
          (loop :for ,n :in ,nodes-out
                :do (loop :for ,link :in (rest ,n)
                          :do (rplacd ,link (list (nth (second ,link) ,nodes-out)))))
@@ -1610,148 +1626,513 @@
 ;;                                                     form (second form)))
 ;;                                  (nth point root)))))))))
 
-(defun svrender-graph (gmodel &key x-offset y-offset point (path-string "")
-                                (height 400) (width 400))
-  (print (list :po point))
+(defvar *giface-output-stream*)
+
+(defun spec-graph-interface (&key package file-name graph-key holder-id associated-node-ids
+                               node-template-key link-template-key node-indices-key)
+  (let ((el-width) (el-height) (formatted)
+        (graph-base) (graph-data) (orig-data) (index 0) (sub-index) (nodes-order)
+        (node-template (second (from-system-file package file-name node-template-key)))
+        (link-template (second (from-system-file package file-name link-template-key)))
+        (indices-form (from-system-file package file-name node-indices-key)))
+    (lambda (input)
+      ;; (print (list :in2 input index))
+      (unless graph-base
+        (setf graph-base  (from-system-file package file-name graph-key)
+              orig-data   (third graph-base)
+              nodes-order (let* ((indices (second indices-form)))
+                            ;; TODO: Make this just (apply #'vector ...)
+                            (make-array (length indices) :initial-contents indices))
+              graph-data  (format-graph-spec-to-edit (copy-tree orig-data) nodes-order)
+              formatted   (copy-graph-spec graph-data)))
+      ;; (print (list :abcd orig-data graph-data formatted))
+      (if (and (assoc "action" input :test #'string=)
+               (string= "open" (rest (assoc "action" input :test #'string=))))
+          (let* ((path-str (make-string-input-stream
+                            (rest (assoc "path" input :test #'string=))))
+                 (path (loop :for c := (read path-str nil) :while c :collect c)))
+            ;; (print (list :pa path))
+            (if (not (second path)) (setf index (first path) sub-index nil)
+                (destructuring-bind (i si) path
+                  (setf index i sub-index si)))
+            ;; (print (list :nnn index))
+            ;; (close path-str)
+            (list :oob-reload associated-node-ids))
+          (let ((network-changed))
+            (when (and input (assoc "width" input :test #'string=))
+              (setf el-width  (rest (assoc "width"  input :test #'string=))
+                    el-height (rest (assoc "height" input :test #'string=))))
+
+            ;; (print (list :f1 formatted))
+            
+            (when (and input (assoc "path" input :test #'string=))
+              (let ((action (rest (assoc "action" input :test #'string=)))
+                    (inst (make-string-input-stream
+                           (rest (assoc "path" input :test #'string=)))))
+                (dgraph-interface
+                 graph-data formatted nodes-order
+                 :path (loop :for c := (read inst nil) :while c :collect c)
+                 :to-open (string= action "expand")
+                 :at-path (if (not (string= action "open"))
+                              nil (lambda (item)
+                                    ;; (setf (symbol-value
+                                    ;;        (intern "*ACTIVE-GRAPH-ITEM*" (string package)))
+                                    ;;       item)
+                                    )))
+                (setf network-changed t)))
+
+            (when (and (assoc :action input :test #'eq)
+                       (string= "formSubmit" (rest (assoc :action input :test #'eq))))
+              (meta-revise (if sub-index (first (nth sub-index
+                                                     (rest (nth index (rest formatted)))))
+                               (cdar (nth index (rest formatted))))
+                           input t)
+              (meta-revise (first (if sub-index
+                                      (nth sub-index (rest (nth index (rest orig-data))))
+                                      (nth index (rest orig-data))))
+                           input t)
+              (setf network-changed t)
+              
+              ;; (print (list :nod formatted graph-base
+              ;;              orig-data network-changed
+              ;;              ;; (first (nth sub-index (rest (nth index
+              ;;              ;;                                  (rest formatted)))))
+              ;;              ;; (nth index (rest formatted))
+              ;;              ))
+              
+              )
+
+            ;; (print :gg)
+            
+            (when (assoc "action" input :test #'string=)
+              (setf network-changed t)
+              (when (string= "addNode" (rest (assoc "action" input :test #'string=)))
+                ;; add newest node index to end of indices
+                (rplacd (last formatted)
+                        (list (list (cons (cons :index (length (second indices-form)))
+                                          (first node-template)))))
+                (rplacd (last (second indices-form))
+                        (list (length (second indices-form))))
+                (rplacd (last orig-data) (list node-template))
+                (setf nodes-order (let* ((indices (second indices-form)))
+                                    (make-array (length indices)
+                                                :initial-contents indices)))
+                ;; (print (list :an graph-base orig-data formatted indices-form))
+                )
+              (when (string= "addLink" (rest (assoc "action" input :test #'string=)))
+                (if sub-index (rplacd (nth sub-index (rest (nth index (rest orig-data))))
+                                      (cons link-template
+                                            (nthcdr (1+ sub-index)
+                                                    (rest (nth index (rest orig-data))))))
+                    (rplacd (last (rest (nth index (rest orig-data))))
+                            (list link-template)))
+                (if sub-index (rplacd (nth sub-index (rest (nth index (rest graph-data))))
+                                      (cons link-template
+                                            (nthcdr (1+ sub-index)
+                                                    (rest (nth index (rest graph-data))))))
+                    (rplacd (last (rest (nth index (rest graph-data))))
+                            (list link-template)))
+                (if sub-index (rplacd (nth sub-index (rest (nth index (rest formatted))))
+                                      (cons link-template
+                                            (nthcdr (1+ sub-index)
+                                                    (rest (nth index (rest formatted))))))
+                    (rplacd (last (rest (nth index (rest formatted))))
+                            (list link-template)))
+                ;; (print (list :al graph-base))
+                )
+              (when (string= "deleteItem" (rest (assoc "action" input :test #'string=)))
+                (if sub-index (rplaca (nth sub-index (rest (nth index orig-data)))
+                                      (nth (1+ sub-index)
+                                           (rest (nth index orig-data))))
+                    (rplaca (nth index orig-data) (nth (1+ index) orig-data)))
+                (if sub-index (rplaca (nth sub-index (rest (nth index formatted)))
+                                      (nth (1+ sub-index)
+                                           (rest (nth index formatted))))
+                    (rplaca (nth index formatted) (nth (1+ index) formatted))))
+              (when (string= "shiftNode" (rest (assoc "action" input :test #'string=)))
+                ;; add newest node index to end of indices
+                (setf network-changed nil)
+                ;; (print (list :bbb))
+                (let* ((index-str (make-string-input-stream
+                                   (rest (assoc "index" input :test #'string=))))
+                       (pos-str (make-string-input-stream
+                                 (rest (assoc "target" input :test #'string=))))
+                       (indices (loop :for c := (read index-str nil) :while c :collect c))
+                       (posx (loop :for c := (read pos-str nil) :while c :collect c))
+                       (index (or (second indices) (first indices)))
+                       (node-index (if (second indices) (first indices) nil))
+                       (position (or (second posx) (first posx)))
+                       (pos-parent (if (second posx) (first posx) nil)))
+                  
+                  (symbol-macrolet ((formatted2 (rest formatted))
+                                    (graph-data2 (rest graph-data)))
+                    ;; (print (list :ia index position input
+                    ;;              node-index pos-parent
+                    ;;              graph-data2 (rest orig-data)
+                    ;;              formatted2))
+
+                    (if node-index ;; links are being sorted
+                        (when (= node-index pos-parent)
+                          (let ((orig-link (nth index (rest (nth node-index graph-data2))))
+                                (orig-flink (nth index (rest (nth node-index (rest orig-data))))))
+
+                            ;; (print (list :oo orig-link
+                            ;;              (nth node-index (rest orig-data))))
+                            
+                            (if (zerop index) (setf (rest (nth node-index (rest orig-data)))
+                                                    (cddr (nth node-index (rest orig-data))))
+                                (rplacd (nthcdr (1- index)
+                                                (rest (nth node-index (rest orig-data))))
+                                        (rest (nthcdr index (rest (nth node-index
+                                                                       (rest orig-data)))))))
+
+                            (if (zerop position) (setf (rest (nth node-index (rest orig-data)))
+                                                       (cons orig-flink
+                                                             (rest (nth node-index
+                                                                        (rest orig-data)))))
+                                (rplacd (nthcdr (1- position) (rest (nth node-index (rest orig-data))))
+                                        (cons orig-flink
+                                              (nthcdr position
+                                                      (rest (nth node-index (rest orig-data)))))))
+
+                            ;; (print (list :tt orig-data))
+                            
+                            (if (zerop index) (setf (cddr (nth node-index graph-data2))
+                                                    (cdddr (nth node-index graph-data2)))
+                                (rplacd (nthcdr (1- index)
+                                                (cddr (nth node-index graph-data2)))
+                                        (rest (nthcdr index (cddr (nth node-index
+                                                                       graph-data2))))))
+                            
+                            (if (zerop position) (setf (cddr (nth node-index graph-data2))
+                                                       (cons orig-link
+                                                             (cddr (nth node-index
+                                                                        graph-data2))))
+                                (rplacd (nthcdr (1- position)
+                                                (cddr (nth node-index graph-data2)))
+                                        (cons orig-link
+                                              (rest (nthcdr position
+                                                            (cddr (nth node-index
+                                                                       graph-data2)))))))
+                            
+                            ;; (if (zerop position) (setf graph-data2 (cons orig-link graph-data2))
+                            ;;     (rplacd (nthcdr (1- position) graph-data2)
+                            ;;             (cons orig-link (nthcdr position graph-data2))))
+
+                            ;; (print (list :xyz orig-data graph-data formatted2))
+                            
+                            (labels ((lsort (form ix subix)
+                                       ;; (print (list :fr form))
+                                       (when (and (eq :index (caaar form))
+                                                  (= ix (cdaar form)))
+                                         (let ((olink (nth subix (rest form))))
+                                           ;; (print (list :ol olink))
+                                           (if (zerop index) (setf (rest form) (cddr form))
+                                               (rplacd (nthcdr (1- subix) (rest form))
+                                                       (rest (nthcdr subix (rest form)))))
+                                           (if (zerop position)
+                                               (setf (rest form)
+                                                     (cons olink (rest form)))
+                                               (rplacd (nthcdr (1- position) (rest form))
+                                                       (cons olink (nthcdr position
+                                                                           (rest form)))))))
+                                       (loop :for item :in (rest form)
+                                             :when (and (listp item) (second item)
+                                                        (listp (second item)))
+                                               :do ;; (print (list :ri
+                                                   ;;              form
+                                                   ;;              (rest item) (rest form)))
+                                                   (lsort (rest item) ix subix))))
+                              (loop :for item :in (rest formatted)
+                                    :do (lsort item node-index index))
+                              )))
+                        ;; nodes are being sorted
+                        (let ((original (nth index (second indices-form)))
+                              (orig-node (nth index formatted2))
+                              (orig-gnode (nth index graph-data2)))
+
+                          (if (zerop index) (setf formatted2 (rest formatted2))
+                              (rplacd (nthcdr (1- index) formatted2)
+                                      (rest (nthcdr index formatted2))))
+
+                          (if (zerop position) (setf formatted2 (cons orig-node formatted2))
+                              (rplacd (nthcdr (1- position) formatted2)
+                                      (cons orig-node (nthcdr position formatted2))))
+
+                          (if (zerop index) (setf graph-data2 (rest graph-data2))
+                              (rplacd (nthcdr (1- index) graph-data2)
+                                      (rest (nthcdr index graph-data2))))
+
+                          (if (zerop position) (setf graph-data2 (cons orig-node graph-data2))
+                              (rplacd (nthcdr (1- position) graph-data2)
+                                      (cons orig-node (nthcdr position graph-data2))))
+
+                          (if (zerop index) (setf graph-data2 (rest orig-data))
+                              (rplacd (nthcdr (1- index) orig-data)
+                                      (rest (nthcdr index orig-data))))
+
+                          (if (zerop position) (setf graph-data2 (cons orig-gnode orig-data))
+                              (rplacd (nthcdr (1- position) orig-data)
+                                      (cons orig-gnode (nthcdr position orig-data))))
+
+                          ;; (print (list :odd orig-data))
+
+                          (if (zerop index) (setf (second indices-form) (cdadr indices-form))
+                              (rplacd (nthcdr (1- index) (second indices-form))
+                                      (rest (nthcdr index (second indices-form)))))
+
+                          (if (zerop position)
+                              (setf (second indices-form) (cons original (second indices-form)))
+                              (rplacd (nthcdr (1- position) (second indices-form))
+                                      (cons original (nthcdr position
+                                                             (second indices-form)))))
+                          
+                          (setf nodes-order (let* ((indices (second indices-form)))
+                                              (make-array (length indices)
+                                                          :initial-contents indices))
+                                (from-system-file package file-name node-indices-key)
+                                indices-form))))))
+
+              (when (string= "connect" (rest (assoc "action" input :test #'string=)))
+                (let ((this-index (read-from-string
+                                   (rest (assoc "index" input :test #'string=)))))
+                  ;; (print (list :ti this-index orig-data graph-data))
+                  (labels ((relink (form new ix subix)
+                             (if (and (eq :index (caaar form))
+                                      (= ix (cdaar form)))
+                                 (setf (second (nth (+ subix (if (eq :closed (second form)) 1 0))
+                                                    (rest form)))
+                                       new)
+                                 (loop :for item :in (rest form)
+                                       :when (and (listp item) (second item)
+                                                  (listp (second item)))
+                                         :do (relink (second item) new ix subix)))))
+
+                    ;; (print (list :oo (second (nth sub-index
+                    ;;                               (rest (nth index (rest orig-data)))))
+                    ;;              sub-index
+                    ;;              (nth sub-index (rest (nth index (rest graph-data))))))
+
+                    (rplacd (nth sub-index (rest (nth index (rest orig-data))))
+                            (list (aref nodes-order this-index)))
+                    (rplacd (nth (1+ sub-index)
+                                 (rest (nth index (rest graph-data))))
+                            (list (aref nodes-order this-index)))
+                    
+                    (loop :for item :in (rest formatted)
+                          :do (relink item (nth this-index (rest graph-data))
+                                      index sub-index))))))
+
+            (when network-changed
+              ;; (print (list :ch "CHANGED" graph-base))
+              (setf (from-system-file package file-name graph-key) graph-base)
+              (instantiate-priority-macro-reader (asdf:load-system package)))
+            
+            ;; (print (list :af (assoc :face input :test #'eq)))
+            ;; (print (list :ew el-width))
+            ;; the output-stream is created in the seed package - best elsewhere?
+            (if (and (assoc :face input :test #'eq)
+                     (string= "graphNode" (rest (assoc :face input :test #'eq))))
+                (let ((out (make-string-output-stream)))
+                  ;; (print (list :gd graph-data input network-changed))
+                  (spinneret:interpret-html-tree
+                   ;; enclose the contents in a (meta) form if this is the initial load;
+                   ;; i.e. the network has not changed
+                   (funcall
+                    (if (not network-changed)
+                        #'identity
+                        (lambda (form)
+                          (append (list (first form)
+                                        `(:div :style "display: none"
+                                               :x-init
+                                               ,(psl (chain
+                                                      htmx
+                                                      (trigger
+                                                       (getprop
+                                                        (@ window seed-elements)
+                                                        (lisp holder-id))
+                                                       "reload")))))
+                                  (cons '(meta (:stuff . "Test")
+                                          (:type :field :text :pair :block :labeled))
+                                        (rest form)))))
+                    (htrender (funcall (if network-changed
+                                           #'list (lambda (items)
+                                                    `(meta ,items (:type :set :form))))
+                                       (loop :for item
+                                               :in (funcall
+                                                    ;; nodes have an (index . N)
+                                                    ;; form to omit, links don't
+                                                    (if sub-index #'identity #'rest)
+                                                    (first (if sub-index
+                                                               (nth sub-index
+                                                                    (rest
+                                                                     (nth index
+                                                                          (rest formatted))))
+                                                               (nth index (rest formatted)))))
+                                             :collect item))
+                              :params (list :system package :branch :graph)))
+                   :stream out)
+                  (get-output-stream-string out))
+                (if (or network-changed (assoc :system input))
+                    (progn (setf *giface-output-stream* (make-string-output-stream))
+                           ;; (print (list :nc input))
+                           ;; (print (list :form formatted))
+                           (eval `(cl-who:with-html-output (*giface-output-stream*)
+                                    ,(seed.generate::svrender-graph
+                                      (rest formatted)
+                                      :width el-width :height el-height
+                                      :point (list index sub-index)
+                                      :id-string holder-id :branch-name graph-key)))
+                           (let ((output (get-output-stream-string *giface-output-stream*)))
+                             ;; (print (list :out output))
+                             ;; (close output-stream)
+                             output))
+                    (list :oob-reload associated-node-ids))))))))
+
+(defun svrender-graph (gmodel &key x-offset y-offset point branch-name id-string
+                                (path-string "") (height 400) (width 400))
   (multiple-value-bind (nodes-markup y-offset)
       (svrender-layer gmodel :x-offset x-offset :y-offset y-offset :point point
                              :path-string path-string :height height :width width)
-    `(:svg
-      :class "svg-visualizer" :width ,width :height ,(max height y-offset)
-      :x-init (psl (enable-drag $el))
-      :x-data (psl (create open-node     (lambda (path)
-                                           (fetch-contact
-                                            "DEMO.SHEET" "GRAPH"
-                                            (create action "open" path path)
-                                            (lambda (data)
-                                              (chain htmx (trigger "#branch-graphOverview" "reload")))))
-                           expand-node   (lambda (path)
-                                           (fetch-contact
-                                            "DEMO.SHEET" "GRAPH"
-                                            (create action "expand" path path)
-                                            (lambda (data)
-                                              (chain htmx (trigger "#branch-graphOverview" "reload")))))
-                           contract-node (lambda (path)
-                                           (fetch-contact
-                                            "DEMO.SHEET" "GRAPH"
-                                            (create action "contract" path path)
-                                            (lambda (data)
-                                              (chain htmx (trigger "#branch-graphOverview" "reload")))))
-                           connect-node  (lambda (index)
-                                           (fetch-contact
-                                            "DEMO.SHEET" "GRAPH"
-                                            (create action "connect" index index)
-                                            (lambda (data)
-                                              (chain htmx (trigger "#branch-graphOverview" "reload")))))
-                           enable-drag   (lambda (svg)
-                                           (let ((selected-element null) (dragging-link false)
-                                                 (drag-node null) (dragging-index nil))
-                                             (defun shift-node (index target)
-                                               (fetch-contact
-                                                "DEMO.SHEET" "GRAPH"
-                                                (create action "shiftNode" index index target target)
-                                                (lambda (data)
-                                                  (chain htmx (trigger "#branch-graphOverview" "reload")))))
-                                             
-                                             (defun get-mouse-position (evt)
-                                               (let ((ctm (chain svg (get-screen-c-t-m))))
-                                                 (create x (/ (- (@ evt client-x) (@ ctm e)) (@ ctm a))
-                                                         y (/ (- (@ evt client-y) (@ ctm f)) (@ ctm d)))))
-                                             
-                                             (chain svg (add-event-listener
-                                                         "mousedown"
-                                                         (lambda (event)
-                                                           (when (chain event target class-list
-                                                                        (contains "draggable"))
-                                                             (chain $el class-list (add "drag"))
-
-                                                             (if (chain event target class-list
-                                                                        (contains "for-node"))
-                                                                 (chain $el class-list (add "for-node"))
-                                                                 (progn (chain $el class-list
-                                                                               (add "for-link"))
-                                                                        (setf dragging-link true)))
-                                                             
-                                                             (setf selected-element
-                                                                   (chain event target parent-node
-                                                                          (clone-node true))
-                                                                   drag-node
-                                                                   (@ event target parent-node
-                                                                            parent-node parent-node)
-                                                                   dragging-index
-                                                                   (chain event target
-                                                                          (get-attribute "index")))
-                                                             
-                                                             (chain drag-node class-list (add "dragging"))
-                                                             (chain selected-element class-list
-                                                                    (add "mouse-transparent"))
-                                                             (chain svg (append-child selected-element))))))
-                                             
-                                             (chain svg (add-event-listener
-                                                         "mousemove"
-                                                         (lambda (event)
-                                                           ;; (chain console (log :aa selected-element))
-                                                           ;; (chain console (log :se drag-var))
-                                                           (when (/= selected-element null)
-                                                             (chain event (prevent-default))
-                                                             (let ((coord (get-mouse-position event)))
-                                                               ;; (chain console (log :sel selected-element))
-                                                               (chain selected-element
-                                                                      (set-attribute-n-s
-                                                                       null "transform"
-                                                                       (+ "translate(" (@ coord x)
-                                                                          "," (@ coord y) ")"))))))))
-                                             
-                                             (chain svg (add-event-listener
-                                                         "mouseup"
-                                                         (lambda (event)
-                                                           (when (/= selected-element null)
+    (let ((branch-string (string branch-name))
+          (branch-id (format nil "#branch-~a" id-string)))
+      ;; (print (list :hi id-string point branch-string))
+      `(:svg
+        :class "svg-visualizer" :width ,width :height ,(max height y-offset)
+        :x-init (psl (enable-drag $el))
+        :x-data (psl (create open-node     (lambda (path)
+                                             (fetch-contact
+                                              "DEMO.SHEET" ,branch-string
+                                              (create action "open" path path)
+                                              (lambda (data)
+                                                (chain htmx (trigger ,branch-id "reload")))))
+                             expand-node   (lambda (path)
+                                             (fetch-contact
+                                              "DEMO.SHEET" ,branch-string
+                                              (create action "expand" path path)
+                                              (lambda (data)
+                                                (chain htmx (trigger ,branch-id "reload")))))
+                             contract-node (lambda (path)
+                                             (fetch-contact
+                                              "DEMO.SHEET" ,branch-string
+                                              (create action "contract" path path)
+                                              (lambda (data)
+                                                (chain htmx (trigger ,branch-id"reload")))))
+                             connect-node  (lambda (index)
+                                             (fetch-contact
+                                              "DEMO.SHEET" ,branch-string
+                                              (create action "connect" index index)
+                                              (lambda (data)
+                                                (chain htmx (trigger ,branch-id "reload")))))
+                             enable-drag   (lambda (svg)
+                                             (let ((selected-element null) (dragging-link false)
+                                                   (drag-node null) (dragging-index nil))
+                                               (defun shift-node (index target)
+                                                 (fetch-contact
+                                                  "DEMO.SHEET" ,branch-string
+                                                  (create action "shiftNode" index index target target)
+                                                  (lambda (data)
+                                                    (chain htmx (trigger ,branch-id "reload")))))
+                                               
+                                               (defun get-mouse-position (evt)
+                                                 (let ((ctm (chain svg (get-screen-c-t-m))))
+                                                   (create x (/ (- (@ evt client-x) (@ ctm e)) (@ ctm a))
+                                                           y (/ (- (@ evt client-y) (@ ctm f)) (@ ctm d)))))
+                                               
+                                               (chain svg (add-event-listener
+                                                           "mousedown"
+                                                           (lambda (event)
                                                              (when (chain event target class-list
-                                                                          (contains "drag-target"))
+                                                                          (contains "draggable"))
+                                                               (chain $el class-list (add "drag"))
 
-                                                               (if (and (not dragging-link)
-                                                                        (chain event target class-list
-                                                                          (contains "for-node")))
-                                                                   (shift-node dragging-index
-                                                                               (chain event target
-                                                                                      (get-attribute
-                                                                                       "index")))
-                                                                   (if (and dragging-link
-                                                                            (chain event target class-list
-                                                                                   (contains "for-link")))
-                                                                       (shift-node dragging-index
-                                                                                   (chain event target
-                                                                                          (get-attribute
-                                                                                       "index")))))
-                                                               ;; (chain console
-                                                               ;;        (log :ii dragging-index
-                                                               ;;             (chain event target
-                                                               ;;                    (get-attribute
-                                                               ;;                     "index")
-                                                               ;;                    )))
-                                                               )
-                                                             (chain $el class-list (remove "drag"))
-                                                             (chain $el class-list (remove "for-node"))
-                                                             (chain $el class-list (remove "for-link"))
-                                                             (setf dragging-link false)
-                                                             (chain selected-element (remove))
-                                                             (chain drag-node class-list (remove "dragging"))
-                                                             (setf selected-element null
-                                                                   drag-node null)))))
-                                             (chain svg (add-event-listener
-                                                         "mouseleave"
-                                                         (lambda ()
-                                                           (when (/= selected-element null)
-                                                             (chain $el class-list (remove "drag"))
-                                                             (chain $el class-list (remove "for-node"))
-                                                             (chain $el class-list (remove "for-link"))
-                                                             (setf dragging-link false)
-                                                             (chain selected-element (remove))
-                                                             (chain drag-node class-list (remove "dragging"))
-                                                             (setf selected-element null
-                                                                   drag-node null)))))))
-                           ))
-           ,@nodes-markup)))
+                                                               (if (chain event target class-list
+                                                                          (contains "for-node"))
+                                                                   (chain $el class-list (add "for-node"))
+                                                                   (progn (chain $el class-list
+                                                                                 (add "for-link"))
+                                                                          (setf dragging-link true)))
+                                                               
+                                                               (setf selected-element
+                                                                     (chain event target parent-node
+                                                                            (clone-node true))
+                                                                     drag-node
+                                                                     (@ event target parent-node
+                                                                              parent-node parent-node)
+                                                                     dragging-index
+                                                                     (chain event target
+                                                                            (get-attribute "index")))
+                                                               
+                                                               (chain drag-node class-list (add "dragging"))
+                                                               (chain selected-element class-list
+                                                                      (add "mouse-transparent"))
+                                                               (chain svg (append-child selected-element))))))
+                                               
+                                               (chain svg (add-event-listener
+                                                           "mousemove"
+                                                           (lambda (event)
+                                                             ;; (chain console (log :aa selected-element))
+                                                             ;; (chain console (log :se drag-var))
+                                                             (when (/= selected-element null)
+                                                               (chain event (prevent-default))
+                                                               (let ((coord (get-mouse-position event)))
+                                                                 ;; (chain console (log :sel selected-element))
+                                                                 (chain selected-element
+                                                                        (set-attribute-n-s
+                                                                         null "transform"
+                                                                         (+ "translate(" (@ coord x)
+                                                                            "," (@ coord y) ")"))))))))
+                                               
+                                               (chain svg (add-event-listener
+                                                           "mouseup"
+                                                           (lambda (event)
+                                                             (when (/= selected-element null)
+                                                               (when (chain event target class-list
+                                                                            (contains "drag-target"))
+
+                                                                 (if (and (not dragging-link)
+                                                                          (chain event target class-list
+                                                                                 (contains "for-node")))
+                                                                     (shift-node dragging-index
+                                                                                 (chain event target
+                                                                                        (get-attribute
+                                                                                         "index")))
+                                                                     (if (and dragging-link
+                                                                              (chain event target class-list
+                                                                                     (contains "for-link")))
+                                                                         (shift-node dragging-index
+                                                                                     (chain event target
+                                                                                            (get-attribute
+                                                                                             "index")))))
+                                                                 ;; (chain console
+                                                                 ;;        (log :ii dragging-index
+                                                                 ;;             (chain event target
+                                                                 ;;                    (get-attribute
+                                                                 ;;                     "index")
+                                                                 ;;                    )))
+                                                                 )
+                                                               (chain $el class-list (remove "drag"))
+                                                               (chain $el class-list (remove "for-node"))
+                                                               (chain $el class-list (remove "for-link"))
+                                                               (setf dragging-link false)
+                                                               (chain selected-element (remove))
+                                                               (chain drag-node class-list
+                                                                      (remove "dragging"))
+                                                               (setf selected-element null
+                                                                     drag-node null)))))
+                                               (chain svg (add-event-listener
+                                                           "mouseleave"
+                                                           (lambda ()
+                                                             (when (/= selected-element null)
+                                                               (chain $el class-list (remove "drag"))
+                                                               (chain $el class-list (remove "for-node"))
+                                                               (chain $el class-list (remove "for-link"))
+                                                               (setf dragging-link false)
+                                                               (chain selected-element (remove))
+                                                               (chain drag-node class-list (remove "dragging"))
+                                                               (setf selected-element null
+                                                                     drag-node null)))))))))
+        ,@nodes-markup))))
 
 (let ((x-start 10) (y-start 30) (x-increment 40) (y-increment 40)
       (expander-code   (psl (expand-node   (chain $el (get-attribute "path")))))
@@ -1767,7 +2148,6 @@
       (let ((y-offset (or y-offset y-start)) (x-offset (or x-offset x-start))
             (main-radius 16) (output) (link-specs) (l2-specs) (interval (/ (- width 350))))
         ;; (print (list :gg gmodel))
-        ;; (print (list :aa point parent))
         (setf (rest depth-store)
               (max depth (rest depth-store)))
         (loop :for item :in gmodel :for ix :from 0 :when (listp item)

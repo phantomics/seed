@@ -41,6 +41,20 @@
 ;;   (print env)
 ;;   (setf *test1* (getf env :lack.session)))
 
+(defun set-cookie (key val)
+  (push val (lack.response:response-set-cookies ningle:*response*))
+  (push key (lack.response:response-set-cookies ningle:*response*)))
+
+(defun get-cookie (key)
+  (rest (assoc key (lack.request:request-cookies ningle:*request*) :test #'equal)))
+
+(defun session-interface (session-id store)
+  (let ((session-store (gethash session-id store)))
+    (lambda (key &optional value)
+      (if value (progn (setf (getf session-store key) value)
+                       (setf (gethash session-id store) session-store))
+          (getf session-store key)))))
+
 (defun http-contact-service-start (&key (port 8080) interactor-fetch renderer-fetch
                                      (package-name (intern (package-name *package*) "KEYWORD")))
   ;; (print (list :int interactor-fetch))
@@ -50,10 +64,28 @@
                                                                          :root root-path)
 				                       service)
 				 :port port :server :hunchentoot :address "0.0.0.0")))
-    (setf (ningle:route service "/render/"  :method :POST)
-          (lambda (value) (funcall renderer-fetch   value (getf *request-env* :lack.session)))
+    (setf (ningle:route service "/render/" :method :POST)
+          (lambda (value)
+            (let ((session-id (get-cookie "session")))
+              (unless session-id (let ((new-id (gensym "SSID")))
+                                   (set-cookie "session" (list :value    (string new-id)
+                                                               :httponly t :samesite :strict))
+                                   (setf session-id new-id
+                                         (gethash session-id (getf *request-env* :lack.session))
+                                         nil)))
+              (funcall renderer-fetch value
+                       (session-interface session-id (getf *request-env* :lack.session)))))
           (ningle:route service "/contact/" :method :POST)
-          (lambda (value) (funcall interactor-fetch value (getf *request-env* :lack.session))))
+          (lambda (value)
+            (let ((session-id (get-cookie "session")))
+              (unless session-id (let ((new-id (gensym "SSID")))
+                                   (set-cookie "session" (list :value    (string new-id)
+                                                               :httponly t :samesite :strict))
+                                   (setf session-id new-id
+                                         (gethash session-id (getf *request-env* :lack.session))
+                                         nil)))
+              (funcall interactor-fetch value
+                       (session-interface session-id (getf *request-env* :lack.session))))))
     (values (lambda () (clack:stop handler)) ;; to stop
 	    (lambda () (clack:stop handler)  ;; to restart
 	      (clack:clackup (lack.builder:builder :session (:static :path #'match-static-path

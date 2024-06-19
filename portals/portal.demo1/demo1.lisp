@@ -3,7 +3,6 @@
 (in-package #:portal.demo1)
 
 (defvar *users*)
-(defvar *state-api* nil)
 (defvar *pksym* (intern (package-name *package*) "KEYWORD"))
 
 (setf *users* (make-hash-table :test #'equal))
@@ -11,10 +10,6 @@
 (defun get-data (user &optional property)
   (if property (getf (gethash user *users*) property)
       (gethash user *users*)))
-
-;; (print "abcde")
-
-;; (defvar *portal.demo1.session* nil)
 
 ;; (setf *portal.demo1.session* (make-hash-table :test #'equal))
 
@@ -31,27 +26,24 @@
     (multiple-value-bind (stopper restarter)
         (http-contact-service-start
          :package-name pkg-name :port 9090
-         :interactor-fetch (lambda (params env-session)
-                             (unless *state-api* (setf *state-api* (lambda () env-session)))
+         :interactor-fetch (lambda (params session-api)
                              (let* ((portal-form (rest (assoc "portal" params :test #'string=)))
-                                    (branch-form (rest (assoc "branch" params :test #'string=)))
-                                    (input (rest (assoc "input" params :test #'string=)))
-                                    (portal (when portal-form (intern portal-form "KEYWORD")))
-                                    (branch (when branch-form (intern branch-form "KEYWORD"))))
-                               (json-convert-to (interface-interact portal branch input))))
-         :renderer-fetch (lambda (params env-session)
-                           (print (list :par params env-session))
-                           (unless *state-api* (setf *state-api* (lambda () env-session)))
-                           (let* ((system-form (string-upcase (rest (assoc "system" params
-                                                                           :test #'string=))))
-                                  (branch-form (string-upcase (rest (assoc "branch" params
-                                                                           :test #'string=))))
-                                  (input (loop :for p :in params
-                                               :collect (cons (symbol-munger:camel-case->keyword (first p))
-                                                              (rest p))))
-                                  (system (when system-form (intern system-form "KEYWORD")))
-                                  (branch (when branch-form (intern branch-form "KEYWORD"))))
-                             (interface-interact system branch input))))
+                                    (branch-form (rest (assoc "branch" params :test #'string=))))
+                               (json-convert-to (interface-interact
+                                                 (if portal-form (intern portal-form "KEYWORD") nil)
+                                                 (if branch-form (intern branch-form "KEYWORD") nil)
+                                                 (rest (assoc "input" params :test #'string=))))))
+         :renderer-fetch (lambda (params session-api)
+                           ;; (print (list :par params session-api))
+                           (let* ((system-form (string-upcase (rest (assoc "system" params :test #'string=))))
+                                  (branch-form (string-upcase (rest (assoc "branch" params :test #'string=)))))
+                             (interface-interact (if system-form (intern system-form "KEYWORD") nil)
+                                                 (if branch-form (intern branch-form "KEYWORD") nil)
+                                                 (append (list (cons :SESSION session-api))
+                                                         (loop :for p :in params
+                                                               :collect (cons (symbol-munger:camel-case->keyword
+                                                                               (first p))
+                                                                              (rest p))))))))
       (setf (symbol-function 'contact-stop)    stopper
             (symbol-function 'contact-restart) restarter))))
 
@@ -462,290 +454,6 @@
          (if (undefp builder) "abc"
              (funcall builder self content meta)))))
     (setf (@ components -seed-view) -seed-view)))
-
-;; (defvar d3-effects
-;;   (create text-label
-;;           (lambda (in-node params)
-;;             (chain in-node (append "text")
-;;                    (attr "dy" "0.31em")
-;;                    (attr "x" 58)
-;;                    (attr "text-anchor" "start")
-;;                    (text (lambda (d)
-;;                            (chain console (log :td d))
-;;                            (@ d data title)))
-;;                    (clone true) (lower)
-;;                    (attr "stroke-linejoin" "round")
-;;                    (attr "stroke-width" 3)
-;;                    (attr "stroke" "white")
-;;                    (attr "fill" (lambda (d)))))
-;;           expand-control
-;;           (lambda (in-node params)
-;;             (let ((main-radius 48)
-;;                   (inner-radius 6)
-;;                   (outer-radius 8)
-;;                   (crossbar-length 8)
-;;                   (crossbar-breadth 2)
-;;                   (group (chain in-node (append "svg:g")
-;;  		               ;; TODO: complete class function
-;;  		               ;;(attr "class" (lambda (d) "object-data-fetch glyph"))
-;;  		               (attr "class" "expand-control"))))
-;;               (chain group (append "svg:circle")
-;;  	            (attr "class" "button-backing")
-;;  	            (attr "cy" 0)
-;;  	            (attr "cx" main-radius)
-;;  	            (attr "r" outer-radius))
-
-;;               (chain group (append "svg:circle")
-;;  	            (attr "class" "button-circle")
-;;  	            (attr "cy" 0)
-;;  	            (attr "cx" main-radius)
-;;  	            (attr "r" inner-radius))
-
-;;               (chain group (append "svg:rect")
-;;  	            (attr "x" (- main-radius (/ crossbar-length 2)))
-;;  	            (attr "y" (/ crossbar-breadth -2))
-;;  	            (attr "height" crossbar-breadth)
-;;  	            (attr "width" crossbar-length))))
-;;           circle-icon
-;;           (lambda (in-node params)
-;;             (let ((main-radius 16)
-;;                   (icon-group (chain in-node
-;;  		                    (append "svg:g")
-;;  		                    ;; TODO: complete class function
-;;  		                    ;;(attr "class" (lambda (d) "object-data-fetch glyph"))
-;;  		                    (attr "class" "circle-glyph"))))
-;;               ;; (chain node-icon (append "svg:path")
-;;  	     ;;        ;; TODO: complete class function
-;;  	     ;;        (attr "class" "outer-meta-spokes")
-;;  	     ;;        (attr "d" (lambda (d) (manifest-outer-spoke-points 3)))
-;;  	     ;;        (attr "transform" (+ "translate(" main-radius ",0)")))
-
-;;               ;; (chain node-icon (append "svg:path")
-;;  	     ;;        ;; TODO: complete class function
-;;  	     ;;        (attr "class" "outer-meta-band")
-;;  	     ;;        (attr "d" (lambda (d) (manifest-outer-band 0.6)))
-;;  	     ;;        (attr "transform" (+ "translate(" main-radius ",0)")))
-
-;;               ;; outer chromatic circle
-;;               (chain icon-group (append "svg:circle")
-;;  	            (attr "class" "outer-circle")
-;;  	            (attr "cy" 0)
-;;  	            (attr "cx" main-radius)
-;;  	            (attr "r" main-radius))
-
-;;               ;; inner white circle with radius according to a metadata fraction
-;;               (chain icon-group (append "svg:circle")
-;;  	            (attr "class" "inner-circle")
-;;  	            (attr "cy" 0)
-;;  	            (attr "cx" main-radius)
-;;  	            ;; (attr "r" (manifest-inner-circle-radius 0.5))
-;;                      (attr "r" (- main-radius 4))
-;;                      )
-
-;;               ;; .call(d3.drag()
-;;               ;; 		    .on("start", dragstarted)
-;;               ;; 		    .on("drag", dragged)
-;;               ;; 		    .on("end", dragended))
-;;               ))))
-;; (defun d3-build (fetcher)
-;;   (lambda (data)
-;;     (chain console (log :dat data))
-;;     (let* ((width 600) (height 600)
-;;            (svg (chain d3 (create "svg") (attr "class" "d3view-graph-foldout")
-;;                        (attr "width" width) (attr "height" height)))
-;;            (bar-height 36)
-;;            (margin-top 10)
-;;            (margin-right 10)
-;;            (margin-left 10)
-;;            (margin-bottom 10)
-;;            (dx 10)
-;;            (dy 10) ;; more of a calculation
-;;            (root (chain d3 (hierarchy data)))
-;;            (layout-tree (chain d3 (tree) (node-size (list 20 20))))
-;;            (diagonal (chain d3 (link-horizontal)
-;;                             (x (lambda (d) (@ d y)))
-;;                             (y (lambda (d) (@ d x)))))
-;;            (diag (chain d3 (link-horizontal)
-;;                         (x (lambda (d) (@ d y)))
-;;                         (y (lambda (d) (@ d x)))))
-;;            (glink (chain svg (append "g")
-;;                          (attr "fill" "none")
-;;                          (attr "stroke" "#555")
-;;                          (attr "stroke-opacity" 0.4)
-;;                          (attr "stroke-width" 1.5)))
-;;            (gnode (chain svg (append "g")
-;;                          (attr "cursor" "pointer")
-;;                          (attr "pointer-events" "all"))))
-
-;;       (defun update (event source)
-;;         (let* ((duration 500)
-;;                (nodes (chain root (descendants) (reverse)))
-;;                (links (chain root (links)))
-;;                (ix 0) (left) (right)
-;;                (transition) (node) (node-enter)
-;;                (node-update) (node-exit) (link) (link-enter))
-;;           (chain console (log :rt root))
-;;           (layout-tree root)
-;;           (setf left root right root
-;;                 ;; height ;; (+ (- (@ right x) (@ left x))
-;;                 ;;    margin-top margin-bottom)
-;;                 ;; 600
-;;                 )
-
-;;           (defun dftraverse (list)
-;;             (chain list (for-each (lambda (d i)
-;;                                     (unless (= "null" (typeof (@ d index)))
-;;                                       (setf (@ d index) ix)
-;;                                       (incf ix))
-;;                                     (if (@ d children)
-;;                                         (dftraverse (@ d children)))))))
-;;           (dftraverse nodes)
-
-;;           (chain console (log :rd (chain root (descendants))))
-
-;;           (chain root (descendants)
-;;                  (for-each (lambda (n i)
-;;                              (setf (@ n x) (* bar-height (1- (@ n index)))))))
-
-;;           (setf transition
-;;                 (chain svg (transition) (duration duration)
-;;                        (attr "height" height)
-;;                        (attr "viewBox" (list (+ margin-left)
-;;                                              (- (@ left x) margin-top)
-;;                                              width height))
-;;                        (tween "resize" (if (@ window -resize-observer)
-;;                                            null (lambda ()
-;;                                                   (lambda ()
-;;                                                     (chain svg (dispatch "toggle")))))))
-;;                 node (chain gnode (select-all "g.node")
-;;                             (data nodes (lambda (d) (@ d id))))
-;;                 node-enter
-;;                 (chain node (enter) (append "g") (attr "class" "node")
-;;                        (attr "transform" (lambda (d)
-;;                                            (+ "translate(" (@ source y0)
-;;                                               "," (@ source x0) ")")))
-;;                        (attr "fill-opacity" 0)
-;;                        (attr "stroke-opacity" 0)
-;;                        (attr "display" (lambda (d)
-;;                                          (if (= 0 (@ d id))
-;;                                              "none" "relative")))
-;;                        (on "click" (lambda (this-event d)
-;;                                      (chain console (log :ind (@ d data) (@ d data to)))
-;;                                      (if (and (or (@ d data to)
-;;                                                   (= 0 (@ d data to)))
-;;                                               (not (or (@ d children)
-;;                                                        (@ d _children))))
-;;                                          (funcall fetcher
-;;                                                   (lambda (data)
-;;                                                     ;; build the item to insert
-;;                                                     (let* ((ins (chain d3 (hierarchy data)))
-;;                                                            (all (chain root (descendants)))
-;;                                                            (ccount (@ all length)))
-;;                                                       (if (= 0 (@ d height))
-;;                                                           (chain all (for-each
-;;                                                                       (lambda (item)
-;;                                                                         (setf (@ item height)
-;;                                                                               (+ 2 (@ item
-;;                                                                                       height)))))))
-;;                                                       (chain console (log "dt" data))
-;;                                                       (setf (@ ins parent) d
-;;                                                             (@ ins depth) (1+ (@ d depth))
-;;                                                             (@ ins id) ccount
-;;                                                             (getprop (@ ins children) 0 "depth")
-;;                                                             (+ 2 (@ d depth))
-;;                                                             (getprop (@ ins children) 0 "id")
-;;                                                             (+ 2 ccount)
-;;                                                             (getprop (@ ins children) 0 "children")
-;;                                                             null
-;;                                                             (@ ins _children)
-;;                                                             (@ ins children)
-;;                                                             (@ ins children) null
-;;                                                             (@ d children)
-;;                                                             (list ins)
-;;                                                             (@ d _children) null)
-
-;;                                                       (layout-tree root)
-;;                                                       (chain console
-;;                                                              (log :retd (typeof data)
-;;                                                                   d ;; nodes root
-;;                                                                   ins
-;;                                                                   data))
-;;                                                       (update this-event root)))
-;;                                                   (create index (@ d data to)))
-;;                                          (progn (chain console (log :cl d))
-;;                                                 (setf (@ d children)
-;;                                                       (if (@ d children)
-;;                                                           null (@ d _children)))
-;;                                                 (update this-event d)))
-;;                                      ))))
-
-;;           ;; (chain node-enter (append "circle")
-;;           ;;        (attr "r" 2.5)
-;;           ;;        (attr "fill" (lambda (d)
-;;           ;;                       (if (@ d _children) "#555" "#999")))
-;;           ;;        (attr "stroke-width" 10))
-
-;;           (chain -object (keys (@ window d3-effects))
-;;                  (for-each (lambda (e i)
-;;                              (funcall (getprop (@ window d3-effects) e)
-;;                                       node-enter (create)))))
-
-;;           ;; (chain console (log "BB"))
-;;           (setf node-update
-;;                 (chain node (merge node-enter) (transition transition)
-;;                        (attr "transform" (lambda (d)
-;;                                            (+ "translate(" (@ d y) "," (@ d x) ")")))
-;;                        (attr "fill-opacity" 1)
-;;                        (attr "stroke-opacity" 1))
-
-;;                 node-exit
-;;                 (chain node (exit) (transition transition) (remove)
-;;                        (attr "transform" (lambda (d)
-;;                                            (chain console (log :aa d (@ d y) (@ d x)))
-;;                                            (+ "translate(" (@ d y) "," (@ d x) ")")))
-;;                        (attr "fill-opacity" 0)
-;;                        (attr "stroke-opacity" 0))
-;;                 link (chain glink (select-all "path")
-;;                             (data links (lambda (d) (@ d target id))))
-;;                 link-enter (let ((o (create x (@ source x0)
-;;                                             y (@ source y0))))
-;;                              (chain link (enter) (append "path")
-;;                                     (attr "d" (diagonal (create source o target o)))
-;;                                     (attr "class" (+ "c" (@ source id)))
-;;                                     (attr "display" (lambda (d)
-;;                                                       (chain console (log :dd d))
-;;                                                       (if (= 1 (@ d target depth))
-;;                                                           "none" "relative"))))))
-
-;;           (chain link (merge link-enter) (transition transition)
-;;                  (attr "d" diagonal))
-
-;;           (chain link (exit) (transition transition) (remove)
-;;                  (attr "d" (lambda (d)
-;;                              (let ((o (create x (@ source x)
-;;                                               y (@ source y))))
-;;                                (diagonal (create source o target o))))))
-
-;;           (chain root (each-before (lambda (d)
-;;                                      (setf (@ d x0) (@ d x)
-;;                                            (@ d y0) (@ d y)))))))
-
-;;       (setf (@ root x0) (/ dy 2)
-;;             (@ root y0) 0)
-
-;;       (chain root (descendants)
-;;              (for-each (lambda (d i)
-;;                          (setf (@ d id) i
-;;                                (@ d _children) (@ d children))
-;;                          (if (and (@ d depth)
-;;                                   (/= 7 (@ d data title length)))
-;;                              (setf (@ d children) null)))))
-
-;;       (update null root)
-
-;;       (chain document (get-element-by-id "d3-container")
-;;              (append (chain svg (node)))))))
-
 
 #|
 
