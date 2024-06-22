@@ -57,7 +57,7 @@
                     (:link :rel "stylesheet" :href "./build/vendor.css")
                     (:link :rel "stylesheet" :href "./build/app.css"))
              (:body (:div :id "main" :class "ui" :hx-post "/render/"
-                          :hx-trigger "load, reload"
+                          :hx-trigger "load, reload, submit"
                           :hx-vals (json-convert-to (list :system portal-sym
                                                           :branch :view)))
                     (:script :src "./static/misc.js")
@@ -398,62 +398,62 @@
 	    success next-success
 	    error (lambda (data err) (chain console (log 11 data err))))))))
 
-(defpsmacro define-component-view ()
-  '(progn
-    (paren6:defclass6 (-seed-view (@ -react -component))
-     (defun constructor (props)
-       (let ((self this))
-         (if (undefp (@ props data))
-             (transact "PORTAL.DEMO1" "VIEW"
-                       (create interface-spec (list "browser" "react"))
-                       (lambda (data)
-                         (pcl :dt data)
-                         (setf (@ self state) (create data data))))
-             (setf (@ self state)
-                   (create data (@ props data))))
-         (pcl :load)))
+;; (defpsmacro define-component-view ()
+;;   '(progn
+;;     (paren6:defclass6 (-seed-view (@ -react -component))
+;;      (defun constructor (props)
+;;        (let ((self this))
+;;          (if (undefp (@ props data))
+;;              (transact "PORTAL.DEMO1" "VIEW"
+;;                        (create interface-spec (list "browser" "react"))
+;;                        (lambda (data)
+;;                          (pcl :dt data)
+;;                          (setf (@ self state) (create data data))))
+;;              (setf (@ self state)
+;;                    (create data (@ props data))))
+;;          (pcl :load)))
 
-     (defun manifest (item)
-       (let ((component (getprop components (@ item mt react-component))))
-         ;; (pcl :abc item (@ item mt) (@ item mt react-component) component)
-         (if (undefp component)
-             (if (and (= "ar" (@ item ty))
-                      (stringp (@ item ct)))
-                 (let ((class-name (chain item mt classes (join " "))))
-                   (panic:jsl (:h1 :class-name class-name (@ item ct))))
-                 "abc")
-             (chain -react (create-element component (create data item))))))
+;;      (defun manifest (item)
+;;        (let ((component (getprop components (@ item mt react-component))))
+;;          ;; (pcl :abc item (@ item mt) (@ item mt react-component) component)
+;;          (if (undefp component)
+;;              (if (and (= "ar" (@ item ty))
+;;                       (stringp (@ item ct)))
+;;                  (let ((class-name (chain item mt classes (join " "))))
+;;                    (panic:jsl (:h1 :class-name class-name (@ item ct))))
+;;                  "abc")
+;;              (chain -react (create-element component (create data item))))))
      
-     (defun layout-stacked (self elements meta)
-       (panic:jsl (:-c-container
-                   (chain elements (map (lambda (item index)
-                                          (let ((lspec (getprop (@ meta specs) index)))
-                                            (panic:jsl (:div :key (+ "view-tier-" index)
-                                                             (chain self (manifest item))
-                                                             )))))))))
+;;      (defun layout-stacked (self elements meta)
+;;        (panic:jsl (:-c-container
+;;                    (chain elements (map (lambda (item index)
+;;                                           (let ((lspec (getprop (@ meta specs) index)))
+;;                                             (panic:jsl (:div :key (+ "view-tier-" index)
+;;                                                              (chain self (manifest item))
+;;                                                              )))))))))
      
-     (defun layout-columnar (self elements meta)
-       (panic:jsl (:-c-container
-                   (:-c-row (chain elements (map (lambda (item index)
-                                                   (let ((lspec (getprop (@ meta specs) index))
-                                                         (class-name (when (not (undefp (@ item mt type)))
-                                                                       (chain item mt type (join " ")))))
-                                                     (panic:jsl (:-c-col :md (@ lspec width)
-                                                                         :class-name (if (undefp class-name)
-                                                                                         "" class-name)
-                                                                         :key (+ "view-column-" index)
-                                                                         (chain self (manifest item))
-                                                                         ))))))))))
+;;      (defun layout-columnar (self elements meta)
+;;        (panic:jsl (:-c-container
+;;                    (:-c-row (chain elements (map (lambda (item index)
+;;                                                    (let ((lspec (getprop (@ meta specs) index))
+;;                                                          (class-name (when (not (undefp (@ item mt type)))
+;;                                                                        (chain item mt type (join " ")))))
+;;                                                      (panic:jsl (:-c-col :md (@ lspec width)
+;;                                                                          :class-name (if (undefp class-name)
+;;                                                                                          "" class-name)
+;;                                                                          :key (+ "view-column-" index)
+;;                                                                          (chain self (manifest item))
+;;                                                                          ))))))))))
 
-     (defun render ()
-       (let* ((self this)
-              (content (and (@ this state) (@ this state data) (@ this state data ct)))
-              (meta (and (@ this state) (@ this state data) (@ this state data mt)))
-              (builder (getprop self (@ meta builder))))
-         (pcl :cl self content meta)
-         (if (undefp builder) "abc"
-             (funcall builder self content meta)))))
-    (setf (@ components -seed-view) -seed-view)))
+;;      (defun render ()
+;;        (let* ((self this)
+;;               (content (and (@ this state) (@ this state data) (@ this state data ct)))
+;;               (meta (and (@ this state) (@ this state data) (@ this state data mt)))
+;;               (builder (getprop self (@ meta builder))))
+;;          (pcl :cl self content meta)
+;;          (if (undefp builder) "abc"
+;;              (funcall builder self content meta)))))
+;;     (setf (@ components -seed-view) -seed-view)))
 
 #|
 

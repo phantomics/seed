@@ -1008,6 +1008,7 @@
                ((list* :group :stack _)
                 (cl-who:with-html-output (strout)
                   (:div :path path-string
+                        :class "stack"
                         (loop :for c :in contents :for m :in members :for ix :from 0
                               :do (let ((item-classes
                                           (apply #'concatenate 'string

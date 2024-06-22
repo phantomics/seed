@@ -6,8 +6,9 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on ("seed" "clarion" ;; "spinneret"
-                      "symbol-munger"
+  :depends-on ("seed" ;; "clarion" ;; "spinneret"
+               "symbol-munger"
+               ;; "panic"
                       "cl-who" ;; "trivia"
                       "parenscript" "paren6" "lass"
                       ;; "seed.admit"

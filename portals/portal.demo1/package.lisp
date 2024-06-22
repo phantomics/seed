@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:portal.demo1
-  (:use #:cl #:seed #:clarion ;; #:spinneret
+  (:use #:cl #:seed ;; #:clarion ;; #:spinneret
         #:cl-who
         #:parenscript #:paren6 #:lass #:symbol-munger)
   ;; (:shadowing-import-from #:trivia #:match #:guard)
