@@ -364,8 +364,12 @@
   (:output-to . "./ui-browser/build/vendor.css"))
  )
 
+(defun build-all ()
+  (build-static-page :portal.demo1 "ui-browser")
+  (build-script-cmirror)
+  (build-script-misc "ui-browser"))
 
-
+;; (build-all)
 
 
 
