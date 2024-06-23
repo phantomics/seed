@@ -4,11 +4,9 @@
       :branches (:view
                  (lambda (input)
                    (let ((context (rest (assoc :session input))))
-                     (print (list :inp input))
-                     
                      (let ((key-input (rest (assoc :key input :test #'eq))))
                        (when (and key-input (string= "demo" (string-downcase key-input)))
-                         (print (funcall context :user :hello))))
+                         (funcall context :user :hello)))
                      
                      (authorize (funcall context :user)
                        (-<> (uic ((:type :group :linear :main :split :left-sidebar)
@@ -25,7 +23,6 @@
                                                     (interface-interact (portal-endpoint portal) :view)))))
                                  (if (not (portal-endpoint portal))
                                      nil (interface-interact (portal-endpoint portal) :view)))
-                         (progn (print (list :dd <>)) <>)
                          (in-system-context <> package)
                          (interface-format-form input)
                          (render-html-interface (encode <>)))

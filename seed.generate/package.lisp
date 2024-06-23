@@ -1,7 +1,8 @@
 ;;;; package.lisp
 
 (defpackage #:seed.generate
-  (:use #:cl #:arrow-macros #:clack #:woo #:ningle #:symbol-munger ;; #:jonathan
+  (:use #:cl #:arrow-macros ;; #:clack #:woo #:ningle
+        #:symbol-munger ;; #:jonathan
         #:com.inuoe.jzon #:trivial-package-local-nicknames #:cl-who
         #:parenscript #:paren6 #:seed.sublimate
         )
@@ -14,6 +15,7 @@
            #:spec-graph-interface #:of-graph-spec)
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)
+  (:shadowing-import-from #:com.inuoe.jzon #:stringify)
   (:shadowing-import-from #:spinneret #:with-html #:with-html-string #:interpret-html-tree))
 
 (trivial-package-local-nicknames:add-package-local-nickname :jzon :com.inuoe.jzon)
