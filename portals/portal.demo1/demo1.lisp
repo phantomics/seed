@@ -78,6 +78,9 @@
 
       `(|#root|	:width "100%")
 
+      
+      `(|#main| (.stack))
+      
       `(.container :background "#fff")
       
       `(.sidebar
@@ -349,7 +352,7 @@
  ;;          "./ui-browser/static/alpine.js" "./ui-browser/node_modules/fomantic-ui/dist/semantic.css")
  ;;  (:output-to . "./ui-browser/build/vendor.js"))
  (:concat-static
-  (:paths "./ui-browser/static/htmx.min.js" "./ui-browser/node_modules/d3/dist/d3.min.js" 
+  (:paths ;; "./ui-browser/static/htmx.min.js" "./ui-browser/node_modules/d3/dist/d3.min.js" 
           "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
           "./ui-browser/static/alpine.js"
           ;; "./ui-browser/repos/scmindent/scmindent-client.js"
