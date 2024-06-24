@@ -7,6 +7,8 @@
                      (let ((key-input (rest (assoc :key input :test #'eq))))
                        (when (and key-input (string= "demo" (string-downcase key-input)))
                          (funcall context :user :hello)))
+
+                     ;; (print (list :inp input))
                      
                      (authorize (funcall context :user)
                        (-<> (uic ((:type :group :linear :main :split :left-sidebar)

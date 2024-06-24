@@ -803,8 +803,14 @@
                 ;; (print (list :con contents))
                 (cl-who:with-html-output (strout)
                   (:div :path path-string
+                        :id "branch-navigation"
                         (loop :for c :in contents :for ix :from 0
-                              :do (if c (htm (:h4 (str (getf c :ct))))
+                              :do (if c (htm (:h4 :hx-post "/render/"
+                                                  :hx-target "#branch-navigation"
+                                                  :hx-vals (json-convert-to (list :system :portal.demo1
+                                                                                  :branch branch
+                                                                                  :point ix))
+                                                  (str (getf c :ct))))
                                       (htm (:hr :class "divider")))))))
                ((list :form :elem)
                 (let ((branch (second (assoc :access (getf form :mt))))
@@ -1007,8 +1013,7 @@
                                                                            strout)))))))))))
                ((list* :group :stack _)
                 (cl-who:with-html-output (strout)
-                  (:div :path path-string
-                        :class "stack"
+                  (:div :path path-string :class "stack"
                         (loop :for c :in contents :for m :in members :for ix :from 0
                               :do (let ((item-classes
                                           (apply #'concatenate 'string
