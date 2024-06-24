@@ -6,6 +6,20 @@ body{
     width: 100%;
 }
 
+
+
+#main > .stack .heading{
+    text-align: center;
+}
+
+#main > .stack form{
+    text-align: center;
+}
+
+#main > .stack form .input{
+    margin: 0 auto;
+}
+
 .container{
     background: #fff;
 }

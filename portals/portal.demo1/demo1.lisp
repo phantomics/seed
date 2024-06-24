@@ -79,7 +79,13 @@
       `(|#root|	:width "100%")
 
       
-      `(|#main| (.stack))
+      `((|#main| > .stack)
+        :margin "0 auto;"
+        :width 24rem
+        :height "100%"
+        (.heading :text-align center)
+        (form :text-align center
+              (.input :margin "0 auto")))
       
       `(.container :background "#fff")
       
@@ -230,6 +236,25 @@
 
 ;; (build-css "ui-browser")
 
+(defun build-script-element (&key path imports constructors)
+  (with-open-file (stream path :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (loop :for import :in imports
+          :do (if (not (listp import))
+                  (format stream "import '~a'~%" import)
+                  (progn (format stream "import ~a" (if (listp (first import)) "{ " ""))
+                         (if (listp (first import))
+                             (let ((icount (1- (length (first import)))))
+                               (loop :for item :in (first import) :for i :from 0
+                                     :do (format stream "~a~a " (symbol-munger:lisp->camel-case item)
+                                                 (if (> icount i) "," ""))))
+                             (format stream "~a" (symbol-munger:lisp->camel-case (first import))))
+                         (format stream "~a from '~a'~%" (if (listp (first import)) "}" "")
+                                 (second import)))))
+    (format stream "~%")
+;;     (format stream "import './main.scss'
+;; ")
+    (loop :for c :in constructors :do (funcall c stream))))
+
 (defun build-script-cmirror ()
   (build-script-element
    :path (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
@@ -352,7 +377,8 @@
  ;;          "./ui-browser/static/alpine.js" "./ui-browser/node_modules/fomantic-ui/dist/semantic.css")
  ;;  (:output-to . "./ui-browser/build/vendor.js"))
  (:concat-static
-  (:paths ;; "./ui-browser/static/htmx.min.js" "./ui-browser/node_modules/d3/dist/d3.min.js" 
+  (:paths "./ui-browser/static/htmx.min.js"
+          ;; "./ui-browser/node_modules/d3/dist/d3.min.js" 
           "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
           "./ui-browser/static/alpine.js"
           ;; "./ui-browser/repos/scmindent/scmindent-client.js"
@@ -370,10 +396,6 @@
   (build-script-misc "ui-browser"))
 
 ;; (build-all)
-
-
-
-
 
 
 

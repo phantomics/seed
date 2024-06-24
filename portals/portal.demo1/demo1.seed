@@ -7,6 +7,11 @@
                      (let ((key-input (rest (assoc :key input :test #'eq))))
                        (when (and key-input (string= "demo" (string-downcase key-input)))
                          (funcall context :user :hello)))
+
+                     ;; (print (list :inp input))
+
+                     ;; (when (and context (assoc input :branch))
+                     ;;   (let (())))
                      
                      (authorize (funcall context :user)
                        (-<> (uic ((:type :group :linear :main :split :left-sidebar)
@@ -18,7 +23,8 @@
                                       (uic ((:type :form) (:app :set-endpoint))
                                            (portal-contacts portal))
                                       (if (not (portal-endpoint portal))
-                                          nil (uic ((:type :form :branch-navigation) (:app :set-nav-point))
+                                          nil (uic ((:type :form :branch-navigation) (:app :set-nav-point)
+                                                    (:target . :view))
                                                    (render-nav-menu
                                                     (interface-interact (portal-endpoint portal) :view)))))
                                  (if (not (portal-endpoint portal))
@@ -40,8 +46,7 @@
                                               :params '(:system :portal.demo1 :branch :view)
                                               )
                                     :stream out)
-                                   (get-output-stream-string out))
-                                 )
+                                   (get-output-stream-string out)))
                          (in-system-context <> package)
                          (interface-format-form input)
                          (render-html-interface (encode <>)))
