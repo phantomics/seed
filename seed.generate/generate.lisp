@@ -48,74 +48,6 @@
   (append (list (first spec) (second spec))
           (cons (cons :system system-name) (cddr spec))))
 
-;; (defmacro manifest-portal-contact-web (&rest options)
-;;   (let ((pname (package-name *package*)))
-;;     (cons 'portal-contact-web (append options (list :package-name (intern pname "KEYWORD")
-;;                                                     :main-interface (intern "*SEED-INTERFACES*" pname))))))
-
-;; (defun portal-contact-web (&key (port 8080) package-name
-;;                              main-interface static-provider output-process)
-;;   (let* ((root-path (asdf:system-relative-pathname package-name "./"))
-;; 	 (service (make-instance 'ningle::app))
-;; 	 (handler (clack:clackup (lack.builder:builder
-;; 				  :session nil
-;; 				  ;; (:static :path
-;; 				  ;;          (lambda (path) (if (ppcre:scan "^(?:/static/|/files/)" path)
-;; 				  ;;       		      path nil))
-;; 				  ;;          :root root-path)
-;; 				  service)
-;; 				 :port port :server :woo :address "0.0.0.0")))
-;;     ;; (setf (ningle:route service "/" :accept '("text/html" "text/xml"))
-;;     ;;       (lambda (params)
-;;     ;;         (let ((portal-sym (intern (string-upcase (rest (assoc :portal params))) "KEYWORD")))
-;;     ;;           (funcall static-provider))))
-;;     ;; (setf (ningle:route service "/:portal/" :accept '("text/html" "text/xml"))
-;;     ;;       (lambda (params)
-;;     ;;         (let ((portal-sym (intern (string-upcase (rest (assoc :portal params))) "KEYWORD")))
-;;     ;;           ;; (print (list :ee portal-sym (getf main-interface portal-sym)))
-;;     ;;           ;; (print (list :ff ;; (funcall (getf (getf (getf main-interface portal-sym) :branches)
-;;     ;;           ;;                  ;;                :systems))
-;;     ;;           ;;              ))
-;;     ;;           (com.inuoe.jzon:stringify (funcall (getf (getf (getf main-interface portal-sym) :branches)
-;;     ;;                                                    :systems))))))
-;;     ;; (setf (ningle:route service "/" :accept '("text/html" "text/xml"))
-;;     ;;       #'present-main-interface)
-;;     ;; (setf (ningle:route service "/enter" :method :POST)
-;;     ;;       (lambda (params)
-;;     ;;         (handler-case
-;;     ;;     	(let* ((original-params params)
-;;     ;;     	       (username (cdr (assoc "username" params :test #'string=)))
-;;     ;;     	       (password (cdr (assoc "password" params :test #'string=))))
-;;     ;;     	  (login (list :|username| username :|password| password)
-;;     ;;     		 (redirect-to "/")
-;;     ;;     		 (present-login-interface (cons '("message" . "Wrong username or password.")
-;;     ;;     						original-params))
-;;     ;;     		 (present-login-interface (cons '("message" . "Wrong username or password.")
-;;     ;;     						original-params))))
-;;     ;;           (error (c)
-;;     ;;     	(format t "Caught a condition: ~&")
-;;     ;;     	(values (jonathan:to-json '(:|error| t))
-;;     ;;     		c)))))
-;;     ;; (setf (ningle:route service "/exit" :method :GET)
-;;     ;;   (lambda (params)
-;;     ;;     (handler-case
-;;     ;;         (logout (present-login-interface (cons '("message" . "You are now logged out.") params))
-;;     ;;     	    (present-login-interface (cons '("message" . "You are not logged in.") params)))
-;;     ;;       (error (c)
-;;     ;;         (format t "Caught a condition: ~&")
-;;     ;;         (values (jonathan:to-json '(:|error| t))
-;;     ;;     	    c)))))
-;;     (setf (ningle:route service "/:portal/:contact/grow/" :method :port :accept "application/json")
-;; 	  (lambda (params)
-;; 	    (handler-case (interact portal :systems params)
-;; 	      (error (c)
-;; 		(format t "Caught a condition: ~&")
-;; 		(values 5 ; (jonathan:to-json '(:|error| t))
-;; 			c)))))
-;;     (values (setq *stop-server* (lambda () (clack:stop handler)))
-;; 	    (setq *restart-server* (lambda () (clack:stop handler)
-;; 					   (clack:clackup service :port port :server :woo))))))
-
 (defun interact (portal branch &optional input)
   (funcall (getf (getf portal :branches) branch)
            input))
@@ -379,8 +311,22 @@
 ;; (defmacro >> (&rest items)
 ;;   (cons 'vector items))
 
+(defun uic-form-compose (form)
+  (if (not (listp form))
+      form (if (listp (rest form))
+               (if (and (symbolp (first form))
+                        (not (keywordp (first form))))
+                   form (cons 'list (mapcar #'uic-form-compose form)))
+               `(cons ,(first form) ,(rest form)))))
+
 (defmacro uic (props &rest items)
-  `(generate-uic ',props ,@items))
+  `(generate-uic (list ,@(mapcar #'uic-form-compose props))
+                 ,@items))
+
+;; (defmacro uic (props &rest items)
+;;   `(generate-uic (list ,@(loop :for p :in props :collect (if (listp (rest p)) (cons 'list p)
+;;                                                              `(cons ,(first p) ,(rest p)))))
+;;                        ,@items))
 
 (defun generate-uic (props &rest items)
   `(meta ,(if (rest items) items (first items)) ,@props))
@@ -812,7 +758,7 @@
                                                             (list :system :portal.demo1
                                                                   :branch (rest (assoc :target
                                                                                        (getf form :mt)))
-                                                                  :point ix))
+                                                                  :point (getf c :ct)))
                                                   (str (getf c :ct))))
                                       (htm (:hr :class "divider")))))))
                ((list :form :elem)
@@ -832,8 +778,6 @@
                                                                 ;; (chain console (log :mm main-forms))
                                                                 (chain main-forms
                                                                        (for-each (lambda (form)
-                                                                                   ;; (chain console
-                                                                                   ;;        (log :cc form))
                                                                                    (chain htmx
                                                                                           (trigger
                                                                                            form

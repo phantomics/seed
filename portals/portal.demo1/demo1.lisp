@@ -39,7 +39,7 @@
                                   (branch-form (string-upcase (rest (assoc "branch" params :test #'string=)))))
                              (interface-interact (if system-form (intern system-form "KEYWORD") nil)
                                                  (if branch-form (intern branch-form "KEYWORD") nil)
-                                                 (append (list (cons :SESSION session-api))
+                                                 (append (list (cons :session session-api))
                                                          (loop :for p :in params
                                                                :collect (cons (symbol-munger:camel-case->keyword
                                                                                (first p))

@@ -10,8 +10,12 @@
 
                      ;; (print (list :inp input))
 
-                     ;; (when (and context (assoc input :branch))
-                     ;;   (let (())))
+                     (when (and context (assoc :point input))
+                       ;; when a point is selected, assign it
+                       (funcall context :branch-point (intern (string-upcase (rest (assoc :point input)))
+                                                              "KEYWORD")))
+
+                     ;; (print (list :cc (funcall context :branch-point)))
                      
                      (authorize (funcall context :user)
                        (-<> (uic ((:type :group :linear :main :split :left-sidebar)
@@ -24,11 +28,15 @@
                                            (portal-contacts portal))
                                       (if (not (portal-endpoint portal))
                                           nil (uic ((:type :form :branch-navigation) (:app :set-nav-point)
-                                                    (:target . :view))
+                                                    (:target . :view)
+                                                    (:point (funcall context :branch-point)))
                                                    (render-nav-menu
                                                     (interface-interact (portal-endpoint portal) :view)))))
                                  (if (not (portal-endpoint portal))
-                                     nil (interface-interact (portal-endpoint portal) :view)))
+                                     nil (interface-interact (portal-endpoint portal) :view
+                                                             (list
+                                                              (list :session context)))))
+                         ;; (progn (print (list :pr <>)) <>)
                          (in-system-context <> package)
                          (interface-format-form input)
                          (render-html-interface (encode <>)))
