@@ -3,20 +3,23 @@
       :bindings (:package package :system portal :portal-name portal-name)
       :branches (:view
                  (lambda (input)
-                   (let ((context (rest (assoc :session input))))
+                   (let ((context (rest (assoc :session input)))
+                         ;; (nav-items (render-nav-menu
+                         ;;             (interface-interact (portal-endpoint portal) :view)))
+                         )
+                     ;; (print (list :aaa context (interface-interact (portal-endpoint portal) :view)))
                      (let ((key-input (rest (assoc :key input :test #'eq))))
                        (when (and key-input (string= "demo" (string-downcase key-input)))
                          (funcall context :user :hello)))
-
-                     ;; (print (list :inp input))
 
                      (when (and context (assoc :point input))
                        ;; when a point is selected, assign it
                        (funcall context :branch-point (intern (string-upcase (rest (assoc :point input)))
                                                               "KEYWORD")))
 
-                     ;; (print (list :cc (funcall context :branch-point)))
-                     
+                     ;; (when (functionp context)
+                     ;;   (print (list :cc nav-items (funcall context :branch-point))))
+
                      (authorize (funcall context :user)
                        (-<> (uic ((:type :group :linear :main :split :left-sidebar)
                                   (:members :sidebar :main))
@@ -26,6 +29,23 @@
                                            (string-downcase portal-name))
                                       (uic ((:type :form) (:app :set-endpoint))
                                            (portal-contacts portal))
+
+                                      ;; (uic ((:type :select :dropdown)
+                                      ;;       (:title . "Unit")
+                                      ;;       (:action . :branch-reload)
+                                      ;;       (:options "abc" "def"))
+                                      ;;      ;; (let ((out (make-string-output-stream)))
+                                      ;;      ;;   (spinneret:interpret-html-tree
+                                      ;;      ;;    (htrender '(meta ((meta "Key" (:type :label))
+                                      ;;      ;;                      (meta "" (:name :key)
+                                      ;;      ;;                       (:type :field :text)))
+                                      ;;      ;;                (:type :set :form))
+                                      ;;      ;;              :params '(:system :portal.demo1 :branch :view)
+                                      ;;      ;;              )
+                                      ;;      ;;    :stream out)
+                                      ;;      ;;   (get-output-stream-string out))
+                                      ;;      )
+                                      
                                       (if (not (portal-endpoint portal))
                                           nil (uic ((:type :form :branch-navigation) (:app :set-nav-point)
                                                     (:target . :view)
@@ -36,63 +56,29 @@
                                      nil (interface-interact (portal-endpoint portal) :view
                                                              (list
                                                               (list :session context)))))
-                         ;; (progn (print (list :pr <>)) <>)
-                         (in-system-context <> package)
-                         (interface-format-form input)
-                         (render-html-interface (encode <>)))
-                       
-                       (-<> (uic ((:type :group :stack :main)
-                                  (:members :heading :main))
-                                 (uic ((:type :heading))
-                                      (string-downcase portal-name))
-                                 (let ((out (make-string-output-stream)))
-                                   (spinneret:interpret-html-tree
-                                    (htrender '(meta ((meta "Key" (:type :label))
-                                                      (meta "" (:name :key)
-                                                       (:type :field :text)))
-                                                (:type :set :form))
-                                              :params '(:system :portal.demo1 :branch :view)
-                                              )
-                                    :stream out)
-                                   (get-output-stream-string out)))
-                         (in-system-context <> package)
-                         (interface-format-form input)
-                         (render-html-interface (encode <>)))
-                       
-                       ;; (let ((out (make-string-output-stream)))
-                       ;;   (spinneret:interpret-html-tree
-                       ;;    (htrender '(meta ((meta "Key" (:type :label))
-                       ;;                      (meta ""
-                       ;;                       (:name :key)
-                       ;;                       (:type :field :text)))
-                       ;;                (:type :set :form))
-                       ;;              :params '(:system :portal.demo1 :branch :view)
-                       ;;              )
-                       ;;    :stream out)
-                       ;;   (get-output-stream-string out))
-                              ;; (-<> (uic ((:type :group :stack)
-                              ;;            (:members :heading :entry))
-                              ;;           (uic ((:type :heading))
-                              ;;                (string-downcase portal-name))
-                              ;;           (uic ((:type :form) (:app :set-endpoint))
-                              ;;                ;; (portal-contacts portal)
-                              ;;                ;; (render-html-interface
-                              ;;                '(meta ((meta "Key" (:type :label))
-                              ;;                        (meta ""
-                              ;;                         (:name :key)
-                              ;;                         (:type :field :text)))
-                              ;;                  ;; (meta 1500.0 (:name . :v-8) (:type :field :numeric))
-                              ;;                  (:type :set :form :tabular))))
-
-                              ;;   (in-system-context <> package)
-                              ;;   (print (render-html-interface (encode <>)))
-                              ;;   ;; (if (not (portal-endpoint portal))
-                              ;;   ;;     nil (uic ((:type :form :branch-navigation) (:app :set-nav-point))
-                              ;;   ;;              (render-nav-menu
-                              ;;   ;;               (interface-interact (portal-endpoint portal) :view))))
-                                
-                              ;;   )
-                              )))
+                           ;; (progn (print (list :pr <>)) <>)
+                           (in-system-context <> package)
+                           (interface-format-form input)
+                           (render-html-interface (encode <>)))
+                         
+                         (-<> (uic ((:type :group :stack :main)
+                                    (:members :heading :main))
+                                   (uic ((:type :heading))
+                                        (string-downcase portal-name))
+                                   (let ((out (make-string-output-stream)))
+                                     (spinneret:interpret-html-tree
+                                      (htrender '(meta ((meta "Key" (:type :label))
+                                                        (meta "" (:name :key)
+                                                         (:type :field :text)))
+                                                  (:type :set :form))
+                                                :params '(:system :portal.demo1 :branch :view)
+                                                )
+                                      :stream out)
+                                     (get-output-stream-string out)))
+                           (in-system-context <> package)
+                           (interface-format-form input)
+                           (render-html-interface (encode <>)))
+                         )))
                  :systems
                  (lambda (input)
                    (if input (let ((epsym (intern input "KEYWORD")))

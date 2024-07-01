@@ -747,20 +747,28 @@
                                                                           strout)))))))))
                ((list :form :branch-navigation)
                 ;; (print (list :con contents form))
-                (cl-who:with-html-output (strout)
-                  (:div :path path-string
-                        :id "branch-navigation"
-                        (loop :for c :in contents :for ix :from 0
-                              :do (if c (htm (:h4 :hx-post "/render/"
-                                                  :hx-target "#branch-navigation"
-                                                  :hx-trigger "click consume"
-                                                  :hx-vals (json-convert-to
-                                                            (list :system :portal.demo1
-                                                                  :branch (rest (assoc :target
-                                                                                       (getf form :mt)))
-                                                                  :point (getf c :ct)))
-                                                  (str (getf c :ct))))
-                                      (htm (:hr :class "divider")))))))
+                (let ((point (or (second (assoc :point (getf form :mt)))
+                                 (getf (first contents) :ct)))
+                      ;; (point-index (if (not point) 0 (position point contents
+                      ;;                                          :test (lambda (a b)
+                      ;;                                                  (string= a (getf b :ct))))))
+                      )
+                  (cl-who:with-html-output (strout)
+                    (:div :path path-string
+                          :id "branch-navigation"
+                          (loop :for c :in contents :for ix :from 0
+                                :do (if c (htm (:h4 :hx-post "/render/"
+                                                    :class (if (string= point (getf c :ct))
+                                                               "point" "")
+                                                    :hx-target "#main"
+                                                    :hx-trigger "click consume"
+                                                    :hx-vals (json-convert-to
+                                                              (list :system :portal.demo1
+                                                                    :branch (rest (assoc :target
+                                                                                         (getf form :mt)))
+                                                                    :point (getf c :ct)))
+                                                    (str (getf c :ct))))
+                                        (htm (:hr :class "divider"))))))))
                ((list :form :elem)
                 (let ((branch (second (assoc :access (getf form :mt))))
                       (name (rest (assoc :name (getf form :mt))))
@@ -914,39 +922,47 @@
                           :hx-post "/render/" :hx-vals (json-convert-to (list :system :demo.sheet
                                                                               :branch branch))))))
                ((list* :group :linear _)
-                (let ((widths (if (eq :sidebar (first members))
-                                  '("two" "fourteen") '("seven" "seven"))))
-                  (cl-who:with-html-output (strout)
-                    (:div :class (format nil "ui grid-layout ~a"
-                                         (apply #'concatenate
-                                                'string (loop :for s :in (cddr type)
-                                                              :append (list " " (string-downcase s)))))
-                          :path path-string
-                          (loop :for c :in contents :for m :in members :for w :in widths :for ix :from 0
-                                :do (let (;; (col-class (format nil "~a wide column" w))
-                                          (item-classes
-                                            (apply #'concatenate 'string
-                                                   (loop :for y :in (rest (assoc :type (getf c :mt)))
-                                                         :collect (format nil "~a " y)))))
-                                      (htm (:div :class (format nil "~a ~a"
-                                                                (string-downcase item-classes)
-                                                                (string-downcase m))
-                                                 (render-html-interface c system-id nil
-                                                                        (cons ix path)
-                                                                        strout)))))))))
+                ;; (let ((widths (if (eq :sidebar (first members))
+                ;;                   '("two" "fourteen") '("seven" "seven"))))
+                (cl-who:with-html-output (strout)
+                  (:div :class (format nil "ui grid-layout ~a"
+                                       (apply #'concatenate
+                                              'string (loop :for s :in (cddr type)
+                                                            :append (list " " (string-downcase s)))))
+                        :path path-string
+                        (loop :for c :in contents :for m :in members :for ix :from 0 ; :for w :in widths
+                              :do (let ((item-classes
+                                          (apply #'concatenate 'string
+                                                 (loop :for y :in (rest (assoc :type (getf c :mt)))
+                                                       :collect (format nil "~a " y)))))
+                                    (htm (:div :class (format nil "~a ~a"
+                                                              (string-downcase item-classes)
+                                                              (string-downcase m))
+                                               (render-html-interface c system-id nil
+                                                                      (cons ix path)
+                                                                      strout))))))))
                ((list* :set set-subtypes)
                 (match set-subtypes
                   ((list* :linear linear-subtypes)
-                   (let ((widths (if (eq :sidebar (first members))
-                                     '("two" "fourteen") '("seven" "seven"))))
-                     
+                   (let* ((widths (if (eq :sidebar (first members))
+                                      '("two" "fourteen") '("seven" "seven")))
+                          (point (second (assoc :point (getf form :mt))))
+                          (point-index (if (not point)
+                                           0 (position point contents
+                                                       :test (lambda (a b)
+                                                               (string= a (rest (assoc :name
+                                                                                       (getf b :mt))))))))
+                          (start-index 0))
+                     ;; (print (list :mmm (getf form :mt) contents point-index))
+                     (loop :for c :in contents :for ix :from 0 :below point-index
+                           :when (string= "PARTITION" (getf c :ct)) :do (setf start-index (1+ ix)))
                      (cl-who:with-html-output (strout)
                        (:div :class (format nil "ui grid-layout ~a"
                                             (apply #'concatenate
                                                    'string (loop :for s :in (cddr type)
                                                                  :append (list " " (string-downcase s)))))
                              :path path-string
-                             (loop :for c :in contents :for ix :from 0
+                             (loop :for ix :from start-index :for c :in (nthcdr start-index contents)
                                    ;; stop at the partition keyword
                                    :while (not (and (getf c :ty) (string= "KEYWORD" (getf c :pk))
                                                     (string= "PARTITION" (getf c :ct))))
@@ -954,6 +970,7 @@
                                                (apply #'concatenate 'string
                                                       (loop :for y :in (rest (assoc :type (getf c :mt)))
                                                             :collect (format nil "~a " y)))))
+                                         ;; (print (rest (assoc :name (getf c :mt))))
                                          (htm (:div :class (format nil "~acolumn"
                                                                    (string-downcase item-classes))
                                                     (render-html-interface c system-id nil (cons ix path)
@@ -965,10 +982,20 @@
                               :do (let ((item-classes
                                           (apply #'concatenate 'string
                                                  (loop :for y :in (rest (assoc :type (getf c :mt)))
-                                                       :collect (format nil "~a " (string-downcase y))))))
-                                    (htm (:div :class item-classes
+                                                       :collect (format nil "~a " (string-downcase y)))))
+                                        ;; (rendered (or (render-html-interface c system-id nil (cons ix path)
+                                        ;;                                      strout)
+                                        ;;               ;; render either via the html interface methods or 
+                                        ;;               ;; (htrender c :branch system-id
+                                        ;;               ;;             :params (list :system :system-id
+                                        ;;               ;;                           :branch :system-id))
+                                        ;;               ))
+                                        )
+                                    (print (list :cc c system-id))
+                                    (htm (:div :class item-classes ;; rendered
                                                (render-html-interface c system-id nil (cons ix path)
-                                                                      strout))))))))))))
+                                                                      strout)
+                                               )))))))))))
     (if stream nil (get-output-stream-string strout))))
 
 (defun render-nav-menu (form)

@@ -272,16 +272,13 @@
            (format
             stream (paren6::ps
                      (defvar |*__PS_MV_REG*|)
-                     (defvar lisp-setup
-                       (funcall (lambda ()
-                                  (list (bracket-matching)
-                                        (close-brackets)
-                                        (line-numbers)
-                                        (highlight-active-line)
-                                        (highlight-active-line-gutter)
-                                        (fold-gutter)
-                                        )
-                                  )))
+                     (defvar lisp-setup (funcall (lambda ()
+                                                   (list (bracket-matching)
+                                                         (close-brackets)
+                                                         (line-numbers)
+                                                         (highlight-active-line)
+                                                         (highlight-active-line-gutter)
+                                                         (fold-gutter)))))
                      (setf (@ global python) python
                            (@ global create-codemirror)
                            (lambda (target data)
@@ -299,7 +296,6 @@
                                                                           (of (chain -editor-state
                                                                                      tab-size (of 4)))))
                                                              ))))
-                                    ;; (setf (@ window bla) (chain language (of (-lisp))))
                                     (view (new (-editor-view (create state state
                                                                      parent target
                                                                      doc data)))))

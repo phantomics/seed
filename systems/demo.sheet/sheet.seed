@@ -5,7 +5,6 @@
       :branches (:view
                  (lambda (input)
                    (let ((context (second (assoc :session input))))
-                     (print (list :con context (when context (funcall context :branch-point))))
                      (-<> (uic ((:type :set :linear :columnar :workspace :even)
                                 (:members :column :column)
                                 (:point (if (not context) nil (funcall context :branch-point)))
@@ -26,13 +25,13 @@
                                ;;       (:controls (:header :save)
                                ;;                  (:footer :save))))
                                ;; :partition
-                               ;; (uic ((:type :form :text) (:access :main) (:name . :code)
-                               ;;       (:controls (:header :save)
-                               ;;                  (:footer :save))))
-                               ;; (uic ((:type :form :cells) (:access :cells) (:name . :cells)
-                               ;;       (:controls (:header :save :toggle-baseline)
-                               ;;                  (:footer :save))))
-                               ;; :partition
+                               (uic ((:type :form :text) (:access :main) (:name . :code)
+                                     (:controls (:header :save)
+                                                (:footer :save))))
+                               (uic ((:type :form :cells) (:access :cells) (:name . :cells)
+                                     (:controls (:header :save :toggle-baseline)
+                                                (:footer :save))))
+                               :partition
                                ;; (uic ((:type :form :tree) (:access :code)
                                ;;       (:controls (:header :save)
                                ;;                  (:footer :save))))
