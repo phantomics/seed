@@ -2256,6 +2256,44 @@
     (values (list primary options)
             (lambda (index) (graph-walker (second (nth index (rest graph))))))))
 
+(defclass ui-component ()
+  ((name :accessor uic-name
+         :initform nil
+         :initarg :name)))
+
+(defclass uic-set (ui-component)
+  ((items :accessor uic-set-items
+          :initform nil
+          :initarg :items)
+   (layout :accessor uic-set-layout
+           :initform nil
+           :initarg :layout)))
+
+(defclass uic-pane (uic-set)
+  ())
+
+(defclass uic-series (uic-set)
+  ())
+
+(defclass uic-caption (ui-component)
+  ((text :accessor uic-caption-text))
+
+(defclass uic-heading (uic-caption)
+  ())
+
+(defclass uic-caption-paragraph (uic-caption)
+  ((format :accessor uic-cpgraph-format
+           :initform nil
+           :initarg :format)))
+
+(defclass uic-expression (ui-component)
+  ((type :accessor uic-expr-type
+         :initform nil
+         :initarg :type)
+   (content :accessor uic-expr-content
+            :initform nil
+            :initarg :content)))
+
 ;; (dgraph-interface iii bla :open-path '(0 0))
 ;; (dgraph-interface iii bla :open-path '(1 0 0))
 
