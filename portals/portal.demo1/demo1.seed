@@ -23,35 +23,25 @@
                      (authorize (funcall context :user)
                        (-<> (uic ((:type :group :linear :main :split :left-sidebar)
                                   (:members :sidebar :main))
-                                 (uic ((:type :group :stack)
-                                       (:members :heading :main :menu))
-                                      (uic ((:type :heading))
-                                           (string-downcase portal-name))
-                                      (uic ((:type :form) (:app :set-endpoint))
-                                           (portal-contacts portal))
-
-                                      ;; (uic ((:type :select :dropdown)
-                                      ;;       (:title . "Unit")
-                                      ;;       (:action . :branch-reload)
-                                      ;;       (:options "abc" "def"))
-                                      ;;      ;; (let ((out (make-string-output-stream)))
-                                      ;;      ;;   (spinneret:interpret-html-tree
-                                      ;;      ;;    (htrender '(meta ((meta "Key" (:type :label))
-                                      ;;      ;;                      (meta "" (:name :key)
-                                      ;;      ;;                       (:type :field :text)))
-                                      ;;      ;;                (:type :set :form))
-                                      ;;      ;;              :params '(:system :portal.demo1 :branch :view)
-                                      ;;      ;;              )
-                                      ;;      ;;    :stream out)
-                                      ;;      ;;   (get-output-stream-string out))
-                                      ;;      )
-                                      
-                                      (if (not (portal-endpoint portal))
-                                          nil (uic ((:type :form :branch-navigation) (:app :set-nav-point)
-                                                    (:target . :view)
-                                                    (:point (funcall context :branch-point)))
-                                                   (render-nav-menu
-                                                    (interface-interact (portal-endpoint portal) :view)))))
+                                 (render-web
+                                  (uispec (:frame :type (:group :stack)
+                                                  (:head (string-downcase portal-name))
+                                                  (-<> (uic ((:type :form) (:app :set-endpoint))
+                                                            (portal-contacts portal))
+                                                    (in-system-context <> package)
+                                                    (render-html-interface (encode <>)))
+                                                  (render-html-interface
+                                                   (encode (uic ((:type :form :branch-navigation)
+                                                                 (:app :set-nav-point)
+                                                                 (:target . :view)
+                                                                 (:point (funcall context :branch-point)))
+                                                                (if (not (portal-endpoint portal))
+                                                                    ""
+                                                                    (render-nav-menu
+                                                                     (interface-interact
+                                                                      (portal-endpoint portal)
+                                                                      :view)))))))))
+                                 
                                  (if (not (portal-endpoint portal))
                                      nil (interface-interact (portal-endpoint portal) :view
                                                              (list

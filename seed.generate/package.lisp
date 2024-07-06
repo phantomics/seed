@@ -12,7 +12,9 @@
            #:form-as-vectors #:interface-format-form #:render-html-interface #:render-nav-menu
            #:htrender #:render-console #:meta-revise #:psl
            #:from-system-file #:text-wrap #:setf-value #:of-array-spec
-           #:spec-graph-interface #:of-graph-spec)
+           #:spec-graph-interface #:of-graph-spec
+           #:uispec #:render-web
+           )
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)

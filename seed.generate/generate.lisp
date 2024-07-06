@@ -1,4 +1,4 @@
-;;;; seed.generate.lisp
+;;;; generate.lisp
 
 (in-package #:seed.generate)
 
@@ -991,7 +991,7 @@
                                         ;;               ;;                           :branch :system-id))
                                         ;;               ))
                                         )
-                                    (print (list :cc c system-id))
+                                    ;; (print (list :cc c system-id))
                                     (htm (:div :class item-classes ;; rendered
                                                (render-html-interface c system-id nil (cons ix path)
                                                                       strout)
@@ -1081,6 +1081,20 @@
                                                                    :collect (list :td (htrender
                                                                                        cell
                                                                                        :params params)))))))))
+              ;; (:field
+              ;;  (let ((labeled  (member :labeled (rest type) :test #'eq))
+              ;;        (is-block (member :block   (rest type) :test #'eq))
+              ;;        (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
+              ;;                                                               :test #'eq))
+              ;;                                                  name (first item)))))
+              ;;    (if (member :pair (rest type) :test #'eq)
+              ;;        `(:div :class ,(format nil "ui ~a~ainput" (if labeled "labeled " "")
+              ;;                               (if is-block "fluid " ""))
+              ;;               ,@(if labeled `((:div :class "ui label" ,name)))
+              ;;               (:input :type "text" :name ,name :value ,(rest item)))
+              ;;        (build-elem "ui input" (list :input :type "text"
+              ;;                                            :name (symbol-munger:lisp->camel-case name)
+              ;;                                            :value item)))))
               (:field
                (let ((labeled  (member :labeled (rest type) :test #'eq))
                      (is-block (member :block   (rest type) :test #'eq))
@@ -1088,13 +1102,13 @@
                                                                             :test #'eq))
                                                                name (first item)))))
                  (if (member :pair (rest type) :test #'eq)
-                     `(:div :class ,(format nil "ui ~a~ainput" (if labeled "labeled " "")
-                                            (if is-block "fluid " ""))
-                            ,@(if labeled `((:div :class "ui label" ,name)))
-                            (:input :type "text" :name ,name :value ,(rest item)))
-                     (build-elem "ui input" (list :input :type "text"
-                                                         :name (symbol-munger:lisp->camel-case name)
-                                                         :value item)))))
+                     `(:div :class ,(format nil "field~a" (if is-block " has-addons" ""))
+                            ,@(if labeled `((:div :class "control" (:div :class "button is-static" ,name))))
+                            (:div :class "control"
+                                  (:input :class "input" :type "text" :name ,name :value ,(rest item))))
+                     (build-elem "input" (list :input :type "text"
+                                                      :name (symbol-munger:lisp->camel-case name)
+                                                      :value item)))))
               (:code-area
                (let ((labeled  (member :labeled (rest type) :test #'eq))
                      (is-block (member :block   (rest type) :test #'eq))
@@ -2192,7 +2206,7 @@
                                                    (:circle :index ,num-index :cx 0 :cy 0 :r 10
                                                             :opacity 0 :|x-on:click| ,connector-code))))
                                    (:g :class "description"
-                                       :index ,index (:text :class "title" :y 16
+                                       :index ,index (:text :y 16
                                                             :x ,(if is-expandable 26 6) ,title)))
                                (:g :class "circle-glyph" :index ,index
                                    (:circle :class "outer-circle" :cx 16 :cy 0 :r ,main-radius)
@@ -2252,33 +2266,48 @@
 (defun graph-walker (graph)
   (let ((primary (first graph))
         (options (mapcar #'first (rest graph))))
-    ;; (print (list :pri primary options))
     (values (list primary options)
             (lambda (index) (graph-walker (second (nth index (rest graph))))))))
 
 (defclass ui-component ()
   ((name :accessor uic-name
          :initform nil
-         :initarg :name)))
+         :initarg  :name)
+   (type :accessor uic-type
+         :initform nil
+         :initarg  :type)))
 
 (defclass uic-set (ui-component)
-  ((items :accessor uic-set-items
-          :initform nil
-          :initarg :items)
+  ((items  :accessor uic-set-items
+           :initform nil
+           :initarg  :items)
    (layout :accessor uic-set-layout
            :initform nil
-           :initarg :layout)))
+           :initarg  :layout)))
 
-(defclass uic-pane (uic-set)
+(defclass ui-layout ()
+  ((manifest :accessor uilo-manifest
+             :initform nil
+             :initarg  :manifest)))
+
+(defclass uilo-stacked (ui-layout)
   ())
 
-(defclass uic-series (uic-set)
+(defclass uilo-columnar (ui-layout)
+  ((widths :accessor uilo-columns-widths)))
+
+(defclass uic-set-frame (uic-set)
+  ())
+
+(defclass uic-set-series (uic-set)
   ())
 
 (defclass uic-caption (ui-component)
-  ((text :accessor uic-caption-text))
+  ((text :accessor uic-caption-text
+         :initform nil
+         :initarg :text)))
 
-(defclass uic-heading (uic-caption)
+(defclass uic-caption-heading (uic-caption)
   ())
 
 (defclass uic-caption-paragraph (uic-caption)
@@ -2293,6 +2322,103 @@
    (content :accessor uic-expr-content
             :initform nil
             :initarg :content)))
+
+(defgeneric render-web (ui-component &optional stream)
+  (:documentation "Render base."))
+
+(defmethod render-web :around ((comp ui-component) &optional stream)
+  (if stream (call-next-method)
+      (let ((spinneret:*always-quote* t)
+            (spinneret:*html* (make-string-output-stream)))
+        (render-web comp spinneret:*html*)
+        (get-output-stream-string spinneret:*html*))))
+
+(defmethod render-web ((comp string) &optional stream)
+  (if (not stream) nil (format stream comp)))
+
+(defmethod render-web ((comp uic-caption-heading) &optional stream)
+  (spinneret:with-html (:h2 (lisp (uic-caption-text comp)))))
+
+(defmethod render-web ((comp uic-caption-paragraph) &optional stream)
+  (spinneret:with-html (:p (lisp (uic-caption-text comp)))))
+
+(defmethod render-web ((comp uic-set-frame) &optional stream)
+  (let ((last-type-index (1- (length (uic-type comp))))
+        (class-stream (make-string-output-stream)))
+    (loop :for type :in (uic-type comp) :for ix :from 0
+          :do (format class-stream "~a" (string-downcase type))
+              (unless (= ix last-type-index) (format class-stream " ")))
+  (spinneret:with-html
+    (:div :path "" :class (get-output-stream-string class-stream)
+          (loop :for ix :from 0 :for item :in (uic-set-items comp)
+                :do (:div (render-web item stream)))))))
+
+(defun form-gen (type &rest args)
+  (let ((params) (item) (args-offset 0))
+    (unless (second args) (setf item (first args)
+                                args (rest args)))
+    (unless item (loop :for (key value) :on args :by #'cddr :while (keywordp key)
+                       :do (push (if (not (eq :type key))
+                                     ;; quote the type list, as for (uispec (frame :type (:stack) ...))
+                                     value (list 'quote value))
+                                 params)
+                           (push key params) (incf args-offset 2)))
+    (let ((items (nthcdr args-offset args))
+          (subtypes (getf params :type)))
+      `(make-instance ',(case type (:frame 'uic-set-frame)
+                              (:series 'uic-set-series)
+                              (:head 'uic-caption-heading)
+                              (:para 'uic-caption-paragraph)
+                              (:expr 'uic-expression))
+                      ,@(if (not items)
+                            nil `(:items (list ,@(mapcar (lambda (item)
+                                                           (if (not (and (listp item)
+                                                                         (keywordp (first item))))
+                                                               item (apply #'form-gen item)))
+                                                         items))))
+                      ,@(if (not (member type '(:head :para)))
+                            nil `(:text ,item))
+                      ,@params))))
+
+;; (defun form-gen (type subtypes &rest specs)
+;;   (print (list :ty type subtypes specs))
+;;   (let ((params) (members-offset 0)
+;;         (value (if (listp subtypes) nil subtypes)))
+;;     (unless value
+;;       (loop :for (key value) :on specs :by #'cddr :while (keywordp key)
+;;             :do (push value params) (push key params) (incf members-offset 2)))
+;;     (let ((items (nthcdr members-offset specs)))
+;;       `(make-instance ',(case type (:frame 'uic-set-frame)
+;;                               (:series 'uic-set-series)
+;;                               (:heading 'uic-caption-heading)
+;;                               (:p 'uic-caption-paragraph))
+;;                       :type ',subtypes
+;;                       ,@(if (not items) nil
+;;                             `(:items (list ,@(mapcar (lambda (item) (apply #'form-gen item))
+;;                                                      items))))
+;;                       ,@(if (member type '(:heading :p))
+;;                             `(:text ,value))
+;;                       ,@params))))
+
+(defmacro uispec (&rest forms)
+  (let ((output (loop :for form :in forms :collect (apply #'form-gen form))))
+    (if (second output)
+        (cons 'list output)
+        (first output))))
+
+#|
+
+(render-web (uispec (:head "Hello")))
+
+(render-web (uispec (:frame :type (:stack :sidebar)
+                            (:head "Hello")
+                            (:para "More stuff."))))
+
+(uispec (:set (:series)
+              (:set (:frame))
+              (:set (:frame))))
+
+|#
 
 ;; (dgraph-interface iii bla :open-path '(0 0))
 ;; (dgraph-interface iii bla :open-path '(1 0 0))

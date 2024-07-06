@@ -382,8 +382,8 @@
           )
   (:output-to . "./ui-browser/build/vendor.js"))
  (:concat-static
-  (:paths "./ui-browser/node_modules/fomantic-ui/dist/semantic.css")
-  ;; (:paths "./ui-browser/node_modules/bulma/css/bulma.css")
+  ;; (:paths "./ui-browser/node_modules/fomantic-ui/dist/semantic.css")
+  (:paths "./ui-browser/node_modules/bulma/css/bulma.css")
   (:output-to . "./ui-browser/build/vendor.css"))
  )
 

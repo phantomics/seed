@@ -14,4 +14,5 @@
                               "seed.sublimate"
                               "com.inuoe.jzon" "trivial-package-local-nicknames")
   :components ((:file "package")
+               (:file "setup")
                (:file "generate")))
