@@ -14,4 +14,5 @@
                       ;; "seed.admit"
                       "seed.contact.http")
   :components ((:file "package")
+               (:file "setup")
                (:file "demo1")))

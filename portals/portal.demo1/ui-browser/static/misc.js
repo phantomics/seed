@@ -21,3 +21,18 @@ function fetchContact(system, branch, input, handler) {
         return data;
     }).then(handler);
 };
+function fetchContact2(context, element, input) {
+    console.log('cc', context);
+    __PS_MV_REG = [];
+    return fetch('/contact/', { method : 'POST',
+                                headers : { 'Content-type' : 'application/json; charset=UTF-8' },
+                                body : JSON.stringify({ portal : context.system,
+                                                        branch : context.branch,
+                                                        input : input
+                                                      })
+                              }).then(function (response) {
+        return response.json();
+    }).then(function (data) {
+        return htmx.trigger(element, 'refresh');
+    });
+};

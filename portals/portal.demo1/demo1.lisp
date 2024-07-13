@@ -32,6 +32,7 @@
                                (json-convert-to (interface-interact
                                                  (if portal-form (intern portal-form "KEYWORD") nil)
                                                  (if branch-form (intern branch-form "KEYWORD") nil)
+                                                 ;; (append (list (cons :session session-api))
                                                  (rest (assoc "input" params :test #'string=))))))
          :renderer-fetch (lambda (params session-api)
                            ;; (print (list :par params session-api))
@@ -47,23 +48,61 @@
       (setf (symbol-function 'contact-stop)    stopper
             (symbol-function 'contact-restart) restarter))))
 
+;; (defmethod render-web :around ((comp ui-component) &optional stream)
+;;   (if stream (call-next-method)
+;;       (let ((spinneret:*always-quote* t)
+;;             (spinneret:*html* (make-string-output-stream)))
+;;         (render-web comp spinneret:*html*)
+;;         (get-output-stream-string spinneret:*html*))))
+
+;; (defmethod render-web ((comp string) &optional stream)
+;;   (if (not stream) nil (format stream comp)))
+
+;; (defmethod render-web ((comp uic-caption-heading) &optional stream)
+;;   (spinneret:with-html (:h2 (lisp (uic-caption-text comp)))))
+
+
 (defun build-static-page (portal-sym relative-path)
-  (with-open-file (stream (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
-                                                         (format nil "./~a/index.html" relative-path))
-			  :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (cl-who:with-html-output (stream)
+  (with-open-file (spinneret:*html*
+                   (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
+                                                  (format nil "./~a/index.html" relative-path))
+		   :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (spinneret:with-html
       (:html (:head (:script (paren6::ps (defvar |*__PS_MV_REG*|)
                                (setf (@ window seed-data) (create))))
                     (:link :rel "stylesheet" :href "./build/vendor.css")
                     (:link :rel "stylesheet" :href "./build/app.css"))
              (:body (:div :id "main" :class "ui" :hx-post "/render/"
-                          :hx-trigger "load, reload, submit"
+                          :hx-trigger "load, reload, submit, refresh"
                           :hx-vals (json-convert-to (list :system portal-sym
-                                                          :branch :view)))
+                                                          :branch :view))
+                          :x-data (ps (create context (create system (lisp (string portal-sym))
+                                                              branch "VIEW"))))
                     (:script :src "./static/misc.js")
                     (:script :src "./build/vendor.js")
-                    (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js")
-                    )))))
+                    (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js"))))))
+
+
+;; (defun build-static-page (portal-sym relative-path)
+;;   (with-open-file (stream (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
+;;                                                          (format nil "./~a/index.html" relative-path))
+;; 			  :direction :output :if-exists :supersede :if-does-not-exist :create)
+;;     (cl-who:with-html-output (stream)
+;;       (:html (:head (:script (paren6::ps (defvar |*__PS_MV_REG*|)
+;;                                (setf (@ window seed-data) (create))))
+;;                     (:link :rel "stylesheet" :href "./build/vendor.css")
+;;                     (:link :rel "stylesheet" :href "./build/app.css"))
+;;              (:body (:div :id "main" :class "ui" :hx-post "/render/"
+;;                           :hx-trigger "load, reload, submit"
+;;                           :hx-vals (json-convert-to (list :system portal-sym
+;;                                                           :branch :view))
+;;                           :x-data (ps-inline (create context (create system (lisp (string-downcase portal-sym))
+;;                                                                branch "view"
+;;                                                                container this))))
+;;                     (:script :src "./static/misc.js")
+;;                     (:script :src "./build/vendor.js")
+;;                     (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js")
+;;                     )))))
 
 ;; (build-static-page :portal.demo1 "ui-browser")
 
@@ -319,7 +358,7 @@
                        (create method "POST"
                                body (chain -j-s-o-n (stringify (create portal system
                                                                        branch branch
-                                                                       input input)))
+                                                                       input  input)))
                                headers (create "Content-type" "application/json; charset=UTF-8")))
                 (then (lambda (response) (chain response (json))))
                 (then (lambda (data)
@@ -332,7 +371,19 @@
                                                                                     "reload"))))))
                         data))
                 (then handler)))
-             ))))
+       
+       (defun fetch-contact2 (context element input)
+         (chain console (log :cc context))
+         (chain (fetch "/contact/"
+                       (create method "POST"
+                               headers (create "Content-type" "application/json; charset=UTF-8")
+                               body (chain -j-s-o-n (stringify (create portal (@ context system)
+                                                                       branch (@ context branch)
+                                                                       input  input)))))
+                (then (lambda (response) (chain response (json))))
+                (then (lambda (data) (chain htmx (trigger element "refresh"))))))
+         
+         ))))
 
 ;; (build-script-misc "ui-browser")
 

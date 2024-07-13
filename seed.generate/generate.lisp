@@ -34,7 +34,7 @@
        (setf ,psym nil
              (getf ,psym :props) ',props
              ,@(when portal-contacts `((getf (getf ,psym :props) :portal-contacts) ',portal-contacts
-                                       (getf (getf ,psym :props) :endpoint) nil)))
+                                       (getf (getf ,psym :props) :endpoint)        nil)))
        ,@(loop :for contact-sym :in portal-contacts
                :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
        (let ,(loop :for (key value) :on bindings :by #'cddr
@@ -477,13 +477,16 @@
          (:save (cl-who:with-html-output (stream-out)
                   (:button :class "ui button"
                            :|x-on:click|
-                           (psl (fetch-contact (lisp (string-upcase (getf props :system)))
-                                               (lisp (string-upcase (getf props :branch)))
-                                               (@ (getprop (@ window seed-data)
-                                                           (lisp token))
-                                                  state doc text)
-                                               ;; (@ window codemirror state doc text)
-                                               (lambda (data) (chain console (log :sv)))))
+                           ;; (psl (fetch-contact (lisp (string-upcase (getf props :system)))
+                           ;;                     (lisp (string-upcase (getf props :branch)))
+                           ;;                     (@ (getprop (@ window seed-data)
+                           ;;                                 (lisp token))
+                           ;;                        state doc text)
+                           ;;                     ;; (@ window codemirror state doc text)
+                           ;;                     (lambda (data) (chain console (log :sv)))))
+                           (psl (fetch-contact2 context $el (create text (@ (getprop (@ window seed-data)
+                                                                                     (lisp token))
+                                                                            state doc text))))
                            (str (string-downcase (getf props :subsection)))))))))))
 
 (defun branch-spec-cvdatagrid-tree (stream-out section &rest props)
@@ -2316,15 +2319,16 @@
            :initarg :format)))
 
 (defclass uic-expression (ui-component)
-  ((type :accessor uic-expr-type
-         :initform nil
-         :initarg :type)
-   (content :accessor uic-expr-content
+  ((content :accessor uic-expr-content
             :initform nil
             :initarg :content)))
 
 (defgeneric render-web (ui-component &optional stream)
   (:documentation "Render base."))
+
+(defmethod render-web ((comp t) &optional stream)
+  (declare (ignore comp stream))
+  "")
 
 (defmethod render-web :around ((comp ui-component) &optional stream)
   (if stream (call-next-method)
@@ -2342,16 +2346,34 @@
 (defmethod render-web ((comp uic-caption-paragraph) &optional stream)
   (spinneret:with-html (:p (lisp (uic-caption-text comp)))))
 
-(defmethod render-web ((comp uic-set-frame) &optional stream)
+(defmethod render-web ((comp uic-expression) &optional stream)
+  (render-html-interface (encode (uic-expr-content comp))
+                         nil nil nil stream))
+
+(defmethod render-web ((comp uic-set) &optional stream)
   (let ((last-type-index (1- (length (uic-type comp))))
-        (class-stream (make-string-output-stream)))
+        (class-stream (make-string-output-stream))
+        (layout (uic-set-layout comp)))
+    (format class-stream "~a" (typecase comp (uic-set-series "series ")
+                                        (uic-set-frame "frame ")
+                                        (t "")))
     (loop :for type :in (uic-type comp) :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
               (unless (= ix last-type-index) (format class-stream " ")))
-  (spinneret:with-html
-    (:div :path "" :class (get-output-stream-string class-stream)
-          (loop :for ix :from 0 :for item :in (uic-set-items comp)
-                :do (:div (render-web item stream)))))))
+    (spinneret:with-html
+      (:div :path "" :class (get-output-stream-string class-stream)
+            (loop :for ix :from 0 :for item :in (uic-set-items comp)
+                  :do (let ((this-layout (nth ix layout)))
+                        (:div :class (if (keywordp this-layout)
+                                         (string-downcase this-layout)
+                                         (if (and this-layout (listp this-layout))
+                                             (loop :for litem :in this-layout :for lix :from 0
+                                                   :do (format class-stream "~a" (string-downcase litem))
+                                                       (unless (= lix (1- (length this-layout)))
+                                                         (format class-stream " "))
+                                                   :finally (return (get-output-stream-string class-stream)))
+                                             ""))
+                              (render-web item stream))))))))
 
 (defun form-gen (type &rest args)
   (let ((params) (item) (args-offset 0))
@@ -2378,6 +2400,7 @@
                                                          items))))
                       ,@(if (not (member type '(:head :para)))
                             nil `(:text ,item))
+                      ,@(if (eq type :expr) (list :content (or item (first items))))
                       ,@params))))
 
 ;; (defun form-gen (type subtypes &rest specs)

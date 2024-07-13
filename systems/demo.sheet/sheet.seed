@@ -60,14 +60,17 @@
                        (in-system-context <> package))))
                  :main
                  (lambda (input)
-                   (if input (let ((input (apply #'concatenate 'string
-                                                 (loop :for i :in input :append (list i '(#\Newline))))))
-                               (setf (from-system-file package "sheet.lisp" :main :as-string t)
-                                     (text-wrap input :syntax :progn))
-                               (load-seed-system package)
-                               (list :text (text-wrap (from-system-file package "sheet.lisp"
-                                                                        :main :as-string t)
-                                                      :unwrap t :syntax :progn)))
+                   (print (list :in2 input))
+                   (if (getf input :text)
+                       (let ((input (apply #'concatenate 'string
+                                           (loop :for i :in (getf input :text)
+                                                 :append (list i '(#\Newline))))))
+                         (setf (from-system-file package "sheet.lisp" :main :as-string t)
+                               (text-wrap input :syntax :progn))
+                         (load-seed-system package)
+                         (list :text (text-wrap (from-system-file package "sheet.lisp"
+                                                                  :main :as-string t)
+                                                :unwrap t :syntax :progn)))
                        (list :text (text-wrap (from-system-file package "sheet.lisp"
                                                                 :main :as-string t)
                                               :unwrap t :syntax :progn :trailing-newlines 2))))
