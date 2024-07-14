@@ -68,7 +68,7 @@
           (lambda (value)
             (let ((session-id (get-cookie "session")))
               (unless session-id (let ((new-id (gensym "SSID")))
-                                   (set-cookie "session" (list :value    (string new-id)
+                                   (set-cookie "session" (list :value (string new-id)
                                                                :httponly t :samesite :strict))
                                    (setf session-id new-id
                                          (gethash session-id (getf *request-env* :lack.session))

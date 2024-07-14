@@ -33,6 +33,7 @@
                                                  (if portal-form (intern portal-form "KEYWORD") nil)
                                                  (if branch-form (intern branch-form "KEYWORD") nil)
                                                  ;; (append (list (cons :session session-api))
+                                                 session-api
                                                  (rest (assoc "input" params :test #'string=))))))
          :renderer-fetch (lambda (params session-api)
                            ;; (print (list :par params session-api))
@@ -40,6 +41,7 @@
                                   (branch-form (string-upcase (rest (assoc "branch" params :test #'string=)))))
                              (interface-interact (if system-form (intern system-form "KEYWORD") nil)
                                                  (if branch-form (intern branch-form "KEYWORD") nil)
+                                                 session-api
                                                  (append (list (cons :session session-api))
                                                          (loop :for p :in params
                                                                :collect (cons (symbol-munger:camel-case->keyword

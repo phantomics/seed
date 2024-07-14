@@ -4,7 +4,7 @@
       :portal-contacts (:demo.sheet) ;; :demo-image)
       :bindings (:package package :system portal :context context :portal-name portal-name)
       :branches (:view
-                 (lambda (input)
+                 (lambda (session input)
                    (let ((context (rest (assoc :session input))))
                      (let ((key-input (rest (assoc :key input :test #'eq))))
                        (when (and key-input (string= "demo" (string-downcase key-input)))
@@ -107,7 +107,7 @@
                            (render-html-interface (encode <>)))
                          )))
                  :systems
-                 (lambda (input)
+                 (lambda (session input)
                    (if input (let ((epsym (intern input "KEYWORD")))
                                (setf (of-system portal :props :endpoint)
                                      (intern input "KEYWORD"))

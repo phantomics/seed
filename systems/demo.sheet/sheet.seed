@@ -3,7 +3,7 @@
 (seed :demo.sheet
       :bindings (:package package :system system :portal-name portal-name)
       :branches (:view
-                 (lambda (input)
+                 (lambda (session input)
                    (let ((context (second (assoc :session input))))
                      (-<> (uic ((:type :set :linear :columnar :workspace :even)
                                 (:members :column :column)
@@ -59,7 +59,7 @@
                                )
                        (in-system-context <> package))))
                  :main
-                 (lambda (input)
+                 (lambda (session input)
                    (print (list :in2 input))
                    (if (getf input :text)
                        (let ((input (apply #'concatenate 'string
@@ -75,11 +75,11 @@
                                                                 :main :as-string t)
                                               :unwrap t :syntax :progn :trailing-newlines 2))))
                  :code
-                 (lambda (input)
+                 (lambda (session input)
                    (seed.generate::form-as-vectors
                     (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5))))))
                  :form
-                 (lambda (input)
+                 (lambda (session input)
                    (when (third input)
                      ;; only process input if fields apart form system/branch are present
                      (let ((original (from-system-file package "sheet.lisp" :form)))
@@ -94,7 +94,7 @@
                      (get-output-stream-string out)))
                  :table
                  (let ((original (from-system-file package "sheet.lisp" :table)))
-                   (lambda (input)
+                   (lambda (session input)
                      (when (fourth input)
                        ;; only process input if fields apart form system/branch are present
                        (meta-revise (second (third original)) input)
@@ -152,7 +152,7 @@
                   :graph-key :graph :node-indices-key :graph-node-indices)
                  :play
                  (let ((state) (node) (selector))
-                   (lambda (input)
+                   (lambda (session input)
                      (unless (and (find-package 'demo.sheet)
                                   (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
                        (instantiate-priority-macro-reader (asdf:load-system package)))
@@ -199,7 +199,7 @@
                        (get-output-stream-string out))))
                  :cells
                  (let ((display-baseline))
-                   (lambda (input)
+                   (lambda (session input)
                      (if input (if (and (listp input) (listp (first input))
                                         (stringp (caar input)))
                                    (cond ((string= "toggleBaseline" (caar input))
@@ -240,7 +240,7 @@
 ;;       (node-template (second (from-system-file package "sheet.lisp" :graph-node-template)))
 ;;       (link-template (second (from-system-file package "sheet.lisp" :graph-link-template)))
 ;;       (indices-form (from-system-file package "sheet.lisp" :graph-node-indices)))
-;;   (lambda (input)
+;;   (lambda (session input)
 ;;     ;; (print (list :in2 input))
 ;;     (unless graph-base
 ;;       (setf graph-base  (from-system-file package "sheet.lisp" :graph)
@@ -648,7 +648,7 @@
 
 ;; :graph2
 ;; (let ((el-width) (el-height) (formatted) (graph-base) (graph-data))
-;;   (lambda (input)
+;;   (lambda (session input)
 ;;     (print (list :in input))
 ;;     (unless graph-base (setf graph-base (from-system-file package "sheet.lisp" :graph)
 ;;                              graph-data (seed.generate::format-graph-spec-to-edit
@@ -702,7 +702,7 @@
 ;;               '(:oob-reload #("graphnode")))))))
 ;; :graphnode2
 ;; (let ((index 0) (sub-index) (nodes-base) (nodes-data))
-;;   (lambda (input)
+;;   (lambda (session input)
 ;;     (setf nodes-base (from-system-file package "sheet.lisp" :graph)
 ;;           nodes-data (rest (third nodes-base)))
 ;;     ;; (meta-revise (second (third nodes-data)) input t)

@@ -6,7 +6,7 @@
 
 (defvar *output-stream*)
 
-(defun interface-interact (interface-key branch-key &optional input)
-  (interact (of-interfaces interface-key) branch-key input))
+(defun interface-interact (interface-key branch-key &optional session-api input)
+  (interact (of-interfaces interface-key) branch-key session-api input))
 
 ;; (manifest-portal-contact-web)

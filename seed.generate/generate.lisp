@@ -99,9 +99,9 @@
   (append (list (first spec) (second spec))
           (cons (cons :system system-name) (cddr spec))))
 
-(defun interact (portal branch &optional input)
+(defun interact (portal branch &optional session-api input)
   (funcall (getf (getf portal :branches) branch)
-           input))
+           session-api input))
 
 (defun with (item &rest props) ;; obsolete
   (append (list :props item) props))
