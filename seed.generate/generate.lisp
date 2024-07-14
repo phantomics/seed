@@ -28,9 +28,11 @@
 (defmacro seed (name &key props contacts branches bindings portal-contacts)
   (let* ((input (gensym)) (blank (gensym))
          (si-sym (intern "*SEED-INTERFACES*" (package-name *package*)))
+         (sc-sym (intern "*SEED-CONTEXT*" (package-name *package*)))
          (psym `(getf ,si-sym ,(intern (string name) "KEYWORD"))))
     `(progn
        (unless (boundp ',si-sym) (defvar ,si-sym nil))
+       (unless (boundp ',sc-sym) (defvar ,sc-sym nil))
        (setf ,psym nil
              (getf ,psym :props) ',props
              ,@(when portal-contacts `((getf (getf ,psym :props) :portal-contacts) ',portal-contacts
@@ -43,6 +45,55 @@
                                               (:portal-name name))))
          (setf (getf ,psym :branches) ,(cons 'list branches)
                (getf ,psym :sessions) (make-hash-table :test #'eq))))))
+
+;; &key props contacts branches bindings portal-contacts
+
+(defmacro seed2 (name &rest props)
+  (let* ((branches (rest (assoc :branches props)))
+         (bind (rest (assoc :bind props)))
+         (portal-contacts (rest (assoc :portal-contacts props)))
+         (grow       (intern (string (getf bind :to-grow))    (string name)))
+         (of-context (intern (string (getf bind :to-monitor)) (string name)))
+         (of-contact (intern (string (getf bind :to-contact)) (string name)))
+         (context (gensym "CON")) (channel (gensym "CHN"))
+         (key (gensym "KY")) (input (gensym "IN"))
+         (bsym  (gensym "BR")) (ksym (gensym "BK")) (isym (gensym "IN"))
+         (esym (gensym "EP")) (prsym (gensym "PR")))
+    `(progn
+       (proclaim '(special ,grow ,of-context ,of-contact))
+       ;; (setf ,psym nil
+       ;;       (getf ,psym :props) ',props
+       ;;       ,@(when portal-contacts `((getf (getf ,psym :props) :portal-contacts) ',portal-contacts
+       ;;                                 (getf (getf ,psym :props) :endpoint)        nil)))
+       ,@(loop :for contact-sym :in portal-contacts
+               :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
+       (let ,(append (loop :for (key value) :on bind :by #'cddr
+                           :collect (list value
+                                          (case key (:package (intern (string name) "KEYWORD"))
+                                                ;; (:system `(getf ,si-sym ,(intern (string name) "KEYWORD")))
+                                                (:portal-name name))))
+                     (list (list esym)
+                           (list context)
+                           (list prsym (list 'quote (list :portal-contacts portal-contacts)))
+                           (list bsym (cons 'list branches))))
+         
+         (defun ,grow (,ksym &optional ,isym) (funcall (getf ,bsym ,ksym) ,isym))
+
+         (defun ,of-contact (,ksym) (getf ,prsym ,ksym))
+
+         (defun (setf ,of-contact) (,ksym ,isym) (setf (getf ,prsym ,ksym) ,isym))
+
+         (defun ,of-context (,channel &optional ,key)
+           (if (not (getf ,context ,channel))
+               nil (getf (getf ,context ,channel) ,key)))
+
+         (defun (setf ,of-context) (,channel ,key &optional ,input)
+           (if ,input (if (not (getf ,context ,channel))
+                          (error "Attempted to assign in context channel ~a, ~a"
+                                 ,channel "but that channel is not recognized.")
+                          (setf (getf (getf ,context ,channel) ,key) ,input))
+               (setf (getf ,context ,channel) ,key)))
+         ))))
 
 (defun in-system-context (spec system-name)
   (append (list (first spec) (second spec))

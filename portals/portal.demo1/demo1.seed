@@ -2,7 +2,7 @@
 
 (seed :portal.demo1
       :portal-contacts (:demo.sheet) ;; :demo-image)
-      :bindings (:package package :system portal :portal-name portal-name)
+      :bindings (:package package :system portal :context context :portal-name portal-name)
       :branches (:view
                  (lambda (input)
                    (let ((context (rest (assoc :session input))))

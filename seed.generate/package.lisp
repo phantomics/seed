@@ -14,6 +14,8 @@
            #:from-system-file #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec
            #:uispec #:render-web
+
+           #:seed2
            )
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)

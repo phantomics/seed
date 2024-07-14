@@ -593,3 +593,90 @@
 		     :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history))))
 
 |#
+
+
+(seed2 :portal.demo1
+      (:bind :package package :system portal :context context :portal-name portal-name
+             :to-grow grow :to-monitor of-context :to-contact of-contact)
+      (:contacts :demo.sheet) ;; :demo-image)
+      (:branches :view
+                 (lambda (input)
+                   (let ((context)) ;; to delete later
+                     (let ((key-input (rest (assoc :key input :test #'eq))))
+                       (when (and key-input (string= "demo" (string-downcase key-input)))
+                         (of-context :user :hello)))
+
+                     (when (and context (assoc :point input))
+                       ;; when a point is selected, assign it
+                       (of-context :branch-point (intern (string-upcase (rest (assoc :point input)))
+                                                         "KEYWORD")))
+
+                     (when (and context (assoc "point" input :test #'string=))
+                       ;; when a system is selected, assign it - case of new selector controls
+                       (let ((epsym (intern (string-upcase (rest (assoc "point" input :test #'string=)))
+                                            "KEYWORD")))
+                         (setf (of-system portal :props :endpoint) epsym)
+                         ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
+                         (load-seed-system epsym)))
+
+                     (authorize (of-context :user)
+                       (render-web
+                        (uispec (:series
+                                 :type (:ui :grid-layout :linear :main :split :left-sidebar)
+                                 :layout (list :sidebar :main)
+                                 (:frame :type (:group :stack :form)
+                                         (:head (string-downcase portal-name))
+                                         (-<> (uic ((:type :form) (:app :set-endpoint))
+                                                   (portal-contacts portal))
+                                           (in-system-context <> package)
+                                           (render-html-interface (encode <>)))
+                                         ;; "<h3 hx-vals='{ \"branch-select\": \"demo.sheet\" }' x-on:click=\" htmx.trigger(context.container, 'submit', { 'bla' : 10, 'eee' : 33 })\">demo.sheet</h3>"
+                                         "<h3 x-on:click=\" fetchContact2(context, $el, { point: 'demo.sheet' })\">demo.sheet</h3>"
+                                         ;; (:expr (uic ((:type :form) (:app :set-endpoint))
+                                         ;;             (portal-contacts portal)))
+                                         (render-html-interface
+                                          (encode (uic ((:type :form :branch-navigation)
+                                                        (:app :set-nav-point)
+                                                        (:target . :view)
+                                                        (:point (of-context :branch-point)))
+                                                       (if (not (portal-endpoint portal))
+                                                           "" (render-nav-menu (grow :view)))))))
+                                 
+                                 (if (not (portal-endpoint portal))
+                                     nil (-<> (interface-interact (portal-endpoint portal) :view
+                                                                  (list
+                                                                   (list :session context)))
+                                           ;; (in-system-context <> package)
+                                           (render-html-interface (encode <>)))))))
+                         
+                         (-<> (uic ((:type :group :stack :main)
+                                    (:members :heading :main))
+                                   (uic ((:type :heading))
+                                        (string-downcase portal-name))
+                                   (let ((out (make-string-output-stream)))
+                                     (spinneret:interpret-html-tree
+                                      (htrender '(meta ((meta "Key" (:type :label))
+                                                        (meta "" (:name :key)
+                                                         (:type :field :text)))
+                                                  (:type :set :form))
+                                                :params '(:system :portal.demo1 :branch :view)
+                                                )
+                                      :stream out)
+                                     (get-output-stream-string out)))
+                           (in-system-context <> package)
+                           (interface-format-form input)
+                           (render-html-interface (encode <>)))
+                         )))
+                 :systems
+                 (lambda (input)
+                   (if input (let ((epsym (intern input "KEYWORD")))
+                               (setf (of-system portal :props :endpoint)
+                                     (intern input "KEYWORD"))
+                               ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
+                               (load-seed-system epsym)
+                               )
+                       (-<> (with-meta (of-system portal :props :portal-contacts)
+                              :type (:form))
+                         (encode <>))))
+                 ))
+
