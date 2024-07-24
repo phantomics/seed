@@ -9,6 +9,7 @@
   :depends-on ("seed" ;; "clarion" ;; "spinneret"
                "symbol-munger"
                ;; "panic"
+               "arrow-macros"
                       "cl-who" ;; "trivia"
                       "parenscript" "paren6" "lass"
                       ;; "seed.admit"

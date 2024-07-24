@@ -51,49 +51,68 @@
 (defmacro seed2 (name &rest props)
   (let* ((branches (rest (assoc :branches props)))
          (bind (rest (assoc :bind props)))
-         (portal-contacts (rest (assoc :portal-contacts props)))
+         (contact-names (rest (assoc :contacts props)))
+         (contacts-api (rest (assoc :contacts-api props)))
          (grow       (intern (string (getf bind :to-grow))    (string name)))
-         (of-context (intern (string (getf bind :to-monitor)) (string name)))
+         (of-portal (intern (string (getf bind :of-portal)) (string name)))
          (of-contact (intern (string (getf bind :to-contact)) (string name)))
-         (context (gensym "CON")) (channel (gensym "CHN"))
-         (key (gensym "KY")) (input (gensym "IN"))
-         (bsym  (gensym "BR")) (ksym (gensym "BK")) (isym (gensym "IN"))
-         (esym (gensym "EP")) (prsym (gensym "PR")))
+         (context (gensym "CON")) (channel (gensym "CHN")) (branches-sym (gensym "BRS"))
+         (contacts-list (gensym "CLS"))
+         (key (gensym "KY")) (session (gensym "SS")) (input (gensym "IN"))
+         ;; (ksym (gensym "BK")) (isym (gensym "IN"))
+         ;; (esym (gensym "EP"))
+         (prsym (gensym "PR"))
+         (contacts (if (symbolp contacts-api)
+                       (loop :for cn :in (rest (assoc :contacts props))
+                             :append `(,cn (symbol-function (intern ,(string contacts-api)
+                                                                    ,(string cn)))))
+                       (loop :for cn :in contact-names :for ca :in contacts-api
+                             :collect `(,cn (symbol-function (intern ,(string ca)
+                                                                     ,(string cn))))))))
+    (print contacts)
     `(progn
-       (proclaim '(special ,grow ,of-context ,of-contact))
-       ;; (setf ,psym nil
-       ;;       (getf ,psym :props) ',props
-       ;;       ,@(when portal-contacts `((getf (getf ,psym :props) :portal-contacts) ',portal-contacts
-       ;;                                 (getf (getf ,psym :props) :endpoint)        nil)))
-       ,@(loop :for contact-sym :in portal-contacts
+       (proclaim '(special ,grow ,of-portal ,of-contact))
+       ,@(loop :for contact-sym :in contact-names
                :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
-       (let ,(append (loop :for (key value) :on bind :by #'cddr
-                           :collect (list value
-                                          (case key (:package (intern (string name) "KEYWORD"))
-                                                ;; (:system `(getf ,si-sym ,(intern (string name) "KEYWORD")))
-                                                (:portal-name name))))
-                     (list (list esym)
-                           (list context)
-                           (list prsym (list 'quote (list :portal-contacts portal-contacts)))
-                           (list bsym (cons 'list branches))))
+       (let* ,(append (list (loop :for (key value) :on bind :by #'cddr
+                                  :append (case key (:package (list value `(find-package ,name))))))
+                      (list ;; `(,contacts-list
+                        ;;   (list ,@(if (symbolp contacts-api)
+                        ;;               (loop :for cn :in contact-names
+                        ;;                     :collect (list 'function (intern (string contacts-api)
+                        ;;                                                      (string cn))))
+                        ;;               (loop :for cn :in contact-names :for ca :in contacts-api
+                        ;;                     :collect (list 'function (intern (string ca)
+                        ;;                                                      (string cn)))))))
+                        ;; `(,contacts-list (list ,@contacts))
+                        `(,prsym (list :point nil
+                                       :contacts (list ,@(loop :for (key val) :on contacts
+                                                               :by #'cddr :collect key))))
+                        `(,branches-sym (list ,@branches))))
          
-         (defun ,grow (,ksym &optional ,isym) (funcall (getf ,bsym ,ksym) ,isym))
+         (defun ,grow (,key &optional ,session ,input)
+           (funcall (getf ,branches-sym ,key) ,session ,input))
 
-         (defun ,of-contact (,ksym) (getf ,prsym ,ksym))
+         (defun ,of-contact (,key &optional ,input)
+           (funcall (getf ,contacts-list ,key) ,input))
 
-         (defun (setf ,of-contact) (,ksym ,isym) (setf (getf ,prsym ,ksym) ,isym))
+         (defun ,of-portal (,key) (getf ,prsym ,key))
 
-         (defun ,of-context (,channel &optional ,key)
-           (if (not (getf ,context ,channel))
-               nil (getf (getf ,context ,channel) ,key)))
+         (defun (setf ,of-portal) (,key ,input) (setf (getf ,prsym ,key) ,input))
 
-         (defun (setf ,of-context) (,channel ,key &optional ,input)
-           (if ,input (if (not (getf ,context ,channel))
-                          (error "Attempted to assign in context channel ~a, ~a"
-                                 ,channel "but that channel is not recognized.")
-                          (setf (getf (getf ,context ,channel) ,key) ,input))
-               (setf (getf ,context ,channel) ,key)))
          ))))
+
+;; (defun ,of-context (,channel &optional ,key)
+;;   (if (not (getf ,context ,channel))
+;;       nil (getf (getf ,context ,channel) ,key)))
+
+;; (defun (setf ,of-context) (,channel ,key &optional ,input)
+;;   (if ,input (if (not (getf ,context ,channel))
+;;                  (error "Attempted to assign in context channel ~a, ~a"
+;;                         ,channel "but that channel is not recognized.")
+;;                  (setf (getf (getf ,context ,channel) ,key) ,input))
+;;       (setf (getf ,context ,channel) ,key)))
+
 
 (defun in-system-context (spec system-name)
   (append (list (first spec) (second spec))
