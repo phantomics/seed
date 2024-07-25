@@ -52,55 +52,39 @@
   (let* ((branches (rest (assoc :branches props)))
          (bind (rest (assoc :bind props)))
          (contact-names (rest (assoc :contacts props)))
+         (joiner (rest (assoc :joiner props)))
+         (contactor (rest (assoc :contactor props)))
          (contacts-api (rest (assoc :contacts-api props)))
-         (grow       (intern (string (getf bind :to-grow))    (string name)))
-         (of-portal (intern (string (getf bind :of-portal)) (string name)))
-         (of-contact (intern (string (getf bind :to-contact)) (string name)))
+         (grow (intern (string (getf bind :to-grow)) (string name)))
+         (of-system (intern (string (getf bind :of-system)) (string name)))
          (context (gensym "CON")) (channel (gensym "CHN")) (branches-sym (gensym "BRS"))
-         (contacts-list (gensym "CLS"))
-         (key (gensym "KY")) (session (gensym "SS")) (input (gensym "IN"))
-         ;; (ksym (gensym "BK")) (isym (gensym "IN"))
-         ;; (esym (gensym "EP"))
-         (prsym (gensym "PR"))
-         (contacts (if (symbolp contacts-api)
-                       (loop :for cn :in (rest (assoc :contacts props))
-                             :append `(,cn (symbol-function (intern ,(string contacts-api)
-                                                                    ,(string cn)))))
-                       (loop :for cn :in contact-names :for ca :in contacts-api
-                             :collect `(,cn (symbol-function (intern ,(string ca)
-                                                                     ,(string cn))))))))
-    (print contacts)
-    `(progn
-       (proclaim '(special ,grow ,of-portal ,of-contact))
-       ,@(loop :for contact-sym :in contact-names
-               :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
-       (let* ,(append (list (loop :for (key value) :on bind :by #'cddr
-                                  :append (case key (:package (list value `(find-package ,name))))))
-                      (list ;; `(,contacts-list
-                        ;;   (list ,@(if (symbolp contacts-api)
-                        ;;               (loop :for cn :in contact-names
-                        ;;                     :collect (list 'function (intern (string contacts-api)
-                        ;;                                                      (string cn))))
-                        ;;               (loop :for cn :in contact-names :for ca :in contacts-api
-                        ;;                     :collect (list 'function (intern (string ca)
-                        ;;                                                      (string cn)))))))
-                        ;; `(,contacts-list (list ,@contacts))
-                        `(,prsym (list :point nil
-                                       :contacts (list ,@(loop :for (key val) :on contacts
-                                                               :by #'cddr :collect key))))
-                        `(,branches-sym (list ,@branches))))
-         
-         (defun ,grow (,key &optional ,session ,input)
-           (funcall (getf ,branches-sym ,key) ,session ,input))
-
-         (defun ,of-contact (,key &optional ,input)
-           (funcall (getf ,contacts-list ,key) ,input))
-
-         (defun ,of-portal (,key) (getf ,prsym ,key))
-
-         (defun (setf ,of-portal) (,key ,input) (setf (getf ,prsym ,key) ,input))
-
-         ))))
+         (system (gensym "SY")) (key (gensym "KY")) (session (gensym "SS"))
+         (input (gensym "IN")) (prsym (gensym "PR"))
+         ;; (contacts (if (symbolp contacts-api)
+         ;;               (loop :for cn :in (rest (assoc :contacts props))
+         ;;                     :append `(,cn (symbol-function (intern ,(string contacts-api)
+         ;;                                                            ,(string cn)))))
+         ;;               (loop :for cn :in contact-names :for ca :in contacts-api
+         ;;                     :collect `(,cn (symbol-function (intern ,(string ca)
+         ;;                                                             ,(string cn)))))))
+         )
+    ;; (print contacts)
+    `(progn ,@(if joiner nil `((proclaim '(special ,grow))))
+            ,@(loop :for contact-sym :in contact-names
+                    :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
+            (let ,(append (list (loop :for (key value) :on bind :by #'cddr
+                                      :append (case key (:package (list value `(find-package ,name))))))
+                          (list `(,prsym (list :point nil :contacts ,(cons 'list contact-names)))))
+              (flet ((,of-system (,key &optional ,input)
+                       (if ,input (setf (getf ,prsym ,key) ,input)
+                           (getf ,prsym ,key))))
+                (let ((,branches-sym (list ,@branches)))
+                  ,(append (if joiner `((funcall ,joiner)) `(setf (symbol-function ',grow)))
+                           `((lambda (,system ,key &optional ,session ,input)
+                               (if (or (eq ,system ,name) (not ,system))
+                                   (funcall (getf ,branches-sym ,key) ,session ,input)
+                                   (funcall (getf (funcall ,contactor ,system) ,key)
+                                            ,session ,input)))))))))))
 
 ;; (defun ,of-context (,channel &optional ,key)
 ;;   (if (not (getf ,context ,channel))

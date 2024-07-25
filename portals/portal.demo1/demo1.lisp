@@ -18,6 +18,14 @@
 (defmacro get-user (username)
   `(gethash ,username *users*))
 
+(defvar *contact-interfaces* nil)
+
+(defun of-contacts (key)
+  (getf *contact-interfaces* key))
+
+(defun add-contact (key value)
+  (setf (getf *contact-interfaces* key) value))
+
 (defun contact-stop ())
 (defun contact-restart ())
 
@@ -44,7 +52,7 @@
                              ;;                           :collect (cons (symbol-munger:camel-case->keyword
                              ;;                                           (first p))
                              ;;                                          (rest p))))
-                             (grow (intern branch-form "KEYWORD")
+                             (grow (intern system-form "KEYWORD") (intern branch-form "KEYWORD")
                                    session-api (loop :for p :in params
                                                      :collect (cons (symbol-munger:camel-case->keyword
                                                                      (first p))
@@ -597,12 +605,21 @@
 									 stage-controls-chart-base)))
 		     :sub-nav (simple-sub-navigation-layout :omit (:stage :clipboard :history))))
 
+(defun grow (system key &optional session input)
+  (let ((system (if (eq t system) :portal.demo1
+                    (or system :all))))
+    (if (eq system :portal.demo1)
+        (funcall (getf views key) session input)
+        (funcall (gethash *portal-interfaces* system)
+                 key session input))))
+
+
 |#
 
 (seed2 :portal.demo1
-       (:bind :package package :of-portal of-portal :to-grow grow :to-contact of-contact)
+       (:bind :package package :of-system of-system :to-grow grow)
        (:contacts :demo.sheet) ;; :demo-image)
-       (:contacts-api . grow)
+       (:contactor . of-contacts)
        (:branches
         :view
         (lambda (session input)
@@ -620,7 +637,7 @@
             ;; when a system is selected, assign it - case of new selector controls
             (let ((epsym (intern (string-upcase (rest (assoc "point" input :test #'string=)))
                                  "KEYWORD")))
-              (setf (of-portal :point) epsym)
+              (of-system :point epsym)
               ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
               (load-seed-system epsym)))
           ;;; (print (list :bbb session input (package-name package)))
@@ -633,7 +650,7 @@
                       (:frame :type (:group :stack :form)
                               (:head (string-downcase (package-name package)))
                               (-<> (uic ((:type :form) (:app :set-endpoint))
-                                        (of-portal :contacts))
+                                        (of-system :contacts))
                                 (in-system-context <> (package-name package))
                                 (render-html-interface (encode <>)))
                               "<h3 x-on:click=\" fetchContact2(context, $el, { point: 'demo.sheet' })\">demo.sheet</h3>"
@@ -644,12 +661,12 @@
                                              (:app :set-nav-point)
                                              (:target . :view)
                                              (:point (funcall session :branch-point)))
-                                            (if (not (of-portal :point))
-                                                "" (render-nav-menu (interface-interact (of-portal :point)
+                                            (if (not (of-system :point))
+                                                "" (render-nav-menu (interface-interact (of-system :point)
                                                                                         :view)))))))
                       
-                      (if (not (of-portal :point))
-                          nil (-<> (interface-interact (of-portal :point) :view session)
+                      (if (not (of-system :point))
+                          nil (-<> (interface-interact (of-system :point) :view session)
                                 ;; (in-system-context <> (package-name package))
                                 (render-html-interface (encode <>)))))))
             
@@ -673,12 +690,11 @@
         :systems
         (lambda (session input)
           (if input (let ((epsym (intern input "KEYWORD")))
-                      (setf (of-portal :point)
-                            (intern input "KEYWORD"))
+                      (of-system :point (intern input "KEYWORD"))
                       ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
                       (load-seed-system epsym)
                       )
-              (-<> (with-meta (of-portal :contacts)
+              (-<> (with-meta (of-system :contacts)
                      :type (:form))
                 (encode <>))))))
 
