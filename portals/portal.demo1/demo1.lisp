@@ -37,10 +37,14 @@
          :interactor-fetch (lambda (params session-api)
                              (let* ((portal-form (rest (assoc "portal" params :test #'string=)))
                                     (branch-form (rest (assoc "branch" params :test #'string=))))
-                               (json-convert-to (interface-interact
-                                                 (if portal-form (intern portal-form "KEYWORD") nil)
-                                                 (if branch-form (intern branch-form "KEYWORD") nil)
-                                                 session-api (rest (assoc "input" params :test #'string=))))))
+                               (json-convert-to
+                                ;; (interface-interact
+                                ;;  (if portal-form (intern portal-form "KEYWORD") nil)
+                                ;;  (if branch-form (intern branch-form "KEYWORD") nil)
+                                ;;  session-api (rest (assoc "input" params :test #'string=)))
+                                (grow (intern portal-form "KEYWORD") (intern branch-form "KEYWORD")
+                                      session-api (rest (assoc "input" params :test #'string=)))
+                                )))
          :renderer-fetch (lambda (params session-api)
                            (print (list :par params session-api))
                            (let* ((system-form (string-upcase (rest (assoc "system" params :test #'string=))))
@@ -458,12 +462,6 @@
 
 ;; (build-all)
 
-
-
-
-
-
-
 (defpsmacro sub-view (symbol state)
   (list symbol :form state))
 
@@ -619,7 +617,7 @@
 (seed2 :portal.demo1
        (:bind :package package :of-system of-system :to-grow grow)
        (:contacts :demo.sheet) ;; :demo-image)
-       (:contactor . of-contacts)
+       (:contactor . #'of-contacts)
        (:branches
         :view
         (lambda (session input)
@@ -662,11 +660,11 @@
                                              (:target . :view)
                                              (:point (funcall session :branch-point)))
                                             (if (not (of-system :point))
-                                                "" (render-nav-menu (interface-interact (of-system :point)
-                                                                                        :view)))))))
+                                                "" (render-nav-menu (grow (of-system :point)
+                                                                          :view)))))))
                       
                       (if (not (of-system :point))
-                          nil (-<> (interface-interact (of-system :point) :view session)
+                          nil (-<> (grow (of-system :point) :view session)
                                 ;; (in-system-context <> (package-name package))
                                 (render-html-interface (encode <>)))))))
             

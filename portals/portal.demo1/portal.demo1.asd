@@ -6,14 +6,16 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on ("seed" ;; "clarion" ;; "spinneret"
+  :depends-on (;; "seed" ;; "clarion" ;; "spinneret"
                "symbol-munger"
                ;; "panic"
                "arrow-macros"
-                      "cl-who" ;; "trivia"
-                      "parenscript" "paren6" "lass"
-                      ;; "seed.admit"
-                      "seed.contact.http")
+               "cl-who" ;; "trivia"
+               "parenscript" "paren6" "lass"
+               ;; "seed.admit"
+               "seed.admit"
+               "seed.generate"
+               "seed.contact.http")
   :components ((:file "package")
                (:file "setup")
                (:file "demo1")))
