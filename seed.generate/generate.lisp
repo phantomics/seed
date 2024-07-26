@@ -70,23 +70,26 @@
          ;;                                                             ,(string cn)))))))
          )
     ;; (print contacts)
-    `(progn ,@(if joiner nil `((proclaim '(special ,grow))))
-            ,@(loop :for contact-sym :in contact-names
-                    :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
-            (let ,(append (list (loop :for (key value) :on bind :by #'cddr
-                                      :append (case key (:package (list value `(find-package ,name))))))
-                          (list `(,prsym (list :point nil ,@(if contact-names
-                                                                `(:contacts ,(cons 'list contact-names)))))))
-              (flet ((,of-system (,key &optional ,input)
-                       (if ,input (setf (getf ,prsym ,key) ,input)
-                           (getf ,prsym ,key))))
-                (let ((,branches-sym (list ,@branches)))
-                  ,(append (if joiner `(funcall ,joiner ,name) `(setf (symbol-function ',grow)))
-                           `((lambda (,system ,key &optional ,session ,input)
-                               (if (or (eq ,system ,name) (not ,system))
-                                   (funcall (getf ,branches-sym ,key) ,session ,input)
-                                   (funcall (getf (funcall ,contactor ,system) ,key)
-                                            ,session ,input)))))))))))
+    `(let ,(append (list (loop :for (key value) :on bind :by #'cddr
+                               :append (case key (:package (list value `(find-package ,name))))))
+                   (list `(,prsym (list :point nil ,@(if contact-names
+                                                         `(:contacts ,(cons 'list contact-names)))))))
+       ,@(if joiner nil `((proclaim '(special ,grow))))
+       ,@(loop :for contact-sym :in contact-names
+               :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
+       (flet ((,of-system (,key &optional ,input)
+                (if ,input (setf (getf ,prsym ,key) ,input)
+                    (getf ,prsym ,key))))
+         (let ((,branches-sym (list ,@branches)))
+           ,(if joiner `(funcall ,joiner ,name
+                                 (lambda (,system ,key &optional ,session ,input)
+                                   (funcall (getf ,branches-sym ,key) ,session ,input)))
+                `(setf (symbol-function ',grow)
+                       (lambda (,system ,key &optional ,session ,input)
+                         (if (or (eq ,system ,name) (not ,system))
+                             (funcall (getf ,branches-sym ,key) ,session ,input)
+                             (funcall (funcall ,contactor ,system)
+                                      nil ,key ,session ,input))))))))))
 
 ;; (defun ,of-context (,channel &optional ,key)
 ;;   (if (not (getf ,context ,channel))

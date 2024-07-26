@@ -57,168 +57,168 @@
                      ;;       (:controls (:header :submit)
                      ;;                  (:footer :submit))))
                      )
-             (in-system-context <> package))))
-       ;; :main
-       ;; (lambda (session input)
-       ;;   (print (list :in2 input))
-       ;;   (if (getf input :text)
-       ;;       (let ((input (apply #'concatenate 'string
-       ;;                           (loop :for i :in (getf input :text)
-       ;;                                 :append (list i '(#\Newline))))))
-       ;;         (setf (from-system-file package "sheet.lisp" :main :as-string t)
-       ;;               (text-wrap input :syntax :progn))
-       ;;         (load-seed-system package)
-       ;;         (list :text (text-wrap (from-system-file package "sheet.lisp"
-       ;;                                                  :main :as-string t)
-       ;;                                :unwrap t :syntax :progn)))
-       ;;       (list :text (text-wrap (from-system-file package "sheet.lisp"
-       ;;                                                :main :as-string t)
-       ;;                              :unwrap t :syntax :progn :trailing-newlines 2))))
-       ;; :code
-       ;; (lambda (session input)
-       ;;   (seed.generate::form-as-vectors
-       ;;    (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5))))))
-       ;; :form
-       ;; (lambda (session input)
-       ;;   (when (third input)
-       ;;     ;; only process input if fields apart form system/branch are present
-       ;;     (let ((original (from-system-file package "sheet.lisp" :form)))
-       ;;       (meta-revise (second (third original)) input)
-       ;;       (setf (from-system-file package "sheet.lisp" :form) original)))
-       ;;   (let ((out (make-string-output-stream)))
-       ;;     (spinneret:interpret-html-tree
-       ;;      ;; (render-fieldset (second (third (from-system-file package "sheet.lisp" :form))))
-       ;;      (htrender (second (third (from-system-file package "sheet.lisp" :form)))
-       ;;                :params (list :system package :branch :form))
-       ;;      :stream out)
-       ;;     (get-output-stream-string out)))
-       ;; :table
-       ;; (let ((original (from-system-file package "sheet.lisp" :table)))
-       ;;   (lambda (session input)
-       ;;     (when (fourth input)
-       ;;       ;; only process input if fields apart form system/branch are present
-       ;;       (meta-revise (second (third original)) input)
-       ;;       ;; (setf (from-system-file package "sheet.lisp" :table) original)
-       ;;       (let ((val-key :t) (unit-key) (count 0)
-       ;;             (vout (make-string-output-stream))
-       ;;             (uout (make-string-output-stream)))
-       ;;         (format vout "#~%") (format uout "~%#~%")
-       ;;         (loop :while val-key :for ix :from 0
-       ;;               :do (setf val-key  (intern (format nil "V-~a" ix) "KEYWORD")
-       ;;                         unit-key (intern (format nil "U-~a" ix) "KEYWORD"))
-       ;;                   (if (assoc val-key input)
-       ;;                       (progn (when (= 5 count)
-       ;;                                (setf count 0)
-       ;;                                (format vout "~%#~%")
-       ;;                                (format uout "~%#~%"))
-       ;;                              (format vout "  ~a  |" (rest (assoc val-key  input)))
-       ;;                              (format uout " ~a |" (or (rest (assoc unit-key input))
-       ;;                                                       "nounit"))
-       ;;                              (incf count))
-       ;;                       (setf val-key nil)))
-       ;;         ;; (print (list :st (concatenate 'string
-       ;;         ;;                               (get-output-stream-string vout)
-       ;;         ;;                               (get-output-stream-string uout))))
-       ;;         (with-open-file (in-file "/tmp/input.txt"
-       ;;  		                :direction :output :if-exists :supersede
-       ;;                                  :if-does-not-exist :create)
-       ;;           (format in-file (get-output-stream-string vout))
-       ;;           (format in-file (get-output-stream-string uout))
-       ;;           ;; (loop :for char := (read-char vout) :while char :do (write-char char in-file))
-       ;;           ;; (loop :for char := (read-char uout) :while char :do (write-char char in-file))
-       ;;           )
-       ;;         (uiop:run-program
-       ;;          (format nil "faketime 15-11-05 ~a ~a solve /tmp/input.txt /tmp/out.txt"
-       ;;                  "~/src/old/dpneo/ecalc/app/ecalc"
-       ;;                  "~/src/old/dpneo/ecalc/app/uc.json"))
-       ;;         ))
-       ;;     (let ((out (make-string-output-stream)))
-       ;;       (spinneret:interpret-html-tree
-       ;;        (htrender (second (third original))
-       ;;                  :params (list :system package :branch :table))
-       ;;        :stream out)
-       ;;       (get-output-stream-string out))))
-       ;; :esgraph
-       ;; (spec-graph-interface
-       ;;  :package package :file-name "sheet.lisp" 
-       ;;  :holder-id "esgraphOverview" :associated-node-ids #("graphNode")
-       ;;  :node-template-key :esgraph-node-template :link-template-key :esgraph-link-template
-       ;;  :graph-key :esgraph :node-indices-key :esgraph-node-indices)
-       ;; :graph
-       ;; (spec-graph-interface
-       ;;  :package package :file-name "sheet.lisp"
-       ;;  :holder-id "graphOverview" :associated-node-ids #("graphNode")
-       ;;  :node-template-key :graph-node-template :link-template-key :graph-link-template
-       ;;  :graph-key :graph :node-indices-key :graph-node-indices)
-       ;; :play
-       ;; (let ((state) (node) (selector))
-       ;;   (lambda (session input)
-       ;;     (unless (and (find-package 'demo.sheet)
-       ;;                  (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
-       ;;       (instantiate-priority-macro-reader (asdf:load-system package)))
-       ;;     (unless node (multiple-value-bind (this-node selector-out)
-       ;;                      (seed.generate::graph-walker
-       ;;                       (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
-       ;;                    ;; (print (list :tn1 this-node input))
-       ;;                    (setf node this-node selector selector-out)))
-       ;;     (when (assoc :index input :test #'eq)
-       ;;       (multiple-value-bind (this-node selector-out)
-       ;;           (funcall selector (read-from-string (rest (assoc :index input :test #'eq))))
-       ;;         ;; (print (list :oo this-node))
-       ;;         (setf node this-node selector selector-out)))
-       ;;     ;; (print (list :bc input node))
-       ;;     (let ((out (make-string-output-stream))
-       ;;           (dialog (rest (assoc :dialog (first node))))
-       ;;           (image (rest (assoc :image (first node))))
-       ;;           (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
-       ;;                              (second node))))
-       ;;       ;; (print (list :dia dialog node responses
-       ;;       ;;              :image image))
-       ;;       (spinneret:interpret-html-tree
-       ;;        `(:div :class "scenario-frame"
-       ;;               (:div :class "setting" (:div :class "dialog" ,dialog))
-       ;;               (:ol :class "responses"
-       ;;                    ,@(loop :for response :in responses :for ix :from 0
-       ;;                            :collect
-       ;;                            (list :li :|x-on:click|
-       ;;                                  (psl (chain htmx (trigger $el "reload")))
-       ;;                                  :hx-trigger "reload" :hx-post "/render/"
-       ;;                                  :hx-vals (seed.generate::json-convert-to
-       ;;                                            (list :index ix))
-       ;;                                  response)))
-       ;;               ,@(unless (string= image "no-image")
-       ;;                   `((:div :class "background-image"
-       ;;                           :style
-       ;;                           ,(format nil " position: absolute; top: 0; left: 0;
-       ;;                                                    margin-top: ~a; pointer-events: none;"
-       ;;                                    (if (string= image "image-resting")
-       ;;                                        "-200px" "-600px"))
-       ;;                           (:img :src ,(format nil "./static/~a.png" image)))))
-       ;;               )
-       ;;        :stream out)
-       ;;       (get-output-stream-string out))))
-       ;; :cells
-       ;; (let ((display-baseline))
-       ;;   (lambda (session input)
-       ;;     (if input (if (and (listp input) (listp (first input))
-       ;;                        (stringp (caar input)))
-       ;;                   (cond ((string= "toggleBaseline" (caar input))
-       ;;                          (setf display-baseline (not display-baseline))))
-       ;;                   (let ((original (from-system-file package "sheet.lisp" :cells)))
-       ;;                     (setf (of-array-spec :initial-contents (setf-value original))
-       ;;                           `(quote ,(loop :for row :in input
-       ;;                                          :collect (loop :for cell :in row
-       ;;                                                         :collect (parse-number:parse-number
-       ;;                                                                   cell))))
-       ;;                           (from-system-file package "sheet.lisp" :cells) original)
-       ;;                     ;; (instantiate-priority-macro-reader (asdf:load-system package))
-       ;;                     (load-seed-system package)))
-       ;;         (if display-baseline
-       ;;             (encode (symbol-value (intern "*CELL-MATRIX*" (string package))))
-       ;;             (list :ty :ar :ct
-       ;;                   (second (of-array-spec :initial-contents
-       ;;                                          (setf-value
-       ;;                                           (from-system-file
-       ;;                                            package "sheet.lisp" :cells)))))))))
+             (in-system-context <> :demo.sheet))))
+       :main
+       (lambda (session input)
+         (print (list :in2 input))
+         (if (getf input :text)
+             (let ((input (apply #'concatenate 'string
+                                 (loop :for i :in (getf input :text)
+                                       :append (list i '(#\Newline))))))
+               (setf (from-system-file :demo.sheet "sheet.lisp" :main :as-string t)
+                     (text-wrap input :syntax :progn))
+               (load-seed-system package)
+               (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+                                                        :main :as-string t)
+                                      :unwrap t :syntax :progn)))
+             (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+                                                      :main :as-string t)
+                                    :unwrap t :syntax :progn :trailing-newlines 2))))
+       :code
+       (lambda (session input)
+         (seed.generate::form-as-vectors
+          (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5))))))
+       :form
+       (lambda (session input)
+         (when (third input)
+           ;; only process input if fields apart form system/branch are present
+           (let ((original (from-system-file :demo.sheet "sheet.lisp" :form)))
+             (meta-revise (second (third original)) input)
+             (setf (from-system-file :demo.sheet "sheet.lisp" :form) original)))
+         (let ((out (make-string-output-stream)))
+           (spinneret:interpret-html-tree
+            ;; (render-fieldset (second (third (from-system-file :demo.sheet "sheet.lisp" :form))))
+            (htrender (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))
+                      :params (list :system :demo.sheet :branch :form))
+            :stream out)
+           (get-output-stream-string out)))
+       :table
+       (let ((original (from-system-file :demo.sheet "sheet.lisp" :table)))
+         (lambda (session input)
+           (when (fourth input)
+             ;; only process input if fields apart form system/branch are present
+             (meta-revise (second (third original)) input)
+             ;; (setf (from-system-file :demo.sheet "sheet.lisp" :table) original)
+             (let ((val-key :t) (unit-key) (count 0)
+                   (vout (make-string-output-stream))
+                   (uout (make-string-output-stream)))
+               (format vout "#~%") (format uout "~%#~%")
+               (loop :while val-key :for ix :from 0
+                     :do (setf val-key  (intern (format nil "V-~a" ix) "KEYWORD")
+                               unit-key (intern (format nil "U-~a" ix) "KEYWORD"))
+                         (if (assoc val-key input)
+                             (progn (when (= 5 count)
+                                      (setf count 0)
+                                      (format vout "~%#~%")
+                                      (format uout "~%#~%"))
+                                    (format vout "  ~a  |" (rest (assoc val-key  input)))
+                                    (format uout " ~a |" (or (rest (assoc unit-key input))
+                                                             "nounit"))
+                                    (incf count))
+                             (setf val-key nil)))
+               ;; (print (list :st (concatenate 'string
+               ;;                               (get-output-stream-string vout)
+               ;;                               (get-output-stream-string uout))))
+               (with-open-file (in-file "/tmp/input.txt"
+        		                :direction :output :if-exists :supersede
+                                        :if-does-not-exist :create)
+                 (format in-file (get-output-stream-string vout))
+                 (format in-file (get-output-stream-string uout))
+                 ;; (loop :for char := (read-char vout) :while char :do (write-char char in-file))
+                 ;; (loop :for char := (read-char uout) :while char :do (write-char char in-file))
+                 )
+               (uiop:run-program
+                (format nil "faketime 15-11-05 ~a ~a solve /tmp/input.txt /tmp/out.txt"
+                        "~/src/old/dpneo/ecalc/app/ecalc"
+                        "~/src/old/dpneo/ecalc/app/uc.json"))
+               ))
+           (let ((out (make-string-output-stream)))
+             (spinneret:interpret-html-tree
+              (htrender (second (third original))
+                        :params (list :system :demo.sheet :branch :table))
+              :stream out)
+             (get-output-stream-string out))))
+       :esgraph
+       (spec-graph-interface
+        :package :demo.sheet :file-name "sheet.lisp" 
+        :holder-id "esgraphOverview" :associated-node-ids #("graphNode")
+        :node-template-key :esgraph-node-template :link-template-key :esgraph-link-template
+        :graph-key :esgraph :node-indices-key :esgraph-node-indices)
+       :graph
+       (spec-graph-interface
+        :package :demo.sheet :file-name "sheet.lisp"
+        :holder-id "graphOverview" :associated-node-ids #("graphNode")
+        :node-template-key :graph-node-template :link-template-key :graph-link-template
+        :graph-key :graph :node-indices-key :graph-node-indices)
+       :play
+       (let ((state) (node) (selector))
+         (lambda (session input)
+           (unless (and (find-package 'demo.sheet)
+                        (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
+             (instantiate-priority-macro-reader (asdf:load-system :demo.sheet)))
+           (unless node (multiple-value-bind (this-node selector-out)
+                            (seed.generate::graph-walker
+                             (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
+                          ;; (print (list :tn1 this-node input))
+                          (setf node this-node selector selector-out)))
+           (when (assoc :index input :test #'eq)
+             (multiple-value-bind (this-node selector-out)
+                 (funcall selector (read-from-string (rest (assoc :index input :test #'eq))))
+               ;; (print (list :oo this-node))
+               (setf node this-node selector selector-out)))
+           ;; (print (list :bc input node))
+           (let ((out (make-string-output-stream))
+                 (dialog (rest (assoc :dialog (first node))))
+                 (image (rest (assoc :image (first node))))
+                 (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
+                                    (second node))))
+             ;; (print (list :dia dialog node responses
+             ;;              :image image))
+             (spinneret:interpret-html-tree
+              `(:div :class "scenario-frame"
+                     (:div :class "setting" (:div :class "dialog" ,dialog))
+                     (:ol :class "responses"
+                          ,@(loop :for response :in responses :for ix :from 0
+                                  :collect
+                                  (list :li :|x-on:click|
+                                        (psl (chain htmx (trigger $el "reload")))
+                                        :hx-trigger "reload" :hx-post "/render/"
+                                        :hx-vals (seed.generate::json-convert-to
+                                                  (list :index ix))
+                                        response)))
+                     ,@(unless (string= image "no-image")
+                         `((:div :class "background-image"
+                                 :style
+                                 ,(format nil " position: absolute; top: 0; left: 0;
+                                                          margin-top: ~a; pointer-events: none;"
+                                          (if (string= image "image-resting")
+                                              "-200px" "-600px"))
+                                 (:img :src ,(format nil "./static/~a.png" image)))))
+                     )
+              :stream out)
+             (get-output-stream-string out))))
+       :cells
+       (let ((display-baseline))
+         (lambda (session input)
+           (if input (if (and (listp input) (listp (first input))
+                              (stringp (caar input)))
+                         (cond ((string= "toggleBaseline" (caar input))
+                                (setf display-baseline (not display-baseline))))
+                         (let ((original (from-system-file :demo.sheet "sheet.lisp" :cells)))
+                           (setf (of-array-spec :initial-contents (setf-value original))
+                                 `(quote ,(loop :for row :in input
+                                                :collect (loop :for cell :in row
+                                                               :collect (parse-number:parse-number
+                                                                         cell))))
+                                 (from-system-file :demo.sheet "sheet.lisp" :cells) original)
+                           ;; (instantiate-priority-macro-reader (asdf:load-system package))
+                           (load-seed-system :demo.sheet)))
+               (if display-baseline
+                   (encode (symbol-value (intern "*CELL-MATRIX*" (string :demo.sheet))))
+                   (list :ty :ar :ct
+                         (second (of-array-spec :initial-contents
+                                                (setf-value
+                                                 (from-system-file
+                                                  :demo.sheet "sheet.lisp" :cells)))))))))
 
        ))
