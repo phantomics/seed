@@ -47,8 +47,6 @@
          (setf (getf ,psym :branches) ,(cons 'list branches)
                (getf ,psym :sessions) (make-hash-table :test #'eq))))))
 
-;; &key props contacts branches bindings portal-contacts
-
 (defmacro seed2 (name &rest props)
   (let* ((branches (rest (assoc :branches props)))
          (bind (rest (assoc :bind props)))
@@ -60,32 +58,25 @@
          (of-system (intern (string (getf bind :of-system)) (package-name *package*)))
          (context (gensym "CON")) (channel (gensym "CHN")) (branches-sym (gensym "BRS"))
          (system (gensym "SY")) (key (gensym "KY")) (session (gensym "SS"))
-         (input (gensym "IN")) (prsym (gensym "PR"))
-         ;; (contacts (if (symbolp contacts-api)
-         ;;               (loop :for cn :in (rest (assoc :contacts props))
-         ;;                     :append `(,cn (symbol-function (intern ,(string contacts-api)
-         ;;                                                            ,(string cn)))))
-         ;;               (loop :for cn :in contact-names :for ca :in contacts-api
-         ;;                     :collect `(,cn (symbol-function (intern ,(string ca)
-         ;;                                                             ,(string cn)))))))
-         )
+         (input (gensym "IN")) (prsym (gensym "PR")))
     ;; (print contacts)
     `(let ,(append (list (loop :for (key value) :on bind :by #'cddr
                                :append (case key (:package (list value `(find-package ,name))))))
-                   (list `(,prsym (list :point nil ,@(if contact-names
-                                                         `(:contacts ,(cons 'list contact-names)))))))
+                   `((,prsym (list :point nil ,@(if contact-names
+                                                    `(:contacts ,(cons 'list contact-names)))))))
        ,@(if joiner nil `((proclaim '(special ,grow))))
        ,@(loop :for contact-sym :in contact-names
                :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
        (flet ((,of-system (,key &optional ,input)
                 (if ,input (setf (getf ,prsym ,key) ,input)
                     (getf ,prsym ,key))))
-         (let ((,branches-sym (list ,@branches)))
-           ,(if joiner `(funcall ,joiner ,name
-                                 (lambda (,system ,key &optional ,session ,input)
-                                   (funcall (getf ,branches-sym ,key) ,session ,input)))
+         (let ((,branches-sym ,(cons 'list branches)))
+           ,(if joiner `(funcall ,joiner ,name (lambda (,system ,key &optional ,session ,input)
+                                                 (funcall (getf ,branches-sym ,key) ,session ,input)))
                 `(setf (symbol-function ',grow)
                        (lambda (,system ,key &optional ,session ,input)
+                         (unless ,key
+                           (error "Warning: attempt to grow system ~a without a specified branch." ,system))
                          (if (or (eq ,system ,name) (not ,system))
                              (funcall (getf ,branches-sym ,key) ,session ,input)
                              (funcall (funcall ,contactor ,system)
@@ -395,6 +386,24 @@
 ;;          ,@(loop :for clause :in props :collect (if (or t (not (listp clause))
 ;;                                                         (not (keywordp (first clause))))
 ;;                                                     clause (list 'quote clause)))))
+
+(defun mprops-compose (form)
+  (if (not (listp form))
+      form (if (listp (rest form))
+               (if (and (symbolp (first form))
+                        (not (keywordp (first form))))
+                   form (mapcar #'mprops-compose form))
+               `(cons ,(first form) ,(rest form)))))
+
+(defmacro xform (item &rest props)
+  `(mf-build ,item ',props))
+
+(defun mf-build (item &optional props)
+  (if (not props)
+      item (append (list 'meta (if (eql 'xform (first item))
+                                   (macroexpand item)
+                                   (mapcar #'mf-build item)))
+                   (mapcar #'mprops-compose props))))
 
 (defun interface-format-form (form spec)
   (if (and (listp form) (listp (first form)))
@@ -974,6 +983,7 @@
                ;;                                                strout :control :subsection c :system system-id
                ;;                                                                :branch branch))))))))))
                ((list :form (guard form-type (keywordp form-type)))
+                (print (list :for form))
                 (let ((branch (second (assoc :access (getf form :mt))))
                       (item-classes (apply #'concatenate 'string
                                            (loop :for y :in (rest (assoc :type (getf form :mt)))
@@ -1691,7 +1701,8 @@
         (node-template (second (from-system-file package file-name node-template-key)))
         (link-template (second (from-system-file package file-name link-template-key)))
         (indices-form (from-system-file package file-name node-indices-key)))
-    (lambda (input)
+    (lambda (session input)
+      (declare (ignore session))
       ;; (print (list :in2 input index))
       (unless graph-base
         (setf graph-base  (from-system-file package file-name graph-key)
@@ -2446,6 +2457,7 @@
                            (push key params) (incf args-offset 2)))
     (let ((items (nthcdr args-offset args))
           (subtypes (getf params :type)))
+      (print (list :it items item))
       `(make-instance ',(case type (:frame 'uic-set-frame)
                               (:series 'uic-set-series)
                               (:head 'uic-caption-heading)

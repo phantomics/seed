@@ -25,13 +25,13 @@
                      ;;       (:controls (:header :save)
                      ;;                  (:footer :save))))
                      ;; :partition
-                     (uic ((:type :form :text) (:access :main) (:name . :code)
-                           (:controls (:header :save)
-                                      (:footer :save))))
-                     (uic ((:type :form :cells) (:access :cells) (:name . :cells)
-                           (:controls (:header :save :toggle-baseline)
-                                      (:footer :save))))
-                     :partition
+                     ;; (uic ((:type :form :text) (:access :main) (:name . :code)
+                     ;;       (:controls (:header :save)
+                     ;;                  (:footer :save))))
+                     ;; (uic ((:type :form :cells) (:access :cells) (:name . :cells)
+                     ;;       (:controls (:header :save :toggle-baseline)
+                     ;;                  (:footer :save))))
+                     ;; :partition
                      ;; (uic ((:type :form :tree) (:access :code)
                      ;;       (:controls (:header :save)
                      ;;                  (:footer :save))))

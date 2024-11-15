@@ -33,6 +33,8 @@
                                                  (portal-contacts portal))
                                          (in-system-context <> package)
                                          (render-html-interface (encode <>)))
+                                       (mform (portal-contacts portal)
+                                              (:type :form) (:app :set-endpoint))
                                        ;; "<h3 hx-vals='{ \"branch-select\": \"demo.sheet\" }' x-on:click=\" htmx.trigger(context.container, 'submit', { 'bla' : 10, 'eee' : 33 })\">demo.sheet</h3>"
                                        "<h3 x-on:click=\" fetchContact2(context, $el, { point: 'demo.sheet' })\">demo.sheet</h3>"
                                        ;; (:expr (uic ((:type :form) (:app :set-endpoint))

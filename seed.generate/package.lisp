@@ -16,6 +16,7 @@
            #:uispec #:render-web
 
            #:seed2
+           #:xform
            )
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)

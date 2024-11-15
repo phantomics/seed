@@ -35,33 +35,23 @@
         (http-contact-service-start
          :package-name pkg-name :port 9090
          :interactor-fetch (lambda (params session-api)
-                             (let* ((portal-form (rest (assoc "portal" params :test #'string=)))
-                                    (branch-form (rest (assoc "branch" params :test #'string=))))
+                             ;; (print (list :aa portal-form branch-form params))
+                             (let ((portal-form (rest (assoc "portal" params :test #'string=)))
+                                   (branch-form (rest (assoc "branch" params :test #'string=))))
+                               ;; (print (list :aa portal-form branch-form))
                                (json-convert-to
-                                ;; (interface-interact
-                                ;;  (if portal-form (intern portal-form "KEYWORD") nil)
-                                ;;  (if branch-form (intern branch-form "KEYWORD") nil)
-                                ;;  session-api (rest (assoc "input" params :test #'string=)))
                                 (grow (intern portal-form "KEYWORD") (intern branch-form "KEYWORD")
-                                      session-api (rest (assoc "input" params :test #'string=)))
-                                )))
+                                      session-api (rest (assoc "input" params :test #'string=))))))
          :renderer-fetch (lambda (params session-api)
-                           (print (list :par params session-api))
-                           (let* ((system-form (string-upcase (rest (assoc "system" params :test #'string=))))
-                                  (branch-form (string-upcase (rest (assoc "branch" params :test #'string=)))))
-                             ;; (interface-interact (if system-form (intern system-form "KEYWORD") nil)
-                             ;;                     (if branch-form (intern branch-form "KEYWORD") nil)
-                             ;;                     session-api
-                             ;;                     (loop :for p :in params
-                             ;;                           :collect (cons (symbol-munger:camel-case->keyword
-                             ;;                                           (first p))
-                             ;;                                          (rest p))))
-                             (grow (intern system-form "KEYWORD") (intern branch-form "KEYWORD")
+                           ;; (print (list :par params session-api))
+                           (let ((system-form (rest (assoc "system" params :test #'string=)))
+                                 (branch-form (rest (assoc "branch" params :test #'string=))))
+                             (grow (intern (string-upcase system-form) "KEYWORD")
+                                   (and branch-form (intern (string-upcase branch-form) "KEYWORD"))
                                    session-api (loop :for p :in params
                                                      :collect (cons (symbol-munger:camel-case->keyword
                                                                      (first p))
-                                                                    (rest p))))
-                             )))
+                                                                    (rest p)))))))
       (setf (symbol-function 'contact-stop)    stopper
             (symbol-function 'contact-restart) restarter))))
 
@@ -91,35 +81,12 @@
                     (:link :rel "stylesheet" :href "./build/app.css"))
              (:body (:div :id "main" :class "ui" :hx-post "/render/"
                           :hx-trigger "load, reload, submit, refresh"
-                          :hx-vals (json-convert-to (list :system portal-sym
-                                                          :branch :view))
+                          :hx-vals (json-convert-to (list :system portal-sym :branch :view))
                           :x-data (ps (create context (create system (lisp (string portal-sym))
                                                               branch "VIEW"))))
                     (:script :src "./static/misc.js")
                     (:script :src "./build/vendor.js")
                     (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js"))))))
-
-
-;; (defun build-static-page (portal-sym relative-path)
-;;   (with-open-file (stream (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
-;;                                                          (format nil "./~a/index.html" relative-path))
-;; 			  :direction :output :if-exists :supersede :if-does-not-exist :create)
-;;     (cl-who:with-html-output (stream)
-;;       (:html (:head (:script (paren6::ps (defvar |*__PS_MV_REG*|)
-;;                                (setf (@ window seed-data) (create))))
-;;                     (:link :rel "stylesheet" :href "./build/vendor.css")
-;;                     (:link :rel "stylesheet" :href "./build/app.css"))
-;;              (:body (:div :id "main" :class "ui" :hx-post "/render/"
-;;                           :hx-trigger "load, reload, submit"
-;;                           :hx-vals (json-convert-to (list :system portal-sym
-;;                                                           :branch :view))
-;;                           :x-data (ps-inline (create context (create system (lisp (string-downcase portal-sym))
-;;                                                                branch "view"
-;;                                                                container this))))
-;;                     (:script :src "./static/misc.js")
-;;                     (:script :src "./build/vendor.js")
-;;                     (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js")
-;;                     )))))
 
 ;; (build-static-page :portal.demo1 "ui-browser")
 
@@ -307,8 +274,6 @@
                          (format stream "~a from '~a'~%" (if (listp (first import)) "}" "")
                                  (second import)))))
     (format stream "~%")
-;;     (format stream "import './main.scss'
-;; ")
     (loop :for c :in constructors :do (funcall c stream))))
 
 (defun build-script-cmirror ()
@@ -613,86 +578,4 @@
 
 
 |#
-
-(seed2 :portal.demo1
-       (:bind :package package :of-system of-system :to-grow grow)
-       (:contacts :demo.sheet) ;; :demo-image)
-       (:contactor . #'of-contacts)
-       (:branches
-        :view
-        (lambda (session input)
-          ;; (print (list :aaa session input))
-          (let ((key-input (rest (assoc :key input :test #'eq))))
-            (when (and key-input (string= "demo" (string-downcase key-input)))
-              (funcall session :user :hello)))
-
-          (when (and session (assoc :point input))
-            ;; when a point is selected, assign it
-            (funcall session :branch-point (intern (string-upcase (rest (assoc :point input)))
-                                                   "KEYWORD")))
-
-          (when (and session (assoc "point" input :test #'string=))
-            ;; when a system is selected, assign it - case of new selector controls
-            (let ((epsym (intern (string-upcase (rest (assoc "point" input :test #'string=)))
-                                 "KEYWORD")))
-              (of-system :point epsym)
-              ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
-              (load-seed-system epsym)))
-          ;;; (print (list :bbb session input (package-name package)))
-
-          (authorize (funcall session :user)
-            (render-web
-             (uispec (:series
-                      :type (:ui :grid-layout :linear :main :split :left-sidebar)
-                      :layout (list :sidebar :main)
-                      (:frame :type (:group :stack :form)
-                              (:head (string-downcase (package-name package)))
-                              (-<> (uic ((:type :form) (:app :set-endpoint))
-                                        (of-system :contacts))
-                                (in-system-context <> (package-name package))
-                                (render-html-interface (encode <>)))
-                              "<h3 x-on:click=\" fetchContact2(context, $el, { point: 'demo.sheet' })\">demo.sheet</h3>"
-                              ;; (:expr (uic ((:type :form) (:app :set-endpoint))
-                              ;;             (portal-contacts portal)))
-                              (render-html-interface
-                               (encode (uic ((:type :form :branch-navigation)
-                                             (:app :set-nav-point)
-                                             (:target . :view)
-                                             (:point (funcall session :branch-point)))
-                                            (if (not (of-system :point))
-                                                "" (render-nav-menu (grow (of-system :point)
-                                                                          :view)))))))
-                      
-                      (if (not (of-system :point))
-                          nil (-<> (grow (of-system :point) :view session)
-                                ;; (in-system-context <> (package-name package))
-                                (render-html-interface (encode <>)))))))
-            
-            (-<> (uic ((:type :group :stack :main)
-                       (:members :heading :main))
-                      (uic ((:type :heading))
-                           (string-downcase (package-name package)))
-                      (let ((out (make-string-output-stream)))
-                        (spinneret:interpret-html-tree
-                         (htrender '(meta ((meta "Key" (:type :label))
-                                           (meta "" (:name :key)
-                                            (:type :field :text)))
-                                     (:type :set :form))
-                                   :params '(:system :portal.demo1 :branch :view))
-                         :stream out)
-                        (get-output-stream-string out)))
-              (in-system-context <> (package-name package))
-              (interface-format-form input)
-              (render-html-interface (encode <>)))
-            ))
-        :systems
-        (lambda (session input)
-          (if input (let ((epsym (intern input "KEYWORD")))
-                      (of-system :point (intern input "KEYWORD"))
-                      ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
-                      (load-seed-system epsym)
-                      )
-              (-<> (with-meta (of-system :contacts)
-                     :type (:form))
-                (encode <>))))))
 

@@ -57,7 +57,7 @@
 
 (defun http-contact-service-start (&key (port 8080) interactor-fetch renderer-fetch
                                      (package-name (intern (package-name *package*) "KEYWORD")))
-  ;; (print (list :int interactor-fetch))
+  ;; (print (list :int interactor-fetch renderer-fetch))
   (let* ((root-path (asdf:system-relative-pathname package-name "./ui-browser/"))
 	 (service (make-instance 'app))
 	 (handler (clack:clackup (lack.builder:builder :session (:static :path #'match-static-path

@@ -18,4 +18,5 @@
                "seed.contact.http")
   :components ((:file "package")
                (:file "setup")
-               (:file "demo1")))
+               (:file "demo1")
+               (:file "seed")))
