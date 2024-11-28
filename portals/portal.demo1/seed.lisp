@@ -29,35 +29,58 @@
           ;;; (print (list :bbb session input (package-name package)))
 
           (authorize (funcall session :user)
-            (render-web
-             (uispec (:series
-                      :type (:ui :grid-layout :linear :main :split :left-sidebar)
-                      :layout (list :sidebar :main)
-                      (:frame :type (:group :stack :form)
-                              (:head (string-downcase (package-name package)))
-                              ;; (-<> (uic ((:type :form) (:app :set-endpoint))
-                              ;;           (of-system :contacts))
-                              ;;   (in-system-context <> (package-name package))
-                              ;;   (render-html-interface (encode <>)))
-                              (:expr ;; (xform (print (of-system :contacts))
-                                     ;;        (:type :form :bla) (:app :set-endpoint))
-                                     )
-                              "<h3 x-on:click=\" fetchContact2(context, $el, { point: 'demo.sheet' })\">demo.sheet</h3>"
-                              ;; (:expr (uic ((:type :form) (:app :set-endpoint))
-                              ;;             (portal-contacts portal)))
-                              (render-html-interface
-                               (encode (uic ((:type :form :branch-navigation)
-                                             (:app :set-nav-point)
-                                             (:target . :view)
-                                             (:point (funcall session :branch-point)))
-                                            (if (not (of-system :point))
-                                                "" (render-nav-menu (grow (of-system :point)
-                                                                          :view)))))))
+
+            (let ((this-stream (make-string-output-stream)))
+              (render (make-instance 'uim-web :stream this-stream) 
+                      (fx (list (fx (list :portal.demo1 
+                                          "<h3 x-on:click=\" fetchContact2(context, $el, { point: 'demo.sheet' })\">demo.sheet</h3>"
+                                          (render-html-interface
+                                           (encode (uic ((:type :form :branch-navigation)
+                                                         (:app :set-nav-point)
+                                                         (:target . :view)
+                                                         (:point (funcall session :branch-point)))
+                                                        (if (not (of-system :point))
+                                                            "" (render-nav-menu (grow (of-system :point)
+                                                                                      :view)))))))
+                                    (uic-series :type '(:ui :column)))
+                                (if (not (of-system :point))
+                                    "" (-<> (grow (of-system :point) :view session)
+                                          ;; (in-system-context <> (package-name package))
+                                          (render-html-interface (encode <>)))))
+                          (uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
+                                      :maps '(((:type :sidebar)) ((:type :main))))))
+              (get-output-stream-string this-stream))
+            
+            
+            ;; (render-web
+            ;;  (uispec (:series
+            ;;           :type (:ui :grid-layout :linear :main :split :left-sidebar)
+            ;;           :layout (list :sidebar :main)
+            ;;           (:frame :type (:group :stack :form)
+            ;;                   (:head (string-downcase (package-name package)))
+            ;;                   ;; (-<> (uic ((:type :form) (:app :set-endpoint))
+            ;;                   ;;           (of-system :contacts))
+            ;;                   ;;   (in-system-context <> (package-name package))
+            ;;                   ;;   (render-html-interface (encode <>)))
+            ;;                   (:expr ;; (xform (print (of-system :contacts))
+            ;;                          ;;        (:type :form :bla) (:app :set-endpoint))
+            ;;                          )
+            ;;                   "<h3 x-on:click=\" fetchContact2(context, $el, { point: 'demo.sheet' })\">demo.sheet</h3>"
+            ;;                   ;; (:expr (uic ((:type :form) (:app :set-endpoint))
+            ;;                   ;;             (portal-contacts portal)))
+            ;;                   (render-html-interface
+            ;;                    (encode (uic ((:type :form :branch-navigation)
+            ;;                                  (:app :set-nav-point)
+            ;;                                  (:target . :view)
+            ;;                                  (:point (funcall session :branch-point)))
+            ;;                                 (if (not (of-system :point))
+            ;;                                     "" (render-nav-menu (grow (of-system :point)
+            ;;                                                               :view)))))))
                       
-                      (if (not (of-system :point))
-                          nil (-<> (grow (of-system :point) :view session)
-                                ;; (in-system-context <> (package-name package))
-                                (render-html-interface (encode <>)))))))
+            ;;           (if (not (of-system :point))
+            ;;               nil (-<> (grow (of-system :point) :view session)
+            ;;                     ;; (in-system-context <> (package-name package))
+            ;;                     (render-html-interface (encode <>)))))))
             
             (-<> (uic ((:type :group :stack :main)
                        (:members :heading :main))

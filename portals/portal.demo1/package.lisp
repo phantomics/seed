@@ -14,7 +14,8 @@
                           #:uispec #:encode #:render-web #:interface-format-form
                           #:load-seed-system #:render-nav-menu #:from-system-file
                           #:spec-graph-interface #:setf-value #:text-wrap #:of-array-spec
-                          #:seed2 #:xform)
+                          #:seed2 #:xform
+                          #:fx #:render #:uim-web #:uic-series)
   (:shadowing-import-from #:seed.admit #:authorize)
   ;; (:shadowing-import-from #:spinneret #:with-html #:with-html-string #:interpret-html-tree)
   )

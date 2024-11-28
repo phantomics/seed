@@ -407,15 +407,12 @@
  ;;  (:output-to . "./ui-browser/build/vendor.js"))
  (:concat-static
   (:paths "./ui-browser/static/htmx.min.js"
-          ;; "./ui-browser/node_modules/d3/dist/d3.min.js" 
           "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
           "./ui-browser/static/alpine.js"
           ;; "./ui-browser/repos/scmindent/scmindent-client.js"
-          ;; "./ui-browser/node_modules/fomantic-ui/dist/semantic.js"
           )
   (:output-to . "./ui-browser/build/vendor.js"))
  (:concat-static
-  ;; (:paths "./ui-browser/node_modules/fomantic-ui/dist/semantic.css")
   (:paths "./ui-browser/node_modules/bulma/css/bulma.css")
   (:output-to . "./ui-browser/build/vendor.css"))
  )
