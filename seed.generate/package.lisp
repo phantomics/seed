@@ -13,7 +13,7 @@
            #:htrender #:render-console #:meta-revise #:psl
            #:from-system-file #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec
-           #:fx #:render #:uim-web #:uic-series
+           #:fx #:render #:uim-web #:uic-series #:uic-anchor #:uicc-button
            #:uispec #:render-web
 
            #:seed2

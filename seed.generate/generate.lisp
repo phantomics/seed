@@ -728,7 +728,10 @@
           :initarg  :base)
    (%type :accessor uic-type
           :initform nil
-          :initarg  :type)))
+          :initarg  :type)
+   (%link :accessor uic-link
+          :initform nil
+          :initarg :link)))
 
 (defclass uic-series (ui-component)
   ((%maps :accessor uic-series-maps
@@ -736,6 +739,9 @@
           :initarg  :maps)))
 
 (defclass uic-control (ui-component)
+  ())
+
+(defclass uic-anchor (ui-component)
   ())
 
 (defclass uicc-button (uic-control)
@@ -765,18 +771,29 @@
       `(let ((,evaluated-form ,form))
          ,(process-spec evaluated-form specs)))))
 
-(defgeneric render (medium component))
+(defun render (form)
+  (let ((spinneret:*html* (uim-web-stream medium)))
+    (spinneret:interpret-html-tree form)))
 
-(defmethod render ((medium uim-web) (comp symbol))
+(defgeneric generate (medium component))
+
+(defmethod generate ((medium uim-web) (comp null))
+  (declare (ignore medium comp)))
+
+(defmethod generate ((medium uim-web) (comp symbol))
   (format (uim-web-stream medium) "~a" comp))
 
-(defmethod render ((medium uim-web) (comp string))
+(defmethod generate ((medium uim-web) (comp string))
   (format (uim-web-stream medium) "~a" comp))
 
-(defmethod render ((medium uim-web) (comp uicc-button))
-  (spinneret:with-html (:button (render medium (uic-base comp)))))
+(defmethod generate ((medium uim-web) (comp uic-anchor))
+  (print (list :rr comp (uic-base comp)))
+  (spinneret:with-html (:span (string-downcase (uic-base comp)))))
 
-(defmethod render ((medium uim-web) (comp uic-series))
+(defmethod generate ((medium uim-web) (comp uicc-button))
+  (spinneret:with-html (:button (generate medium (uic-base comp)))))
+
+(defmethod generate ((medium uim-web) (comp uic-series))
   (let ((last-type-index (1- (length (uic-type comp))))
         (class-stream (make-string-output-stream))
         ;; (layout (uic-set-layout comp))
@@ -798,7 +815,23 @@
                           (loop :for itype :in (rest (assoc :type map))
                                 :do (format class-stream "~a " (string-downcase itype)))
                           (:div :class (get-output-stream-string class-stream)
-                                (render medium item)))))))))
+                                (generate medium item)))))))))
+
+(defmethod generate :around ((medium uim-web) (comp ui-component))
+  (print (list :cc comp (uic-link comp)))
+  (if (not (uic-link comp))
+      (call-next-method)
+      (let ((output (call-next-method))
+            (params (list :hx-post "/render/" :hx-target "#main" :hx-trigger "click consume")))
+        (print (list :o output))
+        (print (if (listp output)
+            (cons (first output) (append params (rest output)))
+            (cons :a (append params (list output))))))))
+
+(defun derive-nav-menu (spec)
+  (loop :for branch :in (second spec)
+        :collect (if (listp branch)
+                     (rest (assoc :name (rest branch))))))
 
 #|
 
