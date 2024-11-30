@@ -60,7 +60,7 @@
                        (in-system-context <> package))))
                  :main
                  (lambda (session input)
-                   (print (list :in2 input))
+                   ;; (print (list :in2 input))
                    (if (getf input :text)
                        (let ((input (apply #'concatenate 'string
                                            (loop :for i :in (getf input :text)

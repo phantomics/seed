@@ -355,7 +355,7 @@
                 (then handler)))
        
        (defun fetch-contact2 (context element input)
-         (chain console (log :cc context))
+         ;; (chain console (log :cc context))
          (chain (fetch "/contact/"
                        (create method "POST"
                                headers (create "Content-type" "application/json; charset=UTF-8")
@@ -364,6 +364,18 @@
                                                                        input  input)))))
                 (then (lambda (response) (chain response (json))))
                 (then (lambda (data) (chain htmx (trigger element "refresh"))))))
+       
+       (defun make-contact (system branch element)
+         ;; (chain console (log :cc context))
+         (lambda (input)
+           (chain (fetch "/contact/"
+                         (create method "POST"
+                                 headers (create "Content-type" "application/json; charset=UTF-8")
+                                 body (chain -j-s-o-n (stringify (create portal system
+                                                                         branch branch
+                                                                         input  input)))))
+                  (then (lambda (response) (chain response (json))))
+                  (then (lambda (data) (chain htmx (trigger element "refresh")))))))
          
          ))))
 

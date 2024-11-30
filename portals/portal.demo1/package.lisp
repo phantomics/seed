@@ -15,7 +15,8 @@
                           #:load-seed-system #:render-nav-menu #:from-system-file
                           #:spec-graph-interface #:setf-value #:text-wrap #:of-array-spec
                           #:seed2 #:xform
-                          #:fx #:render #:uim-web #:uic-series #:uic-anchor #:uicc-button)
+                          #:fx #:render #:uim-web #:uic-anchor #:uic-series #:uic-series-form
+                          #:uicc-button #:uicc-text #:uicc-text-line #:uicc-text-area)
   (:shadowing-import-from #:seed.admit #:authorize)
   ;; (:shadowing-import-from #:spinneret #:with-html #:with-html-string #:interpret-html-tree)
   )

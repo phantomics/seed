@@ -22,7 +22,6 @@ function fetchContact(system, branch, input, handler) {
     }).then(handler);
 };
 function fetchContact2(context, element, input) {
-    console.log('cc', context);
     __PS_MV_REG = [];
     return fetch('/contact/', { method : 'POST',
                                 headers : { 'Content-type' : 'application/json; charset=UTF-8' },
@@ -35,4 +34,20 @@ function fetchContact2(context, element, input) {
     }).then(function (data) {
         return htmx.trigger(element, 'refresh');
     });
+};
+function makeContact(context, element) {
+    return function (input) {
+        __PS_MV_REG = [];
+        return fetch('/contact/', { method : 'POST',
+                                    headers : { 'Content-type' : 'application/json; charset=UTF-8' },
+                                    body : JSON.stringify({ portal : context.system,
+                                                            branch : context.branch,
+                                                            input : input
+                                                          })
+                                  }).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            return htmx.trigger(element, 'refresh');
+        });
+    };
 };

@@ -707,9 +707,12 @@
 ;; SECTION: another iteration of the UI component class system, with a simple list/atom foundation
 
 (defclass ui-medium ()
-  ((%name :accessor uim-name
-          :initform nil
-          :initarg  :name)))
+  ((%name   :accessor uim-name
+            :initform nil
+            :initarg  :name)
+   (%portal :accessor uim-portal
+            :initform nil
+            :initarg  :portal)))
 
 (defclass uim-web (ui-medium)
   ((%stream :accessor uim-web-stream
@@ -738,8 +741,13 @@
           :initform nil
           :initarg  :maps)))
 
-(defclass uic-control (ui-component)
+(defclass uic-series-form (uic-series)
   ())
+
+(defclass uic-control (ui-component)
+  ((%key :accessor uicc-key
+         :initform nil
+         :initarg  :key)))
 
 (defclass uic-anchor (ui-component)
   ())
@@ -751,6 +759,17 @@
   ())
 
 (defclass uicc-select (uic-control)
+  ())
+
+(defclass uicc-text (uic-control)
+  ((%default :accessor uicc-text-default
+             :initform nil
+             :initarg  :default)))
+
+(defclass uicc-text-line (uicc-text)
+  ())
+
+(defclass uicc-text-area (uicc-text)
   ())
 
 (defmacro fx (form &rest specs)
@@ -771,33 +790,48 @@
       `(let ((,evaluated-form ,form))
          ,(process-spec evaluated-form specs)))))
 
-(defun render (form)
+(defgeneric render (medium component))
+
+(defmethod render ((medium uim-web) (component t))
   (let ((spinneret:*html* (uim-web-stream medium)))
-    (spinneret:interpret-html-tree form)))
+    (spinneret:interpret-html-tree (generate medium component))))
 
 (defgeneric generate (medium component))
 
 (defmethod generate ((medium uim-web) (comp null))
   (declare (ignore medium comp)))
 
+(defmethod generate ((medium uim-web) (comp list))
+  (declare (ignore medium))
+  comp)
+
 (defmethod generate ((medium uim-web) (comp symbol))
-  (format (uim-web-stream medium) "~a" comp))
+  (declare (ignore medium))
+  (string-downcase comp))
 
 (defmethod generate ((medium uim-web) (comp string))
-  (format (uim-web-stream medium) "~a" comp))
+  (declare (ignore medium))
+  (list :raw comp))
 
 (defmethod generate ((medium uim-web) (comp uic-anchor))
-  (print (list :rr comp (uic-base comp)))
-  (spinneret:with-html (:span (string-downcase (uic-base comp)))))
+  (declare (ignore medium))
+  `(:span ,(string-downcase (uic-base comp))))
 
 (defmethod generate ((medium uim-web) (comp uicc-button))
-  (spinneret:with-html (:button (generate medium (uic-base comp)))))
+  `(:button ,(generate medium (uic-base comp))
+    :name ,(or (string (uicc-key comp)) "")))
+
+(defmethod generate ((medium uim-web) (comp uicc-text-line))
+  `(:input :class "input" :type "text" :value ,(or (uicc-text-default comp) "")
+           :name ,(or (string (uicc-key comp)) "")))
+
+(defmethod generate ((medium uim-web) (comp uicc-text-area))
+  `(:textarea :class "input" :value ,(or (uicc-text-default comp) "")
+              :name ,(or (string (uicc-key comp)) "")))
 
 (defmethod generate ((medium uim-web) (comp uic-series))
   (let ((last-type-index (1- (length (uic-type comp))))
         (class-stream (make-string-output-stream))
-        ;; (layout (uic-set-layout comp))
-        (stream (uim-web-stream medium))
         (types (funcall (if (listp (uic-type comp)) #'identity #'list)
                         (uic-type comp))))
     (format class-stream "~a" (typecase comp (uic-series "series ")
@@ -806,27 +840,35 @@
     (loop :for type :in types :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
               (unless (= ix last-type-index) (format class-stream " ")))
-    (let ((spinneret:*html* (uim-web-stream medium)))
-      (spinneret:with-html
-        (:div :path "" :class (get-output-stream-string class-stream)
-              (loop :for ix :from 0 :for item :in (uic-base comp)
-                    :do (let ((map (nth ix (uic-series-maps comp))))
-                          (format class-stream "item ")
-                          (loop :for itype :in (rest (assoc :type map))
-                                :do (format class-stream "~a " (string-downcase itype)))
-                          (:div :class (get-output-stream-string class-stream)
-                                (generate medium item)))))))))
+    (append (list (typecase comp (uic-series-form :form) (t :div))
+                  :path "" :class (get-output-stream-string class-stream))
+            (loop :for ix :from 0 :for item :in (uic-base comp)
+                  :collect (let ((map (nth ix (uic-series-maps comp))))
+                             (format class-stream "item ")
+                             (loop :for itype :in (rest (assoc :type map))
+                                   :do (format class-stream "~a " (string-downcase itype)))
+                             `(:div :class ,(get-output-stream-string class-stream)
+                                    ,(generate medium item)))))))
 
 (defmethod generate :around ((medium uim-web) (comp ui-component))
-  (print (list :cc comp (uic-link comp)))
+  ;; (print (list :cc comp (uic-link comp)))
   (if (not (uic-link comp))
       (call-next-method)
-      (let ((output (call-next-method))
-            (params (list :hx-post "/render/" :hx-target "#main" :hx-trigger "click consume")))
-        (print (list :o output))
-        (print (if (listp output)
-            (cons (first output) (append params (rest output)))
-            (cons :a (append params (list output))))))))
+      (destructuring-bind (mode branch &rest params) (uic-link comp)
+        (case mode
+          (:send (let* ((output (call-next-method))
+                        (params (list :hx-post "/render/" :hx-target "#main"
+                                      :hx-trigger (format nil "~a consume"
+                                                          (typecase comp
+                                                            (uic-series-form "submit")
+                                                            (t "click")))
+                                      :hx-vals (psl (create portal (lisp (uim-portal medium))
+                                                            branch (lisp (string-downcase branch))
+                                                            point  (lisp (second output)))))))
+                   (if (listp output)
+                       (cons (first output) (append params (rest output)))
+                       (cons :a (append params (list output))))))
+          (t (call-next-method))))))
 
 (defun derive-nav-menu (spec)
   (loop :for branch :in (second spec)
