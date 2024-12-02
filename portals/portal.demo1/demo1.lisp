@@ -43,7 +43,7 @@
                                 (grow (intern portal-form "KEYWORD") (intern branch-form "KEYWORD")
                                       session-api (rest (assoc "input" params :test #'string=))))))
          :renderer-fetch (lambda (params session-api)
-                           ;; (print (list :par params session-api))
+                           (print (list :par params session-api))
                            (let ((system-form (rest (assoc "system" params :test #'string=)))
                                  (branch-form (rest (assoc "branch" params :test #'string=))))
                              (grow (intern (string-upcase system-form) "KEYWORD")

@@ -862,8 +862,10 @@
                                                 (chain console (log :dt data
                                                                     (@ $el offset-height)))))))
            ;; :id this-id
-           ;; :hx-vals ,(json-convert-to (list :system system :branch branch :face face))
-           ;; :x-data ,(ps (create branch-frame $el))
+           :hx-vals ,(json-convert-to (list :system (uim-portal medium)
+                                            :branch (string-upcase (uic-base comp))
+                                            :face face))
+           :x-data ,(ps (create branch-frame $el))
            )))
 
 (defmethod generate ((medium uim-web) (comp uic-series))
