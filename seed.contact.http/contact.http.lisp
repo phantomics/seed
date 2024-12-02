@@ -55,7 +55,7 @@
                        (setf (gethash session-id store) session-store))
           (getf session-store key)))))
 
-(defun http-contact-service-start (&key (port 8080) interactor-fetch renderer-fetch
+(defun http-contact-service-start (&key interactor-fetch renderer-fetch (port 8080)
                                      (package-name (intern (package-name *package*) "KEYWORD")))
   ;; (print (list :int interactor-fetch renderer-fetch))
   (let* ((root-path (asdf:system-relative-pathname package-name "./ui-browser/"))

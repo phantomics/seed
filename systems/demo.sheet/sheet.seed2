@@ -1,24 +1,34 @@
 (seed2 :demo.sheet
-      (:bind :package package :of-system of-system)
-      (:joiner . #'add-contact)
-      (:branches
-       :view
-       (lambda (session input)
-         (let ((context (second (assoc :session input))))
-           ;; (fx (list (fx :graph (uix-access))
-           ;;           (fx :graph (uix-access)))
-           ;;     (uic-series )
-           (-<> (uic ((:type :set :linear :columnar :workspace :even)
-                      (:members :column :column)
-                      (:point (if (not context) nil (funcall context :branch-point)))
-                      (:layout ((:row ((:column) (:column)))
-                                (:row ((:column))
-                                      (:span . 2))
-                                :divide
-                                (:column)))
-                      (:faces ((:format :dual-bank))
-                              ((:format :dual-bank))
-                              ((:format :single-bank))))
+       (:bind :package package :of-system of-system)
+       (:joiner . #'add-contact)
+       (:branches
+        :view
+        (lambda (session input)
+          (let ((context (second (assoc :session input))))
+            ;; (print (list :pa package *package* session context))
+            ;; (let* ((this-stream (make-string-output-stream))
+            ;;        (medium (make-instance 'uim-web :stream this-stream
+            ;;                                        :portal :demo.sheet)))
+
+            ;;   (render
+            ;;    medium
+            ;;    (fx (list (fx :graph (uic-access :name :graph-overview))
+            ;;              (fx :graph (uic-access :name :graph-node)))
+            ;;        (uic-series :layout (:horizontal :even))))
+            ;;   (print (list :aaa))
+            ;;   (princ (get-output-stream-string this-stream)))
+            
+            (-<> (uic ((:type :set :linear :columnar :workspace :even)
+                       (:members :column :column)
+                       (:point (if (not context) nil (funcall context :branch-point)))
+                       (:layout ((:row ((:column) (:column)))
+                                 (:row ((:column))
+                                       (:span . 2))
+                                 :divide
+                                 (:column)))
+                       (:faces ((:format :dual-bank))
+                               ((:format :dual-bank))
+                               ((:format :single-bank))))
                      ;; (uic ((:type :form :elem) (:access :esgraph)
                      ;;       (:name . :esgraph-overview)
                      ;;       (:controls (:header :save :add-node :add-link :delete-item)
@@ -60,7 +70,9 @@
                      ;;       (:controls (:header :submit)
                      ;;                  (:footer :submit))))
                      )
-             (in-system-context <> :demo.sheet))))
+              (in-system-context <> :demo.sheet))
+            
+            ))
        :main
        (lambda (session input)
          (print (list :in2 input))

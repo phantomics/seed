@@ -9,7 +9,6 @@
        (:branches
         :view
         (lambda (session input)
-          ;; (print (list :aaa session input))
           (let ((key-input (rest (assoc :key input :test #'eq))))
             (when (and key-input (string= "demo" (string-downcase key-input)))
               (funcall session :user :hello)))
@@ -28,6 +27,9 @@
               (load-seed-system epsym)))
           ;; (print (list :bbb session input (package-name package) package))
 
+          ;; (when (and session (not (funcall session :portal-name)))
+          ;;   (funcall session :portal-name :portal.demo1))
+
           (let* ((this-stream (make-string-output-stream))
                  (medium (make-instance 'uim-web :stream this-stream
                                                  :portal (intern (package-name package)
@@ -36,13 +38,13 @@
             (render
              medium
              (authorize (funcall session :user)
-               (fx (list (fx (list :portal.demo1 
+               (fx (list (fx (list :portal.demo1
                                    '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
                                      "demo.sheet")
                                    (if (of-system :point)
                                        (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
-                                           (:each uic-anchor :link '(:send :view :point :self))
-                                           (uic-series :type '(:ui :column)))))
+                                           (:each uic-anchor :link (:send :view :point :self))
+                                           (uic-series :type (:ui :column)))))
                              ;; (render-html-interface
                              ;;  (encode (uic ((:type :form :branch-navigation)
                              ;;                (:app :set-nav-point)
@@ -60,8 +62,8 @@
                                :maps '(((:type :sidebar)) ((:type :main)))))
 
                (fx (list (fx "" (uicc-text-line :key "key")))
-                   (uic-series-form :type '(:ui :column)
-                                    :link '(:send :view :key :+value)))))
+                   (uic-series-form :type (:ui :column)
+                                    :link (:send :view :key :+value)))))
             
             (get-output-stream-string this-stream)))
         :systems

@@ -4,11 +4,21 @@
 
 ;; SECTION: base macros for Seed systems
 
+;; (defun load-system-directory (directory-path)
+;;   (flet ((check-name (file)
+;;            (string= "SEED2" (string-upcase (first (last (cl-ppcre:split "[.]" (namestring file))))))))
+;;     (let ((files (uiop:directory-files directory-path)))
+;;       ;; (print (list :ld *package*))
+;;       (loop :for f :in files :when (check-name f) :do (load f)))))
+
 (defun load-system-directory (directory-path)
   (flet ((check-name (file)
            (string= "SEED2" (string-upcase (first (last (cl-ppcre:split "[.]" (namestring file))))))))
     (let ((files (uiop:directory-files directory-path)))
-      (loop :for f :in files :when (check-name f) :do (load f)))))
+      ;; (print (list :ld *package*))
+      (loop :for f :in files :when (check-name f)
+            :do (with-open-file (input f)
+                  (loop :for i := (read input nil) :while i :do (eval i)))))))
 
 (defmacro seed-instance (&key portals-path)
   (let ((subdirs (gensym)) (sd (gensym)) (files (gensym)) (key (gensym))
@@ -736,10 +746,16 @@
           :initform nil
           :initarg :link)))
 
+(defclass uic-access (ui-component)
+  ())
+
 (defclass uic-series (ui-component)
   ((%maps :accessor uic-series-maps
           :initform nil
-          :initarg  :maps)))
+          :initarg  :maps)
+   (%layout :accessor uic-series-layout
+            :initform nil
+            :initarg  :layout)))
 
 (defclass uic-series-form (uic-series)
   ())
@@ -773,17 +789,23 @@
   ())
 
 (defmacro fx (form &rest specs)
-  (labels ((process-spec (item spec-list)
+  (labels ((format-params (items)
+             (loop :for item :in items
+                   :collect (if (or (atom item)
+                                    (not (keywordp (first item))))
+                                item (list 'quote item))))
+           (process-spec (item spec-list)
              (let ((generated))
                (case (caar spec-list)
                  (:each
                   (destructuring-bind (class &rest params) (cdar spec-list)
-                    (let* ((sub-item (gensym)))
+                    (let* ((sub-item (gensym))
+                           (params (format-params params)))
                       (setf generated `(mapcar (lambda (,sub-item)
                                                  (make-instance ',class :base ,sub-item ,@params))
                                                ,item)))))
                  (t (destructuring-bind (class &rest params) (first spec-list)
-                      (setf generated `(make-instance ',class :base ,item ,@params)))))
+                      (setf generated `(make-instance ',class :base ,item ,@(format-params params))))))
                (if (not (rest spec-list))
                    generated (process-spec generated (rest spec-list))))))
     (let ((evaluated-form (gensym)))
@@ -797,6 +819,12 @@
     (spinneret:interpret-html-tree (generate medium component))))
 
 (defgeneric generate (medium component))
+
+(defgeneric locate (medium component index item))
+
+(defmethod locate ((medium uim-web) (comp t) index item)
+  (declare (ignore medium comp index item))
+  "")
 
 (defmethod generate ((medium uim-web) (comp null))
   (declare (ignore medium comp)))
@@ -813,21 +841,30 @@
   (declare (ignore medium))
   (list :raw comp))
 
-(defmethod generate ((medium uim-web) (comp uic-anchor))
-  (declare (ignore medium))
-  `(:span ,(string-downcase (uic-base comp))))
-
-(defmethod generate ((medium uim-web) (comp uicc-button))
-  `(:button ,(generate medium (uic-base comp))
-    :name ,(or (string (uicc-key comp)) "")))
-
-(defmethod generate ((medium uim-web) (comp uicc-text-line))
-  `(:input :class "input" :type "text" :value ,(or (uicc-text-default comp) "")
-           :name ,(or (string (uicc-key comp)) "")))
-
-(defmethod generate ((medium uim-web) (comp uicc-text-area))
-  `(:textarea :class "input" :value ,(or (uicc-text-default comp) "")
-              :name ,(or (string (uicc-key comp)) "")))
+(defmethod generate ((medium uim-web) (comp uic-access))
+  (let ((last-type-index (1- (length (uic-type comp))))
+        (class-stream (make-string-output-stream))
+        (types (funcall (if (listp (uic-type comp)) #'identity #'list)
+                        (uic-type comp)))
+        (face (lisp->camel-case (uic-name comp))))
+    (format class-stream "sub-container")
+    (loop :for type :in types :for ix :from 0
+          :do (format class-stream "~a" (string-downcase type))
+              (unless (= ix last-type-index) (format class-stream " ")))
+    `(:div :hx-post "/render/" :hx-trigger "load, reload consume"
+           :class ,(get-output-stream-string class-stream)
+           :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
+                               (fetch-contact (lisp (string-upcase (uim-portal medium)))
+                                              (lisp (string-upcase (uic-base comp)))
+                                              (create height (@ $el offset-height)
+                                                      width  (@ $el offset-width))
+                                              (lambda (data)
+                                                (chain console (log :dt data
+                                                                    (@ $el offset-height)))))))
+           ;; :id this-id
+           ;; :hx-vals ,(json-convert-to (list :system system :branch branch :face face))
+           ;; :x-data ,(ps (create branch-frame $el))
+           )))
 
 (defmethod generate ((medium uim-web) (comp uic-series))
   (let ((last-type-index (1- (length (uic-type comp))))
@@ -847,8 +884,46 @@
                              (format class-stream "item ")
                              (loop :for itype :in (rest (assoc :type map))
                                    :do (format class-stream "~a " (string-downcase itype)))
-                             `(:div :class ,(get-output-stream-string class-stream)
-                                    ,(generate medium item)))))))
+                             (locate medium comp ix `(:div :class ,(get-output-stream-string class-stream)
+                                                           ,(generate medium item))))))))
+
+(defmethod generate ((medium uim-web) (comp uic-anchor))
+  (declare (ignore medium))
+  `(:span ,(string-downcase (uic-base comp))))
+
+(defmethod generate ((medium uim-web) (comp uicc-button))
+  `(:button ,(generate medium (uic-base comp))
+    :name ,(or (string (uicc-key comp)) "")))
+
+(defmethod generate ((medium uim-web) (comp uicc-text-line))
+  `(:input :class "input" :type "text" :value ,(or (uicc-text-default comp) "")
+           :name ,(or (string (uicc-key comp)) "")))
+
+(defmethod generate ((medium uim-web) (comp uicc-text-area))
+  `(:textarea :class "input" :value ,(or (uicc-text-default comp) "")
+              :name ,(or (string (uicc-key comp)) "")))
+
+(defmethod locate ((medium uim-web) (comp uic-series) index item)
+  (let ((default-segments 12)) ;; default number of segments for a grid layout
+    (if (not (uic-series-layout comp))
+        item (let ((item-props (butlast (rest item) 1)))
+               (destructuring-bind (type style &rest props) (uic-series-layout comp)
+                 (case type
+                   ((:horizontal :vertical)
+                    (case style
+                      (:even (let* ((divisions (or (first props) default-segments))
+                                    (width (/ divisions (length (uic-base comp)))))
+                               (setf (getf item-props :class)
+                                     (format nil "~a even" (getf item-props :class))
+                                     (getf item-props :style)
+                                     (format nil "~a ~a: ~a; ~a: ~a;" (or (getf item-props :style) "")
+                                             (if (eq type :horizontal)
+                                                 "grid-column-start" "grid-row-start")
+                                             (1+ (floor (* width index)))
+                                             (if (eq type :horizontal)
+                                                 "grid-column-end" "grid-row-end")
+                                             (1+ (floor (* width (1+ index))))))))))))
+               (cons (first item) (append item-props (last item)))))))
 
 (defmethod generate :around ((medium uim-web) (comp ui-component))
   ;; (print (list :cc comp (uic-link comp)))
