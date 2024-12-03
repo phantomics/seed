@@ -12,9 +12,24 @@
 
               (render
                medium
-               (fx (list (fx :graph (uic-access :name :graph-overview))
-                         (fx :graph (uic-access :name :graph-node)))
-                   (uic-series :layout (:horizontal :even))))
+               (fx (list (fx (list (fx (list :save)
+                                       (:each uicc-button)
+                                       (uic-series))
+                                   (fx :graph (uic-access :name :graph-overview))
+                                   (fx (list :save)
+                                       (:each uicc-button)
+                                       (uic-series)))
+                             (uic-series :layout (:vertical :of 12 1 10 1)))
+                         (fx (list (fx (list :save)
+                                       (:each uicc-button)
+                                       (uic-series))
+                                   (fx :graph (uic-access :name :graph-node))
+                                   (fx (list :save)
+                                       (:each uicc-button)
+                                       (uic-series)))
+                             (uic-series :layout (:vertical :of 12 1 10 1))))
+                   (uic-series :layout (:horizontal :even)
+                               :type (:workspace :even))))
               ;; (print (list :aaa))
               (get-output-stream-string this-stream))
             
