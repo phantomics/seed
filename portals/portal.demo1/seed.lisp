@@ -41,10 +41,11 @@
                (fx (list (fx (list :portal.demo1
                                    '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
                                      "demo.sheet")
-                                   (if nil ; (of-system :point)
-                                       (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
-                                           (:each uic-anchor :link (:send :view :point :self))
-                                           (uic-series :type (:ui :column)))))
+                                   ;; (if nil ; (of-system :point)
+                                   ;;     (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
+                                   ;;         (:each uic-anchor :link (:send :view :point :self))
+                                   ;;         (uic-series :type (:ui :column))))
+                                   )
                              ;; (render-html-interface
                              ;;  (encode (uic ((:type :form :branch-navigation)
                              ;;                (:app :set-nav-point)

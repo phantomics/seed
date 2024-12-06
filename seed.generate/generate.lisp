@@ -744,7 +744,13 @@
           :initarg  :type)
    (%link :accessor uic-link
           :initform nil
-          :initarg :link)))
+          :initarg :link)
+   (%join :accessor uic-join
+          :initform nil
+          :initarg  :join)
+   (%cast :accessor uic-cast
+          :initform nil
+          :initarg  :cast)))
 
 (defclass uic-access (ui-component)
   ())
@@ -818,6 +824,14 @@
   (let ((spinneret:*html* (uim-web-stream medium)))
     (spinneret:interpret-html-tree (generate medium component))))
 
+(defgeneric realize (origin medium aspect))
+
+(defmethod realize ((origin ui-component) (medium ui-medium) (aspect t))
+  (unless (or (not (typep aspect 'ui-component))
+              (uic-join aspect))
+    (setf (uic-join aspect) (uic-join origin)))
+  (generate medium aspect))
+
 (defgeneric generate (medium component))
 
 (defgeneric locate (medium component index item))
@@ -868,71 +882,78 @@
            :x-data ,(ps (create branch-frame $el))
            )))
 
-(defmethod generate ((medium uim-web) (comp uic-series))
-  (let ((last-type-index (1- (length (uic-type comp))))
+(defmethod generate ((medium uim-web) (aspect uic-series))
+  (let ((last-type-index (1- (length (uic-type aspect))))
         (class-stream (make-string-output-stream))
-        (types (funcall (if (listp (uic-type comp)) #'identity #'list)
-                        (uic-type comp)))
+        (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
+                        (uic-type aspect)))
+        (join-spec (uic-join aspect))
         (breadth-default 12))
     (format class-stream "ui ")
-    (format class-stream "~a" (typecase comp (uic-series "series ")
+    (format class-stream "~a" (typecase aspect (uic-series "series ")
                                         ;; (uic-set-frame "frame ")
                                         (t "")))
     
-    (destructuring-bind (&optional ltype lstyle &rest lprops) (uic-series-layout comp)
+    (destructuring-bind (&optional ltype lstyle &rest lprops) (uic-series-layout aspect)
       (case ltype
         ((:horizontal :vertical) (format class-stream "series grid-layout ")))
       
       (loop :for type :in types :for ix :from 0
             :do (format class-stream "~a" (string-downcase type))
                 (unless (= ix last-type-index) (format class-stream " ")))
-      (append (list (typecase comp (uic-series-form :form) (t :div))
+      (append (list (typecase aspect (uic-series-form :form) (t :div))
                     :path "" :class (get-output-stream-string class-stream)
                     :style (if (not (member ltype '(:horizontal :vertical)))
-                               "" (format nil "grid-template-~a: ~{~a% ~};"
+                               "" (let ((ratio (/ 100.0 (or (first lprops) breadth-default))))
+                                    (format nil "grid-template-~a: ~{~a% ~};"
                                           (if (eq ltype :horizontal) "columns" "rows")
                                           (loop :for i :below (or (first lprops) breadth-default)
-                                                :collect (/ 100.0 (or (first lprops)
-                                                                      breadth-default))))))
-              (loop :for ix :from 0 :for item :in (uic-base comp)
-                    :collect (let ((map (nth ix (uic-series-maps comp))))
+                                                :collect ratio)))))
+              (if join-spec
+                  (destructuring-bind (system &optional branch)
+                      (if (listp join-spec) join-spec (list nil join-spec))
+                    (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
+                                                   ,@(if branch `(branch ,branch))
+                                                   act (realize system (uic-join aspect) $el))))))
+              (loop :for ix :from 0 :for item :in (uic-base aspect)
+                    :collect (let ((map (nth ix (uic-series-maps aspect))))
                                (format class-stream "item ")
                                (loop :for itype :in (rest (assoc :type map))
                                      :do (format class-stream "~a " (string-downcase itype)))
-                               (locate medium comp ix
+                               (locate medium aspect ix
                                        `(:div :class ,(get-output-stream-string class-stream)
-                                              ,(generate medium item)))))))))
+                                              ,(realize aspect medium item)))))))))
 
-(defmethod generate ((medium uim-web) (comp uic-anchor))
+(defmethod generate ((medium uim-web) (aspect uic-anchor))
   (declare (ignore medium))
-  `(:span ,(string-downcase (uic-base comp))))
+  `(:span ,(string-downcase (uic-base aspect))))
 
-(defmethod generate ((medium uim-web) (comp uicc-button))
-  `(:button ,(generate medium (uic-base comp))
-    :name ,(or (string (uicc-key comp)) "")))
+(defmethod generate ((medium uim-web) (aspect uicc-button))
+  `(:button :name ,(or (string (uicc-key aspect)) "") :class "ui button"
+            ,(realize aspect medium (uic-base aspect))))
 
-(defmethod generate ((medium uim-web) (comp uicc-text-line))
-  `(:input :class "input" :type "text" :value ,(or (uicc-text-default comp) "")
-           :name ,(or (string (uicc-key comp)) "")))
+(defmethod generate ((medium uim-web) (aspect uicc-text-line))
+  `(:input :class "input" :type "text" :value ,(or (uicc-text-default aspect) "")
+           :name ,(or (string (uicc-key aspect)) "")))
 
-(defmethod generate ((medium uim-web) (comp uicc-text-area))
-  `(:textarea :class "input" :value ,(or (uicc-text-default comp) "")
-              :name ,(or (string (uicc-key comp)) "")))
+(defmethod generate ((medium uim-web) (aspect uicc-text-area))
+  `(:textarea :class "input" :value ,(or (uicc-text-default aspect) "")
+              :name ,(or (string (uicc-key aspect)) "")))
 
-(defmethod locate ((medium uim-web) (comp uic-series) index item)
+(defmethod locate ((medium uim-web) (aspect uic-series) index item)
   (let ((default-segments 12)) ;; default number of segments for a grid layout
-    (if (not (uic-series-layout comp))
+    (if (not (uic-series-layout aspect))
         item (let ((item-props (butlast (rest item) 1)))
-               (destructuring-bind (type style &rest props) (uic-series-layout comp)
+               (destructuring-bind (type style &rest props) (uic-series-layout aspect)
                  (case type
                    ((:horizontal :vertical)
                     (case style
                       ((:even :of)
                        (let* ((divisions (or (first props) default-segments))
-                              (width (/ divisions (length (uic-base comp)))))
+                              (width (/ divisions (length (uic-base aspect)))))
                          (if (eq :of style)
                              (setf width 1
-                                   next-index (if (= index (1- (length (uic-base comp))))
+                                   next-index (if (= index (1- (length (uic-base aspect))))
                                                   (first props)
                                                   (+ index (nth index (rest props))))
                                    index (loop :for i :in (rest props) :for x :below index
@@ -950,16 +971,16 @@
                                        (1+ (floor (* width next-index)))))))))))
                (cons (first item) (append item-props (last item)))))))
 
-(defmethod generate :around ((medium uim-web) (comp ui-component))
-  ;; (print (list :cc comp (uic-link comp)))
-  (if (not (uic-link comp))
+(defmethod generate :around ((medium uim-web) (aspect ui-component))
+  ;; (print (list :cc aspect (uic-link aspect)))
+  (if (not (uic-link aspect))
       (call-next-method)
-      (destructuring-bind (mode branch &rest params) (uic-link comp)
+      (destructuring-bind (mode branch &rest params) (uic-link aspect)
         (case mode
           (:send (let* ((output (call-next-method))
                         (params (list :hx-post "/render/" :hx-target "#main"
                                       :hx-trigger (format nil "~a consume"
-                                                          (typecase comp
+                                                          (typecase aspect
                                                             (uic-series-form "submit")
                                                             (t "click")))
                                       :hx-vals (psl (create portal (lisp (uim-portal medium))

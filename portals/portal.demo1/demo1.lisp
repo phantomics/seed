@@ -365,7 +365,7 @@
                 (then (lambda (response) (chain response (json))))
                 (then (lambda (data) (chain htmx (trigger element "refresh"))))))
        
-       (defun make-contact (system branch element)
+       (defun realize (system branch element)
          ;; (chain console (log :cc context))
          (lambda (input)
            (chain (fetch "/contact/"
