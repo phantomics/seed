@@ -43,7 +43,7 @@
                                 (grow (intern portal-form "KEYWORD") (intern branch-form "KEYWORD")
                                       session-api (rest (assoc "input" params :test #'string=))))))
          :renderer-fetch (lambda (params session-api)
-                           (print (list :par params session-api))
+                           ;; (print (list :par params session-api))
                            (let ((system-form (rest (assoc "system" params :test #'string=)))
                                  (branch-form (rest (assoc "branch" params :test #'string=))))
                              (grow (intern (string-upcase system-form) "KEYWORD")
@@ -80,7 +80,7 @@
                     (:link :rel "stylesheet" :href "./build/vendor.css")
                     (:link :rel "stylesheet" :href "./build/app.css"))
              (:body (:div :id "main" :class "ui" :hx-post "/render/"
-                          :hx-trigger "load, reload, submit, refresh"
+                          :hx-trigger "load, submit, refresh"
                           :hx-vals (json-convert-to (list :system portal-sym :branch :view))
                           :x-data (ps (create context (create system (lisp (string portal-sym))
                                                               branch "VIEW"))))
@@ -376,6 +376,12 @@
                                                                          input  input)))))
                   (then (lambda (response) (chain response (json))))
                   (then (lambda (data) (chain htmx (trigger element "refresh")))))))
+
+       (defun push-form (form-list)
+         (chain form-list (push item)))
+       
+       (defun submit-forms (form-list)
+         (chain form-list (for-each (lambda (form) (chain htmx (trigger form "submit"))))))
          
          ))))
 

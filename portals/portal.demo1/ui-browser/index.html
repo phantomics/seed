@@ -8,7 +8,7 @@ window.seedData = {  };</script>
  </head>
  <body>
   <div class=ui id=main hx-post="/render/"
-       hx-trigger="load, refresh"
+       hx-trigger="load, submit, refresh"
        hx-vals={&quot;system&quot;:&quot;portal.demo1&quot;,&quot;branch&quot;:&quot;view&quot;}
        x-data="{ context : { system : &#39;PORTAL.DEMO1&#39;, branch : &#39;VIEW&#39; } };"></div>
   <script src=./static/misc.js></script>

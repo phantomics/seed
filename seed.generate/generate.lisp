@@ -742,9 +742,6 @@
    (%type :accessor uic-type
           :initform nil
           :initarg  :type)
-   (%link :accessor uic-link
-          :initform nil
-          :initarg :link)
    (%join :accessor uic-join
           :initform nil
           :initarg  :join)
@@ -826,10 +823,46 @@
 
 (defgeneric realize (origin medium aspect))
 
+;; (defmethod realize ((origin ui-component) (medium ui-medium) (aspect t))
+;;   (unless (not (typep aspect 'ui-component))
+;;     (print (list :ee (uic-join aspect)))
+;;     (if (uic-join aspect)
+;;         (let ((ajoin (uic-join aspect))
+;;               (ojoin (copy-tree (uic-join origin))))
+;;           (if (listp ajoin)
+;;               (loop :for (key value) :on ajoin :by #'cddr
+;;                     :do (setf (getf ojoin key) value))
+;;               (setf (getf ojoin :in)  ajoin
+;;                     (getf ojoin :out) ajoin))
+;;           ;; (print (list :ooo ajoin ojoin))
+;;           (setf (uic-join aspect) ojoin))
+;;         (setf (uic-join aspect) (uic-join origin))))
+;;   (generate medium aspect))
+
+(defun alist-supersede (new original)
+  (loop :for n :in new :do (if (assoc (first n) original)
+                               (rplacd (assoc (first n) original)
+                                       (rest n))
+                               (push n original)))
+  original)
+
 (defmethod realize ((origin ui-component) (medium ui-medium) (aspect t))
-  (unless (or (not (typep aspect 'ui-component))
-              (uic-join aspect))
-    (setf (uic-join aspect) (uic-join origin)))
+  (unless (not (typep aspect 'ui-component))
+    ;; (print (list :ee (uic-join aspect)))
+    (if (uic-join aspect)
+        (let* ((ajoin (uic-join aspect))
+               (ojoin (copy-tree (uic-join origin)))
+               (new-list (if (listp ajoin)
+                             (if (listp (first ajoin))
+                                 ajoin (list (cons :in  ajoin)
+                                             (cons :out ajoin)))
+                             (error "AAA"))))
+          ;; adapt for one-symbol join specs
+          ;; (print (list :aoa ajoin ojoin new-list))
+          (setf ojoin (alist-supersede new-list ojoin))
+          ;; (print (list :eee ojoin))
+          (setf (uic-join aspect) ojoin))
+        (setf (uic-join aspect) (uic-join origin))))
   (generate medium aspect))
 
 (defgeneric generate (medium component))
@@ -866,6 +899,7 @@
           :do (format class-stream "~a" (string-downcase type))
               (unless (= ix last-type-index) (format class-stream " ")))
     `(:div :hx-post "/render/" :hx-trigger "load, reload consume"
+           :id ,(format nil "branch-~a" (lisp->camel-case (uic-name comp)))
            :class ,(get-output-stream-string class-stream)
            :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                (fetch-contact (lisp (string-upcase (uim-portal medium)))
@@ -879,15 +913,14 @@
            :hx-vals ,(json-convert-to (list :system (uim-portal medium)
                                             :branch (string-upcase (uic-base comp))
                                             :face face))
-           :x-data ,(ps (create branch-frame $el))
-           )))
+           :x-data ,(ps (create branch-frame $el)))))
 
 (defmethod generate ((medium uim-web) (aspect uic-series))
   (let ((last-type-index (1- (length (uic-type aspect))))
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
-        (join-spec (uic-join aspect))
+        (join-spec (rest (assoc :out (uic-join aspect))))
         (breadth-default 12))
     (format class-stream "ui ")
     (format class-stream "~a" (typecase aspect (uic-series "series ")
@@ -897,6 +930,8 @@
     (destructuring-bind (&optional ltype lstyle &rest lprops) (uic-series-layout aspect)
       (case ltype
         ((:horizontal :vertical) (format class-stream "series grid-layout ")))
+
+      ;; (print (list :js (uic-join aspect)))
       
       (loop :for type :in types :for ix :from 0
             :do (format class-stream "~a" (string-downcase type))
@@ -914,6 +949,8 @@
                       (if (listp join-spec) join-spec (list nil join-spec))
                     (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
                                                    ,@(if branch `(branch ,branch))
+                                                   local-forms (list)
+                                                   ;; allow extension of forms list in some cases
                                                    act (realize system (uic-join aspect) $el))))))
               (loop :for ix :from 0 :for item :in (uic-base aspect)
                     :collect (let ((map (nth ix (uic-series-maps aspect))))
@@ -929,8 +966,13 @@
   `(:span ,(string-downcase (uic-base aspect))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-button))
-  `(:button :name ,(or (string (uicc-key aspect)) "") :class "ui button"
-            ,(realize aspect medium (uic-base aspect))))
+  (let* ((base (uic-base aspect))
+         (name (if (symbolp base) base)))
+    (destructuring-bind (name action)
+        (if name (list name name) (uic-base aspect))
+      `(:button :name ,(or (string name) "") :class "ui button"
+                ,(realize aspect medium ;; (uic-base aspect)
+                          name)))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-text-line))
   `(:input :class "input" :type "text" :value ,(or (uicc-text-default aspect) "")
@@ -972,24 +1014,14 @@
                (cons (first item) (append item-props (last item)))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
-  ;; (print (list :cc aspect (uic-link aspect)))
-  (if (not (uic-link aspect))
+  (if (not (uic-cast aspect))
       (call-next-method)
-      (destructuring-bind (mode branch &rest params) (uic-link aspect)
-        (case mode
-          (:send (let* ((output (call-next-method))
-                        (params (list :hx-post "/render/" :hx-target "#main"
-                                      :hx-trigger (format nil "~a consume"
-                                                          (typecase aspect
-                                                            (uic-series-form "submit")
-                                                            (t "click")))
-                                      :hx-vals (psl (create portal (lisp (uim-portal medium))
-                                                            branch (lisp (string-downcase branch))
-                                                            point  (lisp (second output)))))))
-                   (if (listp output)
-                       (cons (first output) (append params (rest output)))
-                       (cons :a (append params (list output))))))
-          (t (call-next-method))))))
+      (let ((cast (uic-cast aspect)))
+        (list :form :hx-vals (if (not (listp cast))
+                                 "{}" (ps* `(create ,(getf cast :data))))
+                    :hx-inherit "*" :hx-target "#main" :hx-post "/render/"
+                    ;; TODO: CHANGE HARDCODED ELEMENT ID!!
+              (call-next-method)))))
 
 (defun derive-nav-menu (spec)
   (loop :for branch :in (second spec)

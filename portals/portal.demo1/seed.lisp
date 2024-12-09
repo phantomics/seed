@@ -57,10 +57,10 @@
                              (uic-series :type '(:ui :column)))
                          (if (not (of-system :point))
                              ""
-                             ;; (-<> (grow (of-system :point) :view session)
-                             ;;   ;; (in-system-context <> (package-name package))
-                             ;;   (render-html-interface (encode <>)))
-                             (grow (of-system :point) :view session)
+                             (-<> (grow (of-system :point) :view session)
+                               ;; (in-system-context <> (package-name package))
+                               (render-html-interface (encode <>)))
+                             ;; (grow (of-system :point) :view session)
                              
                              ))
                    (uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
@@ -68,7 +68,7 @@
 
                (fx (list (fx "" (uicc-text-line :key "key")))
                    (uic-series-form :type (:ui :column)
-                                    :link (:send :view :key :+value)))))
+                                    :cast t))))
             
             (get-output-stream-string this-stream)))
         :systems

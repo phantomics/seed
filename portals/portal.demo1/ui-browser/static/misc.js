@@ -35,13 +35,13 @@ function fetchContact2(context, element, input) {
         return htmx.trigger(element, 'refresh');
     });
 };
-function makeContact(context, element) {
+function realize(system, branch, element) {
     return function (input) {
         __PS_MV_REG = [];
         return fetch('/contact/', { method : 'POST',
                                     headers : { 'Content-type' : 'application/json; charset=UTF-8' },
-                                    body : JSON.stringify({ portal : context.system,
-                                                            branch : context.branch,
+                                    body : JSON.stringify({ portal : system,
+                                                            branch : branch,
                                                             input : input
                                                           })
                                   }).then(function (response) {
@@ -50,4 +50,12 @@ function makeContact(context, element) {
             return htmx.trigger(element, 'refresh');
         });
     };
+};
+function pushForm(formList) {
+    return formList.push(item);
+};
+function submitForms(formList) {
+    return formList.forEach(function (form) {
+        return htmx.trigger(form, 'submit');
+    });
 };
