@@ -377,7 +377,7 @@
                   (then (lambda (response) (chain response (json))))
                   (then (lambda (data) (chain htmx (trigger element "refresh")))))))
 
-       (defun push-form (form-list)
+       (defun push-form (item form-list)
          (chain form-list (push item)))
        
        (defun submit-forms (form-list)

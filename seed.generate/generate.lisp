@@ -951,7 +951,7 @@
                                                    ,@(if branch `(branch ,branch))
                                                    local-forms (list)
                                                    ;; allow extension of forms list in some cases
-                                                   act (realize system (uic-join aspect) $el))))))
+                                                   act (realize ,system ,branch $el))))))
               (loop :for ix :from 0 :for item :in (uic-base aspect)
                     :collect (let ((map (nth ix (uic-series-maps aspect))))
                                (format class-stream "item ")
@@ -1014,13 +1014,17 @@
                (cons (first item) (append item-props (last item)))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
+  (print (list :ava aspect (uic-cast aspect)))
   (if (not (uic-cast aspect))
       (call-next-method)
       (let ((cast (uic-cast aspect)))
+        (print (list :cc cast))
         (list :form :hx-vals (if (not (listp cast))
                                  "{}" (ps* `(create ,(getf cast :data))))
-                    :hx-inherit "*" :hx-target "#main" :hx-post "/render/"
-                    ;; TODO: CHANGE HARDCODED ELEMENT ID!!
+                    :hx-inherit "*" :hx-post "/render/" ;; :hx-target "#main"
+                    :x-init (psl (progn (if (not (= "undefined" (typeof local-forms)))
+                                            (push-form $el local-forms))))
+                    ;; TODO: CHANGE HARDCODED ELEMENT ID
               (call-next-method)))))
 
 (defun derive-nav-menu (spec)
@@ -1407,7 +1411,7 @@
                                    :hx-trigger "reload consume, submit"
                                    :x-data ,(psl (create this-form $el action "formSubmit"))
                                    :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
-                                                            (push-form $el))))
+                                                            (push-form $el local-forms))))
                                    :hx-vals ,(json-convert-to
                                               (list :system (string-upcase system)
                                                     :branch (string-upcase branch)
@@ -1536,7 +1540,7 @@
     (case section
       (:body (cl-who:with-html-output (stream-out)
                (:form :class "container" :hx-post "/render/" :hx-trigger "load, reload consume, submit"
-                      :x-init (psl (progn (push-form $el)
+                      :x-init (psl (progn (push-form $el local-forms)
                                           (setf (getprop (@ window seed-elements) (lisp face))
                                                 $el)))
                       :id (format nil "branch-~a" face)

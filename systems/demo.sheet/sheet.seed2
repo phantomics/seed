@@ -29,7 +29,9 @@
                                        (:each uicc-button)
                                        (uic-series :type (:ui :footer))))
                              (uic-series :layout (:vertical :of 12 1 10 1)
-                                         :join (:demo.sheet :graph) :type (:column))))
+                                         :join (:demo.sheet :graph) :type (:column)
+                                         :cast t
+                                         )))
                    (uic-series :layout (:horizontal :even)
                                :type (:workspace :even))))
               ;; (print (list :aaa))
