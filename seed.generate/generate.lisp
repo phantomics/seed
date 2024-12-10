@@ -944,12 +944,12 @@
                                           (if (eq ltype :horizontal) "columns" "rows")
                                           (loop :for i :below (or (first lprops) breadth-default)
                                                 :collect ratio)))))
-              (if join-spec
+              (if nil ; join-spec
                   (destructuring-bind (system &optional branch)
                       (if (listp join-spec) join-spec (list nil join-spec))
                     (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
                                                    ,@(if branch `(branch ,branch))
-                                                   local-forms (list)
+                                                   ;; local-forms (list)
                                                    ;; allow extension of forms list in some cases
                                                    act (realize ,system ,branch $el))))))
               (loop :for ix :from 0 :for item :in (uic-base aspect)
@@ -968,11 +968,21 @@
 (defmethod generate ((medium uim-web) (aspect uicc-button))
   (let* ((base (uic-base aspect))
          (name (if (symbolp base) base)))
-    (destructuring-bind (name action)
+    (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
-      `(:button :name ,(or (string name) "") :class "ui button"
-                ,(realize aspect medium ;; (uic-base aspect)
-                          name)))))
+      ;(print (list :aa action))
+      (let ((action-props
+              (case action
+                (:cast-forms
+                 `(:|x-on:click|
+                    ,(ps (chain htmx (find-all (lisp (format nil "#cast-~a form.xp-form"
+                                                             (lisp->camel-case (first props)))))
+                               (for-each (lambda (form)
+                                           (chain htmx (trigger form "submit")))))))))))
+        `(:button :name ,(or (string name) "") :class "ui button"
+                  ,@action-props
+                  ,(realize aspect medium ;; (uic-base aspect)
+                            name))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-text-line))
   `(:input :class "input" :type "text" :value ,(or (uicc-text-default aspect) "")
@@ -1014,16 +1024,19 @@
                (cons (first item) (append item-props (last item)))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
-  (print (list :ava aspect (uic-cast aspect)))
+  ;; (print (list :ava aspect (uic-cast aspect)))
   (if (not (uic-cast aspect))
       (call-next-method)
-      (let ((cast (uic-cast aspect)))
+      (let* ((cast (uic-cast aspect))
+             (section-id (if (listp cast) (getf cast :id))))
         (print (list :cc cast))
-        (list :form :hx-vals (if (not (listp cast))
-                                 "{}" (ps* `(create ,(getf cast :data))))
+        (list :form ;; :hx-vals (if (not (listp cast))
+                    ;;              "{}" (ps* `(create ,(getf cast :data))))
+                    :id (if (not section-id)
+                            "" (format nil "cast-~a" (lisp->camel-case section-id)))
                     :hx-inherit "*" :hx-post "/render/" ;; :hx-target "#main"
-                    :x-init (psl (progn (if (not (= "undefined" (typeof local-forms)))
-                                            (push-form $el local-forms))))
+                    ;; :x-init (psl (progn (if (not (= "undefined" (typeof local-forms)))
+                    ;;                         (push-form $el local-forms))))
                     ;; TODO: CHANGE HARDCODED ELEMENT ID
               (call-next-method)))))
 
@@ -1409,9 +1422,10 @@
                                                     (if (not output) nil (list output)))))
                            `(:form :hx-post "/render/"
                                    :hx-trigger "reload consume, submit"
+                                   :class "xp-form"
                                    :x-data ,(psl (create this-form $el action "formSubmit"))
-                                   :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
-                                                            (push-form $el local-forms))))
+                                   ;; :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
+                                   ;;                          (push-form $el local-forms))))
                                    :hx-vals ,(json-convert-to
                                               (list :system (string-upcase system)
                                                     :branch (string-upcase branch)
@@ -1540,7 +1554,7 @@
     (case section
       (:body (cl-who:with-html-output (stream-out)
                (:form :class "container" :hx-post "/render/" :hx-trigger "load, reload consume, submit"
-                      :x-init (psl (progn (push-form $el local-forms)
+                      :x-init (psl (progn ;; (push-form $el local-forms)
                                           (setf (getprop (@ window seed-elements) (lisp face))
                                                 $el)))
                       :id (format nil "branch-~a" face)
