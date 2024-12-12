@@ -553,167 +553,6 @@
   "A macro for denoting inline Parenscript code."
   `(subseq (parenscript:ps-inline ,form) 11))
 
-;; SECTION: experimental classes to manifest UI components
-
-;; (defclass ui-component ()
-;;   ((name :accessor uic-name
-;;          :initform nil
-;;          :initarg  :name)
-;;    (type :accessor uic-type
-;;          :initform nil
-;;          :initarg  :type)))
-
-;; (defclass uic-set (ui-component)
-;;   ((items  :accessor uic-set-items
-;;            :initform nil
-;;            :initarg  :items)
-;;    (layout :accessor uic-set-layout
-;;            :initform nil
-;;            :initarg  :layout)))
-
-;; (defclass ui-layout ()
-;;   ((manifest :accessor uilo-manifest
-;;              :initform nil
-;;              :initarg  :manifest)))
-
-;; (defclass uilo-stacked (ui-layout)
-;;   ())
-
-;; (defclass uilo-columnar (ui-layout)
-;;   ((widths :accessor uilo-columns-widths)))
-
-;; (defclass uic-set-frame (uic-set)
-;;   ())
-
-;; (defclass uic-set-series (uic-set)
-;;   ())
-
-;; (defclass uic-caption (ui-component)
-;;   ((text :accessor uic-caption-text
-;;          :initform nil
-;;          :initarg :text)))
-
-;; (defclass uic-caption-heading (uic-caption)
-;;   ())
-
-;; (defclass uic-caption-paragraph (uic-caption)
-;;   ((format :accessor uic-cpgraph-format
-;;            :initform nil
-;;            :initarg :format)))
-
-;; (defclass uic-expression (ui-component)
-;;   ((content :accessor uic-expr-content
-;;             :initform nil
-;;             :initarg :content)))
-
-;; (defgeneric render-web (ui-component &optional stream)
-;;   (:documentation "Render base."))
-
-;; (defmethod render-web ((comp t) &optional stream)
-;;   (declare (ignore comp stream))
-;;   "")
-
-;; (defmethod render-web :around ((comp ui-component) &optional stream)
-;;   (if stream (call-next-method)
-;;       (let ((spinneret:*always-quote* t)
-;;             (spinneret:*html* (make-string-output-stream)))
-;;         (render-web comp spinneret:*html*)
-;;         (get-output-stream-string spinneret:*html*))))
-
-;; (defmethod render-web ((comp string) &optional stream)
-;;   (if (not stream) nil (format stream comp)))
-
-;; (defmethod render-web ((comp uic-caption-heading) &optional stream)
-;;   (spinneret:with-html (:h2 (lisp (uic-caption-text comp)))))
-
-;; (defmethod render-web ((comp uic-caption-paragraph) &optional stream)
-;;   (spinneret:with-html (:p (lisp (uic-caption-text comp)))))
-
-;; (defmethod render-web ((comp uic-expression) &optional stream)
-;;   (render-html-interface (encode (uic-expr-content comp))
-;;                          nil nil nil stream))
-
-;; (defmethod render-web ((comp uic-set) &optional stream)
-;;   (let ((last-type-index (1- (length (uic-type comp))))
-;;         (class-stream (make-string-output-stream))
-;;         (layout (uic-set-layout comp)))
-;;     (format class-stream "~a" (typecase comp (uic-set-series "series ")
-;;                                         (uic-set-frame "frame ")
-;;                                         (t "")))
-;;     (loop :for type :in (uic-type comp) :for ix :from 0
-;;           :do (format class-stream "~a" (string-downcase type))
-;;               (unless (= ix last-type-index) (format class-stream " ")))
-;;     (spinneret:with-html
-;;       (:div :path "" :class (get-output-stream-string class-stream)
-;;             (loop :for ix :from 0 :for item :in (uic-set-items comp)
-;;                   :do (let ((this-layout (nth ix layout)))
-;;                         (:div :class (if (keywordp this-layout)
-;;                                          (string-downcase this-layout)
-;;                                          (if (and this-layout (listp this-layout))
-;;                                              (loop :for litem :in this-layout :for lix :from 0
-;;                                                    :do (format class-stream "~a" (string-downcase litem))
-;;                                                        (unless (= lix (1- (length this-layout)))
-;;                                                          (format class-stream " "))
-;;                                                    :finally (return (get-output-stream-string class-stream)))
-;;                                              ""))
-;;                               (render-web item stream))))))))
-
-;; (defmacro uispec (&rest forms)
-;;   ;; THIS IS A NEW MACRO for building interface forms, using the ui-component classes
-;;   (let ((output (loop :for form :in forms :collect (apply #'form-gen form))))
-;;     (if (second output)
-;;         (cons 'list output)
-;;         (first output))))
-
-;; (defun form-gen (type &rest args)
-;;   (let ((params) (item) (args-offset 0))
-;;     (unless (second args) (setf item (first args)
-;;                                 args (rest args)))
-;;     (unless item (loop :for (key value) :on args :by #'cddr :while (keywordp key)
-;;                        :do (push (if (not (eq :type key))
-;;                                      ;; quote the type list, as for (uispec (frame :type (:stack) ...))
-;;                                      value (list 'quote value))
-;;                                  params)
-;;                            (push key params) (incf args-offset 2)))
-;;     (let ((items (nthcdr args-offset args))
-;;           (subtypes (getf params :type)))
-;;       (print (list :it items item))
-;;       `(make-instance ',(case type (:frame 'uic-set-frame)
-;;                               (:series 'uic-set-series)
-;;                               (:head 'uic-caption-heading)
-;;                               (:para 'uic-caption-paragraph)
-;;                               (:expr 'uic-expression))
-;;                       ,@(if (not items)
-;;                             nil `(:items (list ,@(mapcar (lambda (item)
-;;                                                            (if (not (and (listp item)
-;;                                                                          (keywordp (first item))))
-;;                                                                item (apply #'form-gen item)))
-;;                                                          items))))
-;;                       ,@(if (not (member type '(:head :para)))
-;;                             nil `(:text ,item))
-;;                       ,@(if (eq type :expr) (list :content (or item (first items))))
-;;                       ,@params))))
-
-;; (defun form-gen (type subtypes &rest specs)
-;;   (print (list :ty type subtypes specs))
-;;   (let ((params) (members-offset 0)
-;;         (value (if (listp subtypes) nil subtypes)))
-;;     (unless value
-;;       (loop :for (key value) :on specs :by #'cddr :while (keywordp key)
-;;             :do (push value params) (push key params) (incf members-offset 2)))
-;;     (let ((items (nthcdr members-offset specs)))
-;;       `(make-instance ',(case type (:frame 'uic-set-frame)
-;;                               (:series 'uic-set-series)
-;;                               (:heading 'uic-caption-heading)
-;;                               (:p 'uic-caption-paragraph))
-;;                       :type ',subtypes
-;;                       ,@(if (not items) nil
-;;                             `(:items (list ,@(mapcar (lambda (item) (apply #'form-gen item))
-;;                                                      items))))
-;;                       ,@(if (member type '(:heading :p))
-;;                             `(:text ,value))
-;;                       ,@params))))
-
 ;; SECTION: another iteration of the UI component class system, with a simple list/atom foundation
 
 (defclass ui-medium ()
@@ -823,22 +662,6 @@
 
 (defgeneric realize (origin medium aspect))
 
-;; (defmethod realize ((origin ui-component) (medium ui-medium) (aspect t))
-;;   (unless (not (typep aspect 'ui-component))
-;;     (print (list :ee (uic-join aspect)))
-;;     (if (uic-join aspect)
-;;         (let ((ajoin (uic-join aspect))
-;;               (ojoin (copy-tree (uic-join origin))))
-;;           (if (listp ajoin)
-;;               (loop :for (key value) :on ajoin :by #'cddr
-;;                     :do (setf (getf ojoin key) value))
-;;               (setf (getf ojoin :in)  ajoin
-;;                     (getf ojoin :out) ajoin))
-;;           ;; (print (list :ooo ajoin ojoin))
-;;           (setf (uic-join aspect) ojoin))
-;;         (setf (uic-join aspect) (uic-join origin))))
-;;   (generate medium aspect))
-
 (defun alist-supersede (new original)
   (loop :for n :in new :do (if (assoc (first n) original)
                                (rplacd (assoc (first n) original)
@@ -907,8 +730,9 @@
                                               (create height (@ $el offset-height)
                                                       width  (@ $el offset-width))
                                               (lambda (data)
-                                                (chain console (log :dt data
-                                                                    (@ $el offset-height)))))))
+                                                ;; (chain console (log :dt data
+                                                ;;                     (@ $el offset-height)))
+                                                ))))
            ;; :id this-id
            :hx-vals ,(json-convert-to (list :system (uim-portal medium)
                                             :branch (string-upcase (uic-base comp))
@@ -932,34 +756,42 @@
         ((:horizontal :vertical) (format class-stream "series grid-layout ")))
 
       ;; (print (list :js (uic-join aspect)))
-      
-      (loop :for type :in types :for ix :from 0
-            :do (format class-stream "~a" (string-downcase type))
-                (unless (= ix last-type-index) (format class-stream " ")))
-      (append (list (typecase aspect (uic-series-form :form) (t :div))
-                    :path "" :class (get-output-stream-string class-stream)
-                    :style (if (not (member ltype '(:horizontal :vertical)))
-                               "" (let ((ratio (/ 100.0 (or (first lprops) breadth-default))))
-                                    (format nil "grid-template-~a: ~{~a% ~};"
-                                          (if (eq ltype :horizontal) "columns" "rows")
-                                          (loop :for i :below (or (first lprops) breadth-default)
-                                                :collect ratio)))))
-              (if nil ; join-spec
-                  (destructuring-bind (system &optional branch)
-                      (if (listp join-spec) join-spec (list nil join-spec))
-                    (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
-                                                   ,@(if branch `(branch ,branch))
-                                                   ;; local-forms (list)
-                                                   ;; allow extension of forms list in some cases
-                                                   act (realize ,system ,branch $el))))))
-              (loop :for ix :from 0 :for item :in (uic-base aspect)
-                    :collect (let ((map (nth ix (uic-series-maps aspect))))
-                               (format class-stream "item ")
-                               (loop :for itype :in (rest (assoc :type map))
-                                     :do (format class-stream "~a " (string-downcase itype)))
-                               (locate medium aspect ix
-                                       `(:div :class ,(get-output-stream-string class-stream)
-                                              ,(realize aspect medium item)))))))))
+
+      (flet ((enclose-by-type (types element)
+               (loop :for type :in types
+                     :do (setf element (case type
+                                         (:column
+                                          `(:div :class "container column-inner" ,element))
+                                         (t element))))
+               element))
+        (loop :for type :in types :for ix :from 0
+              :do (format class-stream "~a" (string-downcase type))
+                  (unless (= ix last-type-index) (format class-stream " ")))
+        (append (list (typecase aspect (uic-series-form :form) (t :div))
+                      :path "" :class (get-output-stream-string class-stream)
+                      :style (if (not (member ltype '(:horizontal :vertical)))
+                                 "" (let ((ratio (/ 100.0 (or (first lprops) breadth-default))))
+                                      (format nil "grid-template-~a: ~{~a% ~};"
+                                              (if (eq ltype :horizontal) "columns" "rows")
+                                              (loop :for i :below (or (first lprops) breadth-default)
+                                                    :collect ratio)))))
+                (if nil ; join-spec
+                    (destructuring-bind (system &optional branch)
+                        (if (listp join-spec) join-spec (list nil join-spec))
+                      (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
+                                                     ,@(if branch `(branch ,branch))
+                                                     ;; local-forms (list)
+                                                     ;; allow extension of forms list in some cases
+                                                     act (realize ,system ,branch $el))))))
+                (loop :for ix :from 0 :for item :in (uic-base aspect)
+                      :collect (let ((map (nth ix (uic-series-maps aspect))))
+                                 (format class-stream "item ")
+                                 (loop :for itype :in (rest (assoc :type map))
+                                       :do (format class-stream "~a " (string-downcase itype)))
+                                 (locate medium aspect ix
+                                         `(:div :class ,(get-output-stream-string class-stream)
+                                                ,(enclose-by-type
+                                                  types (realize aspect medium item)))))))))))
 
 (defmethod generate ((medium uim-web) (aspect uic-anchor))
   (declare (ignore medium))

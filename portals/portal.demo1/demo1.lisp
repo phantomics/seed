@@ -185,7 +185,7 @@
       ;;   (.sub-container :height 100%
       ;;                   :width 100%))
 
-      `(form :padding 0.64em
+      `(form ;; :padding 0.64em
              (.input.fluid :margin-bottom 0.32em)
              (.ui.selection.dropdown :min-height 3em :margin-bottom 0.32em)
              )

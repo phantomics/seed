@@ -6,7 +6,11 @@ body{
     width: 100%;
 }
 
-
+#main > .stack{
+    margin: 0 auto;;
+    width: 24rem;
+    height: 100%;
+}
 
 #main > .stack .heading{
     text-align: center;
@@ -158,9 +162,7 @@ body{
     height: 100%;
 }
 
-form{
-    padding: 0.64em;
-}
+
 
 form .input.fluid{
     margin-bottom: 0.32em;
