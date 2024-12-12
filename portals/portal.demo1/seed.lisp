@@ -38,37 +38,37 @@
             (render
              medium
              (authorize (funcall session :user)
-               (fx (list (fx (list :portal.demo1
-                                   '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
-                                     "demo.sheet")
-                                   ;; (if nil ; (of-system :point)
-                                   ;;     (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
-                                   ;;         (:each uic-anchor :link (:send :view :point :self))
-                                   ;;         (uic-series :type (:ui :column))))
-                                   )
-                             ;; (render-html-interface
-                             ;;  (encode (uic ((:type :form :branch-navigation)
-                             ;;                (:app :set-nav-point)
-                             ;;                (:target . :view)
-                             ;;                (:point (funcall session :branch-point)))
-                             ;;               (if (not (of-system :point))
-                             ;;                   "" (render-nav-menu (grow (of-system :point)
-                             ;;                                             :view))))))
-                             (uic-series :type '(:ui :column)))
-                         (if (not (of-system :point))
-                             ""
-                             (-<> (grow (of-system :point) :view session)
-                               ;; (in-system-context <> (package-name package))
-                               (render-html-interface (encode <>)))
-                             ;; (grow (of-system :point) :view session)
-                             
-                             ))
-                   (uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
-                               :maps '(((:type :sidebar)) ((:type :main)))))
+               (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
+                                :maps '(((:type :sidebar)) ((:type :main)))))
+                   (fx ((uic-series :type '(:ui :column)))
+                       :portal.demo1
+                       '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
+                         "demo.sheet")
+                       ;; (if nil ; (of-system :point)
+                       ;;     (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
+                       ;;         (:each uic-anchor :link (:send :view :point :self))
+                       ;;         (uic-series :type (:ui :column))))
+                       )
+                   ;; (render-html-interface
+                   ;;  (encode (uic ((:type :form :branch-navigation)
+                   ;;                (:app :set-nav-point)
+                   ;;                (:target . :view)
+                   ;;                (:point (funcall session :branch-point)))
+                   ;;               (if (not (of-system :point))
+                   ;;                   "" (render-nav-menu (grow (of-system :point)
+                   ;;                                             :view))))))
+                   (if (not (of-system :point))
+                       ""
+                       (-<> (grow (of-system :point) :view session)
+                         ;; (in-system-context <> (package-name package))
+                         (render-html-interface (encode <>)))
+                       ;; (grow (of-system :point) :view session)
+                       
+                       ))
 
-               (fx (list (fx "" (uicc-text-line :key "key")))
-                   (uic-series-form :type (:ui :column)
-                                    :cast t))))
+               (fx ((uic-series-form :type (:ui :column)
+                                     :cast t))
+                   (list (fx ((uicc-text-line :key "key")) "")))))
             
             (get-output-stream-string this-stream)))
         :systems

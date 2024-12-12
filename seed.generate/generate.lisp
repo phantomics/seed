@@ -630,7 +630,7 @@
 (defclass uicc-text-area (uicc-text)
   ())
 
-(defmacro fx (form &rest specs)
+(defmacro fx (specs &rest form)
   (labels ((format-params (items)
              (loop :for item :in items
                    :collect (if (or (atom item)
@@ -651,7 +651,8 @@
                (if (not (rest spec-list))
                    generated (process-spec generated (rest spec-list))))))
     (let ((evaluated-form (gensym)))
-      `(let ((,evaluated-form ,form))
+      `(let ((,evaluated-form ,(if (not (second form))
+                                   (first form) (cons 'list form))))
          ,(process-spec evaluated-form specs)))))
 
 (defgeneric render (medium component))
