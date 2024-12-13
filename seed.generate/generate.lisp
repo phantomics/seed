@@ -589,7 +589,9 @@
           :initarg  :cast)))
 
 (defclass uic-access (ui-component)
-  ())
+  ((%system :accessor uica-system
+            :initform nil
+            :initarg  :system)))
 
 (defclass uic-series (ui-component)
   ((%maps :accessor uic-series-maps
@@ -717,7 +719,8 @@
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type comp)) #'identity #'list)
                         (uic-type comp)))
-        (face (lisp->camel-case (uic-name comp))))
+        (face (lisp->camel-case (uic-name comp)))
+        (system (or (uica-system comp) (uim-portal medium))))
     (format class-stream "sub-container")
     (loop :for type :in types :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
@@ -726,7 +729,7 @@
            :id ,(format nil "branch-~a" (lisp->camel-case (uic-name comp)))
            :class ,(get-output-stream-string class-stream)
            :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
-                               (fetch-contact (lisp (string-upcase (uim-portal medium)))
+                               (fetch-contact (lisp (string-upcase system))
                                               (lisp (string-upcase (uic-base comp)))
                                               (create height (@ $el offset-height)
                                                       width  (@ $el offset-width))
@@ -734,10 +737,8 @@
                                                 ;; (chain console (log :dt data
                                                 ;;                     (@ $el offset-height)))
                                                 ))))
-           ;; :id this-id
-           :hx-vals ,(json-convert-to (list :system (uim-portal medium)
-                                            :branch (string-upcase (uic-base comp))
-                                            :face face))
+           :hx-vals ,(json-convert-to (list :system system :face face
+                                            :branch (string-upcase (uic-base comp))))
            :x-data ,(ps (create branch-frame $el)))))
 
 (defmethod generate ((medium uim-web) (aspect uic-series))
@@ -862,7 +863,6 @@
       (call-next-method)
       (let* ((cast (uic-cast aspect))
              (section-id (if (listp cast) (getf cast :id))))
-        (print (list :cc cast))
         (list :form ;; :hx-vals (if (not (listp cast))
                     ;;              "{}" (ps* `(create ,(getf cast :data))))
                     :id (if (not section-id)

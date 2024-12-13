@@ -35,6 +35,10 @@
                                                  :portal (intern (package-name package)
                                                                  "KEYWORD"))))
 
+            ;; (print (of-system :point))
+            
+            ;; (print (list :aa (grow (of-system :point) :view nil (list (list :info :summary)))))
+            
             (render
              medium
              (authorize (funcall session :user)
@@ -44,6 +48,11 @@
                        :portal.demo1
                        '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
                          "demo.sheet")
+
+                       (if (of-system :point)
+                           (fx ((uic-series :type '(:ui :column)))
+                               (mapcar #'second (grow (of-system :point)
+                                                     :view session (list (list :info :summary))))))
                        ;; (if nil ; (of-system :point)
                        ;;     (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
                        ;;         (:each uic-anchor :link (:send :view :point :self))
@@ -59,10 +68,14 @@
                    ;;                                             :view))))))
                    (if (not (of-system :point))
                        ""
-                       (-<> (grow (of-system :point) :view session)
-                         ;; (in-system-context <> (package-name package))
-                         (render-html-interface (encode <>)))
-                       ;; (grow (of-system :point) :view session)
+
+                       ;; (render-html-interface (encode (print (grow (of-system :point) :view session))))
+                       
+                       ;; (-<> (grow (of-system :point) :view session)
+                       ;;   ;; (in-system-context <> (package-name package))
+                       ;;   (render-html-interface (encode <>)))
+                       
+                       (grow (of-system :point) :view session)
                        
                        ))
 
