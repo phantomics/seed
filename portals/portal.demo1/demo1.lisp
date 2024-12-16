@@ -398,9 +398,12 @@
          (chain form-list (for-each (lambda (form) (chain htmx (trigger form "submit"))))))
 
        (defun ejoin (base event)
-         (when (and (not (undefp event)) (not (undefp (@ event detail))))
-           (setf (@ base point)
-                 (@ event detail point)))
+         (unless (or (undefp event) (undefp (@ event detail)))
+           (chain console (log :ee (@ event detail)))
+           (loop :for k :in (chain -object (keys (@ event detail)))
+                 :do (unless (or (= k "elt" ) (undefp (getprop (@ event detail) k)))
+                       (setf (getprop base k)
+                             (getprop (@ event detail) k)))))
          base)
 
        ))))

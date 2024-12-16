@@ -60,8 +60,16 @@ function submitForms(formList) {
     });
 };
 function ejoin(base, event) {
-    if ('undefined' !== typeof event && 'undefined' !== typeof event.detail) {
-        base.point = event.detail.point;
+    if (!('undefined' === typeof event || 'undefined' === typeof event.detail)) {
+        console.log('ee', event.detail);
+        var _js19 = Object.keys(event.detail);
+        var _js21 = _js19.length;
+        for (var _js20 = 0; _js20 < _js21; _js20 += 1) {
+            var k = _js19[_js20];
+            if (!(k === 'elt' || 'undefined' === typeof event.detail[k])) {
+                base[k] = event.detail[k];
+            };
+        };
     };
     return base;
 };
