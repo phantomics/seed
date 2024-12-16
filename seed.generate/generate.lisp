@@ -794,10 +794,22 @@
                                          `(:div :class ,(get-output-stream-string class-stream)
                                                 ,(enclose-by-type
                                                   types (realize aspect medium item)))))))))))
-
+ 
 (defmethod generate ((medium uim-web) (aspect uic-anchor))
-  (declare (ignore medium))
-  `(:span ,(string-downcase (uic-base aspect))))
+  (let ((base (uic-base aspect)))
+    (case (first (uic-type aspect))
+      ;; (print (list :ba (uic-base aspect)))
+      (:branch (if base `(:h4 (:a ;; :hx-post "/render/"
+                                  ;; :hx-target "#main"
+                                  :|hx-on:click| "htmx.trigger(this, 'navigate', { point: 1 });"
+                                  :hx-vals ,(json-convert-to 
+                                             (list ;; :system (uim-portal medium)
+                                                   ;; :branch base
+                                                   :point 5))
+                                            
+                                  ,(string base)))
+                   '(:hr :class "divider")))
+      (t `(:span ,(string-downcase base))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-button))
   (let* ((base (uic-base aspect))
@@ -817,6 +829,33 @@
                   ,@action-props
                   ,(realize aspect medium ;; (uic-base aspect)
                             name))))))
+
+#|
+((list :form :branch-navigation)
+                ;; (print (list :con contents form))
+ (let ((point (or (second (assoc :point (getf form :mt)))
+                  (getf (first contents) :ct)))
+       ;; (point-index (if (not point) 0 (position point contents
+       ;;                                          :test (lambda (a b)
+       ;;                                                  (string= a (getf b :ct))))))
+       )
+   (cl-who:with-html-output (strout)
+     (:div :path path-string
+           :id "branch-navigation"
+           (loop :for c :in contents :for ix :from 0
+                 :do (if c (htm (:h4 :hx-post "/render/"
+                                     :class (if (string= point (getf c :ct))
+                                                "point" "")
+                                     :hx-target "#main"
+                                     :hx-trigger "click consume"
+                                     :hx-vals (json-convert-to
+                                               (list :system :portal.demo1
+                                                     :branch (rest (assoc :target
+                                                                          (getf form :mt)))
+                                                     :point (getf c :ct)))
+                                     (str (getf c :ct))))
+                         (htm (:hr :class "divider"))))))))
+|#
 
 (defmethod generate ((medium uim-web) (aspect uicc-text-line))
   `(:input :class "input" :type "text" :value ,(or (uicc-text-default aspect) "")

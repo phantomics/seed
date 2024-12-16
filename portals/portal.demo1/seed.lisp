@@ -50,9 +50,9 @@
                          "demo.sheet")
 
                        (if (of-system :point)
-                           (fx ((uic-series :type '(:ui :column)))
-                               (mapcar #'second (grow (of-system :point)
-                                                     :view session (list (list :info :summary))))))
+                           (fx ((:each uic-anchor :type '(:branch))
+                                (uic-series :type '(:ui :navigation)))
+                               (print (mapcar #'second (grow (of-system :point) :summary)))))
                        ;; (if nil ; (of-system :point)
                        ;;     (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
                        ;;         (:each uic-anchor :link (:send :view :point :self))

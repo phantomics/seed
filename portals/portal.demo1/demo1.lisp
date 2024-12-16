@@ -80,8 +80,22 @@
                     (:link :rel "stylesheet" :href "./build/vendor.css")
                     (:link :rel "stylesheet" :href "./build/app.css"))
              (:body (:div :id "main" :class "ui" :hx-post "/render/"
-                          :hx-trigger "load, submit, refresh"
-                          :hx-vals (json-convert-to (list :system portal-sym :branch :view))
+                          :hx-trigger "load, submit, refresh, navigate"
+                          ;; :hx-vals (json-convert-to (list :system (string portal-sym) :branch :view))
+                          ;; :hx-vals (format nil "js:~a"
+                          ;;                  (seed.generate::psl (create system (lisp (string portal-sym))
+                          ;;                                              branch :view abc event)))
+                          :hx-vals (format nil "js:{...ejoin(~a,event)}"
+                                           (seed.generate::psl (create system (lisp (string portal-sym))
+                                                                       branch :view)))
+                          ;; :hx-vals (format nil "js:~a"
+                          ;;                  (seed.generate::psl (ejoin (create system (lisp (string portal-sym))
+                          ;;                                              branch :view
+                          ;;                                              ;; data (@ event details)
+                          ;;                                                     )
+                          ;;                                             event)))
+                          ;; :hx-vals (format nil "js:~a" (ps* `(create :system ,portal-sym :branch :view
+                          ;;                                            :data (@ event details))))
                           :x-data (ps (create context (create system (lisp (string portal-sym))
                                                               branch "VIEW"))))
                     (:script :src "./static/misc.js")
@@ -382,8 +396,14 @@
        
        (defun submit-forms (form-list)
          (chain form-list (for-each (lambda (form) (chain htmx (trigger form "submit"))))))
-         
-         ))))
+
+       (defun ejoin (base event)
+         (when (and (not (undefp event)) (not (undefp (@ event detail))))
+           (setf (@ base point)
+                 (@ event detail point)))
+         base)
+
+       ))))
 
 ;; (build-script-misc "ui-browser")
 

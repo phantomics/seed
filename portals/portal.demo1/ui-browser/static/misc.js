@@ -59,3 +59,9 @@ function submitForms(formList) {
         return htmx.trigger(form, 'submit');
     });
 };
+function ejoin(base, event) {
+    if ('undefined' !== typeof event && 'undefined' !== typeof event.detail) {
+        base.point = event.detail.point;
+    };
+    return base;
+};

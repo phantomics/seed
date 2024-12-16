@@ -1,49 +1,30 @@
 (seed2 :demo.sheet
-       (:bind :package package :of-system of-system)
+       (:bind :package package :of-system of-system :to-grow grow)
        (:joiner . #'add-contact)
        (:branches
+        :summary
+        (let ((layout '((:graph :graph-overview) (:graph :graph-node) nil
+                        (:graph :graph-overview) (:graph :graph-node))))
+          (lambda (session input)
+            (declare (ignore session input))
+            layout))
         :view
         (lambda (session input)
           (let ((context (second (assoc :session input))))
-            ;; (print (list :pa package *package* (package-name *package*) session context))
-            (let* ((this-stream (make-string-output-stream))
-                   (medium (make-instance 'uim-web :stream this-stream :portal :demo.sheet))
-                   (layout '((:graph :graph-overview) (:graph :graph-node) nil
-                             (:graph :graph-overview) (:graph :graph-node))))
-
-              ;; (print (list :in input package)) ;; TODO: why is package blank at the start?
-              (case (second (assoc :info input))
-                (:summary (print layout))
-                (t ;; (if package
-                       (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-                           (loop :for l :in layout :while l
-                                 :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
-                                                           :join   (list :demo.sheet (first l))
-                                                           :type   (:column)))
-                                              (fx ((:each uicc-button)
-                                                   (uic-series :type (:ui :header)))
-                                                  (list (list :save)))
-                                              (fx ((uic-access :name   (second l)
-                                                               :system :demo.sheet))
-                                                  :graph)
-                                              (fx ((:each uicc-button)
-                                                   (uic-series :type (:ui :footer)))
-                                                  (list (list :save)))))))))
-            
-            ;; (fx ((uic-series :layout (:vertical :of 12 1 10 1)
-            ;;                  :join (:demo.sheet :graph) :type (:column)
-            ;;                  :cast (:id :graph-node)
-            ;;                  ))
-            ;;     (fx ((:each uicc-button)
-            ;;          (uic-series :type (:ui :header)))
-            ;;         (list (list :save :cast-forms :graph-node)))
-            ;;     (fx ((uic-access :name :graph-node))
-            ;;         :graph)
-            ;;     (fx ((:each uicc-button)
-            ;;          (uic-series :type (:ui :footer)))
-            ;;         (list (list :save))))))))
-            
-            ))
+            (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+                   (loop :for l :in (grow :demo.sheet :summary) :while l
+                         :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+                                                   :join   (list :demo.sheet (first l))
+                                                   :type   (:column)))
+                                      (fx ((:each uicc-button)
+                                           (uic-series :type (:ui :header)))
+                                          (list (list :save)))
+                                      (fx ((uic-access :name   (second l)
+                                                       :system :demo.sheet))
+                                          :graph)
+                                      (fx ((:each uicc-button)
+                                           (uic-series :type (:ui :footer)))
+                                          (list (list :save))))))))
         :summary
         (lambda (session input)
           (list :graph-overview :graph-node nil :graph-overview :graph-node))
@@ -212,6 +193,19 @@
 
         ))
 
+
+;; (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+;;                  :join (:demo.sheet :graph) :type (:column)
+;;                  :cast (:id :graph-node)
+;;                  ))
+;;     (fx ((:each uicc-button)
+;;          (uic-series :type (:ui :header)))
+;;         (list (list :save :cast-forms :graph-node)))
+;;     (fx ((uic-access :name :graph-node))
+;;         :graph)
+;;     (fx ((:each uicc-button)
+;;          (uic-series :type (:ui :footer)))
+;;         (list (list :save))))))))
 
 ;; (-<> (uic ((:type :set :linear :columnar :workspace :even)
 ;;            (:members :column :column)
