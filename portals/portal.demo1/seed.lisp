@@ -1,4 +1,4 @@
-;;;; seed.lisp
+;;;; seed.lisp 
 
 (in-package #:portal.demo1)
 
@@ -8,32 +8,40 @@
        (:contactor . #'of-contacts)
        (:branches
         :view
-        (lambda (session input)
+        (lambda (context input)
           (let ((key-input (rest (assoc :key input :test #'eq))))
             (when (and key-input (string= "demo" (string-downcase key-input)))
-              (funcall session :user :hello)))
+              (funcall context :user :hello)))
 
-          (when (and session (assoc :point input))
+          (when (and context (assoc :point input))
             ;; when a point is selected, assign it
-            (funcall session :branch-point (intern (string-upcase (rest (assoc :point input)))
+            (funcall context :branch-point (intern (string-upcase (rest (assoc :point input)))
                                                    "KEYWORD")))
 
-          (when (and session (assoc "point" input :test #'string=))
+          (when (and context (assoc "point" input :test #'string=))
             ;; when a system is selected, assign it - case of new selector controls
             (let ((epsym (intern (string-upcase (rest (assoc "point" input :test #'string=)))
                                  "KEYWORD")))
               (of-system :point epsym)
               ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
               (load-seed-system epsym)))
-          ;; (print (list :bbb session input (package-name package) package))
+          ;; (print (list :bbb context input (package-name package) package))
 
-          ;; (when (and session (not (funcall session :portal-name)))
-          ;;   (funcall session :portal-name :portal.demo1))
+          ;; (when (and context (not (funcall context :portal-name)))
+          ;;   (funcall context :portal-name :portal.demo1))
+
+          ;; (when (and context (not (funcall context :medium)))
+          ;;   (let ((this-stream (make-string-output-stream)))
+          ;;     (funcall context :medium (make-instance 'uim-web :stream this-stream
+          ;;                                                      :portal (intern (package-name package)
+          ;;                                                                      "KEYWORD")))))
 
           (let* ((this-stream (make-string-output-stream))
                  (medium (make-instance 'uim-web :stream this-stream
                                                  :portal (intern (package-name package)
                                                                  "KEYWORD"))))
+
+            (funcall context :medium medium)
 
             ;; (print (of-system :point))
             
@@ -41,7 +49,7 @@
             
             (render
              medium
-             (authorize (funcall session :user)
+             (authorize (funcall context :user)
                (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                                 :maps '(((:type :sidebar)) ((:type :main)))))
                    (fx ((uic-series :type '(:ui :column)))
@@ -62,20 +70,20 @@
                    ;;  (encode (uic ((:type :form :branch-navigation)
                    ;;                (:app :set-nav-point)
                    ;;                (:target . :view)
-                   ;;                (:point (funcall session :branch-point)))
+                   ;;                (:point (funcall context :branch-point)))
                    ;;               (if (not (of-system :point))
                    ;;                   "" (render-nav-menu (grow (of-system :point)
                    ;;                                             :view))))))
                    (if (not (of-system :point))
                        ""
 
-                       ;; (render-html-interface (encode (print (grow (of-system :point) :view session))))
+                       ;; (render-html-interface (encode (print (grow (of-system :point) :view context))))
                        
-                       ;; (-<> (grow (of-system :point) :view session)
+                       ;; (-<> (grow (of-system :point) :view context)
                        ;;   ;; (in-system-context <> (package-name package))
                        ;;   (render-html-interface (encode <>)))
                        
-                       (grow (of-system :point) :view session)
+                       (grow (of-system :point) :view context)
                        
                        ))
 
@@ -85,7 +93,7 @@
             
             (get-output-stream-string this-stream)))
         :systems
-        (lambda (session input)
+        (lambda (context input)
           (if input (let ((epsym (intern input "KEYWORD")))
                       (of-system :point (intern input "KEYWORD"))
                       ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
@@ -94,7 +102,6 @@
               (-<> (with-meta (of-system :contacts)
                      :type (:form))
                 (encode <>))))))
-
 
 
 ;; (-<> (Uic ((:type :group :stack :main)

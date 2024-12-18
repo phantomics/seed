@@ -586,7 +586,10 @@
           :initarg  :join)
    (%cast :accessor uic-cast
           :initform nil
-          :initarg  :cast)))
+          :initarg  :cast)
+   (%sort :accessor uic-sort
+          :initform nil
+          :initarg  :sort)))
 
 (defclass uic-access (ui-component)
   ((%system :accessor uica-system
@@ -663,7 +666,7 @@
   (let ((spinneret:*html* (uim-web-stream medium)))
     (spinneret:interpret-html-tree (generate medium component))))
 
-(defgeneric realize (origin medium aspect))
+(defgeneric realize (origin medium aspect &key sort))
 
 (defun alist-supersede (new original)
   (loop :for n :in new :do (if (assoc (first n) original)
@@ -672,23 +675,25 @@
                                (push n original)))
   original)
 
-(defmethod realize ((origin ui-component) (medium ui-medium) (aspect t))
+(defmethod realize ((origin ui-component) (medium ui-medium) (aspect t)
+                    &key sort)
   (unless (not (typep aspect 'ui-component))
     ;; (print (list :ee (uic-join aspect)))
-    (if (uic-join aspect)
-        (let* ((ajoin (uic-join aspect))
-               (ojoin (copy-tree (uic-join origin)))
-               (new-list (if (listp ajoin)
-                             (if (listp (first ajoin))
-                                 ajoin (list (cons :in  ajoin)
-                                             (cons :out ajoin)))
-                             (error "AAA"))))
-          ;; adapt for one-symbol join specs
-          ;; (print (list :aoa ajoin ojoin new-list))
-          (setf ojoin (alist-supersede new-list ojoin))
-          ;; (print (list :eee ojoin))
-          (setf (uic-join aspect) ojoin))
-        (setf (uic-join aspect) (uic-join origin))))
+    (when (uic-join aspect)
+      (let* ((ajoin (uic-join aspect))
+             (ojoin (copy-tree (uic-join origin)))
+             (new-list (if (listp ajoin)
+                           (if (listp (first ajoin))
+                               ajoin (list (cons :in  ajoin)
+                                           (cons :out ajoin)))
+                           (error "AAA"))))
+        ;; adapt for one-symbol join specs
+        ;; (print (list :aoa ajoin ojoin new-list))
+        (setf ojoin (alist-supersede new-list ojoin))
+        ;; (print (list :eee ojoin))
+        (setf (uic-join aspect) ojoin))
+      (setf (uic-join aspect) (uic-join origin)))
+    (when sort (setf (uic-sort aspect) sort)))
   (generate medium aspect))
 
 (defgeneric generate (medium component))
@@ -777,14 +782,14 @@
                                               (if (eq ltype :horizontal) "columns" "rows")
                                               (loop :for i :below (or (first lprops) breadth-default)
                                                     :collect ratio)))))
-                (if nil ; join-spec
-                    (destructuring-bind (system &optional branch)
-                        (if (listp join-spec) join-spec (list nil join-spec))
-                      (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
-                                                     ,@(if branch `(branch ,branch))
-                                                     ;; local-forms (list)
-                                                     ;; allow extension of forms list in some cases
-                                                     act (realize ,system ,branch $el))))))
+                ;; (if nil ; join-spec
+                ;;     (destructuring-bind (system &optional branch)
+                ;;         (if (listp join-spec) join-spec (list nil join-spec))
+                ;;       (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
+                ;;                                      ,@(if branch `(branch ,branch))
+                ;;                                      ;; local-forms (list)
+                ;;                                      ;; allow extension of forms list in some cases
+                ;;                                      act (realize ,system ,branch $el))))))
                 (loop :for ix :from 0 :for item :in (uic-base aspect)
                       :collect (let ((map (nth ix (uic-series-maps aspect))))
                                  (format class-stream "item ")
@@ -793,20 +798,15 @@
                                  (locate medium aspect ix
                                          `(:div :class ,(get-output-stream-string class-stream)
                                                 ,(enclose-by-type
-                                                  types (realize aspect medium item)))))))))))
+                                                  types (realize aspect medium item
+                                                                 :sort ix)))))))))))
  
 (defmethod generate ((medium uim-web) (aspect uic-anchor))
   (let ((base (uic-base aspect)))
     (case (first (uic-type aspect))
-      ;; (print (list :ba (uic-base aspect)))
-      (:branch (if base `(:h4 (:a ;; :hx-post "/render/"
-                                  ;; :hx-target "#main"
-                                  :|hx-on:click| "htmx.trigger(this, 'navigate', { point: 1 });"
-                                  :hx-vals ,(json-convert-to 
-                                             (list ;; :system (uim-portal medium)
-                                                   ;; :branch base
-                                                   :point 5))
-                                            
+      (:branch (if base `(:h4 (:a :|hx-on:click|
+                                  ,(format nil "htmx.trigger(this, 'navigate', { point: ~a });"
+                                           (uic-sort aspect))
                                   ,(string base)))
                    '(:hr :class "divider")))
       (t `(:span ,(string-downcase base))))))
@@ -865,6 +865,10 @@
   `(:textarea :class "input" :value ,(or (uicc-text-default aspect) "")
               :name ,(or (string (uicc-key aspect)) "")))
 
+(defmethod generate ((medium uim-web) (aspect uicc-select))
+  `(:select :class "ui" :name ,(or (string (uicc-key aspect)) "")
+     ,@(loop :for item :in (uic-base aspect) :collect `(:option ,item))))
+
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
   (let ((default-segments 12)) ;; default number of segments for a grid layout
     (if (not (uic-series-layout aspect))
@@ -912,10 +916,29 @@
                     ;; TODO: CHANGE HARDCODED ELEMENT ID
               (call-next-method)))))
 
-(defun derive-nav-menu (spec)
-  (loop :for branch :in (second spec)
-        :collect (if (listp branch)
-                     (rest (assoc :name (rest branch))))))
+(defun express (form)
+  (if (atom form)
+      form (if (not (string= "META" (string (first form))))
+               (make-instance 'uic-series
+                              :base (mapcar #'express form))
+               (let* ((types (rest (assoc :type (cddr form))))
+                      (primary-type (first types))
+                      (class (case primary-type
+                               (:set 'uic-series)
+                               (:select 'uicc-select)
+                               (:field  'uicc-text-line))))
+                 (make-instance class :base ;; (first form)
+                                (if (eq :set primary-type)
+                                    (mapcar #'express (second form))
+                                    (if (eq :select primary-type)
+                                        (rest (assoc :options (cddr form)))
+                                        (second form)))
+                                :type (cddr (rest (assoc :type (cddr form)))))))))
+
+;; (defun derive-nav-menu (spec)
+;;   (loop :for branch :in (second spec)
+;;         :collect (if (listp branch)
+;;                      (rest (assoc :name (rest branch))))))
 
 #|
 
@@ -2102,9 +2125,8 @@
         (node-template (second (from-system-file package file-name node-template-key)))
         (link-template (second (from-system-file package file-name link-template-key)))
         (indices-form (from-system-file package file-name node-indices-key)))
-    (lambda (session input)
-      (declare (ignore session))
-      ;; (print (list :in2 input index))
+    (lambda (context input)
+      
       (unless graph-base
         (setf graph-base  (from-system-file package file-name graph-key)
               orig-data   (third graph-base)
@@ -2113,6 +2135,7 @@
                             (make-array (length indices) :initial-contents indices))
               graph-data  (format-graph-spec-to-edit (copy-tree orig-data) nodes-order)
               formatted   (copy-graph-spec graph-data)))
+      
       ;; (print (list :abcd orig-data graph-data formatted))
       (if (and (assoc "action" input :test #'string=)
                (string= "open" (rest (assoc "action" input :test #'string=))))
@@ -2132,7 +2155,6 @@
                     el-height (rest (assoc "height" input :test #'string=))))
 
             ;; (print (list :f1 formatted))
-            
             (when (and input (assoc "path" input :test #'string=))
               (let ((action (rest (assoc "action" input :test #'string=)))
                     (inst (make-string-input-stream
@@ -2161,10 +2183,10 @@
                            input t)
               (setf network-changed t))
 
-            ;; (print :gg)
-            
             (when (assoc "action" input :test #'string=)
               (setf network-changed t)
+
+              ;; add a node
               (when (string= "addNode" (rest (assoc "action" input :test #'string=)))
                 ;; add newest node index to end of indices
                 (rplacd (last formatted)
@@ -2175,9 +2197,9 @@
                 (rplacd (last orig-data) (list node-template))
                 (setf nodes-order (let* ((indices (second indices-form)))
                                     (make-array (length indices)
-                                                :initial-contents indices)))
-                ;; (print (list :an graph-base orig-data formatted indices-form))
-                )
+                                                :initial-contents indices))))
+
+              ;; add a link between nodes
               (when (string= "addLink" (rest (assoc "action" input :test #'string=)))
                 (if sub-index (rplacd (nth sub-index (rest (nth index (rest orig-data))))
                                       (cons link-template
@@ -2199,6 +2221,8 @@
                             (list link-template)))
                 ;; (print (list :al graph-base))
                 )
+
+              ;; delete a node or link
               (when (string= "deleteItem" (rest (assoc "action" input :test #'string=)))
                 (if sub-index (rplaca (nth sub-index (rest (nth index orig-data)))
                                       (nth (1+ sub-index)
@@ -2208,6 +2232,9 @@
                                       (nth (1+ sub-index)
                                            (rest (nth index formatted))))
                     (rplaca (nth index formatted) (nth (1+ index) formatted))))
+
+              ;; shifting a node is the most complicated operation,
+              ;; requiring that the graph be rebuilt
               (when (string= "shiftNode" (rest (assoc "action" input :test #'string=)))
                 ;; add newest node index to end of indices
                 (setf network-changed nil)
@@ -2306,8 +2333,8 @@
                                     :do (lsort item node-index index))
                               )))
                         ;; nodes are being sorted
-                        (let ((original (nth index (second indices-form)))
-                              (orig-node (nth index formatted2))
+                        (let ((original   (nth index (second indices-form)))
+                              (orig-node  (nth index formatted2))
                               (orig-gnode (nth index graph-data2)))
 
                           (if (zerop index) (setf formatted2 (rest formatted2))
@@ -2392,46 +2419,62 @@
             ;; the output-stream is created in the seed package - best elsewhere?
             (if (and (assoc :face input :test #'eq)
                      (string= "graphNode" (rest (assoc :face input :test #'eq))))
-                (let ((out (make-string-output-stream)))
-                  ;; (print (list :gd graph-data input network-changed))
-                  (spinneret:interpret-html-tree
-                   ;; enclose the contents in a (meta) form if this is the initial load;
-                   ;; i.e. the network has not changed
-                   (funcall
-                    (if (not network-changed)
-                        #'identity
-                        (lambda (form)
-                          (append (list (first form)
-                                        `(:div :style "display: none"
-                                               :x-init
-                                               ,(psl (chain
-                                                      htmx
-                                                      (trigger
-                                                       (getprop
-                                                        (@ window seed-elements)
-                                                        (lisp holder-id))
-                                                       "reload")))))
-                                  (cons '(meta (:stuff . "Test")
-                                          (:type :field :text :pair :block :labeled))
-                                        (rest form)))))
-                    (htrender (funcall (if network-changed
-                                           #'list (lambda (items)
-                                                    `(meta ,items (:type :set :form))))
-                                       (loop :for item
-                                               :in (funcall
-                                                    ;; nodes have an (index . N)
-                                                    ;; form to omit, links don't
-                                                    (if sub-index #'identity #'rest)
-                                                    (first (if sub-index
-                                                               (nth sub-index
-                                                                    (rest
-                                                                     (nth index
-                                                                          (rest formatted))))
-                                                               (nth index (rest formatted)))))
-                                             :collect item))
-                              :params (list :system package :branch :graph)))
-                   :stream out)
-                  (get-output-stream-string out))
+                (progn
+                  (render
+                   (funcall context :medium)
+                   (express (print (funcall (if network-changed
+                                                #'list (lambda (items) `(meta ,items (:type :set :form))))
+                                            (loop :for item :in (funcall
+                                                                 ;; nodes have an (index . N)
+                                                                 ;; form to omit, links don't
+                                                                 (if sub-index #'identity #'rest)
+                                                                 (first (if sub-index
+                                                                            (nth sub-index
+                                                                                 (rest (nth index
+                                                                                            (rest formatted))))
+                                                                            (nth index (rest formatted)))))
+                                                  :collect item)))))
+                  (get-output-stream-string (seed.generate::uim-web-stream (funcall context :medium))))
+                ;; (let ((out (make-string-output-stream)))
+                ;;   ;; (print (list :gd graph-data input network-changed))
+                ;;   (spinneret:interpret-html-tree
+                ;;    ;; enclose the contents in a (meta) form if this is the initial load;
+                ;;    ;; i.e. the network has not changed
+                ;;    (funcall
+                ;;     (if (not network-changed)
+                ;;         #'identity
+                ;;         (lambda (form)
+                ;;           (append (list (first form)
+                ;;                         `(:div :style "display: none"
+                ;;                                :x-init
+                ;;                                ,(psl (chain
+                ;;                                       htmx
+                ;;                                       (trigger
+                ;;                                        (getprop
+                ;;                                         (@ window seed-elements)
+                ;;                                         (lisp holder-id))
+                ;;                                        "reload")))))
+                ;;                   (cons '(meta (:stuff . "Test")
+                ;;                           (:type :field :text :pair :block :labeled))
+                ;;                         (rest form)))))
+                ;;     (htrender (print (funcall (if network-changed
+                ;;                            #'list (lambda (items)
+                ;;                                     `(meta ,items (:type :set :form))))
+                ;;                        (loop :for item
+                ;;                                :in (funcall
+                ;;                                     ;; nodes have an (index . N)
+                ;;                                     ;; form to omit, links don't
+                ;;                                     (if sub-index #'identity #'rest)
+                ;;                                     (first (if sub-index
+                ;;                                                (nth sub-index
+                ;;                                                     (rest
+                ;;                                                      (nth index
+                ;;                                                           (rest formatted))))
+                ;;                                                (nth index (rest formatted)))))
+                ;;                              :collect item)))
+                ;;               :params (list :system package :branch :graph)))
+                ;;    :stream out)
+                ;;   (get-output-stream-string out))
                 (if (or network-changed (assoc :system input))
                     (progn (setf *giface-output-stream* (make-string-output-stream))
                            ;; (print (list :nc input))
