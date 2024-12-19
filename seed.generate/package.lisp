@@ -10,7 +10,8 @@
            #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web #:of-system
            #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
            #:form-as-vectors #:interface-format-form #:render-html-interface #:render-nav-menu
-           #:htrender #:render-console #:meta-revise #:psl
+           #:htrender ;; #:render-console
+           #:meta-revise #:psl
            #:from-system-file #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec
            #:fx #:render #:uim-web #:uic-access #:uic-anchor #:uic-series #:uic-series-form

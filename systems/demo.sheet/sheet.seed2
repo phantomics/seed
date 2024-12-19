@@ -52,20 +52,32 @@
         (lambda (context input)
           (seed.generate::form-as-vectors
            (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5))))))
+        
         :form
+        
         (lambda (context input)
           (when (third input)
             ;; only process input if fields apart form system/branch are present
             (let ((original (from-system-file :demo.sheet "sheet.lisp" :form)))
               (meta-revise (second (third original)) input)
               (setf (from-system-file :demo.sheet "sheet.lisp" :form) original)))
-          (let ((out (make-string-output-stream)))
-            (spinneret:interpret-html-tree
-             ;; (render-fieldset (second (third (from-system-file :demo.sheet "sheet.lisp" :form))))
-             (htrender (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))
-                       :params (list :system :demo.sheet :branch :form))
-             :stream out)
-            (get-output-stream-string out)))
+          
+          (render
+           (funcall context :medium)
+           (express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
+          
+          (get-output-stream-string (seed.generate::uim-web-stream (funcall context :medium)))
+          
+          
+          ;; (let ((out (make-string-output-stream)))
+          ;;   (spinneret:interpret-html-tree
+          ;;    ;; (render-fieldset (second (third (from-system-file :demo.sheet "sheet.lisp" :form))))
+          ;;    (htrender (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))
+          ;;              :params (list :system :demo.sheet :branch :form))
+          ;;    :stream out)
+          ;;   (get-output-stream-string out))
+
+          )
         :table
         (let ((original (from-system-file :demo.sheet "sheet.lisp" :table)))
           (lambda (context input)
@@ -107,10 +119,12 @@
                          "~/src/old/dpneo/ecalc/app/uc.json"))
                 ))
             (let ((out (make-string-output-stream)))
-              (spinneret:interpret-html-tree
-               (htrender (second (third original))
-                         :params (list :system :demo.sheet :branch :table))
-               :stream out)
+              ;; TODO: REPLACE THIS
+              
+              ;; (spinneret:interpret-html-tree
+              ;;  (htrender (second (third original))
+              ;;            :params (list :system :demo.sheet :branch :table))
+              ;;  :stream out)
               (get-output-stream-string out))))
         :esgraph
         (spec-graph-interface

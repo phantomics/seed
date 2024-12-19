@@ -1274,161 +1274,161 @@
         :collect (if (eq item :partition)
                      nil (rest (assoc :name (cddr item))))))
 
-(defun render-console (form &key branch)
-  "Render a 'console'; a set of fields that independently update the server state when changed as opposed to requiring a specific 'submit' action to update all field values."
-  (htrender form :input-processor (lambda (item)
-                                    (let ((item-name (getf (cdar item) :name)))
-                                      (list (append (first item)
-                                                    (list :hx-post "/render/"
-                                                          :id (format nil "branch-~a"
-                                                                      (lisp->camel-case branch))
-                                                          :hx-vals (json-convert-to
-                                                                    (list :system :portal.demo1
-                                                                          :branch branch
-                                                                          :name item-name)))))))
-            :branch branch))
+;; (defun render-console (form &key branch)
+;;   "Render a 'console'; a set of fields that independently update the server state when changed as opposed to requiring a specific 'submit' action to update all field values."
+;;   (htrender form :input-processor (lambda (item)
+;;                                     (let ((item-name (getf (cdar item) :name)))
+;;                                       (list (append (first item)
+;;                                                     (list :hx-post "/render/"
+;;                                                           :id (format nil "branch-~a"
+;;                                                                       (lisp->camel-case branch))
+;;                                                           :hx-vals (json-convert-to
+;;                                                                     (list :system :portal.demo1
+;;                                                                           :branch branch
+;;                                                                           :name item-name)))))))
+;;             :branch branch))
 
-(defun htrender (form &key branch input-processor form-parameters params)
-  ;; (print (list :fo form))
-  (if (listp (first form))
-      (cons :div (loop :for f :in form :collect (htrender f :input-processor input-processor
-                                                            :form-parameters form-parameters
-                                                            :params params)))
-      (destructuring-bind (_ item &rest props) form
-        (let ((title (rest (assoc :title props)))
-              (name (rest (assoc :name props)))
-              (type (rest (assoc :type props)))
-              (input-processor (or input-processor #'identity))
-              (system (getf params :system))
-              (branch (getf params :branch)))
-          (labels ((build-elem (class item &optional multiple)
-                     `(:div :class ,class ,@(if (not title) nil `((:span :class "title" ,title)))
-                            ,@(funcall (if (and (listp item) (not multiple))
-                                           input-processor #'identity)
-                                       (if (and multiple (listp item))
-                                           item (list item))))))
-            ;; (print (list :sys system item))
-            (case (first type)
-              (:set (case (second type)
-                      (:form
-                       (if (not system)
-                           `(:div ,@(loop :for sub-item :in item
-                                          :append (let ((output (htrender sub-item :params params)))
-                                                    (if (not output) nil (list output)))))
-                           `(:form :hx-post "/render/"
-                                   :hx-trigger "reload consume, submit"
-                                   :class "xp-form"
-                                   :x-data ,(psl (create this-form $el action "formSubmit"))
-                                   ;; :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
-                                   ;;                          (push-form $el local-forms))))
-                                   :hx-vals ,(json-convert-to
-                                              (list :system (string-upcase system)
-                                                    :branch (string-upcase branch)
-                                                    :action :form-submit))
-                                   ,@(funcall (case (third type)
-                                                (:tabular
-                                                 (lambda (form)
-                                                   (list
-                                                    (cons :table
-                                                          (loop :for row :in item
-                                                                :collect
-                                                                (cons :tr (loop :for cell :in row
-                                                                                :collect
-                                                                                (list :td (htrender
-                                                                                           cell :params
-                                                                                           params)))))))))
-                                                (t (lambda (form)
-                                                     (loop :for item :in form
-                                                           :collect (htrender item :params params)))))
-                                              item))))
-                      ;; (:form (htrender
-                      ;;         item :form-parameters :params params
-                      ;;         (list :hx-post "/render/"
-                      ;;               :hx-vals (json-convert-to
-                      ;;                         (list :system (string-upcase system)
-                      ;;                               :branch (string-upcase branch))))))
-                      (:table (cons :table
-                                    (loop :for row :in item
-                                          :collect (cons :tr (loop :for cell :in row
-                                                                   :collect (list :td (htrender
-                                                                                       cell
-                                                                                       :params params)))))))))
-              ;; (:field
-              ;;  (let ((labeled  (member :labeled (rest type) :test #'eq))
-              ;;        (is-block (member :block   (rest type) :test #'eq))
-              ;;        (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
-              ;;                                                               :test #'eq))
-              ;;                                                  name (first item)))))
-              ;;    (if (member :pair (rest type) :test #'eq)
-              ;;        `(:div :class ,(format nil "ui ~a~ainput" (if labeled "labeled " "")
-              ;;                               (if is-block "fluid " ""))
-              ;;               ,@(if labeled `((:div :class "ui label" ,name)))
-              ;;               (:input :type "text" :name ,name :value ,(rest item)))
-              ;;        (build-elem "ui input" (list :input :type "text"
-              ;;                                            :name (symbol-munger:lisp->camel-case name)
-              ;;                                            :value item)))))
-              (:field
-               (let ((labeled  (member :labeled (rest type) :test #'eq))
-                     (is-block (member :block   (rest type) :test #'eq))
-                     (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
-                                                                            :test #'eq))
-                                                               name (first item)))))
-                 (if (member :pair (rest type) :test #'eq)
-                     `(:div :class ,(format nil "field~a" (if is-block " has-addons" ""))
-                            ,@(if labeled `((:div :class "control" (:div :class "button is-static" ,name))))
-                            (:div :class "control"
-                                  (:input :class "input" :type "text" :name ,name :value ,(rest item))))
-                     (build-elem "input" (list :input :type "text"
-                                                      :name (symbol-munger:lisp->camel-case name)
-                                                      :value item)))))
-              (:code-area
-               (let ((labeled  (member :labeled (rest type) :test #'eq))
-                     (is-block (member :block   (rest type) :test #'eq))
-                     (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
-                                                                            :test #'eq))
-                                                               name (first item)))))
-                 `(:div ;; :class (getf props :item-classes)
-                   :id "abc"
-                   :x-init ,(psl (progn (setf (@ window codemirror) nil)
-                                       (setf (getprop (@ window seed-elements) (lisp branch)) $el)
-                                       (setf (getprop (@ window seed-data) (lisp "abc"))
-                                             (create-codemirror
-                                              (chain document (get-element-by-id (lisp "abc")))
-                                              (lisp (rest item)))))))))
-              (:select (case (second type)
-                         (:dropdown
-                          (let ((title (rest (assoc :title props)))
-                                (options (rest (assoc :options props)))
-                                (action (rest (assoc :action props))))
-                            ;; `(:div :class "ui labeled button dropdown"
-                            ;;        (:span :class "text" ,name)
-                            ;;        (:div :class "menu"
-                            ;;              ,@(if (not (eq action :branch-reload))
-                            ;;                    nil (list :|x-on:change|
-                            ;;                              (psl (progn
-                            ;;                                     (chain console (log this-form))
-                            ;;                                     (chain htmx (trigger this-form "submit"))))))
-                            ;;              ,@(loop :for o :in options
-                            ;;                      :collect `(:option :value ,o
-                            ;;                                         ,@(if (not (string= o item))
-                            ;;                                               nil `(:selected 1))
-                            ;;                                         ,o)))
-                            `(:select :class "ui selection dropdown"
-                               :name ,name
-                               ,@(if (not (eq action :branch-reload))
-                                     nil (list :|x-on:change|
-                                               (psl (progn
-                                                      (chain console (log this-form))
-                                                      (chain htmx (trigger this-form "submit"))))))
-                               ,@(loop :for o :in options
-                                       :collect `(:option :value ,o
-                                                          ,@(if (not (string= o (rest item)))
-                                                                nil `(:selected 1))
-                                                          ,o)))
-                            ))))
-              (:trigger `(:button :class "ui button" ,title))
-              (:boolean `(:button :class "ui button" ,title))
-              (:submit-control `(:button :class "ui button" :type "submit" "Submit"))))))))
+;; (defun htrender (form &key branch input-processor form-parameters params)
+;;   ;; (print (list :fo form))
+;;   (if (listp (first form))
+;;       (cons :div (loop :for f :in form :collect (htrender f :input-processor input-processor
+;;                                                             :form-parameters form-parameters
+;;                                                             :params params)))
+;;       (destructuring-bind (_ item &rest props) form
+;;         (let ((title (rest (assoc :title props)))
+;;               (name (rest (assoc :name props)))
+;;               (type (rest (assoc :type props)))
+;;               (input-processor (or input-processor #'identity))
+;;               (system (getf params :system))
+;;               (branch (getf params :branch)))
+;;           (labels ((build-elem (class item &optional multiple)
+;;                      `(:div :class ,class ,@(if (not title) nil `((:span :class "title" ,title)))
+;;                             ,@(funcall (if (and (listp item) (not multiple))
+;;                                            input-processor #'identity)
+;;                                        (if (and multiple (listp item))
+;;                                            item (list item))))))
+;;             ;; (print (list :sys system item))
+;;             (case (first type)
+;;               (:set (case (second type)
+;;                       (:form
+;;                        (if (not system)
+;;                            `(:div ,@(loop :for sub-item :in item
+;;                                           :append (let ((output (htrender sub-item :params params)))
+;;                                                     (if (not output) nil (list output)))))
+;;                            `(:form :hx-post "/render/"
+;;                                    :hx-trigger "reload consume, submit"
+;;                                    :class "xp-form"
+;;                                    :x-data ,(psl (create this-form $el action "formSubmit"))
+;;                                    ;; :x-init ,(psl (progn (if (not (= "undefined" (typeof push-form)))
+;;                                    ;;                          (push-form $el local-forms))))
+;;                                    :hx-vals ,(json-convert-to
+;;                                               (list :system (string-upcase system)
+;;                                                     :branch (string-upcase branch)
+;;                                                     :action :form-submit))
+;;                                    ,@(funcall (case (third type)
+;;                                                 (:tabular
+;;                                                  (lambda (form)
+;;                                                    (list
+;;                                                     (cons :table
+;;                                                           (loop :for row :in item
+;;                                                                 :collect
+;;                                                                 (cons :tr (loop :for cell :in row
+;;                                                                                 :collect
+;;                                                                                 (list :td (htrender
+;;                                                                                            cell :params
+;;                                                                                            params)))))))))
+;;                                                 (t (lambda (form)
+;;                                                      (loop :for item :in form
+;;                                                            :collect (htrender item :params params)))))
+;;                                               item))))
+;;                       ;; (:form (htrender
+;;                       ;;         item :form-parameters :params params
+;;                       ;;         (list :hx-post "/render/"
+;;                       ;;               :hx-vals (json-convert-to
+;;                       ;;                         (list :system (string-upcase system)
+;;                       ;;                               :branch (string-upcase branch))))))
+;;                       (:table (cons :table
+;;                                     (loop :for row :in item
+;;                                           :collect (cons :tr (loop :for cell :in row
+;;                                                                    :collect (list :td (htrender
+;;                                                                                        cell
+;;                                                                                        :params params)))))))))
+;;               ;; (:field
+;;               ;;  (let ((labeled  (member :labeled (rest type) :test #'eq))
+;;               ;;        (is-block (member :block   (rest type) :test #'eq))
+;;               ;;        (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
+;;               ;;                                                               :test #'eq))
+;;               ;;                                                  name (first item)))))
+;;               ;;    (if (member :pair (rest type) :test #'eq)
+;;               ;;        `(:div :class ,(format nil "ui ~a~ainput" (if labeled "labeled " "")
+;;               ;;                               (if is-block "fluid " ""))
+;;               ;;               ,@(if labeled `((:div :class "ui label" ,name)))
+;;               ;;               (:input :type "text" :name ,name :value ,(rest item)))
+;;               ;;        (build-elem "ui input" (list :input :type "text"
+;;               ;;                                            :name (symbol-munger:lisp->camel-case name)
+;;               ;;                                            :value item)))))
+;;               (:field
+;;                (let ((labeled  (member :labeled (rest type) :test #'eq))
+;;                      (is-block (member :block   (rest type) :test #'eq))
+;;                      (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
+;;                                                                             :test #'eq))
+;;                                                                name (first item)))))
+;;                  (if (member :pair (rest type) :test #'eq)
+;;                      `(:div :class ,(format nil "field~a" (if is-block " has-addons" ""))
+;;                             ,@(if labeled `((:div :class "control" (:div :class "button is-static" ,name))))
+;;                             (:div :class "control"
+;;                                   (:input :class "input" :type "text" :name ,name :value ,(rest item))))
+;;                      (build-elem "input" (list :input :type "text"
+;;                                                       :name (symbol-munger:lisp->camel-case name)
+;;                                                       :value item)))))
+;;               (:code-area
+;;                (let ((labeled  (member :labeled (rest type) :test #'eq))
+;;                      (is-block (member :block   (rest type) :test #'eq))
+;;                      (name (symbol-munger:lisp->camel-case (if (not (member :pair (rest type)
+;;                                                                             :test #'eq))
+;;                                                                name (first item)))))
+;;                  `(:div ;; :class (getf props :item-classes)
+;;                    :id "abc"
+;;                    :x-init ,(psl (progn (setf (@ window codemirror) nil)
+;;                                        (setf (getprop (@ window seed-elements) (lisp branch)) $el)
+;;                                        (setf (getprop (@ window seed-data) (lisp "abc"))
+;;                                              (create-codemirror
+;;                                               (chain document (get-element-by-id (lisp "abc")))
+;;                                               (lisp (rest item)))))))))
+;;               (:select (case (second type)
+;;                          (:dropdown
+;;                           (let ((title (rest (assoc :title props)))
+;;                                 (options (rest (assoc :options props)))
+;;                                 (action (rest (assoc :action props))))
+;;                             ;; `(:div :class "ui labeled button dropdown"
+;;                             ;;        (:span :class "text" ,name)
+;;                             ;;        (:div :class "menu"
+;;                             ;;              ,@(if (not (eq action :branch-reload))
+;;                             ;;                    nil (list :|x-on:change|
+;;                             ;;                              (psl (progn
+;;                             ;;                                     (chain console (log this-form))
+;;                             ;;                                     (chain htmx (trigger this-form "submit"))))))
+;;                             ;;              ,@(loop :for o :in options
+;;                             ;;                      :collect `(:option :value ,o
+;;                             ;;                                         ,@(if (not (string= o item))
+;;                             ;;                                               nil `(:selected 1))
+;;                             ;;                                         ,o)))
+;;                             `(:select :class "ui selection dropdown"
+;;                                :name ,name
+;;                                ,@(if (not (eq action :branch-reload))
+;;                                      nil (list :|x-on:change|
+;;                                                (psl (progn
+;;                                                       (chain console (log this-form))
+;;                                                       (chain htmx (trigger this-form "submit"))))))
+;;                                ,@(loop :for o :in options
+;;                                        :collect `(:option :value ,o
+;;                                                           ,@(if (not (string= o (rest item)))
+;;                                                                 nil `(:selected 1))
+;;                                                           ,o)))
+;;                             ))))
+;;               (:trigger `(:button :class "ui button" ,title))
+;;               (:boolean `(:button :class "ui button" ,title))
+;;               (:submit-control `(:button :class "ui button" :type "submit" "Submit"))))))))
 
 
 ;; `(:div :class "ui vertical menu"
