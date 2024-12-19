@@ -2422,18 +2422,18 @@
                 (progn
                   (render
                    (funcall context :medium)
-                   (express (print (funcall (if network-changed
-                                                #'list (lambda (items) `(meta ,items (:type :set :form))))
-                                            (loop :for item :in (funcall
-                                                                 ;; nodes have an (index . N)
-                                                                 ;; form to omit, links don't
-                                                                 (if sub-index #'identity #'rest)
-                                                                 (first (if sub-index
-                                                                            (nth sub-index
-                                                                                 (rest (nth index
-                                                                                            (rest formatted))))
-                                                                            (nth index (rest formatted)))))
-                                                  :collect item)))))
+                   (express (funcall (if network-changed
+                                         #'list (lambda (items) `(meta ,items (:type :set :form))))
+                                     (loop :for item :in (funcall
+                                                          ;; nodes have an (index . N)
+                                                          ;; form to omit, links don't
+                                                          (if sub-index #'identity #'rest)
+                                                          (first (if sub-index
+                                                                     (nth sub-index
+                                                                          (rest (nth index
+                                                                                     (rest formatted))))
+                                                                     (nth index (rest formatted)))))
+                                           :collect item))))
                   (get-output-stream-string (seed.generate::uim-web-stream (funcall context :medium))))
                 ;; (let ((out (make-string-output-stream)))
                 ;;   ;; (print (list :gd graph-data input network-changed))

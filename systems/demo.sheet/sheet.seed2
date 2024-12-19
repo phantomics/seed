@@ -17,24 +17,25 @@
             layout))
         :view
         (lambda (context input)
-          (let ((context (second (assoc :session input))))
-            (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-                   (loop :for l :in (grow :demo.sheet :summary) :while l
-                         :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
-                                                   :join   (list :demo.sheet (first l))
-                                                   :type   (:column)))
-                                      (fx ((:each uicc-button)
-                                           (uic-series :type (:ui :header)))
-                                          (list (list :save)))
-                                      (fx ((uic-access :name   (second l)
-                                                       :system :demo.sheet))
-                                          :graph)
-                                      (fx ((:each uicc-button)
-                                           (uic-series :type (:ui :footer)))
-                                          (list (list :save))))))))
+          (print (funcall context :point))
+          ;; (let ((context (second (assoc :session input))))
+          (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+              (loop :for l :in (grow :demo.sheet :summary) :while l
+                    :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+                                              :join   (list :demo.sheet (first l))
+                                              :type   (:column)))
+                                 (fx ((:each uicc-button)
+                                      (uic-series :type (:ui :header)))
+                                     (list (list :save)))
+                                 (fx ((uic-access :name   (second l)
+                                                  :system :demo.sheet))
+                                     :graph)
+                                 (fx ((:each uicc-button)
+                                      (uic-series :type (:ui :footer)))
+                                     (list (list :save)))))))
         :main
         (lambda (context input)
-          (print (list :in2 input))
+          ;; (print (list :in2 input))
           (if (getf input :text)
               (let ((input (apply #'concatenate 'string
                                   (loop :for i :in (getf input :text)
@@ -62,9 +63,8 @@
               (meta-revise (second (third original)) input)
               (setf (from-system-file :demo.sheet "sheet.lisp" :form) original)))
           
-          (render
-           (funcall context :medium)
-           (express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
+          (render (funcall context :medium)
+                  (express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
           
           (get-output-stream-string (seed.generate::uim-web-stream (funcall context :medium)))
           
