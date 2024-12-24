@@ -36,7 +36,7 @@
          :package-name pkg-name :port 9090
          :interactor-fetch (lambda (params session-api)
                              ;; (print (list :aa portal-form branch-form params))
-                             (let ((portal-form (rest (assoc "portal" params :test #'string=)))
+                             (let ((portal-form (rest (assoc "system" params :test #'string=)))
                                    (branch-form (rest (assoc "branch" params :test #'string=))))
                                ;; (print (list :aa portal-form branch-form))
                                (json-convert-to
@@ -138,18 +138,18 @@
         :display "grid" :height "100%"
         (.column
          :display grid :overflow auto :grid-template-rows 1fr
-         (.container :position "relative" :height "100%" :display grid)
+         (.container :position "relative" :height "100%") ;;  :display grid)
          (.container.column-inner
-          :padding 0 :overflow auto :grid-template-columns "100%"
-          :grid-template-rows "[header-start] auto [header-end] 1fr [footer-start] auto [footer-end]"
+          :padding 0 :overflow auto ;; :grid-template-columns "100%"
+          ;; :grid-template-rows "[header-start] auto [header-end] 1fr [footer-start] auto [footer-end]"
           
-          (.header :grid-row-start "header-start" :grid-row-end "header-end")
+          ;; (.header :grid-row-start "header-start" :grid-row-end "header-end")
           ;; (.container-wrap
           ;; :grid-row-start "header-end"
           ;; :grid-row-end   "footer-start"
-          (.sub-container :grid-row-start "header-end" :grid-row-end   "footer-start"
-                          :overflow-y auto)
-          (.footer :grid-row-start "footer-start" :grid-row-end "footer-end")
+          ;; (.sub-container :grid-row-start "header-end" :grid-row-end   "footer-start"
+          ;;                 :overflow-y auto)
+          ;; (.footer :grid-row-start "footer-start" :grid-row-end "footer-end")
           ;; ((:and .container.column (:nth-child 1))
           ;;  :grid-row-start "header-start")
           ;; ((:and .container.column (:nth-child 2))
@@ -183,7 +183,7 @@
         (.column :padding 0 10px))
       
       `((:or .ui.header .ui.footer)
-        :width "100%" :padding 8px :margin 0 :background "#eee"
+        :width "100%" :height "100%" :padding 8px :margin 0 :background "#eee"
         :display grid :grid-template-columns "20% 80%" :grid-template-rows 100%)
 
       `(.ui.header
@@ -352,7 +352,7 @@
        (defun fetch-contact (system branch input handler)
          (chain (fetch "/contact/"
                        (create method "POST"
-                               body (chain -j-s-o-n (stringify (create portal system
+                               body (chain -j-s-o-n (stringify (create system system
                                                                        branch branch
                                                                        input  input)))
                                headers (create "Content-type" "application/json; charset=UTF-8")))
@@ -373,7 +373,7 @@
          (chain (fetch "/contact/"
                        (create method "POST"
                                headers (create "Content-type" "application/json; charset=UTF-8")
-                               body (chain -j-s-o-n (stringify (create portal (@ context system)
+                               body (chain -j-s-o-n (stringify (create system (@ context system)
                                                                        branch (@ context branch)
                                                                        input  input)))))
                 (then (lambda (response) (chain response (json))))
@@ -385,7 +385,7 @@
            (chain (fetch "/contact/"
                          (create method "POST"
                                  headers (create "Content-type" "application/json; charset=UTF-8")
-                                 body (chain -j-s-o-n (stringify (create portal system
+                                 body (chain -j-s-o-n (stringify (create system system
                                                                          branch branch
                                                                          input  input)))))
                   (then (lambda (response) (chain response (json))))
@@ -485,7 +485,7 @@
 	    data-type "json"
 	    content-type "application/json; charset=utf-8"
             async false
-	    data (chain -j-s-o-n (stringify (create portal portal branch branch input input)))
+	    data (chain -j-s-o-n (stringify (create system portal branch branch input input)))
 	    success next-success
 	    error (lambda (data err) (chain console (log 11 data err))))))))
 

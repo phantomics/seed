@@ -67,30 +67,11 @@ body{
 .ui.grid-layout .column .container{
     position: relative;
     height: 100%;
-    display: grid;
 }
 
 .ui.grid-layout .column .container.column-inner{
     padding: 0;
     overflow: auto;
-    grid-template-columns: 100%;
-    grid-template-rows: [header-start] auto [header-end] 1fr [footer-start] auto [footer-end];
-}
-
-.ui.grid-layout .column .container.column-inner .header{
-    grid-row-start: header-start;
-    grid-row-end: header-end;
-}
-
-.ui.grid-layout .column .container.column-inner .sub-container{
-    grid-row-start: header-end;
-    grid-row-end: footer-start;
-    overflow-y: auto;
-}
-
-.ui.grid-layout .column .container.column-inner .footer{
-    grid-row-start: footer-start;
-    grid-row-end: footer-end;
 }
 
 .ui.grid-layout.main{
@@ -129,6 +110,7 @@ body{
 .ui.header,
 .ui.footer{
     width: 100%;
+    height: 100%;
     padding: 8px;
     margin: 0;
     background: #eee;

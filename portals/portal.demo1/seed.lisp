@@ -13,8 +13,6 @@
             (when (and key-input (string= "demo" (string-downcase key-input)))
               (funcall context :user :hello)))
 
-          ;; (print (list :ooo input))
-
           (when (and context (assoc :point input))
             ;; when a point is selected, assign it
             (funcall context :branch-point (read-from-string (rest (assoc :point input)))))
@@ -26,7 +24,6 @@
               (of-system :point epsym)
               ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
               (load-seed-system epsym)))
-          ;; (print (list :bbb context input (package-name package) package))
 
           ;; (when (and context (not (funcall context :portal-name)))
           ;;   (funcall context :portal-name :portal.demo1))

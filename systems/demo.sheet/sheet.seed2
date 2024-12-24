@@ -17,7 +17,7 @@
             layout))
         :view
         (lambda (context input)
-          (print (funcall context :branch-point))
+          ;; (print (funcall context :branch-point))
           (let ((context (second (assoc :session input)))
                 (summary (grow :demo.sheet :summary))
                 (branch-point (or (funcall context :branch-point) 0))
@@ -44,7 +44,7 @@
                                        (list (list :save))))))))
         :main
         (lambda (context input)
-          (print (list :in2 input))
+          ;; (print (list :in2 input))
           (if (assoc "text" input :test #'string=)
               (if (= 0 (second (assoc "text" input :test #'string=)))
                   (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
@@ -68,7 +68,7 @@
         :cells
         (lambda (context input)
           (let ((display-baseline))
-            (print (list :aa input))
+            ;; (print (list :aa input))
             (if (assoc "cells" input :test #'string=)
                 (if (/= 0 (second (assoc "cells" input :test #'string=)))
                     (if (and (listp input) (listp (first input))
@@ -84,13 +84,13 @@
                                 (from-system-file :demo.sheet "sheet.lisp" :cells) original)
                           ;; (instantiate-priority-macro-reader (asdf:load-system package))
                           (load-seed-system :demo.sheet)))
-                    (print (if display-baseline
+                    (if display-baseline
                         (encode (symbol-value (intern "*CELL-MATRIX*" (string :demo.sheet))))
                         (list :ty :ar :ct
                               (second (of-array-spec :initial-contents
                                                      (setf-value
                                                       (from-system-file
-                                                       :demo.sheet "sheet.lisp" :cells))))))))
+                                                       :demo.sheet "sheet.lisp" :cells)))))))
                 (progn (render (funcall context :medium)
                                (fx ((uic-grid :type (:code)))
                                    :demo.sheet :cells))
