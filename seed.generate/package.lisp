@@ -15,7 +15,7 @@
            #:from-system-file #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec
            #:fx #:render #:uim-web #:uic-access #:uic-anchor #:uic-series #:uic-series-form
-           #:uicc-button #:uicc-text #:uicc-text-line #:uicc-text-area
+           #:uic-grid #:uicc-button #:uicc-text #:uicc-text-line #:uicc-text-area
            #:uispec #:render-web
 
            #:seed2

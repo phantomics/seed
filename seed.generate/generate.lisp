@@ -119,15 +119,15 @@
 (defun with-meta (item &rest props)
   `(meta ,item ,@props))
 
-(defun portal-contacts (system)
-  (getf (getf (if (not (symbolp system))
-                  system (getf *seed-interfaces* system))
-              :props) :portal-contacts))
+;; (defun portal-contacts (system)
+;;   (getf (getf (if (not (symbolp system))
+;;                   system (getf *seed-interfaces* system))
+;;               :props) :portal-contacts))
 
-(defun portal-endpoint (system)
-  (getf (getf (if (not (symbolp system))
-                  system (getf *seed-interfaces* system))
-              :props) :endpoint))
+;; (defun portal-endpoint (system)
+;;   (getf (getf (if (not (symbolp system))
+;;                   system (getf *seed-interfaces* system))
+;;               :props) :endpoint))
 
 (defun of-system (system &rest keys)
   ;; (print (list :ss system keys))
@@ -604,6 +604,10 @@
             :initform nil
             :initarg  :layout)))
 
+
+(defclass uic-grid (ui-component)
+  ())
+
 (defclass uic-series-form (uic-series)
   ())
 
@@ -629,11 +633,11 @@
              :initform nil
              :initarg  :default)))
 
-(defclass uicc-text-line (uicc-text)
-  ())
+;; (defclass uicc-text-line (uicc-text)
+;;   ())
 
-(defclass uicc-text-area (uicc-text)
-  ())
+;; (defclass uicc-text-area (uicc-text)
+;;   ())
 
 (defmacro fx (specs &rest form)
   (labels ((format-params (items)
@@ -719,23 +723,26 @@
   (declare (ignore medium))
   (list :raw comp))
 
-(defmethod generate ((medium uim-web) (comp uic-access))
-  (let ((last-type-index (1- (length (uic-type comp))))
+(defmethod generate ((medium uim-web) (aspect uic-access))
+  (let ((last-type-index (1- (length (uic-type aspect))))
         (class-stream (make-string-output-stream))
-        (types (funcall (if (listp (uic-type comp)) #'identity #'list)
-                        (uic-type comp)))
-        (face (lisp->camel-case (uic-name comp)))
-        (system (or (uica-system comp) (uim-portal medium))))
+        (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
+                        (uic-type aspect)))
+        (face (lisp->camel-case (uic-name aspect)))
+        (system (or (uica-system aspect) (uim-portal medium)))
+        (branch (string (uic-base aspect))))
+    
     (format class-stream "sub-container")
     (loop :for type :in types :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
               (unless (= ix last-type-index) (format class-stream " ")))
+    
     `(:div :hx-post "/render/" :hx-trigger "load, reload consume"
-           :id ,(format nil "branch-~a" (lisp->camel-case (uic-name comp)))
+           :id ,(format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
            :class ,(get-output-stream-string class-stream)
            :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                (fetch-contact (lisp (string-upcase system))
-                                              (lisp (string-upcase (uic-base comp)))
+                                              (lisp (string-upcase (uic-base aspect)))
                                               (create height (@ $el offset-height)
                                                       width  (@ $el offset-width))
                                               (lambda (data)
@@ -743,7 +750,7 @@
                                                 ;;                     (@ $el offset-height)))
                                                 ))))
            :hx-vals ,(json-convert-to (list :system system :face face
-                                            :branch (string-upcase (uic-base comp))))
+                                            :branch (string-upcase (uic-base aspect))))
            :x-data ,(ps (create branch-frame $el)))))
 
 (defmethod generate ((medium uim-web) (aspect uic-series))
@@ -800,7 +807,29 @@
                                                 ,(enclose-by-type
                                                   types (realize aspect medium item
                                                                  :sort ix)))))))))))
- 
+
+(defmethod generate ((medium uim-web) (aspect uic-grid))
+  (destructuring-bind (system branch) (uic-base aspect)
+    (let ((token (format nil "canvas-datagrid-~a-~a"
+                         (string-downcase system) (string-downcase branch)))
+          (branch (string-downcase branch))
+          ;; (mode (getf props :mode))
+          )
+      `(:div :id "datagrid-cells" ;; :class (getf props :item-classes)
+             :x-init ,(psl (progn (setf (getprop (@ window seed-elements) (lisp branch)) $el)
+                                  (fetch-contact
+                                   (lisp (string-upcase system)) (lisp (string-upcase branch))
+                                   (list (list "cells" 0))
+                                   (lambda (data)
+                                     ;; (chain console (log :dd data))
+                                     (let ((grid (canvas-datagrid
+                                                  (create style (create cell-width 60)))))
+                                       (chain document (get-element-by-id "datagrid-cells")
+                                              (append-child grid))
+                                       (setf (@ grid data) (@ data ct)
+                                             (getprop (@ window seed-data) (lisp token))
+                                             grid))))))))))
+
 (defmethod generate ((medium uim-web) (aspect uic-anchor))
   (let ((base (uic-base aspect)))
     (case (first (uic-type aspect))
@@ -857,13 +886,36 @@
                          (htm (:hr :class "divider"))))))))
 |#
 
-(defmethod generate ((medium uim-web) (aspect uicc-text-line))
-  `(:input :class "input" :type "text" :value ,(or (uicc-text-default aspect) "")
-           :name ,(or (string (uicc-key aspect)) "")))
+(defmethod generate ((medium uim-web) (aspect uicc-text))
+  ;; (print (list :ee medium (uic-type aspect)))
+  (cond ((member :code (uic-type aspect))
+         (destructuring-bind (system branch) (uic-base aspect)
+           (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
+                                (string-downcase branch))))
+             `(:div :id ,token ;; :class ,(uic-type aspect)
+                    :x-init ,(psl (progn (setf (@ window codemirror) nil)
+                                         (setf (getprop (@ window seed-elements) (lisp branch))
+                                               $el)
+                                         (fetch-contact (lisp (string system)) (lisp (string branch))
+                                                        (list (list "text" 0))
+                                                        ;; nil
+                                                        ;; ,(string-upcase (getf props :branch))
+                                                        (lambda (data) 
+                                                          ;; (chain console (log :dt (@ data text)))
+                                                          (setf (getprop (@ window seed-data) (lisp token))
+                                                                (create-codemirror
+                                                                 (chain document
+                                                                        (get-element-by-id (lisp token)))
+                                                                 (@ data text)))))))))))
+        ((member :area (uic-type aspect))
+         `(:textarea :class "input" :name ,(or (string (uicc-key aspect)) "")
+                     ,(or (uicc-text-default aspect) "")))
+        (t `(:input :class "input" :type "text" :value ,(or (uicc-text-default aspect) "")
+                    :name ,(or (string (uicc-key aspect)) "")))))
 
-(defmethod generate ((medium uim-web) (aspect uicc-text-area))
-  `(:textarea :class "input" :value ,(or (uicc-text-default aspect) "")
-              :name ,(or (string (uicc-key aspect)) "")))
+;; (defmethod generate ((medium uim-web) (aspect uicc-text-area))
+;;   `(:textarea :class "input" :value ,(or (uicc-text-default aspect) "")
+;;               :name ,(or (string (uicc-key aspect)) "")))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   `(:select :class "ui" :name ,(or (string (uicc-key aspect)) "")
@@ -879,7 +931,8 @@
                     (case style
                       ((:even :of)
                        (let* ((divisions (or (first props) default-segments))
-                              (width (/ divisions (length (uic-base aspect)))))
+                              (width (/ divisions (length (uic-base aspect))))
+                              (next-index 0))
                          (if (eq :of style)
                              (setf width 1
                                    next-index (if (= index (1- (length (uic-base aspect))))
@@ -926,7 +979,7 @@
                       (class (case primary-type
                                (:set 'uic-series)
                                (:select 'uicc-select)
-                               (:field  'uicc-text-line))))
+                               (:field  'uicc-text))))
                  (make-instance class :base ;; (first form)
                                 (if (eq :set primary-type)
                                     (mapcar #'express (second form))
@@ -1077,32 +1130,32 @@
                                                          :do (branch-spec-form
                                                               strout :control :subsection c :system system-id
                                                               :branch branch :name iface-name))))))))))
-               ((list :form :text)
-                (let ((branch (second (assoc :access (getf form :mt))))
-                      (name (rest (assoc :name (getf form :mt))))
-                      (controls (rest (assoc :controls (getf form :mt))))
-                      (item-classes (apply #'concatenate 'string
-                                           (loop :for y :in (rest (assoc :type (getf form :mt)))
-                                                 :collect (format nil "~a " (string-downcase y))))))
-                  (cl-who:with-html-output (strout)
-                    (:div :class "container column-inner"
-                          (if (not (assoc :header controls))
-                              nil (htm (:div :class "ui medium header"
-                                             (:h2 :class "branch-name" (str (lisp->camel-case name)))
-                                             (:div :class "controls-holder"
-                                                   (loop :for c :in (rest (assoc :header controls))
-                                                         :do (branch-spec-codemirror-editor
-                                                              strout :control :subsection c :system system-id
-                                                                              :branch branch))))))
-                          (branch-spec-codemirror-editor strout :body :system system-id
-                                                                     :branch branch :item-classes item-classes)
-                          (if (not (assoc :footer controls))
-                              nil (htm (:div :class "ui medium footer"
-                                             (:div :class "controls-holder"
-                                                   (loop :for c :in (rest (assoc :footer controls))
-                                                         :do (branch-spec-codemirror-editor
-                                                              strout :control :subsection c :system system-id
-                                                                              :branch branch))))))))))
+               ;; ((list :form :text)
+               ;;  (let ((branch (second (assoc :access (getf form :mt))))
+               ;;        (name (rest (assoc :name (getf form :mt))))
+               ;;        (controls (rest (assoc :controls (getf form :mt))))
+               ;;        (item-classes (apply #'concatenate 'string
+               ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
+               ;;                                   :collect (format nil "~a " (string-downcase y))))))
+               ;;    (cl-who:with-html-output (strout)
+               ;;      (:div :class "container column-inner"
+               ;;            (if (not (assoc :header controls))
+               ;;                nil (htm (:div :class "ui medium header"
+               ;;                               (:h2 :class "branch-name" (str (lisp->camel-case name)))
+               ;;                               (:div :class "controls-holder"
+               ;;                                     (loop :for c :in (rest (assoc :header controls))
+               ;;                                           :do (branch-spec-codemirror-editor
+               ;;                                                strout :control :subsection c :system system-id
+               ;;                                                                :branch branch))))))
+               ;;            (branch-spec-codemirror-editor strout :body :system system-id
+               ;;                                                       :branch branch :item-classes item-classes)
+               ;;            (if (not (assoc :footer controls))
+               ;;                nil (htm (:div :class "ui medium footer"
+               ;;                               (:div :class "controls-holder"
+               ;;                                     (loop :for c :in (rest (assoc :footer controls))
+               ;;                                           :do (branch-spec-codemirror-editor
+               ;;                                                strout :control :subsection c :system system-id
+               ;;                                                                :branch branch))))))))))
                ((list :form :tree)
                 (let ((branch (second (assoc :access (getf form :mt))))
                       (name (rest (assoc :name (getf form :mt))))
@@ -1525,42 +1578,42 @@
                                            )))
                      (str (string-downcase (getf props :subsection)))))))))))
 
-(defun branch-spec-codemirror-editor (stream-out section &rest props)
-  (let ((token (format nil "cm-texteditor-~a-~a"
-                       (string-downcase (getf props :system))
-                       (string-downcase (getf props :branch))))
-        (branch (string-downcase (getf props :branch))))
-    (case section
-      (:body (cl-who:with-html-output (stream-out)
-               (:div :id (lisp token) :class (getf props :item-classes)
-                     :x-init (psl (progn (setf (@ window codemirror) nil)
-                                         (setf (getprop (@ window seed-elements) (lisp branch)) $el)
-                                         (fetch-contact (lisp (string-upcase (getf props :system)))
-                                                        (lisp (string-upcase (getf props :branch)))
-                                                        nil (lambda (data) 
-                                                              ;; (chain console (log :dt (@ data text)))
-                                                              (setf (getprop (@ window seed-data)
-                                                                             (lisp token))
-                                                                    (create-codemirror
-                                                                     (chain document
-                                                                            (get-element-by-id (lisp token)))
-                                                                     (@ data text))))))))))
-      (:control
-       (case (getf props :subsection)
-         (:save (cl-who:with-html-output (stream-out)
-                  (:button :class "ui button"
-                           :|x-on:click|
-                           ;; (psl (fetch-contact (lisp (string-upcase (getf props :system)))
-                           ;;                     (lisp (string-upcase (getf props :branch)))
-                           ;;                     (@ (getprop (@ window seed-data)
-                           ;;                                 (lisp token))
-                           ;;                        state doc text)
-                           ;;                     ;; (@ window codemirror state doc text)
-                           ;;                     (lambda (data) (chain console (log :sv)))))
-                           (psl (fetch-contact2 context $el (create text (@ (getprop (@ window seed-data)
-                                                                                     (lisp token))
-                                                                            state doc text))))
-                           (str (string-downcase (getf props :subsection)))))))))))
+;; (defun branch-spec-codemirror-editor (stream-out section &rest props)
+;;   (let ((token (format nil "cm-texteditor-~a-~a"
+;;                        (string-downcase (getf props :system))
+;;                        (string-downcase (getf props :branch))))
+;;         (branch (string-downcase (getf props :branch))))
+;;     (case section
+;;       (:body (cl-who:with-html-output (stream-out)
+;;                (:div :id (lisp token) :class (getf props :item-classes)
+;;                      :x-init (psl (progn (setf (@ window codemirror) nil)
+;;                                          (setf (getprop (@ window seed-elements) (lisp branch)) $el)
+;;                                          (fetch-contact (lisp (string-upcase (getf props :system)))
+;;                                                         (lisp (string-upcase (getf props :branch)))
+;;                                                         nil (lambda (data) 
+;;                                                               ;; (chain console (log :dt (@ data text)))
+;;                                                               (setf (getprop (@ window seed-data)
+;;                                                                              (lisp token))
+;;                                                                     (create-codemirror
+;;                                                                      (chain document
+;;                                                                             (get-element-by-id (lisp token)))
+;;                                                                      (@ data text))))))))))
+;;       (:control
+;;        (case (getf props :subsection)
+;;          (:save (cl-who:with-html-output (stream-out)
+;;                   (:button :class "ui button"
+;;                            :|x-on:click|
+;;                            ;; (psl (fetch-contact (lisp (string-upcase (getf props :system)))
+;;                            ;;                     (lisp (string-upcase (getf props :branch)))
+;;                            ;;                     (@ (getprop (@ window seed-data)
+;;                            ;;                                 (lisp token))
+;;                            ;;                        state doc text)
+;;                            ;;                     ;; (@ window codemirror state doc text)
+;;                            ;;                     (lambda (data) (chain console (log :sv)))))
+;;                            (psl (fetch-contact2 context $el (create text (@ (getprop (@ window seed-data)
+;;                                                                                      (lisp token))
+;;                                                                             state doc text))))
+;;                            (str (string-downcase (getf props :subsection)))))))))))
 
 (defun branch-spec-cvdatagrid-tree (stream-out section &rest props)
   (let ((token (format nil "canvas-datagrid-~a-~a"

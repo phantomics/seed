@@ -10,45 +10,92 @@
         ;;                                                     :portal (intern (package-name package)
         ;;                                                                     "KEYWORD"))))))
         :summary
-        (let ((layout '((:graph :graph-overview) (:graph :graph-node) nil
+        (let ((layout '((:main :code-view) (:cells :cells-view) nil
                         (:graph :graph-overview) (:graph :graph-node))))
           (lambda (context input)
             (declare (ignore context input))
             layout))
         :view
         (lambda (context input)
-          (print (funcall context :point))
-          ;; (let ((context (second (assoc :session input))))
-          (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-              (loop :for l :in (grow :demo.sheet :summary) :while l
-                    :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
-                                              :join   (list :demo.sheet (first l))
-                                              :type   (:column)))
-                                 (fx ((:each uicc-button)
-                                      (uic-series :type (:ui :header)))
-                                     (list (list :save)))
-                                 (fx ((uic-access :name   (second l)
-                                                  :system :demo.sheet))
-                                     :graph)
-                                 (fx ((:each uicc-button)
-                                      (uic-series :type (:ui :footer)))
-                                     (list (list :save)))))))
+          (print (funcall context :branch-point))
+          (let ((context (second (assoc :session input)))
+                (summary (grow :demo.sheet :summary))
+                (branch-point (or (funcall context :branch-point) 0))
+                (start-point 0) (interval-found) (search-complete))
+            
+            (loop :for s :in summary :for sx :from 0 :until search-complete 
+                  :do (unless s (if interval-found (setf search-complete t)
+                                    (setf start-point (1+ sx))))
+                      (when (= sx branch-point) (setf interval-found t)))
+            
+            (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+                (loop :for l :in (nthcdr start-point summary) :while l
+                      :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+                                                :join   (list :demo.sheet (first l))
+                                                :type   (:column)))
+                                   (fx ((:each uicc-button)
+                                        (uic-series :type (:ui :header)))
+                                       (list (list :save)))
+                                   (fx ((uic-access :name   (second l)
+                                                    :system :demo.sheet))
+                                       (first l))
+                                   (fx ((:each uicc-button)
+                                        (uic-series :type (:ui :footer)))
+                                       (list (list :save))))))))
         :main
         (lambda (context input)
-          ;; (print (list :in2 input))
-          (if (getf input :text)
-              (let ((input (apply #'concatenate 'string
-                                  (loop :for i :in (getf input :text)
-                                        :append (list i '(#\Newline))))))
-                (setf (from-system-file :demo.sheet "sheet.lisp" :main :as-string t)
-                      (text-wrap input :syntax :progn))
-                (load-seed-system package)
-                (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
-                                                         :main :as-string t)
-                                       :unwrap t :syntax :progn)))
-              (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
-                                                       :main :as-string t)
-                                     :unwrap t :syntax :progn :trailing-newlines 2))))
+          (print (list :in2 input))
+          (if (assoc "text" input :test #'string=)
+              (if (= 0 (second (assoc "text" input :test #'string=)))
+                  (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+                                                           :main :as-string t)
+                                         :unwrap t :syntax :progn :trailing-newlines 2))
+                  (let ((input (apply #'concatenate 'string
+                                      (loop :for i :in ;; (getf input :text)
+                                            (rest (assoc "text" input :test #'string=))
+                                            :append (list i '(#\Newline))))))
+                    (setf (from-system-file :demo.sheet "sheet.lisp" :main :as-string t)
+                          (text-wrap input :syntax :progn))
+                    (load-seed-system package)
+                    (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+                                                             :main :as-string t)
+                                           :unwrap t :syntax :progn))))
+              (progn (render (funcall context :medium)
+                             (fx ((uicc-text :type (:code)))
+                                 :demo.sheet :main))
+                     (get-output-stream-string (seed.generate::uim-web-stream
+                                                (funcall context :medium))))))
+        :cells
+        (lambda (context input)
+          (let ((display-baseline))
+            (print (list :aa input))
+            (if (assoc "cells" input :test #'string=)
+                (if (/= 0 (second (assoc "cells" input :test #'string=)))
+                    (if (and (listp input) (listp (first input))
+                             (stringp (caar input)))
+                        (cond ((string= "toggleBaseline" (caar input))
+                               (setf display-baseline (not display-baseline))))
+                        (let ((original (from-system-file :demo.sheet "sheet.lisp" :cells)))
+                          (setf (of-array-spec :initial-contents (setf-value original))
+                                `(quote ,(loop :for row :in input
+                                               :collect (loop :for cell :in row
+                                                              :collect (parse-number:parse-number
+                                                                        cell))))
+                                (from-system-file :demo.sheet "sheet.lisp" :cells) original)
+                          ;; (instantiate-priority-macro-reader (asdf:load-system package))
+                          (load-seed-system :demo.sheet)))
+                    (print (if display-baseline
+                        (encode (symbol-value (intern "*CELL-MATRIX*" (string :demo.sheet))))
+                        (list :ty :ar :ct
+                              (second (of-array-spec :initial-contents
+                                                     (setf-value
+                                                      (from-system-file
+                                                       :demo.sheet "sheet.lisp" :cells))))))))
+                (progn (render (funcall context :medium)
+                               (fx ((uic-grid :type (:code)))
+                                   :demo.sheet :cells))
+                       (get-output-stream-string (seed.generate::uim-web-stream
+                                                  (funcall context :medium)))))))
         :code
         (lambda (context input)
           (seed.generate::form-as-vectors
@@ -185,29 +232,6 @@
                       )
                :stream out)
               (get-output-stream-string out))))
-        :cells
-        (let ((display-baseline))
-          (lambda (context input)
-            (if input (if (and (listp input) (listp (first input))
-                               (stringp (caar input)))
-                          (cond ((string= "toggleBaseline" (caar input))
-                                 (setf display-baseline (not display-baseline))))
-                          (let ((original (from-system-file :demo.sheet "sheet.lisp" :cells)))
-                            (setf (of-array-spec :initial-contents (setf-value original))
-                                  `(quote ,(loop :for row :in input
-                                                 :collect (loop :for cell :in row
-                                                                :collect (parse-number:parse-number
-                                                                          cell))))
-                                  (from-system-file :demo.sheet "sheet.lisp" :cells) original)
-                            ;; (instantiate-priority-macro-reader (asdf:load-system package))
-                            (load-seed-system :demo.sheet)))
-                (if display-baseline
-                    (encode (symbol-value (intern "*CELL-MATRIX*" (string :demo.sheet))))
-                    (list :ty :ar :ct
-                          (second (of-array-spec :initial-contents
-                                                 (setf-value
-                                                  (from-system-file
-                                                   :demo.sheet "sheet.lisp" :cells)))))))))
 
         ))
 

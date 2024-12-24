@@ -13,10 +13,11 @@
             (when (and key-input (string= "demo" (string-downcase key-input)))
               (funcall context :user :hello)))
 
+          ;; (print (list :ooo input))
+
           (when (and context (assoc :point input))
             ;; when a point is selected, assign it
-            (funcall context :branch-point (intern (string-upcase (rest (assoc :point input)))
-                                                   "KEYWORD")))
+            (funcall context :branch-point (read-from-string (rest (assoc :point input)))))
 
           (when (and context (assoc "point" input :test #'string=))
             ;; when a system is selected, assign it - case of new selector controls
@@ -89,7 +90,7 @@
 
                (fx ((uic-series-form :type (:ui :column)
                                      :cast t))
-                   (list (fx ((uicc-text-line :key "key")) "")))))
+                   (list (fx ((uicc-text :key "key")) "")))))
             
             (get-output-stream-string this-stream)))
         :systems
