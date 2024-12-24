@@ -43,10 +43,6 @@
                                                                  "KEYWORD"))))
 
             (funcall context :medium medium)
-
-            ;; (print (of-system :point))
-            
-            ;; (print (list :aa (grow (of-system :point) :view nil (list (list :info :summary)))))
             
             (render
              medium
@@ -57,39 +53,15 @@
                        :portal.demo1
                        '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
                          "demo.sheet")
-
                        (if (of-system :point)
                            (fx ((:each uic-anchor :type '(:branch))
                                 (uic-series :type '(:ui :navigation)))
-                               (mapcar #'second (grow (of-system :point) :summary))))
-                       ;; (if nil ; (of-system :point)
-                       ;;     (fx (seed.generate::derive-nav-menu (grow (of-system :point) :view))
-                       ;;         (:each uic-anchor :link (:send :view :point :self))
-                       ;;         (uic-series :type (:ui :column))))
-                       )
-                   ;; (render-html-interface
-                   ;;  (encode (uic ((:type :form :branch-navigation)
-                   ;;                (:app :set-nav-point)
-                   ;;                (:target . :view)
-                   ;;                (:point (funcall context :branch-point)))
-                   ;;               (if (not (of-system :point))
-                   ;;                   "" (render-nav-menu (grow (of-system :point)
-                   ;;                                             :view))))))
+                               (mapcar #'second (grow (of-system :point) :summary)))))
+                   
                    (if (not (of-system :point))
-                       ""
+                       "" (grow (of-system :point) :view context)))
 
-                       ;; (render-html-interface (encode (print (grow (of-system :point) :view context))))
-                       
-                       ;; (-<> (grow (of-system :point) :view context)
-                       ;;   ;; (in-system-context <> (package-name package))
-                       ;;   (render-html-interface (encode <>)))
-                       
-                       (grow (of-system :point) :view context)
-                       
-                       ))
-
-               (fx ((uic-series-form :type (:ui :column)
-                                     :cast t))
+               (fx ((uic-series-form :type (:ui :column) :cast t))
                    (list (fx ((uicc-text :key "key")) "")))))
             
             (get-output-stream-string this-stream)))
