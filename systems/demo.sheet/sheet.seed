@@ -2,13 +2,6 @@
       (:bind :package package :of-system of-system :to-grow grow)
       (:joiner . #'add-contact)
       (:branches
-        ;; :medium
-        ;; (let ((medium))
-        ;;   (lambda (context input)
-        ;;     (declare (ignore context input))
-        ;;     (or medium (setf medium (make-instance 'uim-web :stream this-stream
-        ;;                                                     :portal (intern (package-name package)
-        ;;                                                                     "KEYWORD"))))))
        :summary
        (let ((layout '((:main :code-view) (:cells :cells-view) nil
                        (:graph :graph-overview) (:graph :graph-node))))
@@ -63,7 +56,7 @@
              (progn (render (funcall context :medium)
                             (fx ((uicc-text :type (:code)))
                                 :demo.sheet :main))
-                    (get-output-stream-string (seed.generate::uim-web-stream
+                    (get-output-stream-string (uim-web-stream
                                                (funcall context :medium))))))
        :cells
        (lambda (context input)
@@ -94,15 +87,13 @@
                (progn (render (funcall context :medium)
                               (fx ((uic-grid :type (:code)))
                                   :demo.sheet :cells))
-                      (get-output-stream-string (seed.generate::uim-web-stream
-                                                 (funcall context :medium)))))))
+                      (get-output-stream-string (uim-web-stream (funcall context :medium)))))))
        :code
        (lambda (context input)
          (seed.generate::form-as-vectors
           (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5))))))
        
        :form
-       
        (lambda (context input)
          (when (third input)
            ;; only process input if fields apart form system/branch are present
@@ -113,7 +104,7 @@
          (render (funcall context :medium)
                  (express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
          
-         (get-output-stream-string (seed.generate::uim-web-stream (funcall context :medium)))
+         (get-output-stream-string (uim-web-stream (funcall context :medium)))
          
          
          ;; (let ((out (make-string-output-stream)))

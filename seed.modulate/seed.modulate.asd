@@ -6,6 +6,6 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on ("com.inuoe.jzon")
+  :depends-on ("symbol-munger" "spinneret" "parenscript" "com.inuoe.jzon")
   :components ((:file "package")
                (:file "modulate")))

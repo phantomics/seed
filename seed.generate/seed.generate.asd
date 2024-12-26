@@ -10,7 +10,8 @@
                               "spinneret"
                               "cl-who"
                               "trivia"
-                              "parenscript" "paren6"
+                              "parenscript"
+                              "paren6"
                               "seed.sublimate"
                               "com.inuoe.jzon" "trivial-package-local-nicknames")
   :components ((:file "package")

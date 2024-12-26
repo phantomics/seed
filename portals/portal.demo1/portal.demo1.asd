@@ -15,6 +15,7 @@
                ;; "seed.admit"
                "seed.admit"
                "seed.generate"
+               "seed.modulate"
                "seed.contact.http")
   :components ((:file "package")
                (:file "setup")
