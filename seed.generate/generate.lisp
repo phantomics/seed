@@ -4,62 +4,16 @@
 
 ;; SECTION: base macros for Seed systems
 
-;; (defun load-system-directory (directory-path)
-;;   (flet ((check-name (file)
-;;            (string= "SEED2" (string-upcase (first (last (cl-ppcre:split "[.]" (namestring file))))))))
-;;     (let ((files (uiop:directory-files directory-path)))
-;;       ;; (print (list :ld *package*))
-;;       (loop :for f :in files :when (check-name f) :do (load f)))))
-
 (defun load-system-directory (directory-path)
   (flet ((check-name (file)
-           (string= "SEED2" (string-upcase (first (last (cl-ppcre:split "[.]" (namestring file))))))))
+           (string= "SEED" (string-upcase (first (last (cl-ppcre:split "[.]" (namestring file))))))))
     (let ((files (uiop:directory-files directory-path)))
       ;; (print (list :ld *package*))
       (loop :for f :in files :when (check-name f)
             :do (with-open-file (input f)
                   (loop :for i := (read input nil) :while i :do (eval i)))))))
 
-(defmacro seed-instance (&key portals-path)
-  (let ((subdirs (gensym)) (sd (gensym)) (files (gensym)) (key (gensym))
-        (si-sym (intern "*SEED-INTERFACES*" (package-name *package*))))
-    `(let ((,subdirs (uiop:subdirectories ,(asdf:system-relative-pathname
-                                            (intern (package-name *package*) "KEYWORD")
-                                            portals-path))))
-       (proclaim '(special ,si-sym))
-       (setf ,si-sym nil)
-       (defun ,(intern "OF-INTERFACES" (package-name *package*)) (,key)
-         (getf ,(intern "*SEED-INTERFACES*" (package-name *package*)) ,key))
-       (loop :for ,sd :in ,subdirs :do (load-system-directory ,sd)))))
-
-(defmacro system (name &key contacts branches)
-  (let ((si-sym (intern "*SEED-INTERFACES*" (package-name *package*))))
-    `(setf (getf ,si-sym ,name)
-           (lambda (input &optional branch)
-             (print (list :in input))))))
-
-(defmacro seed (name &key props contacts branches bindings portal-contacts)
-  (let* ((input (gensym)) (blank (gensym))
-         (si-sym (intern "*SEED-INTERFACES*" (package-name *package*)))
-         (sc-sym (intern "*SEED-CONTEXT*" (package-name *package*)))
-         (psym `(getf ,si-sym ,(intern (string name) "KEYWORD"))))
-    `(progn
-       (unless (boundp ',si-sym) (defvar ,si-sym nil))
-       (unless (boundp ',sc-sym) (defvar ,sc-sym nil))
-       (setf ,psym nil
-             (getf ,psym :props) ',props
-             ,@(when portal-contacts `((getf (getf ,psym :props) :portal-contacts) ',portal-contacts
-                                       (getf (getf ,psym :props) :endpoint)        nil)))
-       ,@(loop :for contact-sym :in portal-contacts
-               :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
-       (let ,(loop :for (key value) :on bindings :by #'cddr
-                   :collect (list value (case key (:package (intern (string name) "KEYWORD"))
-                                              (:system `(getf ,si-sym ,(intern (string name) "KEYWORD")))
-                                              (:portal-name name))))
-         (setf (getf ,psym :branches) ,(cons 'list branches)
-               (getf ,psym :sessions) (make-hash-table :test #'eq))))))
-
-(defmacro seed2 (name &rest props)
+(defmacro seed (name &rest props)
   (let* ((branches (rest (assoc :branches props)))
          (bind (rest (assoc :bind props)))
          (contact-names (rest (assoc :contacts props)))
@@ -93,17 +47,6 @@
                              (funcall (getf ,branches-sym ,key) ,session ,input)
                              (funcall (funcall ,contactor ,system)
                                       nil ,key ,session ,input))))))))))
-
-;; (defun ,of-context (,channel &optional ,key)
-;;   (if (not (getf ,context ,channel))
-;;       nil (getf (getf ,context ,channel) ,key)))
-
-;; (defun (setf ,of-context) (,channel ,key &optional ,input)
-;;   (if ,input (if (not (getf ,context ,channel))
-;;                  (error "Attempted to assign in context channel ~a, ~a"
-;;                         ,channel "but that channel is not recognized.")
-;;                  (setf (getf (getf ,context ,channel) ,key) ,input))
-;;       (setf (getf ,context ,channel) ,key)))
 
 (defun in-system-context (spec system-name)
   (append (list (first spec) (second spec))

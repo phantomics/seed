@@ -15,7 +15,7 @@
                           #:uispec #:encode #:render-web #:interface-format-form
                           #:load-seed-system #:render-nav-menu #:from-system-file
                           #:spec-graph-interface #:setf-value #:text-wrap #:of-array-spec
-                          #:seed2 #:xform
+                          #:seed #:xform
                           #:fx #:render #:uim-web #:uic-anchor #:uic-access
                           #:uic-series #:uic-series-form #:uic-grid
                           #:uicc-button #:uicc-text #:uicc-text-line #:uicc-text-area)

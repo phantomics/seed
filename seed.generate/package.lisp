@@ -6,7 +6,8 @@
         #:com.inuoe.jzon #:trivial-package-local-nicknames #:cl-who
         #:parenscript #:paren6 #:seed.sublimate
         )
-  (:export #:seed-instance #:system #:seed #:in-system-context #:interact #:with-meta
+  (:export ;; #:seed-instance
+           #:system #:seed #:in-system-context #:interact #:with-meta
            #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web #:of-system
            #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
            #:form-as-vectors #:interface-format-form #:render-html-interface #:render-nav-menu
