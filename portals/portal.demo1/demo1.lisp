@@ -2,18 +2,6 @@
 
 (in-package #:portal.demo1)
 
-(defvar *users*)
-(defvar *pksym* (intern (package-name *package*) "KEYWORD"))
-
-(setf *users* (make-hash-table :test #'equal))
-
-;; (defun get-data (user &optional property)
-;;   (if property (getf (gethash user *users*) property)
-;;       (gethash user *users*)))
-
-;; (defmacro get-user (username)
-;;   `(gethash ,username *users*))
-
 (defvar *contact-interfaces* nil)
 
 (defun of-contacts (key)
@@ -24,37 +12,17 @@
 
 (implement-start-controls grow contact-start contact-restart contact-stop)
 
-;; (build-static-page *package* :portal.demo1 "ui-browser")
+(quote
+ (list
+  (build-static-page *package* :portal.demo1 "ui-browser")
+        
+  (build-styles *package* "ui-browser")
 
-;; (build-styles *package* "ui-browser")
+  (build-script-cmirror *package*)
 
-;; (build-script-cmirror *package*)
+  (build-script-misc *package* "ui-browser")
 
-;; (build-script-misc *package* "ui-browser")
-
-(defun concat-files (out-path &rest in-paths)
-  (with-open-file (output out-path :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (loop :for path :in in-paths
-          :do (with-open-file (input path :direction :input)
-                (loop :for char := (read-char input nil :eof) :until (eq char :eof)
-                      :do (write-char char output))
-                (princ #\Newline output)))
-    :complete))
-
-(defmacro provide-browser-script (package-sym &rest tasks)
-  (cons 'progn (loop :for task :in tasks
-                     :collect (destructuring-bind (task-id &rest params) task
-                                (case task-id
-                                  (:run-process
-                                   `(uiop:run-program (format nil ,@params)))
-                                  (:concat-static
-                                   `(concat-files ,(asdf:system-relative-pathname
-                                                    (intern (string package-sym) "KEYWORD")
-                                                    (rest (assoc :output-to params)))
-                                                  ,@(mapcar (lambda (p)
-                                                              (asdf:system-relative-pathname
-                                                               (intern (string package-sym) "KEYWORD") p))
-                                                            (rest (assoc :paths params))))))))))
+  ))
 
 (provide-browser-script
  :portal.demo1
@@ -73,15 +41,6 @@
   (build-script-misc "ui-browser"))
 
 ;; (build-all)
-
-(defpsmacro sub-view (symbol state)
-  (list symbol :form state))
-
-(defpsmacro pcl (&rest items)
-  `(chain console (log ,@items)))
-
-(defpsmacro undefp (item)
-  `(= "undefined" (typeof ,item)))
 
 #|
 

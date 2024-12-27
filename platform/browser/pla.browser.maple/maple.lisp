@@ -219,6 +219,30 @@
       
       ))))
 
+(defun concat-files (out-path &rest in-paths)
+  (with-open-file (output out-path :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (loop :for path :in in-paths
+          :do (with-open-file (input path :direction :input)
+                (loop :for char := (read-char input nil :eof) :until (eq char :eof)
+                      :do (write-char char output))
+                (princ #\Newline output)))
+    :complete))
+
+(defmacro provide-browser-script (package-sym &rest tasks)
+  (cons 'progn (loop :for task :in tasks
+                     :collect (destructuring-bind (task-id &rest params) task
+                                (case task-id
+                                  (:run-process
+                                   `(uiop:run-program (format nil ,@params)))
+                                  (:concat-static
+                                   `(concat-files ,(asdf:system-relative-pathname
+                                                    (intern (string package-sym) "KEYWORD")
+                                                    (rest (assoc :output-to params)))
+                                                  ,@(mapcar (lambda (p)
+                                                              (asdf:system-relative-pathname
+                                                               (intern (string package-sym) "KEYWORD") p))
+                                                            (rest (assoc :paths params))))))))))
+
 (defun build-script-element (&key path imports constructors)
   (with-open-file (stream path :direction :output :if-exists :supersede :if-does-not-exist :create)
     (loop :for import :in imports

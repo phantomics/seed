@@ -14,4 +14,5 @@
                           #:uicc-text #:uicc-text-line #:uicc-text-area #:spec-graph-interface)
   (:shadowing-import-from #:seed.admit #:authorize)
   (:shadowing-import-from #:pla.browser.maple #:implement-start-controls #:build-static-page
-                          #:build-styles #:build-script-cmirror #:build-script-misc))
+                          #:provide-browser-script #:build-styles #:build-script-cmirror
+                          #:build-script-misc))
