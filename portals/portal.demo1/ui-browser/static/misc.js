@@ -62,10 +62,10 @@ function submitForms(formList) {
 function ejoin(base, event) {
     if (!('undefined' === typeof event || 'undefined' === typeof event.detail)) {
         console.log('ee', event.detail);
-        var _js4 = Object.keys(event.detail);
-        var _js6 = _js4.length;
-        for (var _js5 = 0; _js5 < _js6; _js5 += 1) {
-            var k = _js4[_js5];
+        var _js1 = Object.keys(event.detail);
+        var _js3 = _js1.length;
+        for (var _js2 = 0; _js2 < _js3; _js2 += 1) {
+            var k = _js1[_js2];
             if (!(k === 'elt' || 'undefined' === typeof event.detail[k])) {
                 base[k] = event.detail[k];
             };

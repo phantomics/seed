@@ -7,16 +7,12 @@
 
 (setf *users* (make-hash-table :test #'equal))
 
-(defun get-data (user &optional property)
-  (if property (getf (gethash user *users*) property)
-      (gethash user *users*)))
+;; (defun get-data (user &optional property)
+;;   (if property (getf (gethash user *users*) property)
+;;       (gethash user *users*)))
 
-;; (setf *portal.demo1.session* (make-hash-table :test #'equal))
-
-;; (auth-setup *portal.demo1.session* #'get-data)
-
-(defmacro get-user (username)
-  `(gethash ,username *users*))
+;; (defmacro get-user (username)
+;;   `(gethash ,username *users*))
 
 (defvar *contact-interfaces* nil)
 
@@ -26,389 +22,15 @@
 (defun add-contact (key value)
   (setf (getf *contact-interfaces* key) value))
 
-(defun contact-stop ())
-(defun contact-restart ())
+(implement-start-controls grow contact-start contact-restart contact-stop)
 
-(defun contact-start ()
-  (let ((pkg-name (intern (package-name *package*) "KEYWORD")))
-    (multiple-value-bind (stopper restarter)
-        (http-contact-service-start
-         :package-name pkg-name :port 9090
-         :interactor-fetch (lambda (params session-api)
-                             ;; (print (list :aa portal-form branch-form params))
-                             (let ((portal-form (rest (assoc "system" params :test #'string=)))
-                                   (branch-form (rest (assoc "branch" params :test #'string=))))
-                               ;; (print (list :aa portal-form branch-form))
-                               (json-convert-to
-                                (grow (intern portal-form "KEYWORD") (intern branch-form "KEYWORD")
-                                      session-api (rest (assoc "input" params :test #'string=))))))
-         :renderer-fetch (lambda (params session-api)
-                           ;; (print (list :par params session-api))
-                           (let ((system-form (rest (assoc "system" params :test #'string=)))
-                                 (branch-form (rest (assoc "branch" params :test #'string=))))
-                             (grow (intern (string-upcase system-form) "KEYWORD")
-                                   (and branch-form (intern (string-upcase branch-form) "KEYWORD"))
-                                   session-api (loop :for p :in params
-                                                     :collect (cons (symbol-munger:camel-case->keyword
-                                                                     (first p))
-                                                                    (rest p)))))))
-      (setf (symbol-function 'contact-stop)    stopper
-            (symbol-function 'contact-restart) restarter))))
+;; (build-static-page *package* :portal.demo1 "ui-browser")
 
-;; (defmethod render-web :around ((comp ui-component) &optional stream)
-;;   (if stream (call-next-method)
-;;       (let ((spinneret:*always-quote* t)
-;;             (spinneret:*html* (make-string-output-stream)))
-;;         (render-web comp spinneret:*html*)
-;;         (get-output-stream-string spinneret:*html*))))
+;; (build-styles *package* "ui-browser")
 
-;; (defmethod render-web ((comp string) &optional stream)
-;;   (if (not stream) nil (format stream comp)))
+;; (build-script-cmirror *package*)
 
-;; (defmethod render-web ((comp uic-caption-heading) &optional stream)
-;;   (spinneret:with-html (:h2 (lisp (uic-caption-text comp)))))
-
-
-(defun build-static-page (portal-sym relative-path)
-  (with-open-file (spinneret:*html*
-                   (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
-                                                  (format nil "./~a/index.html" relative-path))
-		   :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (spinneret:with-html
-      (:html (:head (:script (paren6::ps (defvar |*__PS_MV_REG*|)
-                               (setf (@ window seed-data) (create))))
-                    (:link :rel "stylesheet" :href "./build/vendor.css")
-                    (:link :rel "stylesheet" :href "./build/app.css"))
-             (:body (:div :id "main" :class "ui" :hx-post "/render/"
-                          :hx-trigger "load, submit, refresh, navigate"
-                          ;; :hx-vals (json-convert-to (list :system (string portal-sym) :branch :view))
-                          ;; :hx-vals (format nil "js:~a"
-                          ;;                  (seed.generate::psl (create system (lisp (string portal-sym))
-                          ;;                                              branch :view abc event)))
-                          :hx-vals (format nil "js:{...ejoin(~a,event)}"
-                                           (seed.generate::psl (create system (lisp (string portal-sym))
-                                                                       branch :view)))
-                          ;; :hx-vals (format nil "js:~a"
-                          ;;                  (seed.generate::psl (ejoin (create system (lisp (string portal-sym))
-                          ;;                                              branch :view
-                          ;;                                              ;; data (@ event details)
-                          ;;                                                     )
-                          ;;                                             event)))
-                          ;; :hx-vals (format nil "js:~a" (ps* `(create :system ,portal-sym :branch :view
-                          ;;                                            :data (@ event details))))
-                          :x-data (ps (create context (create system (lisp (string portal-sym))
-                                                              branch "VIEW"))))
-                    (:script :src "./static/misc.js")
-                    (:script :src "./build/vendor.js")
-                    (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js"))))))
-
-;; (build-static-page :portal.demo1 "ui-browser")
-
-(defun build-css (relative-path)
-  (with-open-file (stream (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
-                                                         (format nil "./~a/build/app.css" relative-path))
-			  :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (format
-     stream
-     (lass:compile-and-write
-      `(body :background "#f2f2f2")
-
-      `(|#root|	:width "100%")
-
-      
-      `((|#main| > .stack)
-        :margin "0 auto;"
-        :width 24rem
-        :height "100%"
-        (.heading :text-align center)
-        (form :text-align center
-              (.input :margin "0 auto")))
-      
-      `(.container :background "#fff")
-      
-      `(.sidebar
-        :background "#d5d5d5"
-        (.heading :font-size "160%" :font-weight "bold"
-                  :padding 8px :margin-bottom 6px)
-        (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
-      
-      `(.ui.grid :height "100%" (.group :height "100%"))
-
-      `(.ui.grid-layout
-        :display "grid" :height "100%"
-        (.column
-         :display grid :overflow auto :grid-template-rows 1fr
-         (.container :position "relative" :height "100%") ;;  :display grid)
-         (.container.column-inner
-          :padding 0 :overflow auto ;; :grid-template-columns "100%"
-          ;; :grid-template-rows "[header-start] auto [header-end] 1fr [footer-start] auto [footer-end]"
-          
-          ;; (.header :grid-row-start "header-start" :grid-row-end "header-end")
-          ;; (.container-wrap
-          ;; :grid-row-start "header-end"
-          ;; :grid-row-end   "footer-start"
-          ;; (.sub-container :grid-row-start "header-end" :grid-row-end   "footer-start"
-          ;;                 :overflow-y auto)
-          ;; (.footer :grid-row-start "footer-start" :grid-row-end "footer-end")
-          ;; ((:and .container.column (:nth-child 1))
-          ;;  :grid-row-start "header-start")
-          ;; ((:and .container.column (:nth-child 2))
-          ;;  :grid-row-start "header-end")
-          ;; ((:and .container.column (:nth-child 3))
-          ;;  :grid-row-start "footer-start")
-          )))
-
-      `(.ui.grid-layout.main
-        :grid-template-rows "100%"
-        :grid-template-columns "[start] 12% [start-end] 88%")
-
-      `((.ui.grid-layout.main > sidebar)
-        :grid-column-start 1)
-
-      `((.ui.grid-layout.main > main)
-        :grid-column-start 2)
-
-      `(.ui.grid-layout.workspace.even
-        :grid-template-columns "8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%")
-      
-      `((:and (.ui.grid-layout.workspace.even > .column)
-              (:nth-child 1))
-        :grid-column-start 1 :grid-column-end 7)
-      
-      `((:and (.ui.grid-layout.workspace.even > .column)
-              (:nth-child 2))
-        :grid-column-start 7 :grid-column-end 13)
-
-      `(.ui.grid-layout.workspace
-        (.column :padding 0 10px))
-      
-      `((:or .ui.header .ui.footer)
-        :width "100%" :height "100%" :padding 8px :margin 0 :background "#eee"
-        :display grid :grid-template-columns "20% 80%" :grid-template-rows 100%)
-
-      `(.ui.header
-        :border-bottom "2px solid #ccc"
-        (h2.branch-name :margin 0 :grid-column-start 1)
-        (.controls-holder :text-align right :grid-column-end 3))
-      
-      `(.ui.footer :bottom 0 :border-top "2px solid #ccc")
-
-      `(.form.text (.cm-editor :height 100%))
-      
-      ;; `(.container
-      ;;   (.sub-container :height 100%
-      ;;                   :width 100%))
-
-      `(form ;; :padding 0.64em
-             (.input.fluid :margin-bottom 0.32em)
-             (.ui.selection.dropdown :min-height 3em :margin-bottom 0.32em)
-             )
-      
-      ;; d3 graph view styles
-      
-      `((:or .d3view-graph-foldout .svg-visualizer)
-        :width 100%
-        (.handle (.main :fill "#fff")
-                 (.center :fill "#ccc")
-                 (.arrow :fill none :stroke "#999" :stroke-width 2)
-                 (.outer-arrow :fill none :stroke "#bbb" :stroke-width 4))
-        (.link :fill none :stroke "#bbb" :stroke-width 1.5)
-        (.node-group
-         (.title-frame :cursor "pointer"
-                       (rect :opacity 0 :fill "#efefef" :stroke "#ccc" :stroke-width 0)
-                       (.description :pointer-events none)
-                       (.handle :opacity 0 (.outer-arrow :opacity 0))
-                       ((:and .handle :hover)
-                        (.outer-arrow :opacity 1))                       
-                       (.linker :opacity 0
-                                (.main :fill "#fff")
-                                (.center :fill "#ccc")
-                                (.arrow :fill "#999")
-                                (.outer-arrow :opacity 0 :fill none :stroke "#bbb" :stroke-width 4)))
-         (.expand-control :cursor "pointer"
-                          (.button-backing :fill "#fff")
-                          (.button-circle  :fill "#bbb")
-                          (rect :fill "#fff"))
-         (.circle-glyph :cursor "pointer"
-                        (.outer-circle :fill "#ccc")
-                        (.inner-circle :fill "#fff")))
-        (.node-group.selected
-         (.title-frame (rect :opacity 1 :stroke-width 1)))
-        ((:and .node-group :hover)
-         (.title-frame (rect :opacity 1))
-         (.handle :opacity 1)
-         (.linker :opacity 1))
-        (.drag-indicator :opacity 0 :fill "#000")
-        (.mouse-transparent :pointer-events none))
-
-      `(.svg-visualizer.for-node.drag
-        ((:and .node-group :|not(.dragging)| :hover)
-         (.handle :opacity 0)
-         (.title-frame (rect :opacity 0))
-         ;; title frame doesn't show in drag-over mode
-         (.drag-indicator.for-node :opacity 0.2)))
-
-      `(.svg-visualizer.for-link.drag
-        ((:and .node-group.link-group :|not(.dragging)| :hover)
-         (.handle :opacity 0)
-         (.title-frame (rect :opacity 0))
-         ;; title frame doesn't show in drag-over mode
-         (.drag-indicator :opacity 0.2)))
-
-      `(.scenario-frame
-        :height "100%" :display grid :grid-template-columns "100%"
-        :background "#000" :color "#ddd" :font-family serif :font-weight bold
-        :line-height 2.6em
-        :grid-template-rows "[dialog-start] 60% [dialog-end] 40% [response-end]"
-        :text-shadow "2px 2px 0 #333"
-        (.setting :grid-row-end "dialog-end" :position relative
-                  (.dialog :position absolute :bottom 0 :z-index 6000
-                           :font-size 32px :padding 12px))
-        (.responses :grid-row-start "dialog-end" :grid-row-end "response-end"
-                    :z-index 5000
-                    :font-size 22px :padding "16px 64px"
-                    (li :cursor pointer)))
-      
-      ))))
-
-;; (build-css "ui-browser")
-
-(defun build-script-element (&key path imports constructors)
-  (with-open-file (stream path :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (loop :for import :in imports
-          :do (if (not (listp import))
-                  (format stream "import '~a'~%" import)
-                  (progn (format stream "import ~a" (if (listp (first import)) "{ " ""))
-                         (if (listp (first import))
-                             (let ((icount (1- (length (first import)))))
-                               (loop :for item :in (first import) :for i :from 0
-                                     :do (format stream "~a~a " (symbol-munger:lisp->camel-case item)
-                                                 (if (> icount i) "," ""))))
-                             (format stream "~a" (symbol-munger:lisp->camel-case (first import))))
-                         (format stream "~a from '~a'~%" (if (listp (first import)) "}" "")
-                                 (second import)))))
-    (format stream "~%")
-    (loop :for c :in constructors :do (funcall c stream))))
-
-(defun build-script-cmirror ()
-  (build-script-element
-   :path (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
-                                        "./ui-browser/npm-interfaces/codemirror/cm-app.js")
-   :imports `(((minimal-setup -editor-view) "codemirror")
-              ;; ((basic-setup -editor-view) "codemirror")
-              ((highlight-active-line line-numbers highlight-active-line-gutter) "@codemirror/view")
-              ((-extension -editor-state -compartment -facet) "@codemirror/state")
-              ((close-brackets close-brackets-keymap) "@codemirror/autocomplete")
-              ((bracket-matching fold-gutter) "@codemirror/language")
-              ((python) "@codemirror/lang-python")
-              ((-lisp) "@codemirror/lang-lisp"))
-   :constructors
-   (list (lambda (stream)
-           (format
-            stream (paren6::ps
-                     (defvar |*__PS_MV_REG*|)
-                     (defvar lisp-setup (funcall (lambda ()
-                                                   (list (bracket-matching)
-                                                         (close-brackets)
-                                                         (line-numbers)
-                                                         (highlight-active-line)
-                                                         (highlight-active-line-gutter)
-                                                         (fold-gutter)))))
-                     (setf (@ global python) python
-                           (@ global create-codemirror)
-                           (lambda (target data)
-                             (let* ((language (new -compartment))
-                                    (tab-size (new -compartment))
-                                    (state
-                                      (chain -editor-state
-                                             (create (create doc data
-                                                             extensions
-                                                             (list minimal-setup
-                                                                   lisp-setup
-                                                                   ;; basic-setup
-                                                                   (chain language (of (-lisp)))
-                                                                   (chain tab-size
-                                                                          (of (chain -editor-state
-                                                                                     tab-size (of 4)))))
-                                                             ))))
-                                    (view (new (-editor-view (create state state
-                                                                     parent target
-                                                                     doc data)))))
-                               view)))))
-           ))))
-
-;; (build-script-cmirror)
-
-(defun build-script-misc (relative-path)
-  (with-open-file (stream (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
-                                                         (format nil "./~a/static/misc.js"
-                                                                 relative-path))
-			  :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (format
-     stream
-     (paren6::ps
-       (setf (@ window seed-data) (create)
-             (@ window seed-elements) (create))
-       (defun fetch-contact (system branch input handler)
-         (chain (fetch "/contact/"
-                       (create method "POST"
-                               body (chain -j-s-o-n (stringify (create system system
-                                                                       branch branch
-                                                                       input  input)))
-                               headers (create "Content-type" "application/json; charset=UTF-8")))
-                (then (lambda (response) (chain response (json))))
-                (then (lambda (data)
-                        (chain console (log :dt data (@ data oob-reload)))
-                        (if (@ data oob-reload)
-                            (chain data oob-reload (for-each (lambda (item)
-                                                               (chain console (log :it item))
-                                                               (chain htmx (trigger (getprop seed-elements
-                                                                                             item)
-                                                                                    "reload"))))))
-                        data))
-                (then handler)))
-       
-       (defun fetch-contact2 (context element input)
-         ;; (chain console (log :cc context))
-         (chain (fetch "/contact/"
-                       (create method "POST"
-                               headers (create "Content-type" "application/json; charset=UTF-8")
-                               body (chain -j-s-o-n (stringify (create system (@ context system)
-                                                                       branch (@ context branch)
-                                                                       input  input)))))
-                (then (lambda (response) (chain response (json))))
-                (then (lambda (data) (chain htmx (trigger element "refresh"))))))
-       
-       (defun realize (system branch element)
-         ;; (chain console (log :cc context))
-         (lambda (input)
-           (chain (fetch "/contact/"
-                         (create method "POST"
-                                 headers (create "Content-type" "application/json; charset=UTF-8")
-                                 body (chain -j-s-o-n (stringify (create system system
-                                                                         branch branch
-                                                                         input  input)))))
-                  (then (lambda (response) (chain response (json))))
-                  (then (lambda (data) (chain htmx (trigger element "refresh")))))))
-
-       (defun push-form (item form-list)
-         (chain form-list (push item)))
-       
-       (defun submit-forms (form-list)
-         (chain form-list (for-each (lambda (form) (chain htmx (trigger form "submit"))))))
-
-       (defun ejoin (base event)
-         (unless (or (undefp event) (undefp (@ event detail)))
-           (chain console (log :ee (@ event detail)))
-           (loop :for k :in (chain -object (keys (@ event detail)))
-                 :do (unless (or (= k "elt" ) (undefp (getprop (@ event detail) k)))
-                       (setf (getprop base k)
-                             (getprop (@ event detail) k)))))
-         base)
-
-       ))))
-
-;; (build-script-misc "ui-browser")
+;; (build-script-misc *package* "ui-browser")
 
 (defun concat-files (out-path &rest in-paths)
   (with-open-file (output out-path :direction :output :if-exists :supersede :if-does-not-exist :create)
@@ -420,43 +42,30 @@
     :complete))
 
 (defmacro provide-browser-script (package-sym &rest tasks)
-  (cons 'progn
-        (loop :for task :in tasks
-              :collect (destructuring-bind (task-id &rest params) task
-                         (case task-id
-                           (:run-process
-                            `(uiop:run-program (format nil ,@params)))
-                           (:concat-static
-                            `(concat-files ,(asdf:system-relative-pathname
-                                             (intern (string package-sym) "KEYWORD")
-                                             (rest (assoc :output-to params)))
-                                           ,@(mapcar (lambda (p)
-                                                       (asdf:system-relative-pathname
-                                                        (intern (string package-sym) "KEYWORD") p))
-                                                     (rest (assoc :paths params))))))))))
+  (cons 'progn (loop :for task :in tasks
+                     :collect (destructuring-bind (task-id &rest params) task
+                                (case task-id
+                                  (:run-process
+                                   `(uiop:run-program (format nil ,@params)))
+                                  (:concat-static
+                                   `(concat-files ,(asdf:system-relative-pathname
+                                                    (intern (string package-sym) "KEYWORD")
+                                                    (rest (assoc :output-to params)))
+                                                  ,@(mapcar (lambda (p)
+                                                              (asdf:system-relative-pathname
+                                                               (intern (string package-sym) "KEYWORD") p))
+                                                            (rest (assoc :paths params))))))))))
 
 (provide-browser-script
  :portal.demo1
- ;; (:run-process "npm run --prefix '~a' build" (asdf:system-relative-pathname
- ;;                                              :portal.demo1 "./ui-browser/npm-interfaces/codemirror"))
- ;; (:concat-static
- ;;  (:paths "./ui-browser/static/misc.js"
- ;;          "./ui-browser/node_modules/d3/dist/d3.min.js" 
- ;;          "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
- ;;          "./ui-browser/static/codemirror.bundle.js" "./ui-browser/static/cmApp.bundle.js"
- ;;          "./ui-browser/static/alpine.js" "./ui-browser/node_modules/fomantic-ui/dist/semantic.css")
- ;;  (:output-to . "./ui-browser/build/vendor.js"))
  (:concat-static
   (:paths "./ui-browser/static/htmx.min.js"
           "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
-          "./ui-browser/static/alpine.js"
-          ;; "./ui-browser/repos/scmindent/scmindent-client.js"
-          )
+          "./ui-browser/static/alpine.js")
   (:output-to . "./ui-browser/build/vendor.js"))
  (:concat-static
   (:paths "./ui-browser/node_modules/bulma/css/bulma.css")
-  (:output-to . "./ui-browser/build/vendor.css"))
- )
+  (:output-to . "./ui-browser/build/vendor.css")))
 
 (defun build-all ()
   (build-static-page :portal.demo1 "ui-browser")
@@ -473,78 +82,6 @@
 
 (defpsmacro undefp (item)
   `(= "undefined" (typeof ,item)))
-
-;; React stuff
-
-(defpsmacro define-fetch ()
-  '(defun transact (portal branch input next-success)
-    (chain j-query
-     (ajax (create
-	    url "./contact/"
-	    type "POST"
-	    data-type "json"
-	    content-type "application/json; charset=utf-8"
-            async false
-	    data (chain -j-s-o-n (stringify (create system portal branch branch input input)))
-	    success next-success
-	    error (lambda (data err) (chain console (log 11 data err))))))))
-
-;; (defpsmacro define-component-view ()
-;;   '(progn
-;;     (paren6:defclass6 (-seed-view (@ -react -component))
-;;      (defun constructor (props)
-;;        (let ((self this))
-;;          (if (undefp (@ props data))
-;;              (transact "PORTAL.DEMO1" "VIEW"
-;;                        (create interface-spec (list "browser" "react"))
-;;                        (lambda (data)
-;;                          (pcl :dt data)
-;;                          (setf (@ self state) (create data data))))
-;;              (setf (@ self state)
-;;                    (create data (@ props data))))
-;;          (pcl :load)))
-
-;;      (defun manifest (item)
-;;        (let ((component (getprop components (@ item mt react-component))))
-;;          ;; (pcl :abc item (@ item mt) (@ item mt react-component) component)
-;;          (if (undefp component)
-;;              (if (and (= "ar" (@ item ty))
-;;                       (stringp (@ item ct)))
-;;                  (let ((class-name (chain item mt classes (join " "))))
-;;                    (panic:jsl (:h1 :class-name class-name (@ item ct))))
-;;                  "abc")
-;;              (chain -react (create-element component (create data item))))))
-     
-;;      (defun layout-stacked (self elements meta)
-;;        (panic:jsl (:-c-container
-;;                    (chain elements (map (lambda (item index)
-;;                                           (let ((lspec (getprop (@ meta specs) index)))
-;;                                             (panic:jsl (:div :key (+ "view-tier-" index)
-;;                                                              (chain self (manifest item))
-;;                                                              )))))))))
-     
-;;      (defun layout-columnar (self elements meta)
-;;        (panic:jsl (:-c-container
-;;                    (:-c-row (chain elements (map (lambda (item index)
-;;                                                    (let ((lspec (getprop (@ meta specs) index))
-;;                                                          (class-name (when (not (undefp (@ item mt type)))
-;;                                                                        (chain item mt type (join " ")))))
-;;                                                      (panic:jsl (:-c-col :md (@ lspec width)
-;;                                                                          :class-name (if (undefp class-name)
-;;                                                                                          "" class-name)
-;;                                                                          :key (+ "view-column-" index)
-;;                                                                          (chain self (manifest item))
-;;                                                                          ))))))))))
-
-;;      (defun render ()
-;;        (let* ((self this)
-;;               (content (and (@ this state) (@ this state data) (@ this state data ct)))
-;;               (meta (and (@ this state) (@ this state data) (@ this state data mt)))
-;;               (builder (getprop self (@ meta builder))))
-;;          (pcl :cl self content meta)
-;;          (if (undefp builder) "abc"
-;;              (funcall builder self content meta)))))
-;;     (setf (@ components -seed-view) -seed-view)))
 
 #|
 

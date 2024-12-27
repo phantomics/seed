@@ -10,14 +10,13 @@
            layout))
        :view
        (lambda (context input)
-         (print 9900)
          ;; (print (funcall context :branch-point))
          (let ((context (second (assoc :session input)))
                (summary (grow :demo.sheet :summary))
                (branch-point (or (funcall context :branch-point) 0))
                (start-point 0) (interval-found) (search-complete))
 
-           (print (list :aa input))
+           ;; (print (list :aa input))
            
            (loop :for s :in summary :for sx :from 0 :until search-complete 
                  :do (unless s (if interval-found (setf search-complete t)

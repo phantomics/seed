@@ -10,18 +10,11 @@
            #:system #:seed #:in-system-context #:interact #:with-meta
            #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web #:of-system
            #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
-           #:form-as-vectors #:interface-format-form #:render-html-interface #:render-nav-menu
+           #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender ;; #:render-console
            #:meta-revise #:psl
            #:from-system-file #:text-wrap #:setf-value #:of-array-spec
-           #:spec-graph-interface #:of-graph-spec
-           ;; #:fx #:render #:uim-web #:uic-access #:uic-series #:uic-anchor #:uic-series-form
-           ;; #:uic-grid #:uicc-button #:uicc-text #:uicc-text-line #:uicc-text-area
-           #:uispec #:render-web
-
-           #:seed2
-           #:xform
-           )
+           #:spec-graph-interface #:of-graph-spec)
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)

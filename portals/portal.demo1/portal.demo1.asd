@@ -16,7 +16,9 @@
                "seed.admit"
                "seed.generate"
                "seed.modulate"
-               "seed.contact.http")
+               "seed.contact.http"
+               "pla.browser.maple"
+               )
   :components ((:file "package")
                (:file "setup")
                (:file "demo1")

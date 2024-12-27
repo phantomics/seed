@@ -8,7 +8,6 @@
   (flet ((check-name (file)
            (string= "SEED" (string-upcase (first (last (cl-ppcre:split "[.]" (namestring file))))))))
     (let ((files (uiop:directory-files directory-path)))
-      ;; (print (list :ld *package*))
       (loop :for f :in files :when (check-name f)
             :do (with-open-file (input f)
                   (loop :for i := (read input nil) :while i :do (eval i)))))))
@@ -19,12 +18,12 @@
          (contact-names (rest (assoc :contacts props)))
          (joiner (rest (assoc :joiner props)))
          (contactor (rest (assoc :contactor props)))
-         (contacts-api (rest (assoc :contacts-api props)))
+         ;; (contacts-api (rest (assoc :contacts-api props)))
          (grow (intern (string (getf bind :to-grow)) (package-name *package*)))
          (of-system (intern (string (getf bind :of-system)) (package-name *package*)))
-         (context (gensym "CON")) (channel (gensym "CHN")) (branches-sym (gensym "BRS"))
-         (system (gensym "SY")) (key (gensym "KY")) (session (gensym "SS"))
-         (input (gensym "IN")) (prsym (gensym "PR")))
+         ;; (context (gensym "CON")) (channel (gensym "CHN"))
+         (branches-sym (gensym "BRS")) (system (gensym "SY")) (key (gensym "KY"))
+         (session (gensym "SS")) (input (gensym "IN")) (prsym (gensym "PR")))
     ;; (print contacts)
     `(let ,(append (list (loop :for (key value) :on bind :by #'cddr
                                :append (case key (:package (list value `(find-package ,name))))))
@@ -109,28 +108,6 @@
   `(progn (asdf:operate 'asdf:prepare-op ,system)
           (seed.sublimate:instantiate-priority-macro-reader (asdf:load-system ,system))))
 
-;; (defun encode (form &optional meta)
-;;   ;; (print (list :fo form meta))
-;;   (if (listp form)
-;;       (if (and (symbolp (first form))
-;;                (string= "META" (string-upcase (first form))))
-;;           (if (listp (second form))
-;;               `(:ty :ls :ct ,(loop :for item :in (second form) :collect (encode item))
-;;                  ,@(if (not (cddr form))
-;;                        nil (list :mt (cddr form))))
-;;               (encode (second form) (cddr form)))
-;;           (loop :for item :in form :collect (encode item)))
-;;       (if nil ; (arrayp form)
-;;           form (append (if meta (list :mt  meta) nil)
-;;                        `(:ty ,(typecase form (symbol :sy) (number :nm) (array :ar))
-;;                          :ct ,(typecase form (symbol (string form)) (string form)
-;;                                         (array (array-to-list form))
-;;                                         (t (write-to-string form)))
-;;                          ,@(if (typep form 'array)
-;;                                (list :dm (array-dimensions form)))
-;;                          ,@(if (not (symbolp form))
-;;                                nil `(:pk ,(package-name (symbol-package form)))))))))
-
 (defun form-span (form &optional collapse-sublists)
   (if (not (listp (first form)))
       nil (if (listp (caar form))
@@ -207,7 +184,7 @@
                   (json-convert-to form stream)
                   (get-output-stream-string stream))
         (if (not (listp form))
-            (if (arrayp form)
+            (if (and (arrayp form) (not (stringp form)))
                 (com.inuoe.jzon:with-array*
                   (loop :for item :across form :do (json-convert-to item stream)))
                 (com.inuoe.jzon:write-value* form))
@@ -765,12 +742,6 @@
                                                                       strout)
                                                )))))))))))
     (if stream nil (get-output-stream-string strout))))
-
-
-(defun render-nav-menu (form)
-  (loop :for item :in (second form)
-        :collect (if (eq item :partition)
-                     nil (rest (assoc :name (cddr item))))))
 
 (defun set-in-element-spec (name form value)
   (if (not (listp form))
@@ -1992,20 +1963,6 @@
 ;;                   (list (funcall (lambda (form) (if (not (eq :closed (first form)))
 ;;                                                     form (second form)))
 ;;                                  (nth point root)))))))))
-
-#|
-
-(render-web (uispec (:head "Hello")))
-
-(render-web (uispec (:frame :type (:stack :sidebar)
-                            (:head "Hello")
-                            (:para "More stuff."))))
-
-(uispec (:set (:series)
-              (:set (:frame))
-              (:set (:frame))))
-
-|#
 
 ;; (dgraph-interface iii bla :open-path '(0 0))
 ;; (dgraph-interface iii bla :open-path '(1 0 0))
