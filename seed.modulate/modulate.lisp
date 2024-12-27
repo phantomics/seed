@@ -564,7 +564,6 @@
           (let* ((path-str (make-string-input-stream
                             (rest (assoc "path" input :test #'string=))))
                  (path (loop :for c := (read path-str nil) :while c :collect c)))
-            ;; (print (list :pa path))
             (if (not (second path)) (setf index (first path) sub-index nil)
                 (destructuring-bind (i si) path
                   (setf index i sub-index si)))
@@ -832,7 +831,8 @@
             (when network-changed
               ;; (print (list :ch "CHANGED" graph-base))
               (setf (from-system-file package file-name graph-key) graph-base)
-              (instantiate-priority-macro-reader (asdf:load-system package)))
+              ;; (instantiate-priority-macro-reader (asdf:load-system package)) ;; RESTORE THIS
+              )
             
             ;; (print (list :af (assoc :face input :test #'eq)))
             ;; (print (list :ew el-width))

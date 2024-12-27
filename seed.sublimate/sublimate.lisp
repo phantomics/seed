@@ -22,12 +22,17 @@
     (let ((matching t))
       (loop :for m :across to-match :while matching :for char := (read-char stream nil)
             :do (if char (progn (setf (aref char-store index) char)
+                                ;; (print (list :aa char))
+                                ;; (dotimes (n 10)
+                                ;;   (princ (read-char stream nil)))
                                 (unless (if (= 4 index)
                                             (position char breaking-chars :test #'char=)
                                             (char= m (char-upcase char)))
                                   (setf matching nil))
                                 (incf index))
                     (setf matching nil)))
+      (when matching
+        (print to-match))
       (if matching (macroexpand-1 (read (make-concatenated-stream (make-string-input-stream
                                                                    "(SEED.SUBLIMATE::EXPAND-META ")
 				                                  stream)
@@ -38,7 +43,7 @@
 	           character)))))
 
 (defparameter *sublimating-readtable*
-  (let ((this-readtable (copy-readtable *readtable* nil)))
+  (let ((this-readtable (copy-readtable *readtable*)))
     (set-macro-character #\( #'priority-macro-reader-extension nil this-readtable)
     this-readtable))
 

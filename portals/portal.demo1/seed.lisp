@@ -23,7 +23,8 @@
                                 "KEYWORD")))
              (of-system :point epsym)
              ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
-             (load-seed-system epsym)))
+             ;; (load-seed-system epsym) ;; TEMPORARY -- RESTORE THIS
+             ))
 
          ;; (when (and context (not (funcall context :portal-name)))
          ;;   (funcall context :portal-name :portal.demo1))
@@ -67,7 +68,7 @@
          (if input (let ((epsym (intern input "KEYWORD")))
                      (of-system :point (intern input "KEYWORD"))
                      ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
-                     (load-seed-system epsym)
+                     ;; (load-seed-system epsym) ;; TEMPORARY - RESTORE
                      )
              (-<> (with-meta (of-system :contacts)
                     :type (:form))
