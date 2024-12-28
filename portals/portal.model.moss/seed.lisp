@@ -4,18 +4,17 @@
 
 (seed :portal.model.moss
       (:bind :package package :of-system of-system :to-grow grow)
-      (:contacts)
-      (:contactor . #'of-contacts)
+      ;; (:contacts)
+      ;; (:contactor . #'of-contacts)
       (:branches
        :view
-       (lambda (context input)
-         (case input (:one 1) (:two 2) (:three 3)))
+       (lambda (state input)
+         (if input (case input (:one 1) (:two 2) (:three 3))
+             (from-system-file :portal.model.moss "moss.lisp" :a)))
        :systems
-       (lambda (context input)
+       (lambda (state input)
          (if input (let ((epsym (intern input "KEYWORD")))
                      (of-system :point (intern input "KEYWORD"))
-                     ;; (instantiate-priority-macro-reader (asdf:load-system epsym))
-                     ;; (load-seed-system epsym) ;; TEMPORARY - RESTORE
                      )
              (-<> (with-meta (of-system :contacts)
                     :type (:form))
