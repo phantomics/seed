@@ -1,0 +1,408 @@
+body{
+    background: #f2f2f2;
+}
+
+#root{
+    width: 100%;
+}
+
+#main > .stack{
+    margin: 0 auto;;
+    width: 24rem;
+    height: 100%;
+}
+
+#main > .stack .heading{
+    text-align: center;
+}
+
+#main > .stack form{
+    text-align: center;
+}
+
+#main > .stack form .input{
+    margin: 0 auto;
+}
+
+.container{
+    background: #fff;
+}
+
+.sidebar{
+    background: #d5d5d5;
+}
+
+.sidebar .heading{
+    font-size: 160%;
+    font-weight: bold;
+    padding: 8px;
+    margin-bottom: 6px;
+}
+
+.sidebar .form{
+    font-size: 120%;
+    font-weight: bold;
+    padding: 3px 12px;
+}
+
+.ui.grid{
+    height: 100%;
+}
+
+.ui.grid .group{
+    height: 100%;
+}
+
+.ui.grid-layout{
+    display: grid;
+    height: 100%;
+}
+
+.ui.grid-layout .column{
+    display: grid;
+    overflow: auto;
+    grid-template-rows: 1fr;
+}
+
+.ui.grid-layout .column .container{
+    position: relative;
+    height: 100%;
+}
+
+.ui.grid-layout .column .container.column-inner{
+    padding: 0;
+    overflow: auto;
+}
+
+.ui.grid-layout.main{
+    grid-template-rows: 100%;
+    grid-template-columns: [start] 12% [start-end] 88%;
+}
+
+.ui.grid-layout.main > sidebar{
+    grid-column-start: 1;
+}
+
+.ui.grid-layout.main > main{
+    grid-column-start: 2;
+}
+
+.ui.grid-layout.workspace.even{
+    grid-template-columns: 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%;
+}
+
+.ui.grid-layout.workspace.even > .column:nth-child(1){
+    grid-column-start: 1;
+    grid-column-end: 7;
+}
+
+.ui.grid-layout.workspace.even > .column:nth-child(2){
+    grid-column-start: 7;
+    grid-column-end: 13;
+}
+
+
+
+.ui.grid-layout.workspace .column{
+    padding: 0 10px;
+}
+
+.ui.header,
+.ui.footer{
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    margin: 0;
+    background: #eee;
+    display: grid;
+    grid-template-columns: 20% 80%;
+    grid-template-rows: 100%;
+}
+
+.ui.header{
+    border-bottom: 2px solid #ccc;
+}
+
+.ui.header h2.branch-name{
+    margin: 0;
+    grid-column-start: 1;
+}
+
+.ui.header .controls-holder{
+    text-align: right;
+    grid-column-end: 3;
+}
+
+.ui.footer{
+    bottom: 0;
+    border-top: 2px solid #ccc;
+}
+
+
+
+.form.text .cm-editor{
+    height: 100%;
+}
+
+
+
+form .input.fluid{
+    margin-bottom: 0.32em;
+}
+
+form .ui.selection.dropdown{
+    min-height: 3em;
+    margin-bottom: 0.32em;
+}
+
+.d3view-graph-foldout,
+.svg-visualizer{
+    width: 100%;
+}
+
+
+
+.d3view-graph-foldout .handle .main,
+.svg-visualizer .handle .main{
+    fill: #fff;
+}
+
+.d3view-graph-foldout .handle .center,
+.svg-visualizer .handle .center{
+    fill: #ccc;
+}
+
+.d3view-graph-foldout .handle .arrow,
+.svg-visualizer .handle .arrow{
+    fill: none;
+    stroke: #999;
+    stroke-width: 2;
+}
+
+.d3view-graph-foldout .handle .outer-arrow,
+.svg-visualizer .handle .outer-arrow{
+    fill: none;
+    stroke: #bbb;
+    stroke-width: 4;
+}
+
+.d3view-graph-foldout .link,
+.svg-visualizer .link{
+    fill: none;
+    stroke: #bbb;
+    stroke-width: 1.5;
+}
+
+
+
+.d3view-graph-foldout .node-group .title-frame,
+.svg-visualizer .node-group .title-frame{
+    cursor: pointer;
+}
+
+.d3view-graph-foldout .node-group .title-frame rect,
+.svg-visualizer .node-group .title-frame rect{
+    opacity: 0;
+    fill: #efefef;
+    stroke: #ccc;
+    stroke-width: 0;
+}
+
+.d3view-graph-foldout .node-group .title-frame .description,
+.svg-visualizer .node-group .title-frame .description{
+    pointer-events: none;
+}
+
+.d3view-graph-foldout .node-group .title-frame .handle,
+.svg-visualizer .node-group .title-frame .handle{
+    opacity: 0;
+}
+
+.d3view-graph-foldout .node-group .title-frame .handle .outer-arrow,
+.svg-visualizer .node-group .title-frame .handle .outer-arrow{
+    opacity: 0;
+}
+
+
+
+.d3view-graph-foldout .node-group .title-frame .handle:hover .outer-arrow,
+.svg-visualizer .node-group .title-frame .handle:hover .outer-arrow{
+    opacity: 1;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker,
+.svg-visualizer .node-group .title-frame .linker{
+    opacity: 0;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .main,
+.svg-visualizer .node-group .title-frame .linker .main{
+    fill: #fff;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .center,
+.svg-visualizer .node-group .title-frame .linker .center{
+    fill: #ccc;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .arrow,
+.svg-visualizer .node-group .title-frame .linker .arrow{
+    fill: #999;
+}
+
+.d3view-graph-foldout .node-group .title-frame .linker .outer-arrow,
+.svg-visualizer .node-group .title-frame .linker .outer-arrow{
+    opacity: 0;
+    fill: none;
+    stroke: #bbb;
+    stroke-width: 4;
+}
+
+.d3view-graph-foldout .node-group .expand-control,
+.svg-visualizer .node-group .expand-control{
+    cursor: pointer;
+}
+
+.d3view-graph-foldout .node-group .expand-control .button-backing,
+.svg-visualizer .node-group .expand-control .button-backing{
+    fill: #fff;
+}
+
+.d3view-graph-foldout .node-group .expand-control .button-circle,
+.svg-visualizer .node-group .expand-control .button-circle{
+    fill: #bbb;
+}
+
+.d3view-graph-foldout .node-group .expand-control rect,
+.svg-visualizer .node-group .expand-control rect{
+    fill: #fff;
+}
+
+.d3view-graph-foldout .node-group .circle-glyph,
+.svg-visualizer .node-group .circle-glyph{
+    cursor: pointer;
+}
+
+.d3view-graph-foldout .node-group .circle-glyph .outer-circle,
+.svg-visualizer .node-group .circle-glyph .outer-circle{
+    fill: #ccc;
+}
+
+.d3view-graph-foldout .node-group .circle-glyph .inner-circle,
+.svg-visualizer .node-group .circle-glyph .inner-circle{
+    fill: #fff;
+}
+
+
+
+
+
+.d3view-graph-foldout .node-group.selected .title-frame rect,
+.svg-visualizer .node-group.selected .title-frame rect{
+    opacity: 1;
+    stroke-width: 1;
+}
+
+
+
+
+
+.d3view-graph-foldout .node-group:hover .title-frame rect,
+.svg-visualizer .node-group:hover .title-frame rect{
+    opacity: 1;
+}
+
+.d3view-graph-foldout .node-group:hover .handle,
+.svg-visualizer .node-group:hover .handle{
+    opacity: 1;
+}
+
+.d3view-graph-foldout .node-group:hover .linker,
+.svg-visualizer .node-group:hover .linker{
+    opacity: 1;
+}
+
+.d3view-graph-foldout .drag-indicator,
+.svg-visualizer .drag-indicator{
+    opacity: 0;
+    fill: #000;
+}
+
+.d3view-graph-foldout .mouse-transparent,
+.svg-visualizer .mouse-transparent{
+    pointer-events: none;
+}
+
+
+
+
+
+.svg-visualizer.for-node.drag .node-group:not(.dragging):hover .handle{
+    opacity: 0;
+}
+
+
+
+.svg-visualizer.for-node.drag .node-group:not(.dragging):hover .title-frame rect{
+    opacity: 0;
+}
+
+.svg-visualizer.for-node.drag .node-group:not(.dragging):hover .drag-indicator.for-node{
+    opacity: 0.2;
+}
+
+
+
+
+
+.svg-visualizer.for-link.drag .node-group.link-group:not(.dragging):hover .handle{
+    opacity: 0;
+}
+
+
+
+.svg-visualizer.for-link.drag .node-group.link-group:not(.dragging):hover .title-frame rect{
+    opacity: 0;
+}
+
+.svg-visualizer.for-link.drag .node-group.link-group:not(.dragging):hover .drag-indicator{
+    opacity: 0.2;
+}
+
+.scenario-frame{
+    height: 100%;
+    display: grid;
+    grid-template-columns: 100%;
+    background: #000;
+    color: #ddd;
+    font-family: serif;
+    font-weight: bold;
+    line-height: 2.6em;
+    grid-template-rows: [dialog-start] 60% [dialog-end] 40% [response-end];
+    text-shadow: 2px 2px 0 #333;
+}
+
+.scenario-frame .setting{
+    grid-row-end: dialog-end;
+    position: relative;
+}
+
+.scenario-frame .setting .dialog{
+    position: absolute;
+    bottom: 0;
+    z-index: 6000;
+    font-size: 32px;
+    padding: 12px;
+}
+
+.scenario-frame .responses{
+    grid-row-start: dialog-end;
+    grid-row-end: response-end;
+    z-index: 5000;
+    font-size: 22px;
+    padding: 16px 64px;
+}
+
+.scenario-frame .responses li{
+    cursor: pointer;
+}

@@ -10,37 +10,60 @@
 (defun add-contact (key value)
   (setf (getf *contact-interfaces* key) value))
 
+;; implement start/restart/stop functionality for the portal using the
+;; (grow) function assigned in seed.lisp
+
 (implement-start-controls grow contact-start contact-restart contact-stop)
 
-(quote
- (list
-  (build-static-page *package* :portal.demo1 "ui-browser")
-        
-  (build-styles *package* "ui-browser")
+;; build the needed browser-side files unless they already exist, in which
+;; case the expressions below can be used as a control panel to rebuild said files
+
+(unless (probe-file (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
+                                                   "./ui-browser/index.html"))
+
+  (write-to-file stream *package* "./ui-browser/index.html"
+    (build-static-page stream :portal.demo1))
+
+  (write-to-file stream *package* "./ui-browser/build/int.css"
+    (build-styles stream))
 
   (build-script-cmirror *package*)
 
-  (build-script-misc *package* "ui-browser")
+  (write-to-file stream *package* "./ui-browser/build/int.js"
+    (build-script-misc stream))
 
-  ))
+  (write-to-file stream *package* "./ui-browser/build/ext.js"
+    (concat-files stream *package*
+                  "./ui-browser/static/htmx.min.js"
+                  "./ui-browser/static/alpine.js"
+                  "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"))
 
-(provide-browser-script
- :portal.demo1
- (:concat-static
-  (:paths "./ui-browser/static/htmx.min.js"
-          "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
-          "./ui-browser/static/alpine.js")
-  (:output-to . "./ui-browser/build/vendor.js"))
- (:concat-static
-  (:paths "./ui-browser/node_modules/bulma/css/bulma.css")
-  (:output-to . "./ui-browser/build/vendor.css")))
+  (write-to-file stream *package* "./ui-browser/build/ext.css"
+    (concat-files stream *package* "./ui-browser/node_modules/bulma/css/bulma.css"))
 
-(defun build-all ()
-  (build-static-page :portal.demo1 "ui-browser")
-  (build-script-cmirror)
-  (build-script-misc "ui-browser"))
+  (format t "Browser files generated successfully for portal ~a.~%" *package*))
+
+
+
+
+;; (defun build-all ()
+;;   (build-static-page :portal.demo1 "ui-browser")
+;;   (build-script-cmirror)
+;;   (build-script-misc "ui-browser"))
 
 ;; (build-all)
+
+
+;; (provide-browser-script
+;;  :portal.demo1
+;;  (:concat-static
+;;   (:paths "./ui-browser/static/htmx.min.js"
+;;           "./ui-browser/static/alpine.js"
+;;           "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js")
+;;   (:output-to . "./ui-browser/build/ext.js"))
+;;  (:concat-static
+;;   (:paths "./ui-browser/node_modules/bulma/css/bulma.css")
+;;   (:output-to . "./ui-browser/build/ext.css")))
 
 #|
 
