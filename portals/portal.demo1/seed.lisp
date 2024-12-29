@@ -35,10 +35,7 @@
          ;;                                                      :portal (intern (package-name package)
          ;;                                                                      "KEYWORD")))))
 
-         (let* ((this-stream (make-string-output-stream))
-                (medium (make-instance 'uim-web :stream this-stream
-                                                :portal (intern (package-name package)
-                                                                "KEYWORD"))))
+         (let ((medium (make-instance 'uim-web :portal (intern (package-name package) "KEYWORD"))))
 
            (funcall context :medium medium)
            
@@ -62,7 +59,8 @@
               (fx ((uic-series-form :type (:ui :column) :cast t))
                   (list (fx ((uicc-text :key "key")) "")))))
            
-           (get-output-stream-string this-stream)))
+           (values (get-output-stream-string (seed.modulate::uim-web-stream medium))
+                   (close (seed.modulate::uim-web-stream medium)))))
        :systems
        (lambda (context input)
          (if input (let ((epsym (intern input "KEYWORD")))

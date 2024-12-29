@@ -58,9 +58,7 @@
                           :x-data (ps (create context (create system (lisp (string portal-sym))
                                                               branch "VIEW"))))
                     (:script :src "./build/ext.js")
-                    (:script :src "./build/int.js")
-                    ;; (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js")
-                    )))))
+                    (:script :src "./build/int.js"))))))
 
 (defun build-styles (stream)
   (format

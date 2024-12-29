@@ -205,6 +205,7 @@
 (defgeneric render (medium component))
 
 (defmethod render ((medium uim-web) (component t))
+  (setf (uim-web-stream medium) (make-string-output-stream))
   (let ((spinneret:*html* (uim-web-stream medium)))
     (spinneret:interpret-html-tree (generate medium component))))
 
