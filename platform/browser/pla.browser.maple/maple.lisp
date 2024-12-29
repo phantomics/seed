@@ -59,7 +59,8 @@
                                                               branch "VIEW"))))
                     (:script :src "./build/ext.js")
                     (:script :src "./build/int.js")
-                    (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js"))))))
+                    ;; (:script :src "./npm-interfaces/codemirror/build/iface.bundle.js")
+                    )))))
 
 (defun build-styles (stream)
   (format
@@ -253,27 +254,25 @@
                                                                (intern (string package-sym) "KEYWORD") p))
                                                             (rest (assoc :paths params))))))))))
 
-(defun build-script-element (&key path imports constructors)
-  (with-open-file (stream path :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (loop :for import :in imports
-          :do (if (not (listp import))
-                  (format stream "import '~a'~%" import)
-                  (progn (format stream "import ~a" (if (listp (first import)) "{ " ""))
-                         (if (listp (first import))
-                             (let ((icount (1- (length (first import)))))
-                               (loop :for item :in (first import) :for i :from 0
-                                     :do (format stream "~a~a " (lisp->camel-case item)
-                                                 (if (> icount i) "," ""))))
-                             (format stream "~a" (lisp->camel-case (first import))))
-                         (format stream "~a from '~a'~%" (if (listp (first import)) "}" "")
-                                 (second import)))))
-    (format stream "~%")
-    (loop :for c :in constructors :do (funcall c stream))))
+(defun build-script-element (&key stream imports constructors)
+  (loop :for import :in imports
+        :do (if (listp import)
+                (progn (format stream "import ~a" (if (listp (first import)) "{ " ""))
+                       (if (listp (first import))
+                           (let ((icount (1- (length (first import)))))
+                             (loop :for item :in (first import) :for i :from 0
+                                   :do (format stream "~a~a " (lisp->camel-case item)
+                                               (if (> icount i) "," ""))))
+                           (format stream "~a" (lisp->camel-case (first import))))
+                       (format stream "~a from '~a'~%" (if (listp (first import)) "}" "")
+                               (second import)))
+                (format stream "import '~a'~%" import)))
+  (format stream "~%")
+  (loop :for c :in constructors :do (funcall c stream)))
 
-(defun build-script-cmirror (package)
+(defun build-script-cmirror (stream)
   (build-script-element
-   :path (asdf:system-relative-pathname (intern (package-name package) "KEYWORD")
-                                        "./ui-browser/npm-interfaces/codemirror/cm-app.js")
+   :stream stream
    :imports `(((minimal-setup -editor-view) "codemirror")
               ((highlight-active-line line-numbers highlight-active-line-gutter) "@codemirror/view")
               ((-extension -editor-state -compartment -facet) "@codemirror/state")

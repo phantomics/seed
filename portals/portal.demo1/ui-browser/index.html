@@ -8,13 +8,10 @@ window.seedData = {  };</script>
  </head>
  <body>
   <div class=ui id=main hx-post="/render/"
-       a=hello
        hx-trigger="load, submit, refresh, navigate"
        hx-vals="js:{...ejoin({ system : &quot;PORTAL.DEMO1&quot;, branch : &quot;view&quot; },event)}"
        x-data="{ context : { system : &#39;PORTAL.DEMO1&#39;, branch : &#39;VIEW&#39; } };"></div>
   <script src=./build/ext.js></script>
   <script src=./build/int.js></script>
-  <script
-          src=./npm-interfaces/codemirror/build/iface.bundle.js></script>
  </body>
 </html>

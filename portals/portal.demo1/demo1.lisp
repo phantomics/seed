@@ -27,7 +27,8 @@
   (write-to-file stream *package* "./ui-browser/build/int.css"
     (build-styles stream))
 
-  (build-script-cmirror *package*)
+  (write-to-file stream *package* "./ui-browser/npm-interfaces/codemirror/cm-app.js"
+    (build-script-cmirror stream))
 
   (write-to-file stream *package* "./ui-browser/build/int.js"
     (build-script-misc stream))
@@ -36,14 +37,13 @@
     (concat-files stream *package*
                   "./ui-browser/static/htmx.min.js"
                   "./ui-browser/static/alpine.js"
-                  "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"))
+                  "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
+                  "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"))
 
   (write-to-file stream *package* "./ui-browser/build/ext.css"
     (concat-files stream *package* "./ui-browser/node_modules/bulma/css/bulma.css"))
 
   (format t "Browser files generated successfully for portal ~a.~%" *package*))
-
-
 
 
 ;; (defun build-all ()
