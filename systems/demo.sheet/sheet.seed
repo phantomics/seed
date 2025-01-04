@@ -4,7 +4,8 @@
       (:branches
        :summary
        (let ((layout '((:main :code-view) (:cells :cells-view) nil
-                       (:graph :graph-overview) (:graph :graph-node))))
+                       (:graph :graph-overview) (:graph :graph-node) nil
+                       (:chart :chart-candle)  (:main :code-view))))
          (lambda (context input)
            (declare (ignore context input))
            layout))
@@ -15,8 +16,6 @@
                (summary (grow :demo.sheet :summary))
                (branch-point (or (funcall context :branch-point) 0))
                (start-point 0) (interval-found) (search-complete))
-
-           ;; (print (list :aa input))
            
            (loop :for s :in summary :for sx :from 0 :until search-complete 
                  :do (unless s (if interval-found (setf search-complete t)
@@ -37,17 +36,20 @@
                                   (fx ((:each uicc-button)
                                        (uic-series :type (:ui :footer)))
                                       (list (list :save))))))))
+       :chart
+       (lambda (context input)
+         (render (funcall context :medium)
+                 (fx ((uich-candle :type (:green-red)))
+                     :demo.sheet :chart)))
        :main
        (lambda (context input)
-         ;; (print (list :in2 input))
          (if (assoc "text" input :test #'string=)
              (if (= 0 (second (assoc "text" input :test #'string=)))
                  (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
                                                           :main :as-string t)
                                         :unwrap t :syntax :progn :trailing-newlines 2))
                  (let ((input (apply #'concatenate 'string
-                                     (loop :for i :in ;; (getf input :text)
-                                                  (rest (assoc "text" input :test #'string=))
+                                     (loop :for i :in (rest (assoc "text" input :test #'string=))
                                            :append (list i '(#\Newline))))))
                    (setf (from-system-file :demo.sheet "sheet.lisp" :main :as-string t)
                          (text-wrap input :syntax :progn))
@@ -55,11 +57,9 @@
                    (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
                                                             :main :as-string t)
                                           :unwrap t :syntax :progn))))
-             (progn (render (funcall context :medium)
-                            (fx ((uicc-text :type (:code)))
-                                :demo.sheet :main))
-                    (get-output-stream-string (uim-web-stream
-                                               (funcall context :medium))))))
+             (render (funcall context :medium)
+                     (fx ((uicc-text :type (:code)))
+                         :demo.sheet :main))))
        :cells
        (lambda (context input)
          (let ((display-baseline))
@@ -86,10 +86,9 @@
                                                     (setf-value
                                                      (from-system-file
                                                       :demo.sheet "sheet.lisp" :cells)))))))
-               (progn (render (funcall context :medium)
-                              (fx ((uic-grid :type (:code)))
-                                  :demo.sheet :cells))
-                      (get-output-stream-string (uim-web-stream (funcall context :medium)))))))
+               (render (funcall context :medium)
+                       (fx ((uic-grid :type (:code)))
+                           :demo.sheet :cells)))))
        :code
        (lambda (context input)
          (seed.generate::form-as-vectors
@@ -102,11 +101,9 @@
            (let ((original (from-system-file :demo.sheet "sheet.lisp" :form)))
              (meta-revise (second (third original)) input)
              (setf (from-system-file :demo.sheet "sheet.lisp" :form) original)))
-         
+
          (render (funcall context :medium)
                  (express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
-         
-         (get-output-stream-string (uim-web-stream (funcall context :medium)))
          
          
          ;; (let ((out (make-string-output-stream)))

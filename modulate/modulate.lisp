@@ -177,6 +177,14 @@
              :initform nil
              :initarg  :default)))
 
+(defclass uic-chart (ui-component)
+  ((%points :accessor uic-chart-points
+            :initform nil
+            :initarg  :points)))
+
+(defclass uich-candle (uic-chart)
+  ())
+
 (defmacro fx (specs &rest form)
   (labels ((format-params (items)
              (loop :for item :in items
@@ -205,9 +213,11 @@
 (defgeneric render (medium component))
 
 (defmethod render ((medium uim-web) (component t))
-  (setf (uim-web-stream medium) (make-string-output-stream))
-  (let ((spinneret:*html* (uim-web-stream medium)))
-    (spinneret:interpret-html-tree (generate medium component))))
+  (let* ((out-stream (make-string-output-stream))
+         (spinneret:*html* out-stream))
+    (spinneret:interpret-html-tree (generate medium component))
+    (values (get-output-stream-string out-stream)
+            (close out-stream))))
 
 (defgeneric realize (origin medium aspect &key sort))
 
@@ -232,8 +242,8 @@
                            (error "AAA"))))
         ;; adapt for one-symbol join specs
         ;; (print (list :aoa ajoin ojoin new-list))
-        (setf ojoin (alist-supersede new-list ojoin))
-        (setf (uic-join aspect) ojoin))
+        (setf ojoin (alist-supersede new-list ojoin)
+              (uic-join aspect) ojoin))
       (setf (uic-join aspect) (uic-join origin)))
     (when sort (setf (uic-sort aspect) sort)))
   (generate medium aspect))
@@ -401,30 +411,39 @@
                             
 (defmethod generate ((medium uim-web) (aspect uicc-text))
   ;; (print (list :ee medium (uic-type aspect)))
-  (cond ((member :code (uic-type aspect))
-         (destructuring-bind (system branch) (uic-base aspect)
-           (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
-                                (string-downcase branch))))
-             `(:div :id ,token ;; :class ,(uic-type aspect)
-                    :x-init ,(psl (progn (setf (@ window codemirror) nil)
-                                         (setf (getprop (@ window seed-elements) (lisp branch))
-                                               $el)
-                                         (fetch-contact (lisp (string system)) (lisp (string branch))
-                                                        (list (list "text" 0))
-                                                        ;; nil
-                                                        ;; ,(string-upcase (getf props :branch))
-                                                        (lambda (data) 
-                                                          ;; (chain console (log :dt (@ data text)))
-                                                          (setf (getprop (@ window seed-data) (lisp token))
-                                                                (create-codemirror
-                                                                 (chain document
-                                                                        (get-element-by-id (lisp token)))
-                                                                 (@ data text)))))))))))
-        ((member :area (uic-type aspect))
-         `(:textarea :class "input" :name ,(or (string (uicc-key aspect)) "")
-                     ,(or (uicc-text-default aspect) "")))
-        (t `(:input :class "input" :type "text" :value ,(or (uicc-text-default aspect) "")
-                    :name ,(or (string (uicc-key aspect)) "")))))
+  (flet ((wrap-label (label base) `(:div (:h2 ,label) ,base)))
+    (let ((base (uic-base aspect)))
+      (cond ((member :code (uic-type aspect))
+             (destructuring-bind (system branch) (uic-base aspect)
+               (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
+                                    (string-downcase branch))))
+                 `(:div :id ,token ;; :class ,(uic-type aspect)
+                        :x-init ,(psl (progn (setf (@ window codemirror) nil)
+                                             (setf (getprop (@ window seed-elements) (lisp branch))
+                                                   $el)
+                                             (fetch-contact (lisp (string system))
+                                                            (lisp (string branch))
+                                                            (list (list "text" 0))
+                                                            ;; nil
+                                                            ;; ,(string-upcase (getf props :branch))
+                                                            (lambda (data) 
+                                                              ;; (chain console (log :dt (@ data text)))
+                                                              (setf (getprop (@ window seed-data)
+                                                                             (lisp token))
+                                                                    (create-codemirror
+                                                                     (chain document (get-element-by-id
+                                                                                      (lisp token)))
+                                                                     (@ data text)))))))))))
+            ((member :area (uic-type aspect))
+             `(:textarea :class "input" :name ,(or (string (uicc-key aspect)) "")
+                         ,(or (uicc-text-default aspect) "")))
+            (t (destructuring-bind (field-name &rest field-content)
+                   (if (listp base) base (cons nil base))
+                 (wrap-label (lisp->camel-case field-name)
+                             `(:input :class "input" :type "text" :value ,(or field-content
+                                                                              (uicc-text-default aspect)
+                                                                              "")
+                                      :name ,(or (string (uicc-key aspect)) "")))))))))
 
 ;; (defmethod generate ((medium uim-web) (aspect uicc-text-area))
 ;;   `(:textarea :class "input" :value ,(or (uicc-text-default aspect) "")
@@ -481,6 +500,36 @@
                     ;;                         (push-form $el local-forms))))
                     ;; TODO: CHANGE HARDCODED ELEMENT ID
               (call-next-method)))))
+
+(defmethod generate ((medium uim-web) (aspect uich-candle))
+  (destructuring-bind (system branch) (uic-base aspect)
+    `(:div :id ,(format nil "~a-~a" system branch)
+           :x-init ,(ps (let ((config (create plotter candle-plotter
+                                              labels (list))))
+                          (fetch-contact (lisp (string-upcase system))
+                                         (lisp (string-upcase branch))
+                                         ;; (create height (@ $el offset-height)
+                                         ;;         width  (@ $el offset-width))
+                                         (lambda (data)
+                                           (chain window (-dygraph $el data config)))))))))
+
+;; (chain window (-dygraph (@ self container-element)
+
+#|
+
+(destructuring-bind (system branch) (uic-base aspect)
+               (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
+                                    (string-downcase branch))))
+                 `(:div :id ,token ;; :class ,(uic-type aspect)
+                        :x-init ,(psl (progn (setf (@ window codemirror) nil)
+                                             (setf (getprop (@ window seed-elements) (lisp branch))
+                                                   $el)
+                                             (fetch-contact (lisp (string system))
+                                                            (lisp (string branch))
+                                                            (list (list "text" 0))
+                                                            (lambda (data) 
+
+|#
 
 (defun express (form)
   (if (atom form)
@@ -840,22 +889,20 @@
             ;; the output-stream is created in the seed package - best elsewhere?
             (if (and (assoc :face input :test #'eq)
                      (string= "graphNode" (rest (assoc :face input :test #'eq))))
-                (progn
-                  (render
-                   (funcall context :medium)
-                   (express (funcall (if network-changed
-                                         #'list (lambda (items) `(meta ,items (:type :set :form))))
-                                     (loop :for item :in (funcall
-                                                          ;; nodes have an (index . N)
-                                                          ;; form to omit, links don't
-                                                          (if sub-index #'identity #'rest)
-                                                          (first (if sub-index
-                                                                     (nth sub-index
-                                                                          (rest (nth index
-                                                                                     (rest formatted))))
-                                                                     (nth index (rest formatted)))))
-                                           :collect item))))
-                  (get-output-stream-string (uim-web-stream (funcall context :medium))))
+                (render
+                 (funcall context :medium)
+                 (express (funcall (if network-changed
+                                       #'list (lambda (items) `(meta ,items (:type :set :form))))
+                                   (loop :for item :in (funcall
+                                                        ;; nodes have an (index . N)
+                                                        ;; form to omit, links don't
+                                                        (if sub-index #'identity #'rest)
+                                                        (first (if sub-index
+                                                                   (nth sub-index
+                                                                        (rest (nth index
+                                                                                   (rest formatted))))
+                                                                   (nth index (rest formatted)))))
+                                         :collect item))))
                 (if (or network-changed (assoc :system input))
                     (progn (setf *giface-output-stream* (make-string-output-stream))
                            ;; (print (list :nc input))

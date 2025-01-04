@@ -656,7 +656,7 @@
                ;;                                                strout :control :subsection c :system system-id
                ;;                                                                :branch branch))))))))))
                ((list :form (guard form-type (keywordp form-type)))
-                (print (list :for form))
+                ;; (print (list :for form))
                 (let ((branch (second (assoc :access (getf form :mt))))
                       (item-classes (apply #'concatenate 'string
                                            (loop :for y :in (rest (assoc :type (getf form :mt)))

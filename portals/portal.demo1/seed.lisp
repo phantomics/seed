@@ -26,15 +26,6 @@
              ;; (load-seed-system epsym) ;; TEMPORARY -- RESTORE THIS
              ))
 
-         ;; (when (and context (not (funcall context :portal-name)))
-         ;;   (funcall context :portal-name :portal.demo1))
-
-         ;; (when (and context (not (funcall context :medium)))
-         ;;   (let ((this-stream (make-string-output-stream)))
-         ;;     (funcall context :medium (make-instance 'uim-web :stream this-stream
-         ;;                                                      :portal (intern (package-name package)
-         ;;                                                                      "KEYWORD")))))
-
          (let ((medium (make-instance 'uim-web :portal (intern (package-name package) "KEYWORD"))))
 
            (funcall context :medium medium)
@@ -57,10 +48,7 @@
                       "" (grow (of-system :point) :view context)))
 
               (fx ((uic-series-form :type (:ui :column) :cast t))
-                  (list (fx ((uicc-text :key "key")) "")))))
-           
-           (values (get-output-stream-string (seed.modulate::uim-web-stream medium))
-                   (close (seed.modulate::uim-web-stream medium)))))
+                  (list (fx ((uicc-text :key "key")) "")))))))
        :systems
        (lambda (context input)
          (if input (let ((epsym (intern input "KEYWORD")))
@@ -71,21 +59,3 @@
              (-<> (with-meta (of-system :contacts)
                     :type (:form))
                (encode <>))))))
-
-
-;; (-<> (Uic ((:type :group :stack :main)
-;;            (:members :heading :main))
-;;           (uic ((:type :heading))
-;;                (string-downcase (package-name package)))
-;;           (let ((out (make-string-output-stream)))
-;;             (spinneret:interpret-html-tree
-;;              (htrender '(meta ((meta "Key" (:type :label))
-;;                                (meta "" (:name :key)
-;;                                 (:type :field :text)))
-;;                          (:type :set :form))
-;;                        :params '(:system :portal.demo1 :branch :view))
-;;              :stream out)
-;;             (get-output-stream-string out)))
-;;   (in-system-context <> (package-name package))
-;;   (interface-format-form input)
-;;   (render-html-interface (encode <>)))

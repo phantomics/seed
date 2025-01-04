@@ -37,6 +37,8 @@
     (concat-files stream *package*
                   "./ui-browser/static/htmx.min.js"
                   "./ui-browser/static/alpine.js"
+                  "./ui-browser/static/mousetrap.min.js"
+                  "./ui-browser/static/dygraph.min.js"
                   "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
                   "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"))
 
