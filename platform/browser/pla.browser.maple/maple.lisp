@@ -4,8 +4,8 @@
 
 (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))
-        (port (gensym)) (value (gensym)) (stopper (gensym)) (restarter (gensym))
-        (system-name (gensym)) (branch-name (gensym)) (p (gensym)))
+        (input (gensym)) (port (gensym)) (value (gensym)) (stopper (gensym))
+        (restarter (gensym)) (system-name (gensym)) (branch-name (gensym)) (p (gensym)))
     `(let ((,pkg-name (intern (package-name (symbol-package ',to-start)) "KEYWORD")))
        (proclaim '(special ,to-start ,to-restart ,to-stop))
        (flet ((get-name (,key ,params)
@@ -17,13 +17,20 @@
                      (http-contact-service-start
                       :package-name ,pkg-name :port ,port
                       :interactor-fetch (lambda (,params ,session-api)
-                                          ;; (print (list :aa portal-form branch-form params))
                                           (let ((,system-name (get-name "system" ,params))
-                                                (,branch-name (get-name "branch" ,params)))
+                                                (,branch-name (get-name "branch" ,params))
+                                                (,input (rest (assoc "input" ,params :test #'string=))))
+                                            ;; (print (list :aa ,params
+                                            ;;              (loop :for ,p :in ,input
+                                            ;;                    :collect (cons (camel-case->keyword (first ,p))
+                                            ;;                                   (rest ,p)))))
                                             ;; (print (list :aa system-form branch-form))
                                             (json-convert-to
                                              (,to-grow ,system-name ,branch-name ,session-api
-                                                       (rest (assoc "input" ,params :test #'string=))))))
+                                                       ;; (loop :for ,p :in ,input
+                                                       ;;       :collect (cons (camel-case->keyword (first ,p))
+                                                             ;;               (rest ,p)))
+                                                       ,input))))
                       :renderer-fetch (lambda (,params ,session-api)
                                         ;; (print (list :par params session-api))
                                         (let ((,system-name (get-name "system" ,params))
@@ -318,140 +325,136 @@
 (defpsmacro undefp (item)
   `(= "undefined" (typeof ,item)))
 
-(defun build-script-misc (stream) ;; package);;  relative-path)
-  ;; (with-open-file (stream (asdf:system-relative-pathname (intern (package-name package) "KEYWORD")
-  ;;                                                        (format nil "./~a/static/int.js"
-  ;;                                                                relative-path))
-  ;;       		  :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (format
-     stream
-     (paren6::ps
-       (setf (@ window seed-data) (create)
-             (@ window seed-elements) (create))
-       (defun fetch-contact (system branch input handler)
-         (chain (fetch "/contact/"
-                       (create method "POST"
-                               body (chain -j-s-o-n (stringify (create system system
-                                                                       branch branch
-                                                                       input  input)))
-                               headers (create "Content-type" "application/json; charset=UTF-8")))
-                (then (lambda (response) (chain response (json))))
-                (then (lambda (data)
-                        (chain console (log :dt data (@ data oob-reload)))
-                        (if (@ data oob-reload)
-                            (chain data oob-reload (for-each (lambda (item)
-                                                               (chain console (log :it item))
-                                                               (chain htmx (trigger (getprop seed-elements
-                                                                                             item)
-                                                                                    "reload"))))))
-                        data))
-                (then handler)))
-       
-       (defun fetch-contact2 (context element input)
-         ;; (chain console (log :cc context))
+(defun build-script-misc (stream)
+  (format
+   stream
+   (paren6::ps
+     (setf (@ window seed-data) (create)
+           (@ window seed-elements) (create))
+     (defun fetch-contact (system branch input handler)
+       (chain (fetch "/contact/"
+                     (create method "POST"
+                             body (chain -j-s-o-n (stringify (create system system
+                                                                     branch branch
+                                                                     input  input)))
+                             headers (create "Content-type" "application/json; charset=UTF-8")))
+              (then (lambda (response) (chain response (json))))
+              (then (lambda (data)
+                      ;; (chain console (log :dt data (@ data oob-reload)))
+                      (if (@ data oob-reload)
+                          (chain data oob-reload (for-each (lambda (item)
+                                                             (chain console (log :it item))
+                                                             (chain htmx (trigger (getprop seed-elements
+                                                                                           item)
+                                                                                  "reload"))))))
+                      data))
+              (then handler)))
+     
+     (defun fetch-contact2 (context element input)
+       ;; (chain console (log :cc context))
+       (chain (fetch "/contact/"
+                     (create method "POST"
+                             headers (create "Content-type" "application/json; charset=UTF-8")
+                             body (chain -j-s-o-n (stringify (create system (@ context system)
+                                                                     branch (@ context branch)
+                                                                     input  input)))))
+              (then (lambda (response) (chain response (json))))
+              (then (lambda (data) (chain htmx (trigger element "refresh"))))))
+     
+     (defun realize (system branch element)
+       (lambda (input)
          (chain (fetch "/contact/"
                        (create method "POST"
                                headers (create "Content-type" "application/json; charset=UTF-8")
-                               body (chain -j-s-o-n (stringify (create system (@ context system)
-                                                                       branch (@ context branch)
-                                                                       input  input)))))
+                               body (chain -j-s-o-n (stringify (create system system
+                                                                       branch branch
+                                                                       input input)))))
                 (then (lambda (response) (chain response (json))))
-                (then (lambda (data) (chain htmx (trigger element "refresh"))))))
-       
-       (defun realize (system branch element)
-         (lambda (input)
-           (chain (fetch "/contact/"
-                         (create method "POST"
-                                 headers (create "Content-type" "application/json; charset=UTF-8")
-                                 body (chain -j-s-o-n (stringify (create system system
-                                                                         branch branch
-                                                                          input input)))))
-                  (then (lambda (response) (chain response (json))))
-                  (then (lambda (data) (chain htmx (trigger element "refresh")))))))
+                (then (lambda (data) (chain htmx (trigger element "refresh")))))))
 
-       (defun push-form (item form-list)
-         (chain form-list (push item)))
-       
-       (defun submit-forms (form-list)
-         (chain form-list (for-each (lambda (form) (chain htmx (trigger form "submit"))))))
+     (defun push-form (item form-list)
+       (chain form-list (push item)))
+     
+     (defun submit-forms (form-list)
+       (chain form-list (for-each (lambda (form) (chain htmx (trigger form "submit"))))))
 
-       (defun ejoin (base event)
-         (unless (or (undefp event) (undefp (@ event detail)))
-           (chain console (log :ee (@ event detail)))
-           (loop :for k :in (chain -object (keys (@ event detail)))
-                 :do (unless (or (= k "elt" ) (undefp (getprop (@ event detail) k)))
-                       (setf (getprop base k)
-                             (getprop (@ event detail) k)))))
-         base)
+     (defun ejoin (base event)
+       (unless (or (undefp event) (undefp (@ event detail)))
+         (chain console (log :ee (@ event detail)))
+         (loop :for k :in (chain -object (keys (@ event detail)))
+               :do (unless (or (= k "elt" ) (undefp (getprop (@ event detail) k)))
+                     (setf (getprop base k)
+                           (getprop (@ event detail) k)))))
+       base)
 
-       (defun candle-plotter (e)
-         (if (/= 0 (@ e series-index))
-	     (let ((self this)
-	           (set-count (@ e series-count)))
-	       (if (/= 8 set-count)
-	           (chain console
-                          (log "Error: Exactly 4 prices each point must be provided for the candle chart."))
-	           (let* ((prices #())
-		          (sets (@ e all-series-points))
-		          (area (@ e plot-area))
-		          (ctx (@ e drawing-context))
-		          (candle-max-spacing 3)
-		          (bar-count (let ((range (chain e dygraph (x-axis-range)))
-				           (counting false) (length 0))
-				       (loop :for point :in (@ sets 0)
-				             do (if (and (not counting)
-						         (> (@ point xval) (@ range 0)))
-					            (setf counting true))
-					        (if (and counting (> (@ point xval) (floor (@ range 1))))
-					            (setf counting false))
-					        (if counting (setq length (1+ length))))
-				       length))
-		          (view-width (@ (chain e dygraph (get-area)) w))
-		          (bar-width (max 1 (* 0.7 (/ view-width bar-count))))
-		          (up-fill-style "rgba(38,139,210,1.0)")
-		          (up-stroke-style (if (< 2 bar-width) "rgba(38,139,210,1.0)"
-                                               "rgba(38,139,210,0.6)"))
-		          (down-fill-style "rgba(220,50,47,1.0)")
-		          (down-stroke-style (if (< 2 bar-width) "rgba(220,50,47,1.0)"
-                                                 "rgba(220,50,47,0.6)")))
-		     (setf (@ ctx line-width) 0.6)
-		     (loop :for p :from 0 :to (1- (@ sets 0 length))
-		           :do (let* ((price (create open (getprop sets 0 p "yval")
-					             close (getprop sets 1 p "yval")
-					             high (getprop sets 2 p "yval")
-					             low (getprop sets 3 p "yval")
-					             open-y (getprop sets 0 p "y")
-					             close-y (getprop sets 1 p "y")
-					             high-y (getprop sets 2 p "y")
-					             low-y (getprop sets 3 p "y")))
-			              (top-y (+ (@ area y) (* (@ area h) (@ price high-y))))
-			              (bottom-y (+ (@ area y) (* (@ area h) (@ price low-y))))
-			              (center-x (+ (@ area x) (* (@ area w) (getprop sets 0 p "x"))))
-			              (body-y nil)
-			              (body-height nil))
-			         (chain prices (push price))
-			         (chain ctx (begin-path))
-			         (chain ctx (move-to center-x top-y))
-			         (chain ctx (line-to center-x bottom-y))
-			         (chain ctx (close-path))
-			         (if (> (@ price open) (@ price close))
-			             (setf (@ ctx fill-style) down-fill-style
-				           (@ ctx stroke-style) down-stroke-style
-				           body-y (+ (@ area y) (* (@ area h) (@ price open-y))))
-			             (setf (@ ctx fill-style) up-fill-style
-				           (@ ctx stroke-style) up-stroke-style
-				           body-y (+ (@ area y) (* (@ area h) (@ price close-y)))))
-			         (chain ctx (stroke))
-			         (setq body-height (* (@ area h) (abs (- (@ price open-y) (@ price close-y)))))
-			         (chain ctx (fill-rect (- center-x (/ bar-width 2))
-					               body-y bar-width body-height))))
-		     (setf (@ ctx stroke-style) "black"
-		           (@ ctx line-width) 1.5)
-		     ;; (chain console (log :ents (@ self ephemera entities)))
-		     ;; (loop :for ent :in (@ self ephemera entities)
-		     ;;       :do (if (not (and (@ self ephemera mousedown) (@ ent in-flux)))
-		     ;;               (funcall (getprop self "entityMethods" (@ ent type) "draw")
-		     ;;    	            ctx ent (@ e dygraph))))
-		     )))))
+     (defun candle-plotter (e)
+       (if (/= 0 (@ e series-index))
+	   (let ((self this)
+	         (set-count (@ e series-count)))
+	     (if (/= 8 set-count)
+	         (chain console
+                        (log "Error: Exactly 4 prices each point must be provided for the candle chart."))
+	         (let* ((prices #())
+		        (sets (@ e all-series-points))
+		        (area (@ e plot-area))
+		        (ctx (@ e drawing-context))
+		        (candle-max-spacing 3)
+		        (bar-count (let ((range (chain e dygraph (x-axis-range)))
+				         (counting false) (length 0))
+				     (loop :for point :in (@ sets 0)
+				           do (if (and (not counting)
+						       (> (@ point xval) (@ range 0)))
+					          (setf counting true))
+					      (if (and counting (> (@ point xval) (floor (@ range 1))))
+					          (setf counting false))
+					      (if counting (setq length (1+ length))))
+				     length))
+		        (view-width (@ (chain e dygraph (get-area)) w))
+		        (bar-width (max 1 (* 0.7 (/ view-width bar-count))))
+		        (up-fill-style "rgba(38,139,210,1.0)")
+		        (up-stroke-style (if (< 2 bar-width) "rgba(38,139,210,1.0)"
+                                             "rgba(38,139,210,0.6)"))
+		        (down-fill-style "rgba(220,50,47,1.0)")
+		        (down-stroke-style (if (< 2 bar-width) "rgba(220,50,47,1.0)"
+                                               "rgba(220,50,47,0.6)")))
+		   (setf (@ ctx line-width) 0.6)
+		   (loop :for p :from 0 :to (1- (@ sets 0 length))
+		         :do (let* ((price (create open (getprop sets 0 p "yval")
+					           close (getprop sets 1 p "yval")
+					           high (getprop sets 2 p "yval")
+					           low (getprop sets 3 p "yval")
+					           open-y (getprop sets 0 p "y")
+					           close-y (getprop sets 1 p "y")
+					           high-y (getprop sets 2 p "y")
+					           low-y (getprop sets 3 p "y")))
+			            (top-y (+ (@ area y) (* (@ area h) (@ price high-y))))
+			            (bottom-y (+ (@ area y) (* (@ area h) (@ price low-y))))
+			            (center-x (+ (@ area x) (* (@ area w) (getprop sets 0 p "x"))))
+			            (body-y nil)
+			            (body-height nil))
+			       (chain prices (push price))
+			       (chain ctx (begin-path))
+			       (chain ctx (move-to center-x top-y))
+			       (chain ctx (line-to center-x bottom-y))
+			       (chain ctx (close-path))
+			       (if (> (@ price open) (@ price close))
+			           (setf (@ ctx fill-style) down-fill-style
+				         (@ ctx stroke-style) down-stroke-style
+				         body-y (+ (@ area y) (* (@ area h) (@ price open-y))))
+			           (setf (@ ctx fill-style) up-fill-style
+				         (@ ctx stroke-style) up-stroke-style
+				         body-y (+ (@ area y) (* (@ area h) (@ price close-y)))))
+			       (chain ctx (stroke))
+			       (setq body-height (* (@ area h) (abs (- (@ price open-y) (@ price close-y)))))
+			       (chain ctx (fill-rect (- center-x (/ bar-width 2))
+					             body-y bar-width body-height))))
+		   (setf (@ ctx stroke-style) "black"
+		         (@ ctx line-width) 1.5)
+		   ;; (chain console (log :ents (@ self ephemera entities)))
+		   ;; (loop :for ent :in (@ self ephemera entities)
+		   ;;       :do (if (not (and (@ self ephemera mousedown) (@ ent in-flux)))
+		   ;;               (funcall (getprop self "entityMethods" (@ ent type) "draw")
+		   ;;    	            ctx ent (@ e dygraph))))
+		   )))))
 
-       )))
+     )))

@@ -1,5 +1,4 @@
 ;;;; seed.modulate.lisp
-
 (in-package #:seed.modulate)
 
 (defun json-convert-to (form &optional stream)
@@ -508,10 +507,13 @@
                                               labels (list))))
                           (fetch-contact (lisp (string-upcase system))
                                          (lisp (string-upcase branch))
-                                         ;; (create height (@ $el offset-height)
-                                         ;;         width  (@ $el offset-width))
+                                         (create mode "chart-data")
                                          (lambda (data)
-                                           (chain window (-dygraph $el data config)))))))))
+                                           (chain console (log :dd data config))
+                                           ;; (chain
+                                           ;;  window (-dygraph $el data config))
+                                           ))
+                          )))))
 
 ;; (chain window (-dygraph (@ self container-element)
 
