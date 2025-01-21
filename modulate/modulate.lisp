@@ -141,9 +141,12 @@
             :initarg  :system)))
 
 (defclass uic-series (ui-component)
-  ((%maps :accessor uic-series-maps
-          :initform nil
-          :initarg  :maps)
+  ((%maps   :accessor uic-series-maps
+            :initform nil
+            :initarg  :maps)
+   (%point  :accessor uic-series-point
+            :initform nil
+            :initarg  :point)
    (%layout :accessor uic-series-layout
             :initform nil
             :initarg  :layout)))
@@ -255,20 +258,20 @@
   (declare (ignore medium comp index item))
   "")
 
-(defmethod generate ((medium uim-web) (comp null))
-  (declare (ignore medium comp)))
+(defmethod generate ((medium uim-web) (aspect null))
+  (declare (ignore medium aspect)))
 
-(defmethod generate ((medium uim-web) (comp list))
+(defmethod generate ((medium uim-web) (aspect list))
   (declare (ignore medium))
-  comp)
+  aspect)
 
-(defmethod generate ((medium uim-web) (comp symbol))
+(defmethod generate ((medium uim-web) (aspect symbol))
   (declare (ignore medium))
-  (string-downcase comp))
+  (symbol-munger:lisp->camel-case aspect))
 
-(defmethod generate ((medium uim-web) (comp string))
+(defmethod generate ((medium uim-web) (aspect string))
   (declare (ignore medium))
-  (list :raw comp))
+  (list :raw aspect))
 
 (defmethod generate ((medium uim-web) (aspect uic-access))
   (let ((last-type-index (1- (length (uic-type aspect))))
@@ -279,7 +282,8 @@
         (system (or (uica-system aspect) (uim-portal medium)))
         (branch (string (uic-base aspect))))
     
-    (format class-stream "sub-container")
+    (format class-stream "access")
+    (when types (format class-stream " "))
     (loop :for type :in types :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
               (unless (= ix last-type-index) (format class-stream " ")))
@@ -292,10 +296,7 @@
                                               (lisp (string-upcase (uic-base aspect)))
                                               (create height (@ $el offset-height)
                                                       width  (@ $el offset-width))
-                                              (lambda (data)
-                                                ;; (chain console (log :dt data
-                                                ;;                     (@ $el offset-height)))
-                                                ))))
+                                              (lambda (data)))))
            :hx-vals ,(json-convert-to (list :system system :face face
                                             :branch (string-upcase (uic-base aspect))))
            ;; :hx-vals ,(print (ps (create system (lisp system) face (lisp face)
@@ -323,8 +324,7 @@
       (flet ((enclose-by-type (types element)
                (loop :for type :in types
                      :do (setf element (case type
-                                         (:column
-                                          `(:div :class "container column-inner" ,element))
+                                         (:column `(:div :class "column-inner" ,element))
                                          (t element))))
                element))
         (loop :for type :in types :for ix :from 0
@@ -349,6 +349,9 @@
                 (loop :for ix :from 0 :for item :in (uic-base aspect)
                       :collect (let ((map (nth ix (uic-series-maps aspect))))
                                  (format class-stream "item ")
+                                 (when (and (uic-series-point aspect)
+                                            (= ix (uic-series-point aspect)))
+                                   (format class-stream "point "))
                                  (loop :for itype :in (rest (assoc :type map))
                                        :do (format class-stream "~a " (string-downcase itype)))
                                  (locate medium aspect ix
@@ -385,9 +388,9 @@
       (:branch (if base `(:h4 (:a :|hx-on:click|
                                   ,(format nil "htmx.trigger(this, 'navigate', { point: ~a });"
                                            (uic-sort aspect))
-                                  ,(string base)))
+                                  ,(generate medium base)))
                    '(:hr :class "divider")))
-      (t `(:span ,(string-downcase base))))))
+      (t (generate medium base)))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-button))
   (let* ((base (uic-base aspect))
@@ -501,19 +504,27 @@
               (call-next-method)))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
+  ;; Date,EUR/CAD(Open-Ask),EUR/CAD(High-Ask),EUR/CAD(Low-Ask),EUR/CAD(Close-Ask),EUR/CAD(Open-Bid)*,EUR/CAD(High-Bid)*,EUR/CAD(Low-Bid)*,EUR/CAD(Close-Bid)*
   (destructuring-bind (system branch) (uic-base aspect)
     `(:div :id ,(format nil "~a-~a" system branch)
-           :x-init ,(ps (let ((config (create plotter candle-plotter
-                                              labels (list))))
-                          (fetch-contact (lisp (string-upcase system))
-                                         (lisp (string-upcase branch))
-                                         (create mode "chart-data")
-                                         (lambda (data)
-                                           (chain console (log :dd data config))
-                                           ;; (chain
-                                           ;;  window (-dygraph $el data config))
-                                           ))
-                          )))))
+           :x-init ,(ps (progn
+                          (let ((config (create plotter candle-plotter
+                                                labels (list "a"  "a" "a" "a" "a" "a" "a" "a" "a")
+                                                height (@ $el offset-height)
+                                                width  (@ $el offset-width)
+                                                interaction-model
+                                                (create mousewheel (lambda (event chart context)
+                                                                     (chain console (log :aa)))))))
+                            (fetch-contact (lisp (string-upcase system))
+                                           (lisp (string-upcase branch))
+                                           (create mode "chart-data")
+                                           (lambda (data)
+                                             ;; (chain console (log :dd data config $el))
+                                             (setf (getprop (@ window seed-elements) (lisp branch))
+                                                   (new (chain
+                                                    window (-dygraph $el data config))))
+                                             
+                                             ))))))))
 
 ;; (chain window (-dygraph (@ self container-element)
 

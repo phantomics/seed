@@ -35,13 +35,14 @@
             (authorize (funcall context :user)
               (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                                :maps '(((:type :sidebar)) ((:type :main)))))
-                  (fx ((uic-series :type '(:ui :column)))
+                  (fx ((uic-series :type '(:ui :column  :portal-summary)))
                       :portal.demo1
                       '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
                         "demo.sheet")
                       (if (of-system :point)
                           (fx ((:each uic-anchor :type '(:branch))
-                               (uic-series :type '(:ui :navigation)))
+                               (uic-series :type '(:ui :navigation)
+                                           :point (funcall context :branch-point)))
                               (mapcar #'second (grow (of-system :point) :summary)))))
                   
                   (if (not (of-system :point))

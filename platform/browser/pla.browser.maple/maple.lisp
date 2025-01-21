@@ -83,13 +83,18 @@
       (form :text-align center
             (.input :margin "0 auto")))
     
-    `(.container :background "#fff")
+    ;; `(.container :background "#fff")
     
     `(.sidebar
       :background "#d5d5d5"
       (.heading :font-size "160%" :font-weight "bold"
                 :padding 8px :margin-bottom 6px)
       (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
+
+    `(.portal-summary
+      (.navigation
+       :margin "1rem 0"
+       (.divider :margin "0.5rem 0")))
     
     `(.ui.grid :height "100%" (.group :height "100%"))
 
@@ -98,8 +103,10 @@
       (.column
        :display grid :overflow auto :grid-template-rows 1fr
        (.container :position "relative" :height "100%") ;;  :display grid)
-       (.container.column-inner
-        :padding 0 :overflow auto ;; :grid-template-columns "100%"
+       (.column-inner
+        :padding 0 :overflow auto
+        (.access.body :height "100%" :background "#fff")
+        ;; :grid-template-columns "100%"
         ;; :grid-template-rows "[header-start] auto [header-end] 1fr [footer-start] auto [footer-end]"
         
         ;; (.header :grid-row-start "header-start" :grid-row-end "header-end")

@@ -24,10 +24,6 @@ body{
     margin: 0 auto;
 }
 
-.container{
-    background: #fff;
-}
-
 .sidebar{
     background: #d5d5d5;
 }
@@ -43,6 +39,16 @@ body{
     font-size: 120%;
     font-weight: bold;
     padding: 3px 12px;
+}
+
+
+
+.portal-summary .navigation{
+    margin: 1rem 0;
+}
+
+.portal-summary .navigation .divider{
+    margin: 0.5rem 0;
 }
 
 .ui.grid{
@@ -69,9 +75,14 @@ body{
     height: 100%;
 }
 
-.ui.grid-layout .column .container.column-inner{
+.ui.grid-layout .column .column-inner{
     padding: 0;
     overflow: auto;
+}
+
+.ui.grid-layout .column .column-inner .access.body{
+    height: 100%;
+    background: #fff;
 }
 
 .ui.grid-layout.main{

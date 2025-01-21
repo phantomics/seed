@@ -40,12 +40,15 @@
                   "./ui-browser/static/mousetrap.min.js"
                   "./ui-browser/static/dygraph.min.js"
                   "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
-                  "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"))
+                  "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js")
+    ;; (format stream "window.Dygraph = Dygraph;~%")
+    )
 
   (write-to-file stream *package* "./ui-browser/build/ext.css"
     (concat-files stream *package* "./ui-browser/node_modules/bulma/css/bulma.css"))
 
   (format t "Browser files generated successfully for portal ~a.~%" *package*))
+
 
 ;; (defun build-all ()
 ;;   (build-static-page :portal.demo1 "ui-browser")

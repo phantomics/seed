@@ -1,7 +1,7 @@
-(defun load-exp-from-file (path)
-  "Load a form from a file at the given relative path."
-  (with-open-file (data path)
-    (when data (loop :for line := (read data nil) :while line :collect line))))
+;; (defun load-exp-from-file (path)
+;;   "Load a form from a file at the given relative path."
+;;   (with-open-file (data path)
+;;     (when data (loop :for line := (read data nil) :while line :collect line))))
 
 ;; (defun generate-data-jsform (data-array &optional array-length count output)
 ;;   (let ((array-length (if array-length array-length (length data-array)))
@@ -30,10 +30,10 @@
 ;; 				(getf mod :gap))))))
 ;;   time)
 
-(defun build-list (data-list)
-  (loop :for datum :in data-list :for i :from 0
-        :collect (list i (aref datum 1) (aref datum 4) (aref datum 2) (aref datum 3)
-                       (aref datum 5) (aref datum 8) (aref datum 6) (aref datum 7))))
+;; (defun build-list (data-list)
+;;   (loop :for datum :in data-list :for i :from 0
+;;         :collect (list i (aref datum 1) (aref datum 4) (aref datum 2) (aref datum 3)
+;;                        (aref datum 5) (aref datum 8) (aref datum 6) (aref datum 7))))
 
 (seed :demo.sheet
       (:bind :package package :of-system of-system :to-grow grow)
@@ -64,10 +64,15 @@
                      :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
                                                :join   (list :demo.sheet (first l))
                                                :type   (:column)))
-                                  (fx ((:each uicc-button)
-                                       (uic-series :type (:ui :header)))
-                                      (list (list :save)))
-                                  (fx ((uic-access :name   (second l)
+                                  ;; (fx ((:each uicc-button)
+                                  ;;      (uic-series :type (:ui :header)))
+                                  ;;     (list (list :save)))
+                                  (fx ((uic-series :type (:ui :header)))
+                                      (second l)
+                                      (fx ((:each uicc-button)
+                                           (uic-series :type (:ui :controls)))
+                                          (list :save)))
+                                  (fx ((uic-access :name (second l) :type (:body)
                                                    :system :demo.sheet))
                                       (first l))
                                   (fx ((:each uicc-button)
@@ -77,12 +82,9 @@
        (let ((chart-data)
              (path (asdf:system-relative-pathname :demo.sheet "chart.sexp")))
          (lambda (context input)
-           ;; (print (list :ica input))
            (case (intern (string-upcase (rest (assoc "mode" input :test #'string=)))
                          "KEYWORD")
-             (:chart-data (jonathan:to-json
-                           (or chart-data (setf chart-data (build-list
-                                                            (cadar (load-exp-from-file path)))))))
+             (:chart-data (system-file-to-string :demo.sheet "price.csv"))
              (t (render (funcall context :medium)
                         (fx ((uich-candle :type (:green-red)))
                             :demo.sheet :chart))))))

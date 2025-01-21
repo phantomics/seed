@@ -234,6 +234,12 @@
 
 ;; SECTION: basic system interaction tools
 
+(defun system-file-to-string (system file)
+  (with-open-file (stream (asdf:system-relative-pathname system (format nil "./~a" file)))
+    (let ((contents (make-string (file-length stream))))
+      (read-sequence contents stream)
+      contents)))
+
 (defun from-system-file (system file key &key as-string)
   "Read a form from a file in the manner of a plist (but not requiring a strict key, value structure)."
   (with-open-file (stream (asdf:system-relative-pathname system (format nil "./~a" file))
