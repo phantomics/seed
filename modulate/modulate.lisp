@@ -267,7 +267,7 @@
 
 (defmethod generate ((medium uim-web) (aspect symbol))
   (declare (ignore medium))
-  (symbol-munger:lisp->camel-case aspect))
+  (list :span :class "symbol" (symbol-munger:lisp->camel-case aspect)))
 
 (defmethod generate ((medium uim-web) (aspect string))
   (declare (ignore medium))

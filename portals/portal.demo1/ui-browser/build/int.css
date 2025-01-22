@@ -43,8 +43,16 @@ body{
 
 
 
+.portal-summary .symbol{
+    font-weight: bold;
+}
+
 .portal-summary .navigation{
     margin: 1rem 0;
+}
+
+.portal-summary .navigation .symbol{
+    font-weight: normal;
 }
 
 .portal-summary .navigation .divider{

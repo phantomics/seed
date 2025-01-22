@@ -92,8 +92,10 @@
       (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
 
     `(.portal-summary
+      (.symbol :font-weight "bold")
       (.navigation
        :margin "1rem 0"
+       (.symbol :font-weight "normal")
        (.divider :margin "0.5rem 0")))
     
     `(.ui.grid :height "100%" (.group :height "100%"))
