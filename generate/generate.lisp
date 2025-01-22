@@ -82,6 +82,26 @@
                           found))))
       (setf (getf system (first keys)) new-value)))
 
+(defmacro cbind (input item &body clauses)
+  ;; TODO: OPTIMIZE, ELIMINATE REDUNDANCY
+  `(cond ,@(loop :for c :in clauses
+                 :collect (if (eq 't (first c))
+                              `(t ,@(rest c))
+                              `((assoc ,(first c) ,input :test #'string=)
+                                (let ((,item (assoc ,(first c) ,input :test #'string=)))
+                                  ,@(rest c)))))))
+
+#|
+
+(macroexpand-1 `(seed.generate::cbind input item ("ifmod-head" (fx ((:each uicc-button)
+                                                           (uic-series :type (:ui :controls)))
+                                                          (list :save :abc)))
+         ("bla" (fx ((:each uicc-button)
+                                                           (uic-series :type (:ui :controls)))
+                                                          (list :save :abc)))))
+
+|#
+
 ;; SECTION: data processing functions
 
 (defun array-to-list (input)

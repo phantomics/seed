@@ -9,7 +9,7 @@
   (:export ;; #:seed-instance
            #:system #:seed #:in-system-context #:interact #:with-meta
            #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web #:of-system
-           #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
+           #:cbind #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
            #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender ;; #:render-console
            #:meta-revise #:psl
