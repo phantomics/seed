@@ -147,14 +147,22 @@ body{
     grid-column-start: 1;
 }
 
-.ui.header .controls-holder{
+.ui.footer{
+    bottom: 0;
+    border-top: 2px solid #ccc;
+}
+
+
+
+.ui.header .controls,
+.ui.footer .controls{
     text-align: right;
     grid-column-end: 3;
 }
 
-.ui.footer{
-    bottom: 0;
-    border-top: 2px solid #ccc;
+.ui.header .controls .item,
+.ui.footer .controls .item{
+    display: inline;
 }
 
 

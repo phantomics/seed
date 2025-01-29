@@ -133,7 +133,10 @@
           :initarg  :cast)
    (%sort :accessor uic-sort
           :initform nil
-          :initarg  :sort)))
+          :initarg  :sort)
+   (%mode :accessor uic-mode
+          :initform nil
+          :initarg  :mode)))
 
 (defclass uic-access (ui-component)
   ((%system :accessor uica-system
@@ -214,6 +217,10 @@
 
 (defgeneric render (medium component))
 
+(defgeneric envelop (medium component))
+
+(defgeneric realize (origin medium aspect &key sort))
+
 (defmethod render ((medium uim-web) (component t))
   (let* ((out-stream (make-string-output-stream))
          (spinneret:*html* out-stream))
@@ -221,7 +228,22 @@
     (values (get-output-stream-string out-stream)
             (close out-stream))))
 
-(defgeneric realize (origin medium aspect &key sort))
+(defmethod envelop ((medium uim-web) (aspect ui-component))
+  (let ((pairs (if (uic-join aspect)
+                   (list :system (first  (uic-join aspect))
+                         :branch (second (uic-join aspect))))))
+  (case (uic-mode aspect)
+    (:chart 
+     ;; (print (list :ee (uic-join aspect) (parenscript:ps* `(create a 1 b 2))))
+     (list :x-data (setf pairs (append pairs (list :interaction "select"
+                                                   :draw-entity "line"
+                                                   :moving-from 'nil
+                                                   :mousedown 'false
+                                                   :active-entity 'nil
+                                                   :entities-in-flux '(list)
+                                                   :entities '(list)))))))
+    (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
+                                                      of-local (manifest-locality)))))))
 
 (defun alist-supersede (new original)
   (loop :for n :in new :do (if (assoc (first n) original)
@@ -230,23 +252,22 @@
                                (push n original)))
   original)
 
-(defmethod realize ((origin ui-component) (medium ui-medium) (aspect t)
-                    &key sort)
+(defmethod realize ((origin ui-component) (medium ui-medium) (aspect t) &key sort)
   (unless (not (typep aspect 'ui-component))
     ;; (print (list :ee (uic-join aspect)))
-    (when (uic-join aspect)
-      (let* ((ajoin (uic-join aspect))
-             (ojoin (copy-tree (uic-join origin)))
-             (new-list (if (listp ajoin)
-                           (if (listp (first ajoin))
-                               ajoin (list (cons :in  ajoin)
-                                           (cons :out ajoin)))
-                           (error "AAA"))))
-        ;; adapt for one-symbol join specs
-        ;; (print (list :aoa ajoin ojoin new-list))
-        (setf ojoin (alist-supersede new-list ojoin)
-              (uic-join aspect) ojoin))
-      (setf (uic-join aspect) (uic-join origin)))
+    ;; (when (uic-join aspect)
+    ;;   (let* ((ajoin (uic-join aspect))
+    ;;          (ojoin (copy-tree (uic-join origin)))
+    ;;          (new-list (if (listp ajoin)
+    ;;                        (if (listp (first ajoin))
+    ;;                            ajoin (list (cons :in  ajoin)
+    ;;                                        (cons :out ajoin)))
+    ;;                        (error "AAA"))))
+    ;;     ;; adapt for one-symbol join specs
+    ;;     ;; (print (list :aoa ajoin ojoin new-list))
+    ;;     (setf ojoin (alist-supersede new-list ojoin)
+    ;;           (uic-join aspect) ojoin))
+    ;;   (setf (uic-join aspect) (uic-join origin)))
     (when sort (setf (uic-sort aspect) sort)))
   (generate medium aspect))
 
@@ -292,6 +313,8 @@
            :id ,(format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
            :class ,(get-output-stream-string class-stream)
            :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
+                               (of-local "register" "main" $el)
+                               ;; (chain console (log :aaa (of-local "list" "main")))
                                (fetch-contact (lisp (string-upcase system))
                                               (lisp (string-upcase (uic-base aspect)))
                                               (create height (@ $el offset-height)
@@ -308,7 +331,7 @@
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
-        (join-spec (rest (assoc :out (uic-join aspect))))
+        ;; (join-spec (rest (assoc :out (uic-join aspect))))
         (breadth-default 12))
     (format class-stream "ui ")
     (format class-stream "~a" (typecase aspect (uic-series "series ")
@@ -338,6 +361,10 @@
                                               (if (eq ltype :horizontal) "columns" "rows")
                                               (loop :for i :below (or (first lprops) breadth-default)
                                                     :collect ratio)))))
+
+                ;; envelop the series element if needed for a mode property
+                (envelop medium aspect)
+                
                 ;; (if nil ; join-spec
                 ;;     (destructuring-bind (system &optional branch)
                 ;;         (if (listp join-spec) join-spec (list nil join-spec))
@@ -397,7 +424,7 @@
          (name (if (symbolp base) base)))
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
-      ;(print (list :aa action))
+      (print (list :aa action base (uic-type aspect)))
       (let ((action-props
               (case action
                 (:cast-forms
@@ -405,11 +432,22 @@
                     ,(ps (chain htmx (find-all (lisp (format nil "#cast-~a form.xp-form"
                                                              (lisp->camel-case (first props)))))
                                (for-each (lambda (form)
-                                           (chain htmx (trigger form "submit")))))))))))
+                                           (chain htmx (trigger form "submit"))))))))
+                (t (if (member :trigger (uic-type aspect))
+                       (let ((trigger-type (nth (1+ (position :trigger (uic-type aspect)))
+                                                (uic-type aspect))))
+                         (case trigger-type
+                           (:local (list :|x-on:click|
+                                         (parenscript:ps* (list 'chain 'mode
+                                                                (list (intern (string base)))))))
+                           (t (list :|x-on:click| ;; :remote
+                                    (ps (fetch-contact (@ mode system) (@ mode branch)
+                                                       (create action (lisp (lisp->camel-case action)))
+                                                       (lambda (data)
+                                                         (of-local "trigger" "main" "reload")))))))))))))
         `(:button :name ,(or (string name) "") :class "ui button"
-                  ,@action-props
-                  ,(realize aspect medium ;; (uic-base aspect)
-                            name))))))
+                  ,@action-props ,(realize aspect medium ;; (uic-base aspect)
+                                           name))))))
                             
 (defmethod generate ((medium uim-web) (aspect uicc-text))
   ;; (print (list :ee medium (uic-type aspect)))
@@ -426,8 +464,6 @@
                                              (fetch-contact (lisp (string system))
                                                             (lisp (string branch))
                                                             (list (list "text" 0))
-                                                            ;; nil
-                                                            ;; ,(string-upcase (getf props :branch))
                                                             (lambda (data) 
                                                               ;; (chain console (log :dt (@ data text)))
                                                               (setf (getprop (@ window seed-data)
@@ -509,12 +545,14 @@
     `(:div :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
                           (let ((config (create plotter candle-plotter
-                                                labels (list "a"  "a" "a" "a" "a" "a" "a" "a" "a")
+                                                labels (list "a" "b" "c" "d" "e" "f" "g" "h" "i")
                                                 height (@ $el offset-height)
                                                 width  (@ $el offset-width)
                                                 interaction-model
-                                                (create mousewheel (lambda (event chart context)
-                                                                     (chain console (log :aa)))))))
+                                                (create mousedown  (funcall interactor-mousedown  mode)
+                                                        mouseup    (funcall interactor-mouseup    mode)
+                                                        mousemove  (funcall interactor-mousemove  mode)
+                                                        mousewheel (funcall interactor-mousewheel mode)))))
                             (fetch-contact (lisp (string-upcase system))
                                            (lisp (string-upcase branch))
                                            (create mode "chart-data")

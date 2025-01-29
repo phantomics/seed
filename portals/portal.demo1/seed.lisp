@@ -29,7 +29,7 @@
          (let ((medium (make-instance 'uim-web :portal (intern (package-name package) "KEYWORD"))))
 
            (funcall context :medium medium)
-           
+
            (render
             medium
             (authorize (funcall context :user)

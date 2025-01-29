@@ -27,7 +27,9 @@
                (loop :for l :in (nthcdr start-point summary) :while l
                      :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
                                                :join   (list :demo.sheet (first l))
-                                               :type   (:column)))
+                                               :type   (:column)
+                                               :mode   (grow :demo.sheet (first l)
+                                                             context (list (list "state" 100)))))
                                   ;; (fx ((:each uicc-button)
                                   ;;      (uic-series :type (:ui :header)))
                                   ;;     (list (list :save)))
@@ -41,17 +43,26 @@
                                   (fx ((uic-access :name (second l) :type (:body)
                                                    :system :demo.sheet))
                                       (first l))
-                                  (fx ((:each uicc-button)
-                                       (uic-series :type (:ui :footer)))
-                                      (list (list :save))))))))
+                                  (fx ((uic-series :type (:ui :footer)))
+                                      (list (grow :demo.sheet (first l)
+                                                  context (list (list "ifmod-foot" 100)))))
+                                  ;; (fx ((:each uicc-button)
+                                  ;;      (uic-series :type (:ui :footer)))
+                                  ;;     (list (list :save)))
+
+                                  )))))
        :chart
        (let ((chart-data)
              (path (asdf:system-relative-pathname :demo.sheet "chart.sexp")))
          (lambda (context input)
            (cbind input item
-             ("ifmod-head" (fx ((:each uicc-button)
+             ("state" :chart)
+             ("ifmod-head" (fx ((:each uicc-button :type (:trigger :local))
                                 (uic-series :type (:ui :controls)))
                                (list :save :abc)))
+             ("ifmod-foot" (fx ((:each uicc-button)
+                                (uic-series :type (:ui :controls)))
+                               (list :save)))
              (t (case (intern (string-upcase (rest (assoc "mode" input :test #'string=)))
                               "KEYWORD")
                   (:chart-data (system-file-to-string :demo.sheet "price.csv"))
@@ -61,9 +72,13 @@
        :main
        (lambda (context input)
          (cbind input item
+           ("state")
            ("ifmod-head" (fx ((:each uicc-button)
                               (uic-series :type (:ui :controls)))
                              (list :save :abc)))
+           ("ifmod-foot" (fx ((:each uicc-button)
+                              (uic-series :type (:ui :controls)))
+                             (list :save)))
            (t (if (assoc "text" input :test #'string=)
                   (if (= 0 (second (assoc "text" input :test #'string=)))
                       (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
@@ -85,10 +100,14 @@
        (lambda (context input)
          ;; (print (list :aa input))
          (cbind input item
+           ("state")
            ("ifmod-head"
             (fx ((:each uicc-button)
                  (uic-series :type (:ui :controls)))
                 (list :save :abc)))
+           ("ifmod-foot" (fx ((:each uicc-button)
+                              (uic-series :type (:ui :controls)))
+                             (list :save)))
            ("cells"
             (let ((display-baseline))
               (if (/= 0 (second item))
@@ -203,11 +222,16 @@
                 :node-template-key :graph-node-template :link-template-key :graph-link-template
                 :graph-key :graph :node-indices-key :graph-node-indices)))
          (lambda (context input)
-           (if (assoc "ifmod-head" input :test #'string=)
-               (fx ((:each uicc-button)
-                    (uic-series :type (:ui :controls)))
-                   (list :save :abc))
-               (funcall interactor context input))))
+           (cbind input item
+             ("state")
+             ("ifmod-head" (fx ((:each uicc-button :type (:trigger :remote))
+                                (uic-series :type (:ui :controls)))
+                               ;; (create action "addNode")
+                               (list :add-node :add-link)))
+             ("ifmod-foot" (fx ((:each uicc-button)
+                              (uic-series :type (:ui :controls)))
+                             (list :save)))
+             (t (funcall interactor context input)))))
        :play
        (let ((state) (node) (selector))
          (lambda (context input)
