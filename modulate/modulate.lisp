@@ -217,7 +217,7 @@
 
 (defgeneric render (medium component))
 
-(defgeneric envelop (medium component))
+(defgeneric furnish (medium component &optional base))
 
 (defgeneric realize (origin medium aspect &key sort))
 
@@ -228,22 +228,78 @@
     (values (get-output-stream-string out-stream)
             (close out-stream))))
 
-(defmethod envelop ((medium uim-web) (aspect ui-component))
-  (let ((pairs (if (uic-join aspect)
-                   (list :system (first  (uic-join aspect))
-                         :branch (second (uic-join aspect))))))
-  (case (uic-mode aspect)
-    (:chart 
-     ;; (print (list :ee (uic-join aspect) (parenscript:ps* `(create a 1 b 2))))
-     (list :x-data (setf pairs (append pairs (list :interaction "select"
-                                                   :draw-entity "line"
-                                                   :moving-from 'nil
-                                                   :mousedown 'false
-                                                   :active-entity 'nil
-                                                   :entities-in-flux '(list)
-                                                   :entities '(list)))))))
-    (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
-                                                      of-local (manifest-locality)))))))
+(defun merge-furnishings (base extend)
+  (loop :for (ekey eval) :on extend :by #'cddr
+        :do (loop :for (key val) :on eval :by #'cddr
+                  :do (setf (getf (getf base ekey)
+                                  (intern (string key)))
+                            val)))
+  base)
+
+(defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
+  (let* ((pairs (if (uic-join aspect)
+                    (list :mode (list :system (first  (uic-join aspect))
+                                      :branch (second (uic-join aspect))
+                                      :of-local '(manifest-locality)))))
+         (base (merge-furnishings base pairs)))
+    (merge-furnishings
+     base (case (uic-mode aspect)
+            (:chart (list :mode (list :interaction "select"
+                                      :draw-entity "line"
+                                      :moving-from 'nil
+                                      :mousedown 'false
+                                      :active-entity 'nil
+                                      :entities-in-flux '(list)
+                                      :entities '(list))))
+
+            (:graph-breadth (list :methods (list :add-node
+                                                 '(lambda (mode)
+                                                   (fetch-contact (@ mode system)
+                                                    (@ mode branch) (create action "addNode")
+                                                    (lambda (data)
+                                                      (chain mode (of-local "trigger" "main" "reload")))))
+                                                 :add-link
+                                                 '(lambda (mode)
+                                                   (fetch-contact (@ mode system)
+                                                    (@ mode branch) (create action "addLink")
+                                                    (lambda (data)
+                                                      (chain mode (of-local "trigger" "main" "reload"))))))))
+
+            ))))
+
+;; (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
+;;   (let ((pairs (if (uic-join aspect)
+;;                    (list :system (first  (uic-join aspect))
+;;                          :branch (second (uic-join aspect))))))
+;;   (case (uic-mode aspect)
+;;     (:chart 
+;;      ;; (print (list :ee (uic-join aspect) (parenscript:ps* `(create a 1 b 2))))
+;;      (list :x-data (setf pairs (append pairs (list :interaction "select"
+;;                                                    :draw-entity "line"
+;;                                                    :moving-from 'nil
+;;                                                    :mousedown 'false
+;;                                                    :active-entity 'nil
+;;                                                    :entities-in-flux '(list)
+;;                                                    :entities '(list)))))))
+;;     (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
+;;                                                       of-local (manifest-locality)))))))
+  
+;; (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
+;;   (let ((pairs (if (uic-join aspect)
+;;                    (list :system (first  (uic-join aspect))
+;;                          :branch (second (uic-join aspect))))))
+;;   (case (uic-mode aspect)
+;;     (:chart 
+;;      ;; (print (list :ee (uic-join aspect) (parenscript:ps* `(create a 1 b 2))))
+;;      (list :x-data (setf pairs (append pairs (list :interaction "select"
+;;                                                    :draw-entity "line"
+;;                                                    :moving-from 'nil
+;;                                                    :mousedown 'false
+;;                                                    :active-entity 'nil
+;;                                                    :entities-in-flux '(list)
+;;                                                    :entities '(list)))))))
+;;     (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
+;;                                                       of-local (manifest-locality)))))))
 
 (defun alist-supersede (new original)
   (loop :for n :in new :do (if (assoc (first n) original)
@@ -313,7 +369,7 @@
            :id ,(format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
            :class ,(get-output-stream-string class-stream)
            :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
-                               (of-local "register" "main" $el)
+                               (chain mode (of-local "register" "main" $el))
                                ;; (chain console (log :aaa (of-local "list" "main")))
                                (fetch-contact (lisp (string-upcase system))
                                               (lisp (string-upcase (uic-base aspect)))
@@ -350,6 +406,7 @@
                                          (:column `(:div :class "column-inner" ,element))
                                          (t element))))
                element))
+        
         (loop :for type :in types :for ix :from 0
               :do (format class-stream "~a" (string-downcase type))
                   (unless (= ix last-type-index) (format class-stream " ")))
@@ -362,9 +419,6 @@
                                               (loop :for i :below (or (first lprops) breadth-default)
                                                     :collect ratio)))))
 
-                ;; envelop the series element if needed for a mode property
-                (envelop medium aspect)
-                
                 ;; (if nil ; join-spec
                 ;;     (destructuring-bind (system &optional branch)
                 ;;         (if (listp join-spec) join-spec (list nil join-spec))
@@ -424,7 +478,7 @@
          (name (if (symbolp base) base)))
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
-      (print (list :aa action base (uic-type aspect)))
+      ;; (print (list :aa action base (uic-type aspect)))
       (let ((action-props
               (case action
                 (:cast-forms
@@ -436,15 +490,21 @@
                 (t (if (member :trigger (uic-type aspect))
                        (let ((trigger-type (nth (1+ (position :trigger (uic-type aspect)))
                                                 (uic-type aspect))))
-                         (case trigger-type
-                           (:local (list :|x-on:click|
-                                         (parenscript:ps* (list 'chain 'mode
-                                                                (list (intern (string base)))))))
-                           (t (list :|x-on:click| ;; :remote
-                                    (ps (fetch-contact (@ mode system) (@ mode branch)
-                                                       (create action (lisp (lisp->camel-case action)))
-                                                       (lambda (data)
-                                                         (of-local "trigger" "main" "reload")))))))))))))
+                         (list :|x-on:click|
+                                         (parenscript:ps* (list 'chain 'methods
+                                                                (list (intern (string base))
+                                                                      'mode))))
+                         ;; (case trigger-type
+                         ;;   (:local (list :|x-on:click|
+                         ;;                 (parenscript:ps* (list 'chain 'methods
+                         ;;                                        (list (intern (string base)))))))
+                         ;;   (t (list :|x-on:click| ;; :remote
+                         ;;            (ps (fetch-contact (@ mode system) (@ mode branch)
+                         ;;                               (create action (lisp (lisp->camel-case action)))
+                         ;;                               (lambda (data)
+                         ;;                                 (of-local "trigger" "main" "reload")))))))
+
+                         ))))))
         `(:button :name ,(or (string name) "") :class "ui button"
                   ,@action-props ,(realize aspect medium ;; (uic-base aspect)
                                            name))))))
@@ -524,20 +584,29 @@
                (cons (first item) (append item-props (last item)))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
-  ;; (print (list :ava aspect (uic-cast aspect)))
-  (if (not (uic-cast aspect))
-      (call-next-method)
-      (let* ((cast (uic-cast aspect))
-             (section-id (if (listp cast) (getf cast :id))))
-        (list :form ;; :hx-vals (if (not (listp cast))
-                    ;;              "{}" (ps* `(create ,(getf cast :data))))
-                    :id (if (not section-id)
-                            "" (format nil "cast-~a" (lisp->camel-case section-id)))
-                    :hx-inherit "*" :hx-post "/render/" ;; :hx-target "#main"
-                    ;; :x-init (psl (progn (if (not (= "undefined" (typeof local-forms)))
-                    ;;                         (push-form $el local-forms))))
-                    ;; TODO: CHANGE HARDCODED ELEMENT ID
-              (call-next-method)))))
+  (let ((main (call-next-method))
+        (furnishing (furnish medium aspect)))
+
+    ;; (print (list :ava aspect furnishing (uic-cast aspect)))
+    ;; (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
+    ;;                                                   of-local (manifest-locality)))))
+    
+    (when furnishing
+      (let ((pairs-out (loop :for f :in furnishing :collect (if (symbolp f)
+                                                                f (cons 'create f)))))
+        (setf main (cons (first main)
+                         (append (list :x-data (parenscript:ps* `(create ,@pairs-out
+                                                                         of-local (manifest-locality))))
+                                 (rest main))))))
+    
+    (flet ((cast-wrap (base-form)
+             (let* ((cast (uic-cast aspect))
+                    (section-id (if (listp cast) (getf cast :id))))
+               (list :form :id (if (not section-id)
+                                   "" (format nil "cast-~a" (lisp->camel-case section-id)))
+                     :hx-inherit "*" :hx-post "/render/" base-form))))
+      (if (not (uic-cast aspect))
+          main (cast-wrap main)))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
   ;; Date,EUR/CAD(Open-Ask),EUR/CAD(High-Ask),EUR/CAD(Low-Ask),EUR/CAD(Close-Ask),EUR/CAD(Open-Bid)*,EUR/CAD(High-Bid)*,EUR/CAD(Low-Bid)*,EUR/CAD(Close-Bid)*

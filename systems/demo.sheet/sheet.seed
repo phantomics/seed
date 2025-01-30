@@ -223,7 +223,7 @@
                 :graph-key :graph :node-indices-key :graph-node-indices)))
          (lambda (context input)
            (cbind input item
-             ("state")
+             ("state" :graph-breadth)
              ("ifmod-head" (fx ((:each uicc-button :type (:trigger :remote))
                                 (uic-series :type (:ui :controls)))
                                ;; (create action "addNode")
