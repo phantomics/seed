@@ -157,13 +157,14 @@
 
     `(.ui.header
       :border-bottom "2px solid #ccc"
-      (h2.branch-name :margin 0 :grid-column-start 1))
+      (h2.branch-name :margin 0 :grid-column-start 1)
+      (.controls :text-align right))
     
-    `(.ui.footer :bottom 0 :border-top "2px solid #ccc")
+    `(.ui.footer :bottom 0 :border-top "2px solid #ccc"
+      (.controls :text-align left))
 
     `((:or .ui.header .ui.footer)
-      (.controls :text-align right :grid-column-end 3
-                 (.item :display inline)))
+      (.controls :grid-column-end 3 (.item :display inline)))
 
     `(.form.text (.cm-editor :height 100%))
 

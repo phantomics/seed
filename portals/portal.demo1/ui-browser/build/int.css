@@ -147,16 +147,23 @@ body{
     grid-column-start: 1;
 }
 
+.ui.header .controls{
+    text-align: right;
+}
+
 .ui.footer{
     bottom: 0;
     border-top: 2px solid #ccc;
+}
+
+.ui.footer .controls{
+    text-align: left;
 }
 
 
 
 .ui.header .controls,
 .ui.footer .controls{
-    text-align: right;
     grid-column-end: 3;
 }
 

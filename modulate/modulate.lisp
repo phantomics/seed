@@ -250,7 +250,25 @@
                                       :mousedown 'false
                                       :active-entity 'nil
                                       :entities-in-flux '(list)
-                                      :entities '(list))))
+                                      :entities '(list))
+                          :methods (list :select
+                                         '(lambda (mode)
+                                           (setf (@ mode interaction) "select"))
+                                         :draw
+                                         '(lambda (mode)
+                                           (setf (@ mode interaction) "draw"
+                                                 (@ mode draw-entity) "line"))
+                                         :retrace-x
+                                         '(lambda (mode)
+                                           (setf (@ mode interaction) "draw"
+                                                 (@ mode draw-entity) "retraceX"))
+                                         :retrace-y
+                                         '(lambda (mode)
+                                           (setf (@ mode interaction) "draw"
+                                                 (@ mode draw-entity) "retraceY"))
+                                         :zoom-actual
+                                         '(lambda (mode)
+                                           ))))
 
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
@@ -370,7 +388,6 @@
            :class ,(get-output-stream-string class-stream)
            :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                (chain mode (of-local "register" "main" $el))
-                               ;; (chain console (log :aaa (of-local "list" "main")))
                                (fetch-contact (lisp (string-upcase system))
                                               (lisp (string-upcase (uic-base aspect)))
                                               (create height (@ $el offset-height)
@@ -419,14 +436,6 @@
                                               (loop :for i :below (or (first lprops) breadth-default)
                                                     :collect ratio)))))
 
-                ;; (if nil ; join-spec
-                ;;     (destructuring-bind (system &optional branch)
-                ;;         (if (listp join-spec) join-spec (list nil join-spec))
-                ;;       (list :x-data (ps:ps* `(create ,@(if system `(system ,system))
-                ;;                                      ,@(if branch `(branch ,branch))
-                ;;                                      ;; local-forms (list)
-                ;;                                      ;; allow extension of forms list in some cases
-                ;;                                      act (realize ,system ,branch $el))))))
                 (loop :for ix :from 0 :for item :in (uic-base aspect)
                       :collect (let ((map (nth ix (uic-series-maps aspect))))
                                  (format class-stream "item ")
@@ -481,7 +490,7 @@
       ;; (print (list :aa action base (uic-type aspect)))
       (let ((action-props
               (case action
-                (:cast-forms
+                (:cast-forms ;; TODO: IS THIS STILL NEEDED?
                  `(:|x-on:click|
                     ,(ps (chain htmx (find-all (lisp (format nil "#cast-~a form.xp-form"
                                                              (lisp->camel-case (first props)))))
@@ -506,8 +515,7 @@
 
                          ))))))
         `(:button :name ,(or (string name) "") :class "ui button"
-                  ,@action-props ,(realize aspect medium ;; (uic-base aspect)
-                                           name))))))
+                  ,@action-props ,(realize aspect medium name))))))
                             
 (defmethod generate ((medium uim-web) (aspect uicc-text))
   ;; (print (list :ee medium (uic-type aspect)))
