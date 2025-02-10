@@ -6,7 +6,6 @@
   :license  "GPL-3.0"
   :version "0.0.1"
   :serial t
-  :depends-on ("symbol-munger" "spinneret" "parenscript" "paren6" "lass"
-                               "seed.generate" "seed.contact.http")
+  :depends-on ("seed.generate" "seed.contact.http" "pla.browser.common")
   :components ((:file "package")
                (:file "maple")))

@@ -1,37 +1,6 @@
 ;;;; seed.modulate.lisp
 (in-package #:seed.modulate)
 
-(defun json-convert-to (form &optional stream)
-  (let ((initial (not stream))
-        (stream (or stream (make-string-output-stream))))
-    ;; (print (list :in initial))
-    (if initial (com.inuoe.jzon:with-writer* (:stream stream :pretty nil)
-                  (json-convert-to form stream)
-                  (get-output-stream-string stream))
-        (if (not (listp form))
-            (if (arrayp form)
-                (com.inuoe.jzon:with-array*
-                  (loop :for item :across form :do (json-convert-to item stream)))
-                (com.inuoe.jzon:write-value* form))
-            (if (keywordp (first form))
-                (com.inuoe.jzon:with-object* 
-                  (loop :for (key value) :on form :by #'cddr
-                        :do (com.inuoe.jzon:write-key* (symbol-munger:lisp->camel-case key))
-                            ;; (when (eq :mt key) (print (list :vl value form)))
-                            (if (listp value)
-                                (if (listp (first value))
-                                    (com.inuoe.jzon:with-array*
-                                      (loop :for item :in value :do (json-convert-to item stream)))
-                                    (json-convert-to value stream))
-                                (if (and (symbolp value) (not (eq :ct key)))
-                                    (com.inuoe.jzon:write-value*
-                                     (symbol-munger:lisp->camel-case value))
-                                    (com.inuoe.jzon:write-value* value)))))
-                (com.inuoe.jzon:with-array*
-                  (loop :for item :in (if (not (eql '>> (first form)))
-                                          form (rest form))
-                        :do (json-convert-to item stream))))))))
-
 (defmacro psl (form)
   "A macro for denoting inline Parenscript code."
   `(subseq (parenscript:ps-inline ,form) 11))
@@ -251,7 +220,12 @@
                                       :active-entity 'nil
                                       :entities-in-flux '(list)
                                       :entities '(list))
-                          :methods (list :select
+                          :methods (list :save
+                                         '(lambda (mode)
+                                           (fetch-contact (@ mode system)
+                                            (@ mode branch) (create action "save")
+                                            (lambda (data))))
+                                         :select
                                          '(lambda (mode)
                                            (setf (@ mode interaction) "select"))
                                          :draw
@@ -393,18 +367,14 @@
                                               (create height (@ $el offset-height)
                                                       width  (@ $el offset-width))
                                               (lambda (data)))))
-           :hx-vals ,(json-convert-to (list :system system :face face
-                                            :branch (string-upcase (uic-base aspect))))
-           ;; :hx-vals ,(print (ps (create system (lisp system) face (lisp face)
-           ;;                       branch (lisp (string-upcase (uic-base aspect))))))
-           :x-data ,(ps (create branch-frame $el)))))
+           :hx-vals ,(json-convert-to (list :system system :face face :branch branch))
+           :x-data ,(psl (create branch-frame $el)))))
 
 (defmethod generate ((medium uim-web) (aspect uic-series))
   (let ((last-type-index (1- (length (uic-type aspect))))
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
-        ;; (join-spec (rest (assoc :out (uic-join aspect))))
         (breadth-default 12))
     (format class-stream "ui ")
     (format class-stream "~a" (typecase aspect (uic-series "series ")
@@ -414,8 +384,6 @@
     (destructuring-bind (&optional ltype lstyle &rest lprops) (uic-series-layout aspect)
       (case ltype
         ((:horizontal :vertical) (format class-stream "series grid-layout ")))
-
-      ;; (print (list :js (uic-join aspect)))
 
       (flet ((enclose-by-type (types element)
                (loop :for type :in types
@@ -454,9 +422,7 @@
   (destructuring-bind (system branch) (uic-base aspect)
     (let ((token (format nil "canvas-datagrid-~a-~a"
                          (string-downcase system) (string-downcase branch)))
-          (branch (string-downcase branch))
-          ;; (mode (getf props :mode))
-          )
+          (branch (string-downcase branch)))
       `(:div :id "datagrid-cells" ;; :class (getf props :item-classes)
              :x-init ,(psl (progn (setf (getprop (@ window seed-elements) (lisp branch)) $el)
                                   (fetch-contact
@@ -636,8 +602,9 @@
                                            (lambda (data)
                                              ;; (chain console (log :dd data config $el))
                                              (setf (getprop (@ window seed-elements) (lisp branch))
-                                                   (new (chain
-                                                    window (-dygraph $el data config))))
+                                                   (setf (@ mode chart)
+                                                         (new (chain
+                                                               window (-dygraph $el data config)))))
                                              
                                              ))))))))
 

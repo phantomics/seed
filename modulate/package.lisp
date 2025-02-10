@@ -5,4 +5,5 @@
   (:export #:encode #:render #:uim-web #:uic-access #:uic-anchor #:uic-series
            #:uic-series-form #:uic-grid #:uicc-button #:uicc-text #:uicc-text-line
            #:uicc-text-area #:uich-candle #:spec-graph-interface)
-  (:shadowing-import-from #:com.inuoe.jzon #:stringify))
+  (:shadowing-import-from #:com.inuoe.jzon #:stringify)
+  (:shadowing-import-from #:seed.generate #:json-convert-to))

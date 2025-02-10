@@ -12,7 +12,7 @@
            #:cbind #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system #:form-span
            #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender ;; #:render-console
-           #:meta-revise #:psl
+           #:meta-revise #:psl #:astr
            #:system-file-to-string #:from-system-file #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec)
   (:shadowing-import-from #:parse-number #:parse-number)

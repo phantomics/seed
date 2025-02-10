@@ -2,6 +2,15 @@
 
 (in-package #:pla.browser.maple)
 
+(defvar *flat-sources*)
+
+(setf *flat-sources*
+      '((:htmx "https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js")
+        (:alpine "https://unpkg.com/alpinejs@3.14.8/dist/cdn.js"
+                 "alpine.js")
+        (:mousetrap "https://craig.global.ssl.fastly.net/js/mousetrap/mousetrap.min.js")
+        (:dygraph "https://dygraphs.com/2.2.1/dist/dygraph.min.js")))
+
 (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))
         (input (gensym)) (port (gensym)) (value (gensym)) (stopper (gensym))
@@ -32,7 +41,7 @@
                                                              ;;               (rest ,p)))
                                                        ,input))))
                       :renderer-fetch (lambda (,params ,session-api)
-                                        ;; (print (list :par params session-api))
+                                        ;; (print (list :par ,params ,session-api))
                                         (let ((,system-name (get-name "system" ,params))
                                               (,branch-name (get-name "branch" ,params)))
                                           (,to-grow ,system-name ,branch-name ,session-api
@@ -41,12 +50,6 @@
                                                                          (rest ,p)))))))
                    (setf (symbol-function ',to-stop)    ,stopper
                          (symbol-function ',to-restart) ,restarter))))))))
-
-(defmacro write-to-file (stream package path &body clauses)
-  `(with-open-file (,stream (asdf:system-relative-pathname (intern (package-name ,package) "KEYWORD")
-                                                           ,path)
-			    :direction :output :if-exists :supersede :if-does-not-exist :create)
-     ,@clauses))
 
 (defun build-static-page (stream portal-sym)
   (let ((spinneret:*html* stream))
@@ -108,24 +111,7 @@
        (.container :position "relative" :height "100%") ;;  :display grid)
        (.column-inner
         :padding 0 :overflow auto
-        (.access.body :height "100%" :background "#fff")
-        ;; :grid-template-columns "100%"
-        ;; :grid-template-rows "[header-start] auto [header-end] 1fr [footer-start] auto [footer-end]"
-        
-        ;; (.header :grid-row-start "header-start" :grid-row-end "header-end")
-        ;; (.container-wrap
-        ;; :grid-row-start "header-end"
-        ;; :grid-row-end   "footer-start"
-        ;; (.sub-container :grid-row-start "header-end" :grid-row-end   "footer-start"
-        ;;                 :overflow-y auto)
-        ;; (.footer :grid-row-start "footer-start" :grid-row-end "footer-end")
-        ;; ((:and .container.column (:nth-child 1))
-        ;;  :grid-row-start "header-start")
-        ;; ((:and .container.column (:nth-child 2))
-        ;;  :grid-row-start "header-end")
-        ;; ((:and .container.column (:nth-child 3))
-        ;;  :grid-row-start "footer-start")
-        )))
+        (.access.body :height "100%" :background "#fff"))))
 
     `(.ui.grid-layout.main
       :grid-template-rows "100%"
@@ -238,41 +224,6 @@
     
     )))
 
-(defun concat-files2 (out-path &rest in-paths)
-  (with-open-file (output out-path :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (loop :for path :in in-paths
-          :do (with-open-file (input path :direction :input)
-                (loop :for char := (read-char input nil :eof) :until (eq char :eof)
-                      :do (write-char char output))
-                (princ #\Newline output)))
-    :complete))
-
-(defun concat-files (out-stream package &rest in-paths)
-  (loop :for path :in in-paths
-        :do (with-open-file (input (asdf:system-relative-pathname
-                                    (intern (string (package-name package)) "KEYWORD")
-                                    path)
-                                   :direction :input)
-              (loop :for char := (read-char input nil :eof) :until (eq :eof char)
-                    :do (write-char char out-stream))
-              (princ #\Newline out-stream)))
-    :complete)
-
-(defmacro provide-browser-script (package-sym &rest tasks)
-  (cons 'progn (loop :for task :in tasks
-                     :collect (destructuring-bind (task-id &rest params) task
-                                (case task-id
-                                  (:run-process
-                                   `(uiop:run-program (format nil ,@params)))
-                                  (:concat-static
-                                   `(concat-files2 ,(asdf:system-relative-pathname
-                                                    (intern (string package-sym) "KEYWORD")
-                                                    (rest (assoc :output-to params)))
-                                                  ,@(mapcar (lambda (p)
-                                                              (asdf:system-relative-pathname
-                                                               (intern (string package-sym) "KEYWORD") p))
-                                                            (rest (assoc :paths params))))))))))
-
 (defun build-script-element (&key stream imports constructors)
   (loop :for import :in imports
         :do (if (listp import)
@@ -305,10 +256,8 @@
             stream (paren6::ps
                      (defvar |*__PS_MV_REG*|)
                      (defvar lisp-setup (funcall (lambda ()
-                                                   (list (bracket-matching)
-                                                         (close-brackets)
-                                                         (line-numbers)
-                                                         (highlight-active-line)
+                                                   (list (bracket-matching) (close-brackets)
+                                                         (line-numbers) (highlight-active-line)
                                                          (highlight-active-line-gutter)
                                                          (fold-gutter)))))
                      (setf (@ global python) python
@@ -333,8 +282,24 @@
                                                                      doc data)))))
                                view)))))))))
 
-(defpsmacro pcl (&rest items)
-  `(chain console (log ,@items)))
+(defun build-script-pmirror (stream)
+  (build-script-element
+   :stream stream
+   :imports `(((schema) "prosemirror-schema-basic")
+              ((-editor-state) "prosemirror-state")
+              ((-editor-view) "prosemirror-view"))
+   :constructors
+   (list (lambda (stream)
+           (format stream (paren6::ps
+                            (defvar |*__PS_MV_REG*|)
+                            (setf (@ global create-prosemirror)
+                                  (lambda (target data)
+                                    (let* ((state (-editor-state (create schema schema)))
+                                           (view (new (-editor-view (create state state)))))
+                                      view)))))))))
+
+;; (defpsmacro pcl (&rest items)
+;;   `(chain console (log ,@items)))
 
 (defpsmacro undefp (item)
   `(= "undefined" (typeof ,item)))
@@ -481,6 +446,7 @@
 		         (setf (@ ctx stroke-style) "black"
 			       (@ ctx line-width) 1)))
 	    (intersect-line (lambda (ent chart point callback)
+                              (chain console (log :ch chart ent))
 			      (let ((line-points (list (chain chart (to-dom-coords (@ ent points 0 0)
 										   (@ ent points 0 1)))
 						       (chain chart (to-dom-coords (@ ent points 1 0)
@@ -545,6 +511,17 @@
 					       (setf (@ ctx stroke-style) "black"
 					             (@ ctx line-width) 1.5)))
 			              intersect intersect-line))))
+
+     (defvar candlestick-chart-entity-templates
+       (create line (create)
+	       retrace-x (create ratios (list (list 0 0.382 0.618 1)))
+	       retrace-y (create ratios (list (list) (list 0 0.236 0.382 0.500 0.618 0.764 1)))))
+     
+     (defun commit-entities (mode)
+       (fetch-contact (@ mode system) (@ mode branch)
+                      (create entities (@ mode entities ))
+                      (lambda (data)
+                        (chain console (log :en data)))))
      
      (defun interactor-mousewheel (mode)
        (lambda (event chart context)
@@ -570,7 +547,7 @@
 
      (defun interactor-mousedown (mode)
        (lambda (event g context)
-         (chain console (log "aaa"))
+         (chain console (log "aaa" g))
          (setf (@ mode mousedown) t)
          (let ((canvas-coords (list (@ event layer-x) (@ event layer-y)))
 	       (dom-coords (chain g (event-to-dom-coords event)))
@@ -580,7 +557,7 @@
 	         (loop for entix from 0 to (1- entities-count)
 		       do (chain self draw-methods line
 			         (intersect
-			          (getprop (@ mode entities) entix) (@ self chart) dom-coords
+			          (getprop (@ mode entities) entix) (@ mode chart) dom-coords
 			          (lambda (ent)
 			            (setf entity-clicked true
 				          (@ ent layer-points)
@@ -624,8 +601,12 @@
 					  points (list (list (@ data-pos 0) (@ data-pos 1))
 						       (list (@ data-pos 0) (@ data-pos 1)))
 					  points-in-flux (list)))
-			    (new-entity (chain j-query (extend t base (getprop self "entityTemplates"
-									       (@ mode draw-entity))))))
+			    (new-entity ;; (chain j-query (extend t base (getprop self "entityTemplates"
+					;; 				       (@ mode draw-entity))))
+                                        (chain -object
+                                               (assign (create)
+                                                       base (getprop candlestick-chart-entity-templates
+							             (@ mode draw-entity))))))
 		       (chain mode entities (push new-entity))
 		       (chain mode entities-in-flux (push new-entity))
 		       (setf (@ mode active-entity)
@@ -633,7 +614,7 @@
      
      (defun interactor-mouseup (mode)
        (lambda (event chart context)
-         (chain console (log "bbb"))
+         (chain console (log "bbb" (@ mode entities)))
          (let ((self this))
            (setf (@ mode mousedown) false)
            (if (= "select" (@ mode interaction))
@@ -641,7 +622,8 @@
                    (progn (chain window -dygraph (end-pan event chart context))
         	          (chain chart (draw-graph_)))
                    (progn (loop for ent in (@ mode entities)
-        		        do (if (@ ent in-flux)
+        		        do (chain console (log :ee ent))
+                                   (if (@ ent in-flux)
         			       (setf (@ ent points 0)
                                              (chain chart (to-data-coords (@ ent layer-points 0 0)
         								  (@ ent layer-points 0 1)))
@@ -650,12 +632,12 @@
         								  (@ ent layer-points 1 1)))
         			             (@ ent layer-points) nil
         			             (@ ent points-in-flux) (list))))
-        	          (chain self (commit-entities))
+        	          (commit-entities mode)
         	          (chain chart (draw-graph_))))
                (if (= "draw" (@ mode interaction))
                    (progn (setf (@ mode active-entity) nil
         		        (@ mode interaction) "select")
-        	          (chain self (commit-entities))
+        	          (commit-entities mode)
         	          (chain chart (draw-graph_))))))))
          
      (defun interactor-mousemove (mode)

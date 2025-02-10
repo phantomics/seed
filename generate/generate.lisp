@@ -230,6 +230,11 @@
 (defun json-convert-from (form)
   (jonathan:parse form))
 
+(defmacro astr (key form)
+  (let ((key-string (if (stringp key)
+                        key (lisp->camel-case key))))
+    `(rest (assoc ,key-string ,form :test #'string=))))
+
 (defun alist-to-json (input-form &optional stream)
   (let ((stream (or stream (make-string-output-stream))))
     (flet ((process-form (form)
@@ -454,320 +459,320 @@
                                                (lambda (data) (chain console (log :sv)))))
                            (str (string-downcase (getf props :subsection)))))))))))
 
-(defun render-html-interface (form &optional system-id meta path stream)
-  (let ((strout (or stream (make-string-output-stream)))
-        ;; get ID of applicable system from form metadata
-        (system-id (or (rest (assoc :system (getf form :mt)))
-                       system-id))
-        (path-string (apply #'concatenate 'string
-                            (loop :for item :in (reverse path)
-                                  :append (list (write-to-string item) " ")))))
-    ;; (print (list :fo form))
-    (case (getf form :ty)
-      (:sy (if (not (getf meta :app))
-               (write-string (getf form :ct) strout)
-               (case (getf meta :app)
-                 (:set-endpoint
-                  (cl-who:with-html-output (strout)
-                    (:span :|x-on:click|
-                           (psl (chain (fetch "/contact/"
-                                              (create method "POST"
-                                                      body (chain -j-s-o-n
-                                                                  (stringify
-                                                                   (create
-                                                                    system (lisp (string-upcase system-id))
-                                                                    BRANCH "SYSTEMS"
-                                                                    input (ps:lisp (getf form :ct)))))
-                                                      headers (create "Content-type"
-                                                                      "application/json; charset=UTF-8")))
-                                       (then (lambda (response) (chain response (json))))
-                                       (then (lambda (data) (chain htmx (trigger "#main" "reload"))))))
-                           (str (lisp->camel-case (getf form :ct))))))
-                 ;; (:set-nav-point
-                 ;;  (print (list :forma form))
-                 ;;  (if form (cl-who:with-html-output (strout)
-                 ;;             (:h4 (str (getf form :ct))))
-                 ;;      (cl-who:with-html-output (strout) (:p "abcd"))))
-                 (t (write-string (getf form :ct) strout)))))
-      (:ar (when (stringp (getf form :ct))
-             (write-string (getf form :ct) strout)))
-      (:ls (let ((contents (getf form :ct))
-                 (type (rest (assoc :type (getf form :mt))))
-                 (members (rest (assoc :members (getf form :mt)))))
-             (match type
-               ((list :form)
-                (cl-who:with-html-output (strout)
-                  (:div :path path-string
-                        (loop :for c :in contents :for ix :from 0
-                              :do (let ((item-classes
-                                          (apply #'concatenate 'string
-                                                 (loop :for y :in (rest (assoc :type (getf c :mt)))
-                                                       :collect (format nil "~a " y))))
-                                        (this-meta (if (not (assoc :app (getf form :mt)))
-                                                       nil (assoc :app (getf form :mt)))))
-                                    (if (assoc :access (getf c :mt))
-                                        (let ((branch (second (assoc :access (getf c :mt)))))
-                                          (htm (:div :class item-classes :hx-trigger "load, reload"
-                                                     :hx-post "/render/"
-                                                     :hx-vals (json-convert-to (list :system :portal.demo1
-                                                                                     :branch branch)))))
-                                        (htm (:div :class item-classes
-                                                   (render-html-interface c system-id this-meta
-                                                                          (cons ix path)
-                                                                          strout)))))))))
-               ;; ((list :form :branch-navigation)
-               ;;  ;; (print (list :con contents form))
-               ;;  (let ((point (or (second (assoc :point (getf form :mt)))
-               ;;                   (getf (first contents) :ct)))
-               ;;        ;; (point-index (if (not point) 0 (position point contents
-               ;;        ;;                                          :test (lambda (a b)
-               ;;        ;;                                                  (string= a (getf b :ct))))))
-               ;;        )
-               ;;    (cl-who:with-html-output (strout)
-               ;;      (:div :path path-string
-               ;;            :id "branch-navigation"
-               ;;            (loop :for c :in contents :for ix :from 0
-               ;;                  :do (if c (htm (:h4 :hx-post "/render/"
-               ;;                                      :class (if (string= point (getf c :ct))
-               ;;                                                 "point" "")
-               ;;                                      :hx-target "#main"
-               ;;                                      :hx-trigger "click consume"
-               ;;                                      :hx-vals (json-convert-to
-               ;;                                                (list :system :portal.demo1
-               ;;                                                      :branch (rest (assoc :target
-               ;;                                                                           (getf form :mt)))
-               ;;                                                      :point (getf c :ct)))
-               ;;                                      (str (getf c :ct))))
-               ;;                          (htm (:hr :class "divider"))))))))
-               ;; ((list :form :elem)
-               ;;  (let ((branch (second (assoc :access (getf form :mt))))
-               ;;        (name (rest (assoc :name (getf form :mt))))
-               ;;        (controls (rest (assoc :controls (getf form :mt))))
-               ;;        (item-classes (apply #'concatenate 'string
-               ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
-               ;;                                   :collect (format nil "~a " (string-downcase y)))))
-               ;;        (iface-name (rest (assoc :name (getf form :mt)))))
-               ;;    (cl-who:with-html-output (strout)
-               ;;      (:div :class "container column-inner"
-               ;;            :x-data (psl (let ((main-forms (list)))
-               ;;                           (create push-form (lambda (item)
-               ;;                                               (chain main-forms (push item)))
-               ;;                                   submit-forms (lambda ()
-               ;;                                                  ;; (chain console (log :mm main-forms))
-               ;;                                                  (chain main-forms
-               ;;                                                         (for-each (lambda (form)
-               ;;                                                                     (chain htmx
-               ;;                                                                            (trigger
-               ;;                                                                             form
-               ;;                                                                             "submit")))))))))
-               ;;            (if (not (assoc :header controls))
-               ;;                nil (htm (:div :class "ui medium header"
-               ;;                               (:h2 :class "branch-name" (str (lisp->camel-case name)))
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :header controls))
-               ;;                                           :do (branch-spec-form
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                :branch branch :name iface-name))))))
-               ;;            (branch-spec-form
-               ;;             strout :body-svg :system system-id :branch branch
-               ;;                              :item-classes item-classes :name iface-name)
-               ;;            (if (not (assoc :footer controls))
-               ;;                nil (htm (:div :class "ui medium footer"
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :footer controls))
-               ;;                                           :do (branch-spec-form
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                :branch branch :name iface-name))))))))))
-               ;; ((list :form :text)
-               ;;  (let ((branch (second (assoc :access (getf form :mt))))
-               ;;        (name (rest (assoc :name (getf form :mt))))
-               ;;        (controls (rest (assoc :controls (getf form :mt))))
-               ;;        (item-classes (apply #'concatenate 'string
-               ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
-               ;;                                   :collect (format nil "~a " (string-downcase y))))))
-               ;;    (cl-who:with-html-output (strout)
-               ;;      (:div :class "container column-inner"
-               ;;            (if (not (assoc :header controls))
-               ;;                nil (htm (:div :class "ui medium header"
-               ;;                               (:h2 :class "branch-name" (str (lisp->camel-case name)))
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :header controls))
-               ;;                                           :do (branch-spec-codemirror-editor
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                                :branch branch))))))
-               ;;            (branch-spec-codemirror-editor strout :body :system system-id
-               ;;                                                       :branch branch :item-classes item-classes)
-               ;;            (if (not (assoc :footer controls))
-               ;;                nil (htm (:div :class "ui medium footer"
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :footer controls))
-               ;;                                           :do (branch-spec-codemirror-editor
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                                :branch branch))))))))))
-               ((list :form :tree)
-                (let ((branch (second (assoc :access (getf form :mt))))
-                      (name (rest (assoc :name (getf form :mt))))
-                      (controls (rest (assoc :controls (getf form :mt))))
-                      (item-classes (apply #'concatenate 'string
-                                           (loop :for y :in (rest (assoc :type (getf form :mt)))
-                                                 :collect (format nil "~a " (string-downcase y))))))
-                  (cl-who:with-html-output (strout)
-                    (:div :class "container column-inner"
-                          (if (not (assoc :header controls))
-                              nil (htm (:div :class "ui medium header"
-                                             (:h2 :class "branch-name" (str (lisp->camel-case name)))
-                                             (:div :class "controls-holder"
-                                                   (loop :for c :in (rest (assoc :header controls))
-                                                         :do (branch-spec-cvdatagrid-tree
-                                                              strout :control :subsection c :system system-id
-                                                                              :branch branch))))))
-                          (branch-spec-cvdatagrid-tree strout :body :system system-id :mode :tree
-                                                                    :branch branch :item-classes item-classes)
-                          (if (not (assoc :footer controls))
-                              nil (htm (:div :class "ui medium footer"
-                                             (:div :class "controls-holder"
-                                                   (loop :for c :in (rest (assoc :footer controls))
-                                                         :do (branch-spec-cvdatagrid-tree
-                                                              strout :control :subsection c :system system-id
-                                                                              :branch branch))))))))))
-               ;; ((list :form :cells)
-               ;;  (let ((branch (second (assoc :access (getf form :mt))))
-               ;;        (name (rest (assoc :name (getf form :mt))))
-               ;;        (controls (rest (assoc :controls (getf form :mt))))
-               ;;        (item-classes (apply #'concatenate 'string
-               ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
-               ;;                                   :collect (format nil "~a " (string-downcase y))))))
-               ;;    (cl-who:with-html-output (strout)
-               ;;      (:div :class "container column-inner"
-               ;;            (if (not (assoc :header controls))
-               ;;                nil (htm (:div :class "ui medium header"
-               ;;                               (:h2 :class "branch-name" (str (lisp->camel-case name)))
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :header controls))
-               ;;                                           :do (branch-spec-cvdatagrid-sheet
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                                :branch branch))))))
-               ;;            (branch-spec-cvdatagrid-sheet strout :body :system system-id
-               ;;                                                       :branch branch :item-classes item-classes)
-               ;;            (if (not (assoc :footer controls))
-               ;;                nil (htm (:div :class "ui medium footer"
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :footer controls))
-               ;;                                           :do (branch-spec-cvdatagrid-sheet
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                                :branch branch))))))))))
-               ;; ((list :form :vector)
-               ;;  (let ((branch (second (assoc :access (getf form :mt))))
-               ;;        (controls (rest (assoc :controls (getf form :mt))))
-               ;;        (item-classes (apply #'concatenate 'string
-               ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
-               ;;                                   :collect (format nil "~a " (string-downcase y))))))
-               ;;    (cl-who:with-html-output (strout)
-               ;;      (:div :class "container column-inner"
-               ;;            (if (not (assoc :header controls))
-               ;;                nil (htm (:div :class "ui medium header"
-               ;;                               (:h2 :class "branch-name" (str (lisp->camel-case branch)))
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :header controls))
-               ;;                                           :do (branch-spec-d3
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                                :branch branch))))))
-               ;;            (branch-spec-d3 strout :body :system system-id
-               ;;                                         :branch branch :item-classes item-classes)
-               ;;            (if (not (assoc :footer controls))
-               ;;                nil (htm (:div :class "ui medium footer"
-               ;;                               (:div :class "controls-holder"
-               ;;                                     (loop :for c :in (rest (assoc :footer controls))
-               ;;                                           :do (branch-spec-d3
-               ;;                                                strout :control :subsection c :system system-id
-               ;;                                                                :branch branch))))))))))
-               ((list :form (guard form-type (keywordp form-type)))
-                ;; (print (list :for form))
-                (let ((branch (second (assoc :access (getf form :mt))))
-                      (item-classes (apply #'concatenate 'string
-                                           (loop :for y :in (rest (assoc :type (getf form :mt)))
-                                                 :collect (format nil "~a " (string-downcase y))))))
-                  (cl-who:with-html-output (strout)
-                    (:div :class item-classes :hx-trigger "load, reload"
-                          :x-init (psl (setf (getprop (@ window seed-elements) (lisp branch)) $el))
-                          :hx-post "/render/" :hx-vals (json-convert-to (list :system :demo.sheet
-                                                                              :branch branch))))))
-               ((list* :group :linear _)
-                ;; (let ((widths (if (eq :sidebar (first members))
-                ;;                   '("two" "fourteen") '("seven" "seven"))))
-                (cl-who:with-html-output (strout)
-                  (:div :class (format nil "ui grid-layout ~a"
-                                       (apply #'concatenate
-                                              'string (loop :for s :in (cddr type)
-                                                            :append (list " " (string-downcase s)))))
-                        :path path-string
-                        (loop :for c :in contents :for m :in members :for ix :from 0 ; :for w :in widths
-                              :do (let ((item-classes
-                                          (apply #'concatenate 'string
-                                                 (loop :for y :in (rest (assoc :type (getf c :mt)))
-                                                       :collect (format nil "~a " y)))))
-                                    (htm (:div :class (format nil "~a ~a"
-                                                              (string-downcase item-classes)
-                                                              (string-downcase m))
-                                               (render-html-interface c system-id nil
-                                                                      (cons ix path)
-                                                                      strout))))))))
-               ((list* :set set-subtypes)
-                (match set-subtypes
-                  ((list* :linear linear-subtypes)
-                   (let* ((widths (if (eq :sidebar (first members))
-                                      '("two" "fourteen") '("seven" "seven")))
-                          (point (second (assoc :point (getf form :mt))))
-                          (point-index (if (not point)
-                                           0 (position point contents
-                                                       :test (lambda (a b)
-                                                               (string= a (rest (assoc :name
-                                                                                       (getf b :mt))))))))
-                          (start-index 0))
-                     ;; (print (list :mmm (getf form :mt) contents point-index))
-                     (loop :for c :in contents :for ix :from 0 :below point-index
-                           :when (string= "PARTITION" (getf c :ct)) :do (setf start-index (1+ ix)))
-                     (cl-who:with-html-output (strout)
-                       (:div :class (format nil "ui grid-layout ~a"
-                                            (apply #'concatenate
-                                                   'string (loop :for s :in (cddr type)
-                                                                 :append (list " " (string-downcase s)))))
-                             :path path-string
-                             (loop :for ix :from start-index :for c :in (nthcdr start-index contents)
-                                   ;; stop at the partition keyword
-                                   :while (not (and (getf c :ty) (string= "KEYWORD" (getf c :pk))
-                                                    (string= "PARTITION" (getf c :ct))))
-                                   :do (let ((item-classes
-                                               (apply #'concatenate 'string
-                                                      (loop :for y :in (rest (assoc :type (getf c :mt)))
-                                                            :collect (format nil "~a " y)))))
-                                         ;; (print (rest (assoc :name (getf c :mt))))
-                                         (htm (:div :class (format nil "~acolumn"
-                                                                   (string-downcase item-classes))
-                                                    (render-html-interface c system-id nil (cons ix path)
-                                                                           strout)))))))))))
-               ((list* :group :stack _)
-                (cl-who:with-html-output (strout)
-                  (:div :path path-string :class "stack"
-                        (loop :for c :in contents :for m :in members :for ix :from 0
-                              :do (let ((item-classes
-                                          (apply #'concatenate 'string
-                                                 (loop :for y :in (rest (assoc :type (getf c :mt)))
-                                                       :collect (format nil "~a " (string-downcase y)))))
-                                        ;; (rendered (or (render-html-interface c system-id nil (cons ix path)
-                                        ;;                                      strout)
-                                        ;;               ;; render either via the html interface methods or 
-                                        ;;               ;; (htrender c :branch system-id
-                                        ;;               ;;             :params (list :system :system-id
-                                        ;;               ;;                           :branch :system-id))
-                                        ;;               ))
-                                        )
-                                    ;; (print (list :cc c system-id))
-                                    (htm (:div :class item-classes ;; rendered
-                                               (render-html-interface c system-id nil (cons ix path)
-                                                                      strout)
-                                               )))))))))))
-    (if stream nil (get-output-stream-string strout))))
+;; (defun render-html-interface (form &optional system-id meta path stream)
+;;   (let ((strout (or stream (make-string-output-stream)))
+;;         ;; get ID of applicable system from form metadata
+;;         (system-id (or (rest (assoc :system (getf form :mt)))
+;;                        system-id))
+;;         (path-string (apply #'concatenate 'string
+;;                             (loop :for item :in (reverse path)
+;;                                   :append (list (write-to-string item) " ")))))
+;;     ;; (print (list :fo form))
+;;     (case (getf form :ty)
+;;       (:sy (if (not (getf meta :app))
+;;                (write-string (getf form :ct) strout)
+;;                (case (getf meta :app)
+;;                  (:set-endpoint
+;;                   (cl-who:with-html-output (strout)
+;;                     (:span :|x-on:click|
+;;                            (psl (chain (fetch "/contact/"
+;;                                               (create method "POST"
+;;                                                       body (chain -j-s-o-n
+;;                                                                   (stringify
+;;                                                                    (create
+;;                                                                     system (lisp (string-upcase system-id))
+;;                                                                     BRANCH "SYSTEMS"
+;;                                                                     input (ps:lisp (getf form :ct)))))
+;;                                                       headers (create "Content-type"
+;;                                                                       "application/json; charset=UTF-8")))
+;;                                        (then (lambda (response) (chain response (json))))
+;;                                        (then (lambda (data) (chain htmx (trigger "#main" "reload"))))))
+;;                            (str (lisp->camel-case (getf form :ct))))))
+;;                  ;; (:set-nav-point
+;;                  ;;  (print (list :forma form))
+;;                  ;;  (if form (cl-who:with-html-output (strout)
+;;                  ;;             (:h4 (str (getf form :ct))))
+;;                  ;;      (cl-who:with-html-output (strout) (:p "abcd"))))
+;;                  (t (write-string (getf form :ct) strout)))))
+;;       (:ar (when (stringp (getf form :ct))
+;;              (write-string (getf form :ct) strout)))
+;;       (:ls (let ((contents (getf form :ct))
+;;                  (type (rest (assoc :type (getf form :mt))))
+;;                  (members (rest (assoc :members (getf form :mt)))))
+;;              (match type
+;;                ((list :form)
+;;                 (cl-who:with-html-output (strout)
+;;                   (:div :path path-string
+;;                         (loop :for c :in contents :for ix :from 0
+;;                               :do (let ((item-classes
+;;                                           (apply #'concatenate 'string
+;;                                                  (loop :for y :in (rest (assoc :type (getf c :mt)))
+;;                                                        :collect (format nil "~a " y))))
+;;                                         (this-meta (if (not (assoc :app (getf form :mt)))
+;;                                                        nil (assoc :app (getf form :mt)))))
+;;                                     (if (assoc :access (getf c :mt))
+;;                                         (let ((branch (second (assoc :access (getf c :mt)))))
+;;                                           (htm (:div :class item-classes :hx-trigger "load, reload"
+;;                                                      :hx-post "/render/"
+;;                                                      :hx-vals (json-convert-to (list :system :portal.demo1
+;;                                                                                      :branch branch)))))
+;;                                         (htm (:div :class item-classes
+;;                                                    (render-html-interface c system-id this-meta
+;;                                                                           (cons ix path)
+;;                                                                           strout)))))))))
+;;                ;; ((list :form :branch-navigation)
+;;                ;;  ;; (print (list :con contents form))
+;;                ;;  (let ((point (or (second (assoc :point (getf form :mt)))
+;;                ;;                   (getf (first contents) :ct)))
+;;                ;;        ;; (point-index (if (not point) 0 (position point contents
+;;                ;;        ;;                                          :test (lambda (a b)
+;;                ;;        ;;                                                  (string= a (getf b :ct))))))
+;;                ;;        )
+;;                ;;    (cl-who:with-html-output (strout)
+;;                ;;      (:div :path path-string
+;;                ;;            :id "branch-navigation"
+;;                ;;            (loop :for c :in contents :for ix :from 0
+;;                ;;                  :do (if c (htm (:h4 :hx-post "/render/"
+;;                ;;                                      :class (if (string= point (getf c :ct))
+;;                ;;                                                 "point" "")
+;;                ;;                                      :hx-target "#main"
+;;                ;;                                      :hx-trigger "click consume"
+;;                ;;                                      :hx-vals (json-convert-to
+;;                ;;                                                (list :system :portal.demo1
+;;                ;;                                                      :branch (rest (assoc :target
+;;                ;;                                                                           (getf form :mt)))
+;;                ;;                                                      :point (getf c :ct)))
+;;                ;;                                      (str (getf c :ct))))
+;;                ;;                          (htm (:hr :class "divider"))))))))
+;;                ;; ((list :form :elem)
+;;                ;;  (let ((branch (second (assoc :access (getf form :mt))))
+;;                ;;        (name (rest (assoc :name (getf form :mt))))
+;;                ;;        (controls (rest (assoc :controls (getf form :mt))))
+;;                ;;        (item-classes (apply #'concatenate 'string
+;;                ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
+;;                ;;                                   :collect (format nil "~a " (string-downcase y)))))
+;;                ;;        (iface-name (rest (assoc :name (getf form :mt)))))
+;;                ;;    (cl-who:with-html-output (strout)
+;;                ;;      (:div :class "container column-inner"
+;;                ;;            :x-data (psl (let ((main-forms (list)))
+;;                ;;                           (create push-form (lambda (item)
+;;                ;;                                               (chain main-forms (push item)))
+;;                ;;                                   submit-forms (lambda ()
+;;                ;;                                                  ;; (chain console (log :mm main-forms))
+;;                ;;                                                  (chain main-forms
+;;                ;;                                                         (for-each (lambda (form)
+;;                ;;                                                                     (chain htmx
+;;                ;;                                                                            (trigger
+;;                ;;                                                                             form
+;;                ;;                                                                             "submit")))))))))
+;;                ;;            (if (not (assoc :header controls))
+;;                ;;                nil (htm (:div :class "ui medium header"
+;;                ;;                               (:h2 :class "branch-name" (str (lisp->camel-case name)))
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :header controls))
+;;                ;;                                           :do (branch-spec-form
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                :branch branch :name iface-name))))))
+;;                ;;            (branch-spec-form
+;;                ;;             strout :body-svg :system system-id :branch branch
+;;                ;;                              :item-classes item-classes :name iface-name)
+;;                ;;            (if (not (assoc :footer controls))
+;;                ;;                nil (htm (:div :class "ui medium footer"
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :footer controls))
+;;                ;;                                           :do (branch-spec-form
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                :branch branch :name iface-name))))))))))
+;;                ;; ((list :form :text)
+;;                ;;  (let ((branch (second (assoc :access (getf form :mt))))
+;;                ;;        (name (rest (assoc :name (getf form :mt))))
+;;                ;;        (controls (rest (assoc :controls (getf form :mt))))
+;;                ;;        (item-classes (apply #'concatenate 'string
+;;                ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
+;;                ;;                                   :collect (format nil "~a " (string-downcase y))))))
+;;                ;;    (cl-who:with-html-output (strout)
+;;                ;;      (:div :class "container column-inner"
+;;                ;;            (if (not (assoc :header controls))
+;;                ;;                nil (htm (:div :class "ui medium header"
+;;                ;;                               (:h2 :class "branch-name" (str (lisp->camel-case name)))
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :header controls))
+;;                ;;                                           :do (branch-spec-codemirror-editor
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                                :branch branch))))))
+;;                ;;            (branch-spec-codemirror-editor strout :body :system system-id
+;;                ;;                                                       :branch branch :item-classes item-classes)
+;;                ;;            (if (not (assoc :footer controls))
+;;                ;;                nil (htm (:div :class "ui medium footer"
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :footer controls))
+;;                ;;                                           :do (branch-spec-codemirror-editor
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                                :branch branch))))))))))
+;;                ((list :form :tree)
+;;                 (let ((branch (second (assoc :access (getf form :mt))))
+;;                       (name (rest (assoc :name (getf form :mt))))
+;;                       (controls (rest (assoc :controls (getf form :mt))))
+;;                       (item-classes (apply #'concatenate 'string
+;;                                            (loop :for y :in (rest (assoc :type (getf form :mt)))
+;;                                                  :collect (format nil "~a " (string-downcase y))))))
+;;                   (cl-who:with-html-output (strout)
+;;                     (:div :class "container column-inner"
+;;                           (if (not (assoc :header controls))
+;;                               nil (htm (:div :class "ui medium header"
+;;                                              (:h2 :class "branch-name" (str (lisp->camel-case name)))
+;;                                              (:div :class "controls-holder"
+;;                                                    (loop :for c :in (rest (assoc :header controls))
+;;                                                          :do (branch-spec-cvdatagrid-tree
+;;                                                               strout :control :subsection c :system system-id
+;;                                                                               :branch branch))))))
+;;                           (branch-spec-cvdatagrid-tree strout :body :system system-id :mode :tree
+;;                                                                     :branch branch :item-classes item-classes)
+;;                           (if (not (assoc :footer controls))
+;;                               nil (htm (:div :class "ui medium footer"
+;;                                              (:div :class "controls-holder"
+;;                                                    (loop :for c :in (rest (assoc :footer controls))
+;;                                                          :do (branch-spec-cvdatagrid-tree
+;;                                                               strout :control :subsection c :system system-id
+;;                                                                               :branch branch))))))))))
+;;                ;; ((list :form :cells)
+;;                ;;  (let ((branch (second (assoc :access (getf form :mt))))
+;;                ;;        (name (rest (assoc :name (getf form :mt))))
+;;                ;;        (controls (rest (assoc :controls (getf form :mt))))
+;;                ;;        (item-classes (apply #'concatenate 'string
+;;                ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
+;;                ;;                                   :collect (format nil "~a " (string-downcase y))))))
+;;                ;;    (cl-who:with-html-output (strout)
+;;                ;;      (:div :class "container column-inner"
+;;                ;;            (if (not (assoc :header controls))
+;;                ;;                nil (htm (:div :class "ui medium header"
+;;                ;;                               (:h2 :class "branch-name" (str (lisp->camel-case name)))
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :header controls))
+;;                ;;                                           :do (branch-spec-cvdatagrid-sheet
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                                :branch branch))))))
+;;                ;;            (branch-spec-cvdatagrid-sheet strout :body :system system-id
+;;                ;;                                                       :branch branch :item-classes item-classes)
+;;                ;;            (if (not (assoc :footer controls))
+;;                ;;                nil (htm (:div :class "ui medium footer"
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :footer controls))
+;;                ;;                                           :do (branch-spec-cvdatagrid-sheet
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                                :branch branch))))))))))
+;;                ;; ((list :form :vector)
+;;                ;;  (let ((branch (second (assoc :access (getf form :mt))))
+;;                ;;        (controls (rest (assoc :controls (getf form :mt))))
+;;                ;;        (item-classes (apply #'concatenate 'string
+;;                ;;                             (loop :for y :in (rest (assoc :type (getf form :mt)))
+;;                ;;                                   :collect (format nil "~a " (string-downcase y))))))
+;;                ;;    (cl-who:with-html-output (strout)
+;;                ;;      (:div :class "container column-inner"
+;;                ;;            (if (not (assoc :header controls))
+;;                ;;                nil (htm (:div :class "ui medium header"
+;;                ;;                               (:h2 :class "branch-name" (str (lisp->camel-case branch)))
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :header controls))
+;;                ;;                                           :do (branch-spec-d3
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                                :branch branch))))))
+;;                ;;            (branch-spec-d3 strout :body :system system-id
+;;                ;;                                         :branch branch :item-classes item-classes)
+;;                ;;            (if (not (assoc :footer controls))
+;;                ;;                nil (htm (:div :class "ui medium footer"
+;;                ;;                               (:div :class "controls-holder"
+;;                ;;                                     (loop :for c :in (rest (assoc :footer controls))
+;;                ;;                                           :do (branch-spec-d3
+;;                ;;                                                strout :control :subsection c :system system-id
+;;                ;;                                                                :branch branch))))))))))
+;;                ((list :form (guard form-type (keywordp form-type)))
+;;                 ;; (print (list :for form))
+;;                 (let ((branch (second (assoc :access (getf form :mt))))
+;;                       (item-classes (apply #'concatenate 'string
+;;                                            (loop :for y :in (rest (assoc :type (getf form :mt)))
+;;                                                  :collect (format nil "~a " (string-downcase y))))))
+;;                   (cl-who:with-html-output (strout)
+;;                     (:div :class item-classes :hx-trigger "load, reload"
+;;                           :x-init (psl (setf (getprop (@ window seed-elements) (lisp branch)) $el))
+;;                           :hx-post "/render/" :hx-vals (json-convert-to (list :system :demo.sheet
+;;                                                                               :branch branch))))))
+;;                ((list* :group :linear _)
+;;                 ;; (let ((widths (if (eq :sidebar (first members))
+;;                 ;;                   '("two" "fourteen") '("seven" "seven"))))
+;;                 (cl-who:with-html-output (strout)
+;;                   (:div :class (format nil "ui grid-layout ~a"
+;;                                        (apply #'concatenate
+;;                                               'string (loop :for s :in (cddr type)
+;;                                                             :append (list " " (string-downcase s)))))
+;;                         :path path-string
+;;                         (loop :for c :in contents :for m :in members :for ix :from 0 ; :for w :in widths
+;;                               :do (let ((item-classes
+;;                                           (apply #'concatenate 'string
+;;                                                  (loop :for y :in (rest (assoc :type (getf c :mt)))
+;;                                                        :collect (format nil "~a " y)))))
+;;                                     (htm (:div :class (format nil "~a ~a"
+;;                                                               (string-downcase item-classes)
+;;                                                               (string-downcase m))
+;;                                                (render-html-interface c system-id nil
+;;                                                                       (cons ix path)
+;;                                                                       strout))))))))
+;;                ((list* :set set-subtypes)
+;;                 (match set-subtypes
+;;                   ((list* :linear linear-subtypes)
+;;                    (let* ((widths (if (eq :sidebar (first members))
+;;                                       '("two" "fourteen") '("seven" "seven")))
+;;                           (point (second (assoc :point (getf form :mt))))
+;;                           (point-index (if (not point)
+;;                                            0 (position point contents
+;;                                                        :test (lambda (a b)
+;;                                                                (string= a (rest (assoc :name
+;;                                                                                        (getf b :mt))))))))
+;;                           (start-index 0))
+;;                      ;; (print (list :mmm (getf form :mt) contents point-index))
+;;                      (loop :for c :in contents :for ix :from 0 :below point-index
+;;                            :when (string= "PARTITION" (getf c :ct)) :do (setf start-index (1+ ix)))
+;;                      (cl-who:with-html-output (strout)
+;;                        (:div :class (format nil "ui grid-layout ~a"
+;;                                             (apply #'concatenate
+;;                                                    'string (loop :for s :in (cddr type)
+;;                                                                  :append (list " " (string-downcase s)))))
+;;                              :path path-string
+;;                              (loop :for ix :from start-index :for c :in (nthcdr start-index contents)
+;;                                    ;; stop at the partition keyword
+;;                                    :while (not (and (getf c :ty) (string= "KEYWORD" (getf c :pk))
+;;                                                     (string= "PARTITION" (getf c :ct))))
+;;                                    :do (let ((item-classes
+;;                                                (apply #'concatenate 'string
+;;                                                       (loop :for y :in (rest (assoc :type (getf c :mt)))
+;;                                                             :collect (format nil "~a " y)))))
+;;                                          ;; (print (rest (assoc :name (getf c :mt))))
+;;                                          (htm (:div :class (format nil "~acolumn"
+;;                                                                    (string-downcase item-classes))
+;;                                                     (render-html-interface c system-id nil (cons ix path)
+;;                                                                            strout)))))))))))
+;;                ((list* :group :stack _)
+;;                 (cl-who:with-html-output (strout)
+;;                   (:div :path path-string :class "stack"
+;;                         (loop :for c :in contents :for m :in members :for ix :from 0
+;;                               :do (let ((item-classes
+;;                                           (apply #'concatenate 'string
+;;                                                  (loop :for y :in (rest (assoc :type (getf c :mt)))
+;;                                                        :collect (format nil "~a " (string-downcase y)))))
+;;                                         ;; (rendered (or (render-html-interface c system-id nil (cons ix path)
+;;                                         ;;                                      strout)
+;;                                         ;;               ;; render either via the html interface methods or 
+;;                                         ;;               ;; (htrender c :branch system-id
+;;                                         ;;               ;;             :params (list :system :system-id
+;;                                         ;;               ;;                           :branch :system-id))
+;;                                         ;;               ))
+;;                                         )
+;;                                     ;; (print (list :cc c system-id))
+;;                                     (htm (:div :class item-classes ;; rendered
+;;                                                (render-html-interface c system-id nil (cons ix path)
+;;                                                                       strout)
+;;                                                )))))))))))
+;;     (if stream nil (get-output-stream-string strout))))
 
 (defun set-in-element-spec (name form value)
   (if (not (listp form))

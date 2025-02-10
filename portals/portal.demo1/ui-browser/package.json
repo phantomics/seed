@@ -10,14 +10,10 @@
   "author": "Andrew Sengul",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "@xterm/xterm": "^5.5.0",
-    "alpinejs": "^3.13.0",
     "bulma": "^1.0.1",
     "canvas-datagrid": "^0.4.6",
     "codemirror": "^6.0.1",
     "d3": "^7.8.5",
-    "fomantic-ui": "^2.9.3",
-    "htmx.org": "^1.9.6"
   },
   "devDependencies": {
     "webpack": "^5.88.2",

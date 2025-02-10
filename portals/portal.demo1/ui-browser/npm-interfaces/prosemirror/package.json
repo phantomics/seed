@@ -1,0 +1,17 @@
+{
+  "name": "seed.npm-interface.codemirror",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "prosemirror-schema-basic": "^1.2.3",
+    "prosemirror-state": "^1.4.3",
+    "prosemirror-view": "^1.37.2"
+  }
+}

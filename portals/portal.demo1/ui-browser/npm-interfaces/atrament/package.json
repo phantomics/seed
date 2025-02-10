@@ -1,0 +1,15 @@
+{
+  "name": "seed.npm-interface.atrament",
+  "version": "1.0.0",
+  "description": "Seed NPM interface for Atrament HTML5 drawing library",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "atrament": "^4.6.0"
+  }
+}

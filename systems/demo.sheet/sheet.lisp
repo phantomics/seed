@@ -21,7 +21,12 @@
 (for-cells "C2.G8" "{5+⍵}")
 (for-cells "A3.B4" "{3×⍵}")
 )
-:form
+:chart-entities
+(progn
+'(DRAW LINE 1534114800000 1.5352056 1538067600000 1.4786885)
+'(DRAW LINE 1534230000000 1.4762203999999999d0 1538456400000 1.5159552)
+'(DRAW LINE 1534230000000 1.4762203999999999d0 1538456400000 1.5159552)
+):form
 (setf *profile*
       '(meta ((meta "Dave" (:title . "Name") (:name . :name) (:type :field :text))
               (meta 34 (:title . "Age") (:name . :age)

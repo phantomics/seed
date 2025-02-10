@@ -1,0 +1,15 @@
+{
+  "name": "seed.npm-interface.xterm",
+  "version": "1.0.0",
+  "description": "Seed NPM interface for XTerm browser terminal emulator toolkit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "@xterm/xterm": "^5.5.0"
+  }
+}

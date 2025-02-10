@@ -33,16 +33,17 @@
   (write-to-file stream *package* "./ui-browser/build/int.js"
     (build-script-misc stream))
 
-  (write-to-file stream *package* "./ui-browser/build/ext.js"
-    (concat-files stream *package*
-                  "./ui-browser/static/htmx.min.js"
-                  "./ui-browser/static/alpine.js"
-                  "./ui-browser/static/mousetrap.min.js"
-                  "./ui-browser/static/dygraph.min.js"
-                  "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
-                  "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js")
-    ;; (format stream "window.Dygraph = Dygraph;~%")
-    )
+  (let ((flat-paths (retrieve-flat-source '(:htmx :alpine :mousetrap :dygraph)
+                                          *package* pla.browser.maple:*flat-sources*
+                                          "./ui-browser/static/")))
+    
+    (write-to-file stream *package* "./ui-browser/build/ext.js"
+      (apply #'concat-files stream *package*
+             (append flat-paths
+                     (list "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
+                           "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"))
+      ;; (format stream "window.Dygraph = Dygraph;~%")
+      )))
 
   (write-to-file stream *package* "./ui-browser/build/ext.css"
     (concat-files stream *package* "./ui-browser/node_modules/bulma/css/bulma.css"))
@@ -56,18 +57,6 @@
 ;;   (build-script-misc "ui-browser"))
 
 ;; (build-all)
-
-
-;; (provide-browser-script
-;;  :portal.demo1
-;;  (:concat-static
-;;   (:paths "./ui-browser/static/htmx.min.js"
-;;           "./ui-browser/static/alpine.js"
-;;           "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js")
-;;   (:output-to . "./ui-browser/build/ext.js"))
-;;  (:concat-static
-;;   (:paths "./ui-browser/node_modules/bulma/css/bulma.css")
-;;   (:output-to . "./ui-browser/build/ext.css")))
 
 #|
 
