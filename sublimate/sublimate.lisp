@@ -14,38 +14,46 @@
 (let ((opening-parenthesis-handler (get-macro-character #\())
       (breaking-chars (concatenate 'string '(#\  #\Tab #\Newline #\Return)))
       (char-store (make-string 5 :initial-element #\ ))
-      (index 0) (to-match "META "))
+      (matching) (index 0) (to-match "META "))
   (defun priority-macro-reader-extension (stream character)
     "Extend a character reader macro, typically for the left/opening parenthesis '(', to check for the presence of certain macro names so that those macros may be expanded in the read phase, before any other macros are expanded."
-    (declare (type (unsigned-byte 8) index copy-to))
-    (setf index 0)
-    (let ((matching t))
-      (loop :for m :across to-match :while matching :for char := (read-char stream nil)
-            :do (if char (progn (setf (aref char-store index) char)
-                                ;; (print (list :aa char))
-                                ;; (dotimes (n 10)
-                                ;;   (princ (read-char stream nil)))
-                                (unless (if (= 4 index)
-                                            (position char breaking-chars :test #'char=)
-                                            (char= m (char-upcase char)))
-                                  (setf matching nil))
-                                (incf index))
-                    (setf matching nil)))
-      (when matching
-        (print to-match))
-      (if matching (macroexpand-1 (read (make-concatenated-stream (make-string-input-stream
-                                                                   "(SEED.SUBLIMATE::EXPAND-META ")
-				                                  stream)
-			                nil nil t))
-          (funcall opening-parenthesis-handler
-	           (make-concatenated-stream (make-string-input-stream char-store 0 index)
-                                             stream)
-	           character)))))
 
-(defparameter *sublimating-readtable*
-  (let ((this-readtable (copy-readtable *readtable*)))
-    (set-macro-character #\( #'priority-macro-reader-extension nil this-readtable)
-    this-readtable))
+    (declare (type (unsigned-byte 8) index))
+    (setf index    0
+          matching t)
+    
+    (loop :for m :across to-match :while matching :for char := (read-char stream nil)
+          :do (if char (progn (setf (aref char-store index) char)
+                              ;; (print (list :aa char))
+                              ;; (dotimes (n 10)
+                              ;;   (princ (read-char stream nil)))
+                              (unless (if (= 4 index)
+                                          (position char breaking-chars :test #'char=)
+                                          (char= m (char-upcase char)))
+                                (setf matching nil))
+                              (incf index))
+                  (setf matching nil)))
+    (if matching
+        (macroexpand-1 (read (make-concatenated-stream
+                              (make-string-input-stream "(SEED.SUBLIMATE::EXPAND-META ")
+                              stream)
+                             nil nil t))
+        ;; (let ((found-closing) (to-return (read stream nil nil t)))
+        ;;   ;; read the second item in the meta form, then discard characters until a ) is found
+        ;;   ;; PROBLEM: will malfunction if a quoted ) is in the meta form
+        ;;   (loop :until found-closing :for char := (read-char stream nil) :while char
+        ;;         :do (when (char= #\) char) (setf found-closing t)))
+        ;;   to-return)
+        (funcall opening-parenthesis-handler
+                 (make-concatenated-stream (make-string-input-stream char-store 0 index)
+                                           stream)
+                 character))))
+
+(defvar *sublimating-readtable*)
+
+(let ((this-readtable (copy-readtable *readtable*)))
+  (set-macro-character #\( #'priority-macro-reader-extension nil this-readtable)
+  (setf *sublimating-readtable* this-readtable))
 
 (defmacro instantiate-priority-macro-reader (&body body)
   `(let ((*readtable* *sublimating-readtable*)) ,@body))
@@ -54,18 +62,18 @@
 ;;   (defun priority-macro-reader-extension (stream character)
 ;;     "Extend a character reader macro, typically for the left/opening parenthesis '(', to check for the presence of certain macro names so that those macros may be expanded in the read phase, before any other macros are expanded."
 ;;     (let ((open t)
-;; 	  (string (make-array 5 :element-type 'character :initial-element #\ )))
+;;    (string (make-array 5 :element-type 'character :initial-element #\ )))
 ;;       (loop :for index :from 0 :to 4 :while open :for char := (read-char stream nil) :while char
 ;;             :do (when (char= char #\)) (setq open nil))
-;; 	        (setf (aref string index) char))
+;;          (setf (aref string index) char))
 ;;       (if (and (or (char= #\  (aref string 4))
-;; 		   (char= #\Tab (aref string 4))
-;; 		   (char= #\Newline (aref string 4))
-;; 		   (char= #\Return (aref string 4)))
-;; 	       (string= "META" (subseq string 0 4)))
-;; 	  (macroexpand-1 (read (make-concatenated-stream (make-string-input-stream "(SEED.SUBLIMATE::EXPAND-META ")
-;; 						         stream)
-;; 			       nil nil t))
-;; 	  (funcall *opening-parenthesis-handler*
-;; 	           (make-concatenated-stream (make-string-input-stream string) stream)
-;; 	           character)))))
+;;      (char= #\Tab (aref string 4))
+;;      (char= #\Newline (aref string 4))
+;;      (char= #\Return (aref string 4)))
+;;         (string= "META" (subseq string 0 4)))
+;;    (macroexpand-1 (read (make-concatenated-stream (make-string-input-stream "(SEED.SUBLIMATE::EXPAND-META ")
+;;                stream)
+;;           nil nil t))
+;;    (funcall *opening-parenthesis-handler*
+;;             (make-concatenated-stream (make-string-input-stream string) stream)
+;;             character)))))

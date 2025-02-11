@@ -3,6 +3,7 @@
 (defpackage #:portal.demo1
   (:use #:cl #:seed.admit #:arrow-macros)
   (:shadowing-import-from #:seed.contact.http #:http-contact-service-start)
+  (:shadowing-import-from #:seed.sublimate #:instantiate-priority-macro-reader)
   (:shadowing-import-from #:seed.generate #:seed #:interface-format-form #:load-seed-system
                           #:system-file-to-string #:from-system-file
                           #:astr #:setf-value #:cbind #:text-wrap #:of-array-spec)

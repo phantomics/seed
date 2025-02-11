@@ -14,9 +14,6 @@
 node_modules/
 */package-lock.json
 
-# Static libraries
-*/ui-browser/static/*
-
 # Emacs backup files
 *~
 
