@@ -21,11 +21,9 @@
            ;; when a system is selected, assign it - case of new selector controls
            (let ((epsym (intern (string-upcase (rest (assoc "point" input :test #'string=)))
                                 "KEYWORD")))
-             (print (list :ee epsym))
              (of-system :point epsym)
              (instantiate-priority-macro-reader (asdf:load-system epsym)
-               (load-seed-system epsym)) ;; TEMPORARY -- RESTORE THIS
-             ))
+               (load-seed-system epsym))))
 
          (let ((medium (make-instance 'uim-web :portal (intern (package-name package) "KEYWORD"))))
 
@@ -56,8 +54,7 @@
          (if input (let ((epsym (intern input "KEYWORD")))
                      (of-system :point (intern input "KEYWORD"))
                      (instantiate-priority-macro-reader (asdf:load-system epsym)
-                       (load-seed-system epsym)) ;; TEMPORARY - RESTORE
-                     )
+                       (load-seed-system epsym)))
              (-<> (with-meta (of-system :contacts)
                     :type (:form))
                (encode <>))))))

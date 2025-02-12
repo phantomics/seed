@@ -27,16 +27,16 @@
 '(DRAW LINE 1534230000000 1.4762203999999999d0 1538456400000 1.5159552)
 '(DRAW LINE 1534230000000 1.4762203999999999d0 1538456400000 1.5159552)
 ):form
-;; (setf *profile*
-;;       '(meta ((meta "Dave" (:title . "Name") (:name . :name) (:type :field :text))
-;;               (meta 34 (:title . "Age") (:name . :age)
-;;                (:type :field :numeric :integer))
-;;               (meta "Red" (:title . "Fav. Color") (:options "Red" "Green" "Blue")
-;;                (:name . :fav-color) (:type :select))
-;;               (meta nil (:title . "Member?") (:name . :member) (:type :boolean))
-;;               (meta nil (:title . "Submit") (:name . :submit)
-;;                (:type :submit-control)))
-;;         (:type :set :form)))
+(setf *profile*
+      '(meta ((meta "Dave" (:title . "Name") (:name . :name) (:type :field :text))
+              (meta 34 (:title . "Age") (:name . :age)
+               (:type :field :numeric :integer))
+              (meta "Red" (:title . "Fav. Color") (:options "Red" "Green" "Blue")
+               (:name . :fav-color) (:type :select))
+              (meta nil (:title . "Member?") (:name . :member) (:type :boolean))
+              (meta nil (:title . "Submit") (:name . :submit)
+               (:type :submit-control)))
+        (:type :set :form)))
 :graph-node-indices
 '(0 2 1 3 4 5 6 7)
 :graph

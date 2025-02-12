@@ -2,6 +2,8 @@
 
 (in-package #:seed.sublimate)
 
+(defvar *sublimating-readtable*)
+
 (defmacro meta (form &rest params)
   (declare (ignore params))
   "The macro used in evaluation of meta forms. It simply strips the meta information away, leaving the first member of the form to be evaluated."
@@ -14,6 +16,7 @@
 (let ((opening-parenthesis-handler (get-macro-character #\())
       (breaking-chars (concatenate 'string '(#\  #\Tab #\Newline #\Return)))
       (char-store (make-string 5 :initial-element #\ ))
+      (expand-prefix "(SEED.SUBLIMATE::EXPAND-META ")
       (matching) (index 0) (to-match "META "))
   (defun priority-macro-reader-extension (stream character)
     "Extend a character reader macro, typically for the left/opening parenthesis '(', to check for the presence of certain macro names so that those macros may be expanded in the read phase, before any other macros are expanded."
@@ -34,9 +37,8 @@
                               (incf index))
                   (setf matching nil)))
     (if matching
-        (macroexpand-1 (read (make-concatenated-stream
-                              (make-string-input-stream "(SEED.SUBLIMATE::EXPAND-META ")
-                              stream)
+        (macroexpand-1 (read (make-concatenated-stream (make-string-input-stream expand-prefix)
+                                                       stream)
                              nil nil t))
         ;; (let ((found-closing) (to-return (read stream nil nil t)))
         ;;   ;; read the second item in the meta form, then discard characters until a ) is found
@@ -48,8 +50,6 @@
                  (make-concatenated-stream (make-string-input-stream char-store 0 index)
                                            stream)
                  character))))
-
-(defvar *sublimating-readtable*)
 
 (let ((this-readtable (copy-readtable *readtable*)))
   (set-macro-character #\( #'priority-macro-reader-extension nil this-readtable)
