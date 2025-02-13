@@ -15,5 +15,5 @@
   (:shadowing-import-from #:seed.admit #:authorize)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
-                          #:build-static-page #:concat-files #:build-styles #:build-script-cmirror
-                          #:build-script-misc))
+                          #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
+                          #:build-script-cmirror #:build-script-misc))

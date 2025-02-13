@@ -30,6 +30,9 @@
   (write-to-file stream *package* "./ui-browser/npm-interfaces/codemirror/cm-app.js"
     (build-script-cmirror stream))
 
+  (write-to-file stream *package* "./ui-browser/npm-interfaces/pragmatic-dnd/pdnd.js"
+    (build-script-pdnd stream))
+
   (write-to-file stream *package* "./ui-browser/build/int.js"
     (build-script-misc stream))
 

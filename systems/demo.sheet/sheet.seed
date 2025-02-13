@@ -42,10 +42,9 @@
                                                   context (list (list "ifmod-foot" 100))))))))))
        :chart
        (let ((chart-data)
-             (path (asdf:system-relative-pathname :demo.sheet "chart.sexp"))
-             (entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
+             (entities (rest (from-system-file :demo.sheet "sheet.lisp" :chart-entities))))
          (lambda (context input)
-           (print (list :in input))
+           ;; (print (list :in input))
            (cbind input item
              ("state" :chart)
              ("ifmod-head" (fx ((:each uicc-button :type (:trigger :local))
@@ -57,13 +56,11 @@
              ("entities"
               (loop :for entity :in (rest item)
                     :do (push (reduce #'append (cons (list 'draw :line) (astr :points entity)))
-                              entities))
-              (print (list :en entities)))
+                              entities)))
              ("action"
-              (print (list :it item))
+              ;; (print (list :it item))
               (case (intern (string-upcase (rest item)) "KEYWORD")
                 (:save (let ((output))
-                         (print :aaa)
                          ;; (in-package :demo.sheet)
                          (setf output (format nil "(progn~%~{~a~%~})" entities))
                          ;; (in-package :portal.demo1)

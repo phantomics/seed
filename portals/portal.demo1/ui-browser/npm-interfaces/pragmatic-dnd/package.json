@@ -1,0 +1,18 @@
+{
+  "name": "seed.npm-interface.pragmatic-dnd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "Andrew Sengul",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.5.0",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3"
+  },
+  "devDependencies": {
+  }
+}

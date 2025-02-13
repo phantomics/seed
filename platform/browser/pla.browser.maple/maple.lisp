@@ -240,6 +240,16 @@
   (format stream "~%")
   (loop :for c :in constructors :do (funcall c stream)))
 
+(defun build-script-pdnd (stream)
+  (build-script-element
+   :stream stream
+   :imports `(((draggable) "@atlaskit/pragmatic-drag-and-drop/element/adapter"))
+   :constructors
+   (list (lambda (stream)
+           (format
+            stream (paren6::ps
+                     (setf (@ global draggable) draggable)))))))
+
 (defun build-script-cmirror (stream)
   (build-script-element
    :stream stream
