@@ -146,8 +146,8 @@
 (defclass uicc-select (uic-control)
   ())
 
-(defclass uicc-text (uic-control)
-  ((%default :accessor uicc-text-default
+(defclass uicc-field (uic-control)
+  ((%default :accessor uicc-field-default
              :initform nil
              :initarg  :default)))
 
@@ -160,6 +160,7 @@
   ())
 
 (defmacro fx (specs &rest form)
+  "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
   (labels ((format-params (items)
              (loop :for item :in items
                    :collect (if (or (atom item)
@@ -483,7 +484,7 @@
         `(:button :name ,(or (string name) "") :class "ui button"
                   ,@action-props ,(realize aspect medium name))))))
                             
-(defmethod generate ((medium uim-web) (aspect uicc-text))
+(defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
   (flet ((wrap-label (label base) `(:div (:h2 ,label) ,base)))
     (let ((base (uic-base aspect)))
@@ -508,17 +509,18 @@
                                                                      (@ data text)))))))))))
             ((member :area (uic-type aspect))
              `(:textarea :class "input" :name ,(or (string (uicc-key aspect)) "")
-                         ,(or (uicc-text-default aspect) "")))
+                         ,(or (uicc-field-default aspect) "")))
             (t (destructuring-bind (field-name &rest field-content)
                    (if (listp base) base (cons nil base))
+                 ;; (print (list :fi field-name base))
                  (wrap-label (lisp->camel-case field-name)
                              `(:input :class "input" :type "text" :value ,(or field-content
-                                                                              (uicc-text-default aspect)
+                                                                              (uicc-field-default aspect)
                                                                               "")
                                       :name ,(or (string (uicc-key aspect)) "")))))))))
 
-;; (defmethod generate ((medium uim-web) (aspect uicc-text-area))
-;;   `(:textarea :class "input" :value ,(or (uicc-text-default aspect) "")
+;; (defmethod generate ((medium uim-web) (aspect uicc-field-area))
+;;   `(:textarea :class "input" :value ,(or (uicc-field-default aspect) "")
 ;;               :name ,(or (string (uicc-key aspect)) "")))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
@@ -587,8 +589,8 @@
   (destructuring-bind (system branch) (uic-base aspect)
     `(:div :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
-                          (let ((config (create plotter candle-plotter
-                                                labels (list "a" "b" "c" "d" "e" "f" "g" "h" "i")
+                          (let ((config (create plotter (funcall get-candle-plotter mode)
+                                                ;; labels (list "a" "b" "c" "d" "e" "f" "g" "h" "i")
                                                 height (@ $el offset-height)
                                                 width  (@ $el offset-width)
                                                 interaction-model
@@ -626,19 +628,25 @@
 
 |#
 
-(defun express (form)
+(defun express (form) ;; TODO: this will not grow well with the metaform topology
   (if (atom form)
-      form (if (not (string= "META" (string (first form))))
+      form (if (not (and (symbolp (first form))
+                         (string= "META" (string (first form)))))
                (make-instance 'uic-series
                               :base (mapcar #'express form))
                (let* ((types (rest (assoc :type (cddr form))))
+                      (fx-class (rest (assoc :fx (cddr form))))
                       (primary-type (first types))
-                      (class (case primary-type
-                               (:set 'uic-series)
-                               (:select 'uicc-select)
-                               (:field  'uicc-text))))
+                      (class (if t ; fx-class
+                                 (intern (string fx-class) "SEED.MODULATE")
+                                 (case primary-type
+                                   (:series 'uic-series)
+                                   (:select 'uicc-select)
+                                   (:field  'uicc-field)))))
+                 ;; (unless fx-class (print (list :aa form)))
+                 ;; (print (list :cl class fx-class form))
                  (make-instance class :base ;; (first form)
-                                (if (eq :set primary-type)
+                                (if (eql class 'uic-series)
                                     (mapcar #'express (second form))
                                     (if (eq :select primary-type)
                                         (rest (assoc :options (cddr form)))
@@ -692,8 +700,8 @@
         (node-template (second (from-system-file package file-name node-template-key)))
         (link-template (second (from-system-file package file-name link-template-key)))
         (indices-form (from-system-file package file-name node-indices-key)))
-    (lambda (context input)
-      
+    
+    (lambda (context input)  
       (unless graph-base
         (setf graph-base  (from-system-file package file-name graph-key)
               orig-data   (third graph-base)
@@ -802,7 +810,6 @@
               (when (string= "shiftNode" (rest (assoc "action" input :test #'string=)))
                 ;; add newest node index to end of indices
                 (setf network-changed nil)
-                ;; (print (list :bbb))
                 (let* ((index-str (make-string-input-stream
                                    (rest (assoc "index" input :test #'string=))))
                        (pos-str (make-string-input-stream
@@ -925,8 +932,6 @@
                               (rplacd (nthcdr (1- position) orig-data)
                                       (cons orig-gnode (nthcdr position orig-data))))
 
-                          ;; (print (list :odd orig-data))
-
                           (if (zerop index) (setf (second indices-form) (cdadr indices-form))
                               (rplacd (nthcdr (1- index) (second indices-form))
                                       (rest (nthcdr index (second indices-form)))))
@@ -987,7 +992,9 @@
                 (render
                  (funcall context :medium)
                  (express (funcall (if network-changed
-                                       #'list (lambda (items) `(meta ,items (:type :set :form))))
+                                       #'list (lambda (items)
+                                                `(meta ,items (:type :series :form)
+                                                       (:fx . :uic-series))))
                                    (loop :for item :in (funcall
                                                         ;; nodes have an (index . N)
                                                         ;; form to omit, links don't

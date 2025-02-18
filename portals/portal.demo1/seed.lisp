@@ -48,7 +48,7 @@
                       "" (grow (of-system :point) :view context)))
 
               (fx ((uic-series-form :type (:ui :column) :cast t))
-                  (list (fx ((uicc-text :key "key")) "")))))))
+                  (list (fx ((uicc-field :key "key")) "")))))))
        :systems
        (lambda (context input)
          (if input (let ((epsym (intern input "KEYWORD")))
