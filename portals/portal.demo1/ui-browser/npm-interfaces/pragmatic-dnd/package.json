@@ -14,5 +14,7 @@
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3"
   },
   "devDependencies": {
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
   }
 }

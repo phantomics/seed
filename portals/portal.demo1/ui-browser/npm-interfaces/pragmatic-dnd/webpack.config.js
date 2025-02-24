@@ -4,7 +4,7 @@
   mode: "development",
   devtool: "eval-source-map",
   entry: {
-    iface: [ './pm-app.js' ],
+    iface: [ './pdnd.js' ],
   },
   output: {
     filename: '[name].bundle.js',

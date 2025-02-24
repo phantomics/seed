@@ -14,6 +14,9 @@
 node_modules/
 */package-lock.json
 
+# JS build artifacts
+iface.bundle.js
+
 # Emacs backup files
 *~
 

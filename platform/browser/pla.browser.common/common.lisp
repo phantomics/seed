@@ -28,9 +28,11 @@
           (if (probe-file complete-path)
               complete-path
               (let ((bytes (dex:get address)))
+                ;; (print (array-element-type bytes))
                 (with-open-file (out (asdf:system-relative-pathname
                                       (intern (package-name package) "KEYWORD")
                                       complete-path)
-                                     :direction :output :if-exists :supersede :if-does-not-exist :create)
+                                     :direction :output :if-exists :supersede :if-does-not-exist :create
+                                     :element-type (array-element-type bytes))
                   (write-sequence bytes out))
                 complete-path))))))

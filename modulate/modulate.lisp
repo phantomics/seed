@@ -94,6 +94,9 @@
    (%type :accessor uic-type
           :initform nil
           :initarg  :type)
+   (%root :accessor uic-root
+          :initform nil
+          :initarg  :root)
    (%join :accessor uic-join
           :initform nil
           :initarg  :join)
@@ -107,10 +110,10 @@
           :initform nil
           :initarg  :mode)))
 
-(defclass uic-access (ui-component)
-  ((%system :accessor uica-system
+(defclass uic-frame (ui-component)
+  ((%access :accessor uicf-access
             :initform nil
-            :initarg  :system)))
+            :initarg  :access)))
 
 (defclass uic-series (ui-component)
   ((%maps   :accessor uic-series-maps
@@ -185,9 +188,22 @@
                                    (first form) (cons 'list form))))
          ,(process-spec evaluated-form specs)))))
 
+;; (defmacro fx-assign (params &body item)
+;;   (let ((item-sym (gensym)))
+;;     `(let ((,item-sym ,item))
+;;        ,(loop :for p :in params
+;;               :append (destructuring-bind (key &rest values) p
+;;                         (case key
+;;                           (:type `((setf (rest (uic-type ,item-sym))
+;;                                          (append (list ,@values)
+;;                                                  (rest (uic-type ,item-sym)))))))))
+;;        ,item-sym)))
+
 (defgeneric render (medium component))
 
 (defgeneric furnish (medium component &optional base))
+
+(defgeneric of-root-type (aspect type))
 
 (defgeneric realize (origin medium aspect &key sort))
 
@@ -197,6 +213,11 @@
     (spinneret:interpret-html-tree (generate medium component))
     (values (get-output-stream-string out-stream)
             (close out-stream))))
+
+(defmethod of-root-type ((aspect ui-component) type)
+  (or (member type (uic-type aspect) :test #'eq)
+      (and (uic-root aspect)
+           (of-root-type (uic-root aspect) type))))
 
 (defun merge-furnishings (base extend)
   (loop :for (ekey eval) :on extend :by #'cddr
@@ -260,40 +281,6 @@
 
             ))))
 
-;; (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
-;;   (let ((pairs (if (uic-join aspect)
-;;                    (list :system (first  (uic-join aspect))
-;;                          :branch (second (uic-join aspect))))))
-;;   (case (uic-mode aspect)
-;;     (:chart 
-;;      ;; (print (list :ee (uic-join aspect) (parenscript:ps* `(create a 1 b 2))))
-;;      (list :x-data (setf pairs (append pairs (list :interaction "select"
-;;                                                    :draw-entity "line"
-;;                                                    :moving-from 'nil
-;;                                                    :mousedown 'false
-;;                                                    :active-entity 'nil
-;;                                                    :entities-in-flux '(list)
-;;                                                    :entities '(list)))))))
-;;     (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
-;;                                                       of-local (manifest-locality)))))))
-  
-;; (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
-;;   (let ((pairs (if (uic-join aspect)
-;;                    (list :system (first  (uic-join aspect))
-;;                          :branch (second (uic-join aspect))))))
-;;   (case (uic-mode aspect)
-;;     (:chart 
-;;      ;; (print (list :ee (uic-join aspect) (parenscript:ps* `(create a 1 b 2))))
-;;      (list :x-data (setf pairs (append pairs (list :interaction "select"
-;;                                                    :draw-entity "line"
-;;                                                    :moving-from 'nil
-;;                                                    :mousedown 'false
-;;                                                    :active-entity 'nil
-;;                                                    :entities-in-flux '(list)
-;;                                                    :entities '(list)))))))
-;;     (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
-;;                                                       of-local (manifest-locality)))))))
-
 (defun alist-supersede (new original)
   (loop :for n :in new :do (if (assoc (first n) original)
                                (rplacd (assoc (first n) original)
@@ -343,33 +330,40 @@
   (declare (ignore medium))
   (list :raw aspect))
 
-(defmethod generate ((medium uim-web) (aspect uic-access))
-  (let ((last-type-index (1- (length (uic-type aspect))))
-        (class-stream (make-string-output-stream))
+(defmethod generate ((medium uim-web) (aspect uic-frame))
+  (let ((class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
         (face (lisp->camel-case (uic-name aspect)))
-        (system (or (uica-system aspect) (uim-portal medium)))
-        (branch (string (uic-base aspect))))
-    
-    (format class-stream "access")
-    (when types (format class-stream " "))
+        (system (uicf-access aspect))
+        (last-type-index (1- (length (uic-type aspect)))))
+
+    (when system
+      (format class-stream "access")
+      (when types (format class-stream " ")))
     (loop :for type :in types :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
               (unless (= ix last-type-index) (format class-stream " ")))
     
-    `(:div :hx-post "/render/" :hx-trigger "load, reload consume"
-           :id ,(format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
-           :class ,(get-output-stream-string class-stream)
-           :x-init ,(ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
-                               (chain mode (of-local "register" "main" $el))
-                               (fetch-contact (lisp (string-upcase system))
-                                              (lisp (string-upcase (uic-base aspect)))
-                                              (create height (@ $el offset-height)
-                                                      width  (@ $el offset-width))
-                                              (lambda (data)))))
-           :hx-vals ,(json-convert-to (list :system system :face face :branch branch))
-           :x-data ,(psl (create branch-frame $el)))))
+    (cons :div (if system
+                   (list :hx-post "/render/" :hx-trigger "load, reload consume"
+                         :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
+                         :class (get-output-stream-string class-stream)
+                         :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
+                                            (chain mode (of-local "register" "main" $el))
+                                            (fetch-contact (lisp (string-upcase system))
+                                                           (lisp (string-upcase (uic-base aspect)))
+                                                           (create height (@ $el offset-height)
+                                                                   width  (@ $el offset-width))
+                                                           (lambda (data)))))
+                         :hx-vals (json-convert-to (list :system system :face face
+                                                         :branch (string (uic-base aspect))))
+                         :x-data (psl (create branch-frame $el)))
+                   (progn (when (typep (uic-base aspect) 'ui-component)
+                            (setf (uic-root (uic-base aspect)) aspect))
+                          (list :class (get-output-stream-string class-stream)
+                                (realize aspect medium (uic-base aspect))))))))
+    
 
 (defmethod generate ((medium uim-web) (aspect uic-series))
   (let ((last-type-index (1- (length (uic-type aspect))))
@@ -392,6 +386,16 @@
                                          (:column `(:div :class "column-inner" ,element))
                                          (t element))))
                element))
+
+        (loop :for item :in (uic-base aspect)
+              :when (and (typep item 'ui-component) (not (uic-root item)))
+                :do (setf (uic-root item) aspect))
+
+        ;; (print (list :cc (of-root-type aspect :meta-code)))
+
+        ;; (print (list :root (uic-root aspect) (uic-type aspect)
+        ;;              (when (uic-root aspect)
+        ;;                (uic-type (uic-root aspect)))))
         
         (loop :for type :in types :for ix :from 0
               :do (format class-stream "~a" (string-downcase type))
@@ -405,6 +409,47 @@
                                               (loop :for i :below (or (first lprops) breadth-default)
                                                     :collect ratio)))))
 
+                (if (of-root-type aspect :meta-code)
+                    (list :x-init (psl (let ((handle-container) (handle)
+                                             (on-start (lambda ()
+                                                         (chain console (log :drag-start))
+                                                         (loop :for n :in (@ $el child-nodes)
+                                                               :for ix :from 0
+                                                               :do (drop-target-for-elements
+                                                                    (create element $el
+                                                                            on-drag (lambda ()
+                                                                                      (chain
+                                                                                       console
+                                                                                       (log :a ix)))
+                                                                            on-drop (lambda ()
+                                                                                      (chain
+                                                                                       console
+                                                                                       (log :dr ix)))
+                                                                            ))))))
+                                         (loop :for n :in (@ $el child-nodes)
+                                               :do (when (= (@ n class-name) "field has-addons")
+                                                     (setf handle-container n)
+                                                     (break)))
+                                         (chain console (log (@ $el child-nodes)))
+                                         (loop :for n :in (@ handle-container child-nodes)
+                                               :do (when (= (@ n class-name) "control drag-handle")
+                                                     (setf handle n)
+                                                     (break)))
+                                         ;; (chain console (log :hh handle))
+                                         (chain console (log (draggable (create element $el
+                                                                                drag-handle handle
+                                                                                on-drag-start
+                                                                                (mcode-handler-on-drag $el)
+                                                                                ;; on-start
+                                                                                ))))))))
+
+                (if (of-root-type aspect :meta-code)
+                    ;; `((:div :class "item-heading" "Heading"))
+                    `((:div :class "field has-addons"
+                            (:p :class "control drag-handle" (:a :class "button is-static" "A"))
+                            (:p :class "control is-expanded" (:a :class "button is-static" "Series")))))
+
+                
                 (loop :for ix :from 0 :for item :in (uic-base aspect)
                       :collect (let ((map (nth ix (uic-series-maps aspect))))
                                  (format class-stream "item ")
@@ -467,9 +512,7 @@
                        (let ((trigger-type (nth (1+ (position :trigger (uic-type aspect)))
                                                 (uic-type aspect))))
                          (list :|x-on:click|
-                                         (parenscript:ps* (list 'chain 'methods
-                                                                (list (intern (string base))
-                                                                      'mode))))
+                               (parenscript:ps* (list 'chain 'methods (list (intern (string base)) 'mode))))
                          ;; (case trigger-type
                          ;;   (:local (list :|x-on:click|
                          ;;                 (parenscript:ps* (list 'chain 'methods
@@ -486,7 +529,7 @@
                             
 (defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
-  (flet ((wrap-label (label base) `(:div (:h2 ,label) ,base)))
+  (flet ((wrap-label (label base) `(:div (:label (:span ,label)) ,base)))
     (let ((base (uic-base aspect)))
       (cond ((member :code (uic-type aspect))
              (destructuring-bind (system branch) (uic-base aspect)
@@ -632,26 +675,19 @@
   (if (atom form)
       form (if (not (and (symbolp (first form))
                          (string= "META" (string (first form)))))
-               (make-instance 'uic-series
-                              :base (mapcar #'express form))
+               (make-instance 'uic-series :base (mapcar #'express form))
                (let* ((types (rest (assoc :type (cddr form))))
                       (fx-class (rest (assoc :fx (cddr form))))
                       (primary-type (first types))
-                      (class (if t ; fx-class
-                                 (intern (string fx-class) "SEED.MODULATE")
-                                 (case primary-type
-                                   (:series 'uic-series)
-                                   (:select 'uicc-select)
-                                   (:field  'uicc-field)))))
-                 ;; (unless fx-class (print (list :aa form)))
+                      (class (when fx-class (intern (string fx-class) "SEED.MODULATE"))))
+                 ;; (print (list :aa form (rest (assoc :type (cddr form)))))
                  ;; (print (list :cl class fx-class form))
-                 (make-instance class :base ;; (first form)
-                                (if (eql class 'uic-series)
-                                    (mapcar #'express (second form))
-                                    (if (eq :select primary-type)
-                                        (rest (assoc :options (cddr form)))
-                                        (second form)))
-                                :type (cddr (rest (assoc :type (cddr form)))))))))
+                 (make-instance class :base (if (eql class 'uic-series)
+                                                (mapcar #'express (second form))
+                                                (if (eq :select primary-type)
+                                                    (rest (assoc :options (cddr form)))
+                                                    (second form)))
+                                :type (rest (assoc :type (cddr form))))))))
 
 (defvar *giface-output-stream*)
 

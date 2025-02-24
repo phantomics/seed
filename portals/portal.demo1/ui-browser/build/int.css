@@ -6,6 +6,11 @@ body{
     width: 100%;
 }
 
+:root {
+  --bulma-control-height: 2em;
+  --bulma-control-line-height: 1;
+}
+
 #main > .stack{
     margin: 0 auto;;
     width: 24rem;
@@ -187,6 +192,18 @@ form .input.fluid{
 form .ui.selection.dropdown{
     min-height: 3em;
     margin-bottom: 0.32em;
+}
+
+
+
+.meta-code .ui.series{
+    padding: 0.5rem;
+}
+
+
+
+.meta-code .item .input{
+    margin-bottom: 0.5rem;
 }
 
 .d3view-graph-foldout,

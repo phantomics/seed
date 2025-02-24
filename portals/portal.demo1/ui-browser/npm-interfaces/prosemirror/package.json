@@ -10,6 +10,8 @@
   "author": "Andrew Sengul",
   "license": "GPL-3.0",
   "dependencies": {
+    "prosemirror-commands": "^1.7.0",
+    "prosemirror-history": "^1.4.1",
     "prosemirror-schema-basic": "^1.2.3",
     "prosemirror-state": "^1.4.3",
     "prosemirror-view": "^1.37.2"

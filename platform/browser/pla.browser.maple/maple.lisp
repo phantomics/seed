@@ -156,6 +156,14 @@
 
     `(form (.input.fluid :margin-bottom 0.32em)
            (.ui.selection.dropdown :min-height 3em :margin-bottom 0.32em))
+
+    ;; meta-code UIFX styles
+
+    `(.meta-code
+      (.ui.series
+       :padding 0.5rem)
+      (.item
+       (.input :margin-bottom 0.5rem)))
     
     ;; d3 graph view styles
     
@@ -243,12 +251,15 @@
 (defun build-script-pdnd (stream)
   (build-script-element
    :stream stream
-   :imports `(((draggable) "@atlaskit/pragmatic-drag-and-drop/element/adapter"))
+   :imports `(((draggable drop-target-for-elements monitor-for-elements)
+               "@atlaskit/pragmatic-drag-and-drop/element/adapter"))
    :constructors
    (list (lambda (stream)
            (format
             stream (paren6::ps
-                     (setf (@ global draggable) draggable)))))))
+                     (setf (@ global draggable) draggable
+                           (@ global drop-target-for-elements) drop-target-for-elements
+                           (@ global monitor-for-elements) monitor-for-elements)))))))
 
 (defun build-script-cmirror (stream)
   (build-script-element
@@ -297,15 +308,20 @@
    :stream stream
    :imports `(((schema) "prosemirror-schema-basic")
               ((-editor-state) "prosemirror-state")
-              ((-editor-view) "prosemirror-view"))
+              ((-editor-view) "prosemirror-view")
+              ((undo redo history) "prosemirror-history")
+              ((base-keymap) "prosemirror-commands"))
    :constructors
    (list (lambda (stream)
            (format stream (paren6::ps
                             (defvar |*__PS_MV_REG*|)
                             (setf (@ global create-prosemirror)
-                                  (lambda (target data)
-                                    (let* ((state (-editor-state (create schema schema)))
-                                           (view (new (-editor-view (create state state)))))
+                                  (lambda (target) ;; data)
+                                    (let* ((state (-editor-state (create schema schema
+                                                                         plugins (list
+                                                                                  (history)
+                                                                                  (keymap base-keymap)))))
+                                           (view (new (-editor-view target (create state state)))))
                                       view)))))))))
 
 ;; (defpsmacro pcl (&rest items)
@@ -373,6 +389,31 @@
                        (getprop types option)))
              ("trigger" (loop :for item :in (getprop types option)
                               :do (chain htmx (trigger item body))))))))
+
+     (defun mcode-handler-on-drag (element)
+       (lambda ()
+         (let ((osvector (list)) (ix 0))
+           (chain console (log :drag-start (@ element child-nodes length) (@ element child-nodes)))
+           (loop :for n :in (@ element child-nodes)
+                 :do (chain console (log :ii ix))
+                     (when (/= 3 (@ n node-type))
+                       (let ((bounds (chain n (get-bounding-client-rect))))
+                         (chain console (log :bb ix bounds osvector (@ bounds top)))
+                         (setf osvector (chain osvector
+                                               (concat (if (= 0 (@ osvector length))
+                                                           (@ bounds top)
+                                                           (- (@ bounds top)
+                                                              (floor
+                                                               (* 0.25 (getprop osvector
+                                                                                (1- (@ osvector
+                                                                                       length)))))))))))
+                       (drop-target-for-elements (create element n
+                                                         on-drag (lambda ()
+                                                                   (chain console (log :a ix)))
+                                                         on-drop (lambda ()
+                                                                   (chain console (log :dr ix))))))
+                     (incf ix))
+           (chain console (log :oss osvector)))))
 
      (defun push-form (item form-list)
        (chain form-list (push item)))

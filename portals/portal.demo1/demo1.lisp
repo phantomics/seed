@@ -30,6 +30,9 @@
   (write-to-file stream *package* "./ui-browser/npm-interfaces/codemirror/cm-app.js"
     (build-script-cmirror stream))
 
+  (write-to-file stream *package* "./ui-browser/npm-interfaces/prosemirror/pm-app.js"
+    (build-script-pmirror stream))
+
   (write-to-file stream *package* "./ui-browser/npm-interfaces/pragmatic-dnd/pdnd.js"
     (build-script-pdnd stream))
 
@@ -44,7 +47,9 @@
       (apply #'concat-files stream *package*
              (append flat-paths
                      (list "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
-                           "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"))
+                           "./ui-browser/npm-interfaces/pragmatic-dnd/build/iface.bundle.js"
+                           "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"
+                           "./ui-browser/npm-interfaces/prosemirror/build/iface.bundle.js"))
       ;; (format stream "window.Dygraph = Dygraph;~%")
       )))
 
