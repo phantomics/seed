@@ -390,12 +390,6 @@
         (loop :for item :in (uic-base aspect)
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
-
-        ;; (print (list :cc (of-root-type aspect :meta-code)))
-
-        ;; (print (list :root (uic-root aspect) (uic-type aspect)
-        ;;              (when (uic-root aspect)
-        ;;                (uic-type (uic-root aspect)))))
         
         (loop :for type :in types :for ix :from 0
               :do (format class-stream "~a" (string-downcase type))
@@ -407,41 +401,11 @@
                                       (format nil "grid-template-~a: ~{~a% ~};"
                                               (if (eq ltype :horizontal) "columns" "rows")
                                               (loop :for i :below (or (first lprops) breadth-default)
-                                                    :collect ratio)))))
+                                                    :collect ratio))))
+                      :x-data (psl (create containing-series $el)))
 
                 (if (of-root-type aspect :meta-code)
-                    (list :x-init (psl (let ((handle-container) (handle)
-                                             (on-start (lambda ()
-                                                         (chain console (log :drag-start))
-                                                         (loop :for n :in (@ $el child-nodes)
-                                                               :for ix :from 0
-                                                               :do (drop-target-for-elements
-                                                                    (create element $el
-                                                                            on-drag (lambda ()
-                                                                                      (chain
-                                                                                       console
-                                                                                       (log :a ix)))
-                                                                            on-drop (lambda ()
-                                                                                      (chain
-                                                                                       console
-                                                                                       (log :dr ix)))
-                                                                            ))))))
-                                         (loop :for n :in (@ $el child-nodes)
-                                               :do (when (= (@ n class-name) "field has-addons")
-                                                     (setf handle-container n)
-                                                     (break)))
-                                         (chain console (log (@ $el child-nodes)))
-                                         (loop :for n :in (@ handle-container child-nodes)
-                                               :do (when (= (@ n class-name) "control drag-handle")
-                                                     (setf handle n)
-                                                     (break)))
-                                         ;; (chain console (log :hh handle))
-                                         (chain console (log (draggable (create element $el
-                                                                                drag-handle handle
-                                                                                on-drag-start
-                                                                                (mcode-handler-on-drag $el)
-                                                                                ;; on-start
-                                                                                ))))))))
+                    (list :x-init (psl (draggable-provision $el in-series))))
 
                 (if (of-root-type aspect :meta-code)
                     ;; `((:div :class "item-heading" "Heading"))
@@ -460,6 +424,98 @@
                                        :do (format class-stream "~a " (string-downcase itype)))
                                  (locate medium aspect ix
                                          `(:div :class ,(get-output-stream-string class-stream)
+                                                    :x-data ,(psl (create in-series containing-series))
+                                                    ,(enclose-by-type
+                                                      types (realize aspect medium item
+                                                                     :sort ix)))))))))))
+
+(defmethod generate ((medium uim-web) (aspect uic-series))
+  (let ((last-type-index (1- (length (uic-type aspect))))
+        (class-stream (make-string-output-stream))
+        (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
+                        (uic-type aspect)))
+        (breadth-default 12))
+    (format class-stream "ui ")
+    (format class-stream "~a" (typecase aspect (uic-series "series ")
+                                        ;; (uic-set-frame "frame ")
+                                        (t "")))
+    
+    (destructuring-bind (&optional ltype lstyle &rest lprops) (uic-series-layout aspect)
+      (case ltype
+        ((:horizontal :vertical) (format class-stream "series grid-layout ")))
+
+      (flet ((enclose-by-type (types element)
+               (loop :for type :in types
+                     :do (setf element (case type
+                                         (:column `(:div :class "column-inner" ,element))
+                                         (t element))))
+               element))
+
+        (loop :for item :in (uic-base aspect)
+              :when (and (typep item 'ui-component) (not (uic-root item)))
+                :do (setf (uic-root item) aspect))
+
+        ;; (print (list :cc (of-root-type aspect :meta-code)))
+
+        ;; (print (list :root (uic-root aspect) (uic-type aspect)
+        ;;              (when (uic-root aspect)
+        ;;                (uic-type (uic-root aspect)))))
+        
+        (loop :for type :in types :for ix :from 0
+              :do (format class-stream "~a" (string-downcase type))
+                  (unless (= ix last-type-index) (format class-stream " ")))
+        (append (list (typecase aspect (uic-series-form :form) (t :div))
+                      :path "" :class (get-output-stream-string class-stream)
+                      :style (if (not (member ltype '(:horizontal :vertical)))
+                                 "" (let ((ratio (/ 100.0 (or (first lprops) breadth-default))))
+                                      (format nil "grid-template-~a: ~{~a% ~};"
+                                              (if (eq ltype :horizontal) "columns" "rows")
+                                              (loop :for i :below (or (first lprops) breadth-default)
+                                                    :collect ratio))))
+                      :x-data (if (of-root-type aspect :meta-code)
+                                  (psl (create containing-series $el))))
+
+                (if (and (of-root-type aspect :meta-code)
+                         ;; (member :sortable (uic-type aspect))
+                         )
+                    (list :x-init (psl (let ((handle-container) (handle))
+                                         (loop :for n :in (@ $el child-nodes)
+                                               :do (when (= (@ n class-name) "field has-addons")
+                                                     (setf handle-container n)
+                                                     (break)))
+                                         ;; (chain console (log (@ $el child-nodes)))
+                                         (loop :for n :in (@ handle-container child-nodes)
+                                               :do (when (= (@ n class-name) "control drag-handle")
+                                                     (setf handle n)
+                                                     (break)))
+                                         ;; (chain console (log :hh handle))
+                                         (when (/= "undefined" (typeof in-series))
+                                           (let ((drops (create element $el drag-handle handle
+                                                                on-drag-start
+                                                                (mcode-handler-on-drag in-series))))
+                                             (draggable drops)
+                                             nil))))))
+
+                (if (of-root-type aspect :meta-code)
+                    ;; `((:div :class "item-heading" "Heading"))
+                    `((:div :class "field has-addons"
+                            (:p :class "control drag-handle" (:a :class "button is-static" "A"))
+                            (:p :class "control is-expanded" (:a :class "button is-static" "Series")))))
+
+                
+                (loop :for ix :from 0 :for item :in (uic-base aspect)
+                      :collect (let ((map (nth ix (uic-series-maps aspect))))
+                                 (format class-stream "item ")
+                                 (when (and (uic-series-point aspect)
+                                            (= ix (uic-series-point aspect)))
+                                   (format class-stream "point "))
+                                 (loop :for itype :in (rest (assoc :type map))
+                                       :do (format class-stream "~a " (string-downcase itype)))
+                                 (locate medium aspect ix
+                                         `(:div :class ,(get-output-stream-string class-stream)
+                                                ,@(if (of-root-type aspect :meta-code)
+                                                      (list :x-data (psl (create in-series
+                                                                                 containing-series))))
                                                 ,(enclose-by-type
                                                   types (realize aspect medium item
                                                                  :sort ix)))))))))))

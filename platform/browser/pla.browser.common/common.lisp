@@ -36,3 +36,10 @@
                                      :element-type (array-element-type bytes))
                   (write-sequence bytes out))
                 complete-path))))))
+
+(defmacro create-js-collection (name)
+  `(progn (proclaim '(special ,name))
+          (setf ,name nil)))
+
+(defmacro enter-js-element (collection key &body value)
+  `(setf (getf ,collection ,key) (quote ,(first value))))
