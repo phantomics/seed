@@ -6,9 +6,9 @@ body{
     width: 100%;
 }
 
-:root {
-  --bulma-control-height: 2em;
-  --bulma-control-line-height: 1;
+:root{
+    --bulma-control-height: 2em;
+    --bulma-control-line-height: 1;
 }
 
 #main > .stack{
@@ -96,6 +96,7 @@ body{
 .ui.grid-layout .column .column-inner .access.body{
     height: 100%;
     background: #fff;
+    overflow: auto;
 }
 
 .ui.grid-layout.main{
@@ -113,6 +114,10 @@ body{
 
 .ui.grid-layout.workspace.even{
     grid-template-columns: 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%;
+}
+
+.ui.grid-layout.workspace.even .ui.series.grid-layout{
+    height: 100vh;
 }
 
 .ui.grid-layout.workspace.even > .column:nth-child(1){

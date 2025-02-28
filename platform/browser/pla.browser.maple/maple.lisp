@@ -77,7 +77,11 @@
    (lass:compile-and-write
     `(body :background "#f2f2f2")
 
-    `(|#root|	:width "100%")
+    `(|#root| :width "100%")
+
+    `(|:root|
+      :--bulma-control-height 2em
+      :--bulma-control-line-height 1)
     
     `((|#main| > .stack)
       :margin "0 auto;"
@@ -111,7 +115,7 @@
        (.container :position "relative" :height "100%") ;;  :display grid)
        (.column-inner
         :padding 0 :overflow auto
-        (.access.body :height "100%" :background "#fff"))))
+        (.access.body :height "100%" :background "#fff" :overflow auto))))
 
     `(.ui.grid-layout.main
       :grid-template-rows "100%"
@@ -124,7 +128,9 @@
       :grid-column-start 2)
 
     `(.ui.grid-layout.workspace.even
-      :grid-template-columns "8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%")
+      :grid-template-columns "8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%"
+      (.ui.series.grid-layout
+       :height 100vh))
     
     `((:and (.ui.grid-layout.workspace.even > .column)
             (:nth-child 1))
