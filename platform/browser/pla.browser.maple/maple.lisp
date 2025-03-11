@@ -169,7 +169,15 @@
       (.ui.series
        :padding 0.5rem)
       (.item
-       (.input :margin-bottom 0.5rem)))
+       (.input :margin-bottom 0.5rem))
+      (.drop-marker ;; put this inside a deeper context
+       ;; line-thickness: 2px;
+       ;; terminal-size: 8px;
+       ;; terminal-radius: 4px;
+       ;; negative-terminal-size: -8px;
+       ;; offset-terminal: -3px;
+       :background-color black
+       :height 2px))
     
     ;; d3 graph view styles
     
@@ -410,77 +418,149 @@
           ("trigger" (loop :for item :in (getprop types option)
                            :do (chain htmx (trigger item body)))))))))
 
-(enter-js-element *misc-js* :draggable-provision
-  (defun draggable-provision (element in-series)
-    (let ((handle-container) (handle)
-          (on-start (lambda ()
-                      (chain console (log :drag-start))
-                      (chain -array (from (@ element child-nodes))
-                             (map (lambda (n ix)
-                                    (drop-target-for-elements
-                                     (create element element
-                                             on-drag (lambda ()
-                                                       (chain console (log :a ix)))
-                                             on-drop (lambda (self source)
-                                                       (chain console (log :drii self ix)))
-                                             ))))))))
-      (loop :for n :in (@ element child-nodes)
-            :do (when (= (@ n class-name) "field has-addons")
-                  (setf handle-container n)
-                  (break)))
-      (chain console (log (@ element child-nodes)))
-      (loop :for n :in (@ handle-container child-nodes)
-            :do (when (= (@ n class-name) "control drag-handle")
-                  (setf handle n)
-                  (break)))
-      ;; (chain console (log :hh handle))
-      (when (/= "undefined" (typeof in-series))
-        (chain console (log (draggable (create element element
-                                               drag-handle handle
-                                               on-drag-start
-                                               (mcode-handler-on-drag
-                                                in-series)
-                                               ;; on-start
-                                               ))))))))
+;; (enter-js-element *misc-js* :draggable-provision
+;;   (defun draggable-provision (element in-series)
+;;     (let ((handle-container) (handle))
+;;       (loop :for n :in (@ element child-nodes)
+;;             :do (when (= (@ n class-name) "field has-addons")
+;;                   (setf handle-container n)
+;;                   (break)))
+;;       ;; (chain console (log (@ element child-nodes)))
+;;       (loop :for n :in (@ handle-container child-nodes)
+;;             :do (when (= (@ n class-name) "control drag-handle")
+;;                   (setf handle n)
+;;                   (break)))
+;;       (chain console (log :hh handle element))
+;;       (when (/= "undefined" (typeof in-series))
+;;         (chain console (log (draggable (create element element drag-handle handle
+;;                                                on-drag-start (mcode-handler-on-drag in-series)))))))))
 
 (enter-js-element *misc-js* :mcode-handler-on-drag
-  (defun mcode-handler-on-drag (element)
-    (lambda ()
-      (let ((osvector (list)) (ix 0))
-        (chain console (log :drag-start element (@ element child-nodes length) (@ element child-nodes)))
-        (chain -array
-               (from (@ element child-nodes))
-               (filter (lambda (item) (instanceof item -h-t-m-l-element)))
-               (map (lambda (n ia)
-                      (chain console (log :ii ix))
-                      (when (/= 3 (@ n node-type))
-                        (let ((bounds (chain n (get-bounding-client-rect))))
-                          (chain console (log :bb ix bounds osvector (@ bounds top)))
-                          (setf osvector (chain osvector
-                                                (concat (if (= 0 (@ osvector length))
-                                                            (@ bounds top)
-                                                            (- (@ bounds top)
-                                                               (floor
-                                                                (* 0.25 (getprop osvector
-                                                                                 (1- (@ osvector
-                                                                                        length)))))))))))
-                        (drop-target-for-elements
-                         (create element n
-                                 on-drag (lambda () (chain console (log :abc ia)))
-                                 get-data (lambda (data)
-                                            (chain console (log :dd data))
-                                            (attach-closest-edge
-                                             (create)
-                                             (create element n
-                                                     input (@ data input)
-                                                     allowed-edges (list "top" "bottom"))))
-                                 on-drop (lambda (event)
-                                           ;;(chain n next-element-sibling? (remove))
-                                           (let ((closest-edge
-                                                   (extract-closest-edge (@ event self data))))
-                                             (chain console (log :drix closest-edge event ia)))))))
-                      (incf ix))))
-        (chain console (log :oss osvector))))))
+  (defun mcode-handler-on-drag (element mode)
+    (lambda (dragging)
+      (chain console (log :ee element mode))
+      (chain console (log :mm mode dragging (chain dragging source element parent-element
+                                                   (get-attribute "index"))))
+      (chain console (log :drag-start element (@ element child-nodes length) (@ element child-nodes)))
+      (chain -array
+             (from (@ element child-nodes))
+             (filter (lambda (item) (instanceof item -h-t-m-l-element)))
+             (map (lambda (n item-index)
+                    (when (/= 3 (@ n node-type))
+                      (drop-target-for-elements
+                       (create element n
+                               get-data (lambda (data)
+                                          ;; (chain console (log :dd data))
+                                          (attach-closest-edge
+                                           (create)
+                                           (create element n
+                                                   input (@ data input)
+                                                   allowed-edges (list "top" "bottom"))))
+                               on-drag-enter (lambda (event)
+                                               ;; (chain console (log :in event))
+                                               (let ((closest-edge
+                                                       (extract-closest-edge (@ event self data))))
+                                                 (if (not closest-edge)
+                                                     (return)
+                                                     (let ((indicator (get-drop-indicator
+                                                                       closest-edge "8px")))
+                                                       ;; (chain console (log :nn indicator))
+                                                       (chain n (insert-adjacent-element
+                                                                 "afterend" indicator))))))
+                               on-drag-leave (lambda (event)
+                                               (when (@ n next-element-sibling)
+                                                 (chain n next-element-sibling (remove))))
+                               on-drop (lambda (event)
+                                         ;;(chain n next-element-sibling? (remove))
+                                         (let ((closest-edge
+                                                 (extract-closest-edge (@ event self data))))
+                                           (when (@ n next-element-sibling)
+                                             (chain n next-element-sibling (remove)))
+                                           (chain console (log :drix element closest-edge event item-index
+                                                               :iid item-index
+                                                               ;; (@ event self element attributes index)
+                                                               n (chain n (get-attribute "index") "XX")))
+                                           (fetch-contact
+                                            (@ mode system) (@ mode branch)
+                                            (create path (chain element parent-element
+                                                                (get-attribute "meta-path"))
+                                                    sort (list (parse-int
+                                                                (chain dragging source element
+                                                                       parent-element
+                                                                       (get-attribute "index")))
+                                                               (+ (parse-int (chain n (get-attribute
+                                                                                       "index")))
+                                                                  (case closest-edge
+                                                                    ("bottom" 1)
+                                                                    ("top" 0)))))
+                                            
+                                            (lambda () (chain htmx (trigger element "reload"))))
+                                           )))))))))))
+
+(enter-js-element *misc-js* :get-drop-indicator
+  (defun get-drop-indicator (edge gap)
+    ;; (chain console (log :ee edge gap))
+    (let* ((stroke-size 2) (terminal-size 8)
+           (line-offset (+ "calc(-0.5 * (" gap " + " stroke-size "px))"))
+           (orientation (case edge
+                          ("top"    "horizontal")
+                          ("bottom" "horizontal")
+                          ("left"   "vertical")
+                          ("right"  "vertical")))
+           (element (chain document (create-element "div")))
+           (offset-to-align (/ (- terminal-size stroke-size) 2)))
+      
+      (chain element (set-attribute "data-edge" edge))
+      ;; (chain element style (set-property "--line-thickness" (+ stroke-size "px")))
+      ;; (chain element style (set-property "--line-offset" line-offset))
+      ;; (chain element style (set-property "--terminal-size" (+ terminal-size "px")))
+      ;; (chain element style (set-property "--terminal-radius" (+ (/ terminal-size 2) "px")))
+      ;; (chain element style (set-property "--negative-terminal-size" (+ "-" terminal-size "px")))
+      ;; (chain element style (set-property "--offset-terminal" (+ offset-to-align "px")))
+
+      ;; (chain element class-list
+      ;;        (add "absolute" "pointer-events:none" "before:content-['']" "box-border"
+      ;;             "before:absolute" "before:border-[length:--line-thickness]" "before:border-solid"))
+
+      (chain element class-list (add "drop-marker"))
+      
+      element)))
+
+;; export function getDropIndicator({ edge, gap }: { edge: Edge; gap: string }): HTMLElement {
+;;   const lineOffset = `calc(-0.5 * (${gap} + ${strokeSize}px))`;
+
+;;   const orientation = edgeToOrientationMap[edge];
+
+;;   const element = document.createElement('div');
+
+;;   element.setAttribute('data-edge', edge);
+
+;;   element.style.setProperty('--line-thickness', `${strokeSize}px`);
+;;   element.style.setProperty('--line-offset', `${lineOffset}`);
+;;   element.style.setProperty('--terminal-size', `${terminalSize}px`);
+;;   element.style.setProperty('--terminal-radius', `${terminalSize / 2}px`);
+;;   element.style.setProperty('--negative-terminal-size', `-${terminalSize}px`);
+;;   element.style.setProperty('--offset-terminal', `${offsetToAlignTerminalWithLine}px`);
+
+;;   element.classList.add(
+;;     'absolute',
+;;     'z-10',
+;;     'bg-blue-700',
+;;     'pointer-events-none',
+;;     "before:content-['']",
+;;     'before:w-[--terminal-size]',
+;;     'before:h-[--terminal-size]',
+;;     'box-border',
+;;     'before:absolute',
+;;     'before:border-[length:--line-thickness]',
+;;     'before:border-solid',
+;;     'before:border-blue-700',
+;;     'before:rounded-full',
+;;     ...orientationStyles[orientation].split(' '),
+;;     ...edgeStyles[edge].split(' '),
+;;   );
+;;   return element;
+;; }
 
 (enter-js-element *misc-js* :push-form
   (defun push-form (item form-list)

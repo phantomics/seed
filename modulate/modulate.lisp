@@ -91,6 +91,9 @@
    (%base :accessor uic-base
           :initform nil
           :initarg  :base)
+   (%path :accessor uic-path
+          :initform nil
+          :initarg  :path)
    (%type :accessor uic-type
           :initform nil
           :initarg  :type)
@@ -461,6 +464,7 @@
                                             :do (format class-stream "~a " (string-downcase itype)))
                                       (locate medium aspect ix
                                               `(:div :class ,(get-output-stream-string class-stream)
+                                                     :index ,ix
                                                      ,@(if (of-root-type aspect :meta-code)
                                                            (list :x-data
                                                                  (psl (create in-series
@@ -514,7 +518,7 @@
                                            (when (/= "undefined" (typeof in-series))
                                              (let ((drops (create element $el drag-handle handle
                                                                   on-drag-start
-                                                                  (mcode-handler-on-drag in-series))))
+                                                                  (mcode-handler-on-drag in-series mode))))
                                                (draggable drops)
                                                nil))))))
 
@@ -535,7 +539,6 @@
                                                                   (reverse (first envelopes)))))
                         (reverse envelopes))
                       items)))))))
-  
 
 (defmethod generate ((medium uim-web) (aspect uic-grid))
   (destructuring-bind (system branch) (uic-base aspect)
@@ -616,7 +619,6 @@
                                                             (lisp (string branch))
                                                             (list (list "text" 0))
                                                             (lambda (data) 
-                                                              ;; (chain console (log :dt (@ data text)))
                                                               (setf (getprop (@ window seed-data)
                                                                              (lisp token))
                                                                     (create-codemirror
@@ -634,10 +636,6 @@
                                                                               (uicc-field-default aspect)
                                                                               "")
                                       :name ,(or (string (uicc-key aspect)) "")))))))))
-
-;; (defmethod generate ((medium uim-web) (aspect uicc-field-area))
-;;   `(:textarea :class "input" :value ,(or (uicc-field-default aspect) "")
-;;               :name ,(or (string (uicc-key aspect)) "")))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   `(:select :class "ui" :name ,(or (string (uicc-key aspect)) "")
@@ -682,14 +680,17 @@
     ;; (print (list :ava aspect furnishing (uic-cast aspect)))
     ;; (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
-    
-    (when furnishing
-      (let ((pairs-out (loop :for f :in furnishing :collect (if (symbolp f)
-                                                                f (cons 'create f)))))
-        (setf main (cons (first main)
-                         (append (list :x-data (parenscript:ps* `(create ,@pairs-out
-                                                                         of-local (manifest-locality))))
-                                 (rest main))))))
+    (setf main (cons (first main)
+                     (append (if furnishing
+                                 (list :x-data (parenscript:ps*
+                                                `(create ,@(loop :for f :in furnishing
+                                                                 :collect (if (symbolp f)
+                                                                              f (cons 'create f)))
+                                                         of-local (manifest-locality)))))
+                             
+                             (if (uic-path aspect)
+                                 (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
+                             (rest main))))
     
     (flet ((cast-wrap (base-form)
              (let* ((cast (uic-cast aspect))
@@ -744,27 +745,34 @@
 
 |#
 
-(defun express (form) ;; TODO: this will not grow well with the metaform topology
+(defun express (form &optional path) ;; TODO: this will not grow well with the metaform topology
   (if (atom form)
-      form (if (not (and (symbolp (first form))
-                         (string= "META" (string (first form)))))
-               (make-instance 'uic-series :base (mapcar #'express form))
-               (let* ((types (rest (assoc :type (cddr form))))
-                      (fx-class (rest (assoc :fx (cddr form))))
-                      (primary-type (first types))
-                      (layout (rest (assoc :layout (cddr form))))
-                      (class (when fx-class (intern (string fx-class) "SEED.MODULATE")))
-                      (out (make-instance class :base (if (eql class 'uic-series)
-                                                          (mapcar #'express (second form))
-                                                          (if (eq :select primary-type)
-                                                              (rest (assoc :options (cddr form)))
-                                                              (second form)))
-                                                :type (rest (assoc :type (cddr form))))))
-                 
-                 ;; (print (list :aa form (rest (assoc :type (cddr form)))))
-                 ;; (print (list :cl class fx-class form))
-                 (when layout (setf (uic-series-layout out) layout))
-                 out))))
+      form (let ((path (or path (list 0))))
+             (if (not (and (symbolp (first form))
+                           (string= "META" (string (first form)))))
+                 (make-instance 'uic-series :path (reverse path)
+                                            :base (mapcar #'express form
+                                                          (loop :for i :below (length form)
+                                                                :collect (cons i path))))
+                 (let* ((types (rest (assoc :type (cddr form))))
+                        (fx-class (rest (assoc :fx (cddr form))))
+                        (primary-type (first types))
+                        (layout (rest (assoc :layout (cddr form))))
+                        (class (when fx-class (intern (string fx-class) "SEED.MODULATE")))
+                        (out (make-instance class :base (if (eql class 'uic-series)
+                                                            (mapcar #'express (second form)
+                                                                    (loop :for i :below (length (second form))
+                                                                          :collect (cons i path)))
+                                                            (if (eq :select primary-type)
+                                                                (rest (assoc :options (cddr form)))
+                                                                (second form)))
+                                                  :path (reverse path)
+                                                  :type (rest (assoc :type (cddr form))))))
+                   
+                   ;; (print (list :aa form (rest (assoc :type (cddr form)))))
+                   ;; (print (list :cl class fx-class form))
+                   (when layout (setf (uic-series-layout out) layout))
+                   out)))))
 
 (defvar *giface-output-stream*)
 

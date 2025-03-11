@@ -211,6 +211,11 @@ form .ui.selection.dropdown{
     margin-bottom: 0.5rem;
 }
 
+.meta-code .drop-marker{
+    background-color: black;
+    height: 2px;
+}
+
 .d3view-graph-foldout,
 .svg-visualizer{
     width: 100%;
