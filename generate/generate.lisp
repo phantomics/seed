@@ -47,6 +47,38 @@
                              (funcall (funcall ,contactor ,system)
                                       nil ,key ,session ,input))))))))))
 
+(proclaim '(special of-branches))
+
+(defmacro seed2 (name &body props)
+  (let* ((access (rest (assoc :access props)))
+         (contacts (rest (assoc :contacts props)))
+         (grow (intern (string (getf access :to-grow)) (package-name *package*)))
+         (of-system (intern (string (getf access :of-system)) (package-name *package*)))
+         (branches (gensym "BR")) (system (gensym "SY")) (key (gensym "KY"))
+         (session (gensym "SS")) (input (gensym "IN")) (prsym (gensym "PR")))
+    ;; (print contacts)
+    `(let ((,prsym (list :point nil ,@(if contacts `(:contacts ,(cons 'list contacts)))))
+           (,branches))
+       ,@(if access nil `((proclaim '(special ,grow ,of-system))))
+       (setf (symbol-function ',of-system)
+             (lambda (,key &optional ,input)
+               (if ,input (setf (getf ,prsym ,key) ,input)
+                   (getf ,prsym ,key)))
+             (symbol-function 'of-branches)
+             (lambda (,system ,key &optional ,input)
+               (if ,input (setf (getf (getf ,branches ,system) ,key) ,input)
+                   (getf (getf ,branches ,system) ,key)))
+             (symbol-function ',grow)
+             (lambda (,system ,key &optional ,session ,input)
+               (unless ,key
+                 (error "Warning: attempt to grow system ~a without a specified branch." ,system))
+               (funcall (getf (getf ,branches ,system) ,key) ,session ,input)))
+       ,@(loop :for contact-sym :in contacts
+               :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./"))))))
+
+(defmacro branch (portal-name branch-name &body function)
+  `(of-branches ,portal-name ,branch-name ,@function))
+
 (defun in-system-context (spec system-name)
   (append (list (first spec) (second spec))
           (cons (cons :system system-name) (cddr spec))))
