@@ -7,8 +7,8 @@ body{
 }
 
 :root{
-    --bulma-control-height: 2em;
-    --bulma-control-line-height: 1;
+    --bulma-control-padding-horizontal: calc(0.4em - 1px);
+    --bulma-control-padding-vertical: calc(0.25em - 1px);
 }
 
 #main > .stack{
@@ -205,12 +205,6 @@ form .ui.selection.dropdown{
     padding: 0.5rem;
 }
 
-
-
-.meta-code .item .input{
-    margin-bottom: 0.5rem;
-}
-
 .meta-code .drop-marker{
     background-color: black;
     height: 2px;
@@ -352,6 +346,13 @@ form .ui.selection.dropdown{
 .d3view-graph-foldout .node-group .circle-glyph .inner-circle,
 .svg-visualizer .node-group .circle-glyph .inner-circle{
     fill: #fff;
+}
+
+.d3view-graph-foldout .node-group .circle-glyph .icon,
+.svg-visualizer .node-group .circle-glyph .icon{
+    font-weight: bold;
+    font-family: PragmataPro, iosevka, Mono;
+    font-size: 22px;
 }
 
 

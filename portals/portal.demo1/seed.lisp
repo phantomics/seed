@@ -6,16 +6,6 @@
   (:contacts :demo.sheet)
   (:access :to-grow grow :to-branch branch :of-system of-system))
 
-(branch :portal.demo1 :systems
-  (lambda (context input)
-    (if input (let ((epsym (intern input "KEYWORD")))
-                (of-system :point (intern input "KEYWORD"))
-                (instantiate-priority-macro-reader (asdf:load-system epsym)
-                  (load-seed-system epsym)))
-        (-<> (with-meta (of-system :contacts)
-               :type (:form))
-          (encode <>)))))
-
 (branch :portal.demo1 :view
   (lambda (context input)
     (let ((key-input (rest (assoc :key input :test #'eq))))
@@ -59,7 +49,15 @@
          (fx ((uic-series-form :type (:ui :column) :cast t))
              (list (fx ((uicc-field :key "key")) ""))))))))
 
-
+(branch :portal.demo1 :systems
+  (lambda (context input)
+    (if input (let ((epsym (intern input "KEYWORD")))
+                (of-system :point (intern input "KEYWORD"))
+                (instantiate-priority-macro-reader (asdf:load-system epsym)
+                  (load-seed-system epsym)))
+        (-<> (with-meta (of-system :contacts)
+               :type (:form))
+          (encode <>)))))
 
 ;; (seed :portal.demo1
 ;;       (:bind :package package :of-system of-system :to-grow grow)

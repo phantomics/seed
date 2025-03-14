@@ -80,13 +80,13 @@
     `(|#root| :width "100%")
 
     `(|:root|
-      :--bulma-control-height 2em
-      :--bulma-control-line-height 1)
+      ;; :--bulma-control-height 2em
+      ;; :--bulma-control-line-height 1
+      :--bulma-control-padding-horizontal "calc(0.4em - 1px)"
+      :--bulma-control-padding-vertical "calc(0.25em - 1px)")
     
     `((|#main| > .stack)
-      :margin "0 auto;"
-      :width 24rem
-      :height "100%"
+      :margin "0 auto;" :width 24rem :height "100%"
       (.heading :text-align center)
       (form :text-align center
             (.input :margin "0 auto")))
@@ -168,8 +168,13 @@
     `(.meta-code
       (.ui.series
        :padding 0.5rem)
-      (.item
-       (.input :margin-bottom 0.5rem))
+
+      ;; (.item
+      ;;  ((:or .input .textarea .select)
+      ;;   :margin-bottom 0.5rem))
+
+      ;; (.item :padding-bottom 0.5rem)
+      
       (.drop-marker ;; put this inside a deeper context
        ;; line-thickness: 2px;
        ;; terminal-size: 8px;
@@ -206,7 +211,10 @@
                         (rect :fill "#fff"))
        (.circle-glyph :cursor "pointer"
                       (.outer-circle :fill "#ccc")
-                      (.inner-circle :fill "#fff")))
+                      (.inner-circle :fill "#fff")
+                      (.icon :font-weight "bold"
+                             :font-family "PragmataPro, iosevka, Mono"
+                             :font-size 22px)))
       (.node-group.selected
        (.title-frame (rect :opacity 1 :stroke-width 1)))
       ((:and .node-group :hover)
@@ -491,8 +499,8 @@
                                                                (+ (parse-int (chain n (get-attribute
                                                                                        "index")))
                                                                   (case closest-edge
-                                                                    ("bottom" 1)
-                                                                    ("top" 0)))))
+                                                                    ("bottom" 0)
+                                                                    ("top"    0)))))
                                             
                                             (lambda () (chain htmx (trigger element "reload"))))
                                            )))))))))))

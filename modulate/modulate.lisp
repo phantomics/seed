@@ -150,7 +150,9 @@
   ())
 
 (defclass uicc-select (uic-control)
-  ())
+  ((%options :accessor uics-options
+             :initform nil
+             :initarg  :options)))
 
 (defclass uicc-field (uic-control)
   ((%default :accessor uicc-field-default
@@ -485,7 +487,7 @@
           (loop :for type :in types :for ix :from 0
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
-          
+
           (append (list (typecase aspect (uic-series-form :form) (t :div))
                         :path "" :class (get-output-stream-string class-stream)
                         :style (if (and (not (member ltype '(:horizontal :vertical)))
@@ -500,10 +502,9 @@
                                                       :collect ratio))))
                         :x-data (if (of-root-type aspect :meta-code)
                                     (psl (create containing-series $el))))
-
+                  
                   (if (and (of-root-type aspect :meta-code)
-                           ;; (member :sortable (uic-type aspect))
-                           )
+                           (member :sortable (uic-type aspect)))
                       (list :x-init (psl (let ((handle-container) (handle))
                                            (loop :for n :in (@ $el child-nodes)
                                                  :do (when (= (@ n class-name) "field has-addons")
@@ -522,7 +523,8 @@
                                                (draggable drops)
                                                nil))))))
 
-                  (if (of-root-type aspect :meta-code)
+                  (if (and (of-root-type aspect :meta-code)
+                           (of-root-type aspect :sortable))
                       ;; `((:div :class "item-heading" "Heading"))
                       `((:div :class "field has-addons"
                               (:p :class "control drag-handle" (:a :class "button is-static" "A"))
@@ -607,39 +609,50 @@
   ;; (print (list :ee medium (uic-type aspect)))
   (flet ((wrap-label (label base) `(:div (:label (:span ,label)) ,base)))
     (let ((base (uic-base aspect)))
-      (cond ((member :code (uic-type aspect))
-             (destructuring-bind (system branch) (uic-base aspect)
-               (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
-                                    (string-downcase branch))))
-                 `(:div :id ,token ;; :class ,(uic-type aspect)
-                        :x-init ,(psl (progn (setf (@ window codemirror) nil)
-                                             (setf (getprop (@ window seed-elements) (lisp branch))
-                                                   $el)
-                                             (fetch-contact (lisp (string system))
-                                                            (lisp (string branch))
-                                                            (list (list "text" 0))
-                                                            (lambda (data) 
-                                                              (setf (getprop (@ window seed-data)
-                                                                             (lisp token))
-                                                                    (create-codemirror
-                                                                     (chain document (get-element-by-id
-                                                                                      (lisp token)))
-                                                                     (@ data text)))))))))))
-            ((member :area (uic-type aspect))
-             `(:textarea :class "input" :name ,(or (string (uicc-key aspect)) "")
-                         ,(or (uicc-field-default aspect) "")))
-            (t (destructuring-bind (field-name &rest field-content)
-                   (if (listp base) base (cons nil base))
-                 ;; (print (list :fi field-name base))
-                 (wrap-label (lisp->camel-case field-name)
-                             `(:input :class "input" :type "text" :value ,(or field-content
-                                                                              (uicc-field-default aspect)
-                                                                              "")
-                                      :name ,(or (string (uicc-key aspect)) "")))))))))
+      (destructuring-bind (field-name &rest field-content)
+          (if (listp base) base (cons nil base))
+        (cond ((member :code (uic-type aspect))
+               (destructuring-bind (system branch) (uic-base aspect)
+                 (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
+                                      (string-downcase branch))))
+                   `(:div :id ,token ;; :class ,(uic-type aspect)
+                          :x-init ,(psl (progn (setf (@ window codemirror) nil)
+                                               (setf (getprop (@ window seed-elements) (lisp branch))
+                                                     $el)
+                                               (fetch-contact (lisp (string system))
+                                                              (lisp (string branch))
+                                                              (list (list "text" 0))
+                                                              (lambda (data) 
+                                                                (setf (getprop (@ window seed-data)
+                                                                               (lisp token))
+                                                                      (create-codemirror
+                                                                       (chain document (get-element-by-id
+                                                                                        (lisp token)))
+                                                                       (@ data text)))))))))))
+              ((member :area (uic-type aspect))
+               (wrap-label (lisp->camel-case field-name)
+                           `(:textarea :class "textarea" :name ,(or (string (uicc-key aspect)) "")
+                                       ,(or field-content (uicc-field-default aspect)
+                                            ""))))
+              (t 
+               ;; (print (list :fi field-name base))
+               (wrap-label (lisp->camel-case field-name)
+                           `(:input :class "input" :type "text" :value ,(or field-content
+                                                                            (uicc-field-default aspect)
+                                                                            "")
+                                    :name ,(or (string (uicc-key aspect)) "")))))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
-  `(:select :class "ui" :name ,(or (string (uicc-key aspect)) "")
-     ,@(loop :for item :in (uic-base aspect) :collect `(:option ,item))))
+  (let ((base (uic-base aspect)))
+    (destructuring-bind (field-name &rest field-content)
+        (if (listp base) base (cons nil base))
+      `(:div :class "field has-addons"
+             ,@(if field-name `((:p :class "control"
+                                    (:a :class "button is-static" ,(lisp->camel-case field-name)))))
+             (:p :class "control"
+                 (:span :class "select"
+                       (:select :name ,(or (string (uicc-key aspect)) "")
+                         ,@(loop :for item :in (uics-options aspect) :collect `(:option ,item)))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
   (let ((default-segments 12)) ;; default number of segments for a grid layout
@@ -763,15 +776,13 @@
                                                             (mapcar #'express (second form)
                                                                     (loop :for i :below (length (second form))
                                                                           :collect (cons i path)))
-                                                            (if (eq :select primary-type)
-                                                                (rest (assoc :options (cddr form)))
-                                                                (second form)))
+                                                            (second form))
                                                   :path (reverse path)
                                                   :type (rest (assoc :type (cddr form))))))
                    
-                   ;; (print (list :aa form (rest (assoc :type (cddr form)))))
-                   ;; (print (list :cl class fx-class form))
                    (when layout (setf (uic-series-layout out) layout))
+                   (when (eql class 'uicc-select)
+                     (setf (uics-options out) (rest (assoc :options (cddr form)))))
                    out)))))
 
 (defvar *giface-output-stream*)
@@ -1110,22 +1121,23 @@
             ;; the output-stream is created in the seed package - best elsewhere?
             (if (and (assoc :face input :test #'eq)
                      (string= "graphNode" (rest (assoc :face input :test #'eq))))
-                (render
-                 (funcall context :medium)
-                 (express (funcall (if network-changed
-                                       #'list (lambda (items)
-                                                `(meta ,items (:type :series :form)
-                                                       (:fx . :uic-series))))
-                                   (loop :for item :in (funcall
-                                                        ;; nodes have an (index . N)
-                                                        ;; form to omit, links don't
-                                                        (if sub-index #'identity #'rest)
-                                                        (first (if sub-index
-                                                                   (nth sub-index
-                                                                        (rest (nth index
-                                                                                   (rest formatted))))
-                                                                   (nth index (rest formatted)))))
-                                         :collect item))))
+                (render (funcall context :medium)
+                        (fx ((uic-frame :type (:meta-code)))
+                            (express
+                             (funcall (if network-changed
+                                          #'list (lambda (items)
+                                                   `(meta ,items (:type :series :enum)
+                                                          (:fx . :uic-series))))
+                                      (loop :for item :in (funcall
+                                                           ;; nodes have an (index . N)
+                                                           ;; form to omit, links don't
+                                                           (if sub-index #'identity #'rest)
+                                                           (first (if sub-index
+                                                                      (nth sub-index
+                                                                           (rest (nth index
+                                                                                      (rest formatted))))
+                                                                      (nth index (rest formatted)))))
+                                            :collect item)))))
                 (if (or network-changed (assoc :system input))
                     (progn (setf *giface-output-stream* (make-string-output-stream))
                            ;; (print (list :nc input))
@@ -1369,7 +1381,8 @@
                                                             :x ,(if is-expandable 26 6) ,title)))
                                (:g :class "circle-glyph" :index ,index
                                    (:circle :class "outer-circle" :cx 16 :cy 0 :r ,main-radius)
-                                   (:circle :class "inner-circle" :cx 16 :cy 0 :r 12))
+                                   (:circle :class "inner-circle" :cx 16 :cy 0 :r 12)
+                                   (:text :class "icon" :x 10.5 :y 8 "?"))
                                ,@(if (not is-expandable)
                                      nil `((:g :class "expand-control" :path ,path-string
                                                :|x-on:click| ,(if is-closed expander-code contracter-code)

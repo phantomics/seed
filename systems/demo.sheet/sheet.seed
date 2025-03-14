@@ -303,7 +303,7 @@
                      ,@(loop :for response :in responses :for ix :from 0
                              :collect
                              (list :li :|x-on:click|
-                                   (psl (chain htmx (trigger $el "reload")))
+                                   (parenscript:ps (parenscript:chain htmx (trigger $el "reload")))
                                    :hx-trigger "reload" :hx-post "/render/"
                                    :hx-vals (seed.generate::json-convert-to
                                              (list :index ix))
@@ -315,8 +315,7 @@
                                                           margin-top: ~a; pointer-events: none;"
                                      (if (string= image "image-resting")
                                          "-200px" "-600px"))
-                            (:img :src ,(format nil "./static/~a.png" image)))))
-                )
+                            (:img :src ,(format nil "./static/~a.png" image))))))
          :stream out)
         (get-output-stream-string out)))))
 
