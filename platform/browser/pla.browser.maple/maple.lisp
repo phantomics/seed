@@ -80,8 +80,8 @@
     `(|#root| :width "100%")
 
     `(|:root|
-      ;; :--bulma-control-height 2em
-      ;; :--bulma-control-line-height 1
+      :--bulma-control-height 2em    ;; comment to even 
+      :--bulma-control-line-height 1 ;;
       :--bulma-control-padding-horizontal "calc(0.4em - 1px)"
       :--bulma-control-padding-vertical "calc(0.25em - 1px)")
     
@@ -169,9 +169,9 @@
       (.ui.series
        :padding 0.5rem)
 
-      ;; (.item
-      ;;  ((:or .input .textarea .select)
-      ;;   :margin-bottom 0.5rem))
+      (.item ;; comment to make even
+       ((:or .input .textarea .select)
+        :margin-bottom 0.5rem))
 
       ;; (.item :padding-bottom 0.5rem)
       
