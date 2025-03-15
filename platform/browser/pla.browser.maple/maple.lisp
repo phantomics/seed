@@ -4,6 +4,8 @@
 
 (defvar *flat-sources*)
 
+;; addresses to download flat JS libraries for use in portals
+
 (setf *flat-sources*
       '((:htmx "https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js")
         (:alpine "https://unpkg.com/alpinejs@3.14.8/dist/cdn.js"
@@ -38,7 +40,7 @@
                                              (,to-grow ,system-name ,branch-name ,session-api
                                                        ;; (loop :for ,p :in ,input
                                                        ;;       :collect (cons (camel-case->keyword (first ,p))
-                                                             ;;               (rest ,p)))
+                                                       ;;               (rest ,p)))
                                                        ,input))))
                       :renderer-fetch (lambda (,params ,session-api)
                                         ;; (print (list :par ,params ,session-api))
@@ -243,9 +245,9 @@
       :background "#000" :color "#ddd" :font-family serif :font-weight bold
       :line-height 2.6em
       ;; :grid-template-rows "[dialog-start] 60% [dialog-end] 40% [response-end]"
-      :text-shadow "1px 1px 0 #333"
+      :text-shadow "2px 2px 0 #282828"
       (.setting :position absolute :margin 1em :z-index 10000  :bottom 0 :left 0 :width "90%"
-                :background "rgba(200,200,200,0.5)" :border "4px solid #999" :border-radius 1em
+                :background "rgba(80,80,80,0.7)" :border "4px solid #999" :border-radius 1em
                 :box-shadow "3px 3px 1px rgba(20,20,20,0.8)"
                 (.dialog :bottom 0 :z-index 6000
                          :font-size 32px :padding 12px)

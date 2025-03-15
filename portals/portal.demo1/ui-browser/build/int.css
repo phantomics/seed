@@ -448,7 +448,7 @@ form .ui.selection.dropdown{
     font-family: serif;
     font-weight: bold;
     line-height: 2.6em;
-    text-shadow: 1px 1px 0 #333;
+    text-shadow: 2px 2px 0 #282828;
 }
 
 .scenario-frame .setting{
@@ -458,7 +458,7 @@ form .ui.selection.dropdown{
     bottom: 0;
     left: 0;
     width: 90%;
-    background: rgba(200,200,200,0.5);
+    background: rgba(80,80,80,0.7);
     border: 4px solid #999;
     border-radius: 1em;
     -moz-box-shadow: 3px 3px 1px rgba(20,20,20,0.8);

@@ -566,8 +566,8 @@
   (let ((base (uic-base aspect)))
     (case (first (uic-type aspect))
       (:branch (if base `(:h4 (:a :|hx-on:click|
-                                  ,(format nil "htmx.trigger(this, 'navigate', { point: ~a });"
-                                           (uic-sort aspect))
+                                  ,(psl (chain htmx (trigger this "navigate"
+                                                             (create point (lisp (uic-sort aspect))))))
                                   ,(generate medium base)))
                    '(:hr :class "divider")))
       (t (generate medium base)))))

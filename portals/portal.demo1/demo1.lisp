@@ -2,13 +2,13 @@
 
 (in-package #:portal.demo1)
 
-(defvar *contact-interfaces* nil)
+;; (defvar *contact-interfaces* nil)
 
-(defun of-contacts (key)
-  (getf *contact-interfaces* key))
+;; (defun of-contacts (key)
+;;   (getf *contact-interfaces* key))
 
-(defun add-contact (key value)
-  (setf (getf *contact-interfaces* key) value))
+;; (defun add-contact (key value)
+;;   (setf (getf *contact-interfaces* key) value))
 
 ;; implement start/restart/stop functionality for the portal using the
 ;; (grow) function assigned in seed.lisp

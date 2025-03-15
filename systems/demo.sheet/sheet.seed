@@ -286,42 +286,43 @@
       (when (assoc :index input :test #'eq)
         (multiple-value-bind (this-node selector-out)
             (funcall selector (read-from-string (rest (assoc :index input :test #'eq))))
-          ;; (print (list :oo this-node))
           (setf node this-node selector selector-out)))
-      ;; (print (list :bc input node))
-      (let ((out (make-string-output-stream))
-            (dialog (rest (assoc :dialog (first node))))
-            (image (rest (assoc :image (first node))))
-            (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
-                               (second node))))
+      (let* ((out (make-string-output-stream))
+             (dialog (rest (assoc :dialog (first node))))
+             (image (rest (assoc :image (first node))))
+             (imsym (intern (string-upcase image) "KEYWORD"))
+             (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
+                                (second node))))
         ;; (print (list :dia dialog node responses
         ;;              :image image))
-        (print (list :inn input))
         (spinneret:interpret-html-tree
          `(:div :class "scenario-frame"
+                ,@(unless (eq imsym :no-image)
+                    `(:style ,(format nil "background-image: url(./static/~a.png); background-size: 1500px; background-position-y: -~apx;"
+                                      image (case imsym (:image-active 400)
+                                                  (:image-resting 200)))))
                 (:div :class "setting"
                       (:div :class "dialog" ,dialog)
                       (:ol :class "responses"
                            ,@(loop :for response :in responses :for ix :from 0
                                    :collect
-                                   ;; hx-on:click="htmx.trigger(this, 'navigate', { point: 1 });"
                                    (list :li :|hx-on:click|
                                          (parenscript:ps (parenscript:chain
                                                           htmx (trigger this "reload"
                                                                         (parenscript:create
                                                                          index (parenscript:lisp ix))))
                                            (parenscript:chain console (log "hello")))
-                                         ;; :hx-trigger "reload" :hx-post "/render/"
                                          :hx-vals (seed.generate::json-convert-to (list :index ix))
                                          response))))
-                ,@(unless (string= image "no-image")
-                    `((:div :class "background-image"
-                            :style
-                            ,(format nil " position: absolute; top: 0; left: 0;
-                                                          margin-top: ~a; pointer-events: none;"
-                                     (if (string= image "image-resting")
-                                         "-200px" "-600px"))
-                            (:img :src ,(format nil "./static/~a.png" image))))))
+                ;; ,@(unless (string= image "no-image")
+                ;;     `((:div :class "background-image"
+                ;;             :style
+                ;;             ,(format nil " position: absolute; top: 0; left: 0;
+                ;;                                           margin-top: ~a; pointer-events: none;"
+                ;;                      (if (string= image "image-resting")
+                ;;                          "-200px" "-600px"))
+                ;;             (:img :src ,(format nil "./static/~a.png" image)))))
+                )
          :stream out)
         (get-output-stream-string out)))))
 

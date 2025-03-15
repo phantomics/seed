@@ -37,6 +37,8 @@
                  :portal.demo1
                  '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
                    "demo.sheet")
+                 (fx ((uicc-select :key "key" :options (list "demo.sheet")))
+                     "demo.sheet")
                  (if (of-system :point)
                      (fx ((:each uic-anchor :type '(:branch))
                           (uic-series :type '(:ui :navigation)
