@@ -1,1 +1,15 @@
-<html><head><script></script><link rel='stylesheet' href='./build/ext.css' /><link rel='stylesheet' href='./build/int.css' /></head><body><div id='main' class='ui' hx-post='/render/' hx-trigger='load, reload' hx-vals='{"system":"demo.sheet","branch":"play"}'></div><script src='./build/int.js'></script><script src='./build/ext.js'></script></body></html>
+<html lang=en>
+ <head>
+  <meta charset=UTF-8>
+  <link rel=stylesheet href=./build/ext.css>
+  <link rel=stylesheet href=./build/int.css>
+ </head>
+ <body>
+  <div class=ui id=main hx-post="/render/"
+       hx-trigger="load, reload"
+       hx-vals="js:{...ejoin({ system : 'DEMO.SHEET', branch : 'play' },event)}"
+       ></div>
+  <script src=./build/ext.js></script>
+  <script src=./build/int.js></script>
+ </body>
+</html>

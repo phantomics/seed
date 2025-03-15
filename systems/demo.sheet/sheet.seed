@@ -296,18 +296,24 @@
                                (second node))))
         ;; (print (list :dia dialog node responses
         ;;              :image image))
+        (print (list :inn input))
         (spinneret:interpret-html-tree
          `(:div :class "scenario-frame"
-                (:div :class "setting" (:div :class "dialog" ,dialog))
-                (:ol :class "responses"
-                     ,@(loop :for response :in responses :for ix :from 0
-                             :collect
-                             (list :li :|x-on:click|
-                                   (parenscript:ps (parenscript:chain htmx (trigger $el "reload")))
-                                   :hx-trigger "reload" :hx-post "/render/"
-                                   :hx-vals (seed.generate::json-convert-to
-                                             (list :index ix))
-                                   response)))
+                (:div :class "setting"
+                      (:div :class "dialog" ,dialog)
+                      (:ol :class "responses"
+                           ,@(loop :for response :in responses :for ix :from 0
+                                   :collect
+                                   ;; hx-on:click="htmx.trigger(this, 'navigate', { point: 1 });"
+                                   (list :li :|hx-on:click|
+                                         (parenscript:ps (parenscript:chain
+                                                          htmx (trigger this "reload"
+                                                                        (parenscript:create
+                                                                         index (parenscript:lisp ix))))
+                                           (parenscript:chain console (log "hello")))
+                                         ;; :hx-trigger "reload" :hx-post "/render/"
+                                         :hx-vals (seed.generate::json-convert-to (list :index ix))
+                                         response))))
                 ,@(unless (string= image "no-image")
                     `((:div :class "background-image"
                             :style
@@ -318,7 +324,6 @@
                             (:img :src ,(format nil "./static/~a.png" image))))))
          :stream out)
         (get-output-stream-string out)))))
-
 
 ;; (seed :demo.sheet
 ;;       (:bind :package package :of-system of-system :to-grow grow)
