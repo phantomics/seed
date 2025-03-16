@@ -2,6 +2,8 @@
 ;; (:bind :package package :of-system of-system :to-grow grow)
 ;; (:joiner . #'add-contact)
 
+(seed :demo.sheet (:join-by join))
+
 (branch :demo.sheet :summary
   (let ((layout '((:main :code-view) (:cells :cells-view) nil
                   (:graph :graph-overview) (:graph :graph-node) nil
