@@ -35,7 +35,8 @@
                           :maps '(((:type :sidebar)) ((:type :main)))))
              (fx ((uic-series :type '(:ui :column  :portal-summary)))
                  :portal.demo1
-                 '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
+                 '(:h3 :|x-on:click|
+                   "fetchContact2(context, { point: 'demo.sheet' }, function(data) { htmx.trigger($el, 'refresh')})"
                    "demo.sheet")
                  (fx ((uicc-select :key "key" :options (list "demo.sheet")))
                      "demo.sheet")

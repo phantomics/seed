@@ -376,10 +376,10 @@
   (defun fetch-contact (system branch input handler)
     (chain (fetch "/contact/"
                   (create method "POST"
+                          headers (create "Content-type" "application/json; charset=UTF-8"
                           body (chain -j-s-o-n (stringify (create system system
                                                                   branch branch
-                                                                  input  input)))
-                          headers (create "Content-type" "application/json; charset=UTF-8")))
+                                                                  input  input))))))
            (then (lambda (response) (chain response (json))))
            (then (lambda (data)
                    ;; (chain console (log :dt data (@ data oob-reload)))
@@ -393,7 +393,7 @@
            (then handler))))
 
 (enter-js-element *misc-js* :fetch-contact2-defs
-  (defun fetch-contact2 (context element input)
+  (defun fetch-contact2 (context input handler)
     ;; (chain console (log :cc context))
     (chain (fetch "/contact/"
                   (create method "POST"
@@ -402,7 +402,8 @@
                                                                   branch (@ context branch)
                                                                   input  input)))))
            (then (lambda (response) (chain response (json))))
-           (then (lambda (data) (chain htmx (trigger element "refresh")))))))
+           (then (lambda (data) data))
+           (then handler))))
 
 (enter-js-element *misc-js* :realize-def
   (defun realize (system branch element)

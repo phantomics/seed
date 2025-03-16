@@ -249,8 +249,8 @@
                                       :entities '(list))
                           :methods (list :save
                                          '(lambda (mode)
-                                           (fetch-contact (@ mode system)
-                                            (@ mode branch) (create action "save")
+                                           (fetch-contact2
+                                            mode (create action "save")
                                             (lambda (data))))
                                          :select
                                          '(lambda (mode)
@@ -273,14 +273,14 @@
 
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
-                                                   (fetch-contact (@ mode system)
-                                                    (@ mode branch) (create action "addNode")
+                                                   (fetch-contact2
+                                                    mode (create action "addNode")
                                                     (lambda (data)
                                                       (chain mode (of-local "trigger" "main" "reload")))))
                                                  :add-link
                                                  '(lambda (mode)
-                                                   (fetch-contact (@ mode system)
-                                                    (@ mode branch) (create action "addLink")
+                                                   (fetch-contact2
+                                                    mode (create action "addLink")
                                                     (lambda (data)
                                                       (chain mode (of-local "trigger" "main" "reload"))))))))
 
@@ -352,6 +352,7 @@
     
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume"
+                         :ee "aaaa"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
                          :class (get-output-stream-string class-stream)
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
@@ -549,11 +550,9 @@
           (branch (string-downcase branch)))
       `(:div :id "datagrid-cells" ;; :class (getf props :item-classes)
              :x-init ,(psl (progn (setf (getprop (@ window seed-elements) (lisp branch)) $el)
-                                  (fetch-contact
-                                   (lisp (string-upcase system)) (lisp (string-upcase branch))
-                                   (list (list "cells" 0))
+                                  (fetch-contact2
+                                   mode (list (list "cells" 0))
                                    (lambda (data)
-                                     ;; (chain console (log :dd data))
                                      (let ((grid (canvas-datagrid
                                                   (create style (create cell-width 60)))))
                                        (chain document (get-element-by-id "datagrid-cells")
@@ -619,16 +618,13 @@
                           :x-init ,(psl (progn (setf (@ window codemirror) nil)
                                                (setf (getprop (@ window seed-elements) (lisp branch))
                                                      $el)
-                                               (fetch-contact (lisp (string system))
-                                                              (lisp (string branch))
-                                                              (list (list "text" 0))
-                                                              (lambda (data) 
-                                                                (setf (getprop (@ window seed-data)
-                                                                               (lisp token))
-                                                                      (create-codemirror
-                                                                       (chain document (get-element-by-id
-                                                                                        (lisp token)))
-                                                                       (@ data text)))))))))))
+                                               (fetch-contact2
+                                                mode (list (list "text" 0))
+                                                (lambda (data) 
+                                                  (setf (getprop (@ window seed-data) (lisp token))
+                                                        (create-codemirror
+                                                         (chain document (get-element-by-id (lisp token)))
+                                                         (@ data text)))))))))))
               ((member :area (uic-type aspect))
                (wrap-label (lisp->camel-case field-name)
                            `(:textarea :class "textarea" :name ,(or (string (uicc-key aspect)) "")
@@ -720,7 +716,6 @@
     `(:div :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
                           (let ((config (create plotter (funcall get-candle-plotter mode)
-                                                ;; labels (list "a" "b" "c" "d" "e" "f" "g" "h" "i")
                                                 height (@ $el offset-height)
                                                 width  (@ $el offset-width)
                                                 interaction-model
@@ -728,21 +723,29 @@
                                                         mouseup    (funcall interactor-mouseup    mode)
                                                         mousemove  (funcall interactor-mousemove  mode)
                                                         mousewheel (funcall interactor-mousewheel mode)))))
-                            (fetch-contact (lisp (string-upcase system))
-                                           (lisp (string-upcase branch))
-                                           (create mode "chart-data")
-                                           (lambda (data)
-                                             ;; (chain console (log :dd data config $el))
-                                             (setf (getprop (@ window seed-elements) (lisp branch))
-                                                   (setf (@ mode chart)
-                                                         (new (chain
-                                                               window (-dygraph $el data config)))))
-                                             
-                                             ))))))))
 
-;; (chain window (-dygraph (@ self container-element)
+                            (fetch-contact2
+                             mode (create mode "chart-data")
+                             (lambda (data)
+                               ;; (chain console (log :dd data config $el))
+                               (setf (getprop (@ window seed-elements) (lisp branch))
+                                     (setf (@ mode chart)
+                                           (new (chain window (-dygraph $el data config)))))))))))))
 
 #|
+
+(fetch-contact (lisp (string-upcase system))
+(lisp (string-upcase branch))
+(create mode "chart-data")
+(lambda (data)
+(chain console (log :dd data config $el))
+(setf (getprop (@ window seed-elements) (lisp branch))
+(setf (@ mode chart)
+(new (chain
+window (-dygraph $el data config)))))
+
+))))))))
+
 
 (destructuring-bind (system branch) (uic-base aspect)
                (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
@@ -1166,36 +1169,31 @@
         :class "svg-visualizer" :width ,width :height ,(max height y-offset)
         :x-init (psl (enable-drag $el))
         :x-data (psl (create open-node     (lambda (path)
-                                             (fetch-contact
-                                              "DEMO.SHEET" ,branch-string
-                                              (create action "open" path path)
+                                             (fetch-contact2
+                                              mode (create action "open" path path)
                                               (lambda (data)
                                                 (chain htmx (trigger ,branch-id "reload")))))
                              expand-node   (lambda (path)
-                                             (fetch-contact
-                                              "DEMO.SHEET" ,branch-string
-                                              (create action "expand" path path)
+                                             (fetch-contact2
+                                              mode (create action "expand" path path)
                                               (lambda (data)
                                                 (chain htmx (trigger ,branch-id "reload")))))
                              contract-node (lambda (path)
-                                             (fetch-contact
-                                              "DEMO.SHEET" ,branch-string
-                                              (create action "contract" path path)
+                                             (fetch-contact2
+                                              mode (create action "contract" path path)
                                               (lambda (data)
-                                                (chain htmx (trigger ,branch-id"reload")))))
+                                                (chain htmx (trigger ,branch-id "reload")))))
                              connect-node  (lambda (index)
-                                             (fetch-contact
-                                              "DEMO.SHEET" ,branch-string
-                                              (create action "connect" index index)
+                                             (fetch-contact2
+                                              mode (create action "connect" index index)
                                               (lambda (data)
                                                 (chain htmx (trigger ,branch-id "reload")))))
                              enable-drag   (lambda (svg)
                                              (let ((selected-element null) (dragging-link false)
                                                    (drag-node null) (dragging-index nil))
                                                (defun shift-node (index target)
-                                                 (fetch-contact
-                                                  "DEMO.SHEET" ,branch-string
-                                                  (create action "shiftNode" index index target target)
+                                                 (fetch-contact2
+                                                  mode (create action "shiftNode" index index target target)
                                                   (lambda (data)
                                                     (chain htmx (trigger ,branch-id "reload")))))
                                                

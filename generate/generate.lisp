@@ -12,41 +12,6 @@
             :do (with-open-file (input f)
                   (loop :for i := (read input nil) :while i :do (eval i)))))))
 
-;; (defmacro seed (name &rest props)
-;;   (let* ((branches (rest (assoc :branches props)))
-;;          (bind (rest (assoc :bind props)))
-;;          (contact-names (rest (assoc :contacts props)))
-;;          (joiner (rest (assoc :joiner props)))
-;;          (contactor (rest (assoc :contactor props)))
-;;          ;; (contacts-api (rest (assoc :contacts-api props)))
-;;          (grow (intern (string (getf bind :to-grow)) (package-name *package*)))
-;;          (of-system (intern (string (getf bind :of-system)) (package-name *package*)))
-;;          ;; (context (gensym "CON")) (channel (gensym "CHN"))
-;;          (branches-sym (gensym "BRS")) (system (gensym "SY")) (key (gensym "KY"))
-;;          (session (gensym "SS")) (input (gensym "IN")) (prsym (gensym "PR")))
-;;     ;; (print contacts)
-;;     `(let ,(append (list (loop :for (key value) :on bind :by #'cddr
-;;                                :append (case key (:package (list value `(find-package ,name))))))
-;;                    `((,prsym (list :point nil ,@(if contact-names
-;;                                                     `(:contacts ,(cons 'list contact-names)))))))
-;;        ,@(if joiner nil `((proclaim '(special ,grow))))
-;;        ,@(loop :for contact-sym :in contact-names
-;;                :collect `(load-system-directory (asdf:system-relative-pathname ,contact-sym "./")))
-;;        (flet ((,of-system (,key &optional ,input)
-;;                 (if ,input (setf (getf ,prsym ,key) ,input)
-;;                     (getf ,prsym ,key))))
-;;          (let ((,branches-sym ,(cons 'list branches)))
-;;            ,(if joiner `(funcall ,joiner ,name (lambda (,system ,key &optional ,session ,input)
-;;                                                  (funcall (getf ,branches-sym ,key) ,session ,input)))
-;;                 `(setf (symbol-function ',grow)
-;;                        (lambda (,system ,key &optional ,session ,input)
-;;                          (unless ,key
-;;                            (error "Warning: attempt to grow system ~a without a specified branch." ,system))
-;;                          (if (or (eq ,system ,name) (not ,system))
-;;                              (funcall (getf ,branches-sym ,key) ,session ,input)
-;;                              (funcall (funcall ,contactor ,system)
-;;                                       nil ,key ,session ,input))))))))))
-
 (defmacro seed (name &body props)
   (let* ((access (rest (assoc :access props)))
          (contacts (rest (assoc :contacts props)))
@@ -66,7 +31,8 @@
                               ,input))))
             ,@(loop :for joiner :in join-by :collect (list joiner name))
             ,@(when access
-                `((let ((,portal-state (list :point nil ,@(if contacts `(:contacts ,(cons 'list contacts)))))
+                `((let ((,portal-state (list :point nil
+                                             ,@(if contacts `(:contacts ,(cons 'list contacts)))))
                         (,branches (list ,name nil)))
                     ,@(if access `((proclaim '(special ,grow ,of-system ,defbranch))))
                     (setf ,@(if (or expand-regardless (and of-system (not (fboundp of-system))))
@@ -77,13 +43,16 @@
                           ,@(if (or expand-regardless (and branch (not (fboundp branch))))
                                 `((symbol-function ',defbranch)
                                   (lambda (,system ,key &optional ,input)
+                                    ;; (print (list :ky ,system ,key))
                                     (if (member ,system ,branches)
                                         (if ,input (setf (getf (getf ,branches ,system) ,key) ,input)
                                             (getf (getf ,branches ,system) ,key))
                                         (error "Attempting to add a branch to an undefined system.")))))
                           ,@(if (or expand-regardless (and join (not (fboundp join))))
                                 `((symbol-function ',join)
-                                  (lambda (,system) (setf (getf ,branches ,system) nil))))
+                                  (lambda (,system)
+                                    ;; (print (list :sy ,system))
+                                    (setf (getf ,branches ,system) nil))))
                           ,@(if (or expand-regardless (and branch (not (fboundp branch))))
                                 `((symbol-function ',grow)
                                   (lambda (,system ,key &optional ,session ,input)
@@ -390,7 +359,7 @@
       (:body (cl-who:with-html-output (stream-out)
                (:div :id "datagrid-tree" :class (getf props :item-classes)
                      :x-init ;; TODO: add branch push here
-                     (psl (fetch-contact
+                     (psl (fetch-contact ;; TODO: update
                            (lisp (string-upcase (getf props :system)))
                            (lisp (string-upcase (getf props :branch)))
                            nil (lambda (data)

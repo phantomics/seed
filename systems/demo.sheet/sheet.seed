@@ -1,7 +1,3 @@
-;; (seed.generate::seed2 :demo.sheet)
-;; (:bind :package package :of-system of-system :to-grow grow)
-;; (:joiner . #'add-contact)
-
 (seed :demo.sheet (:join-by join))
 
 (branch :demo.sheet :summary
