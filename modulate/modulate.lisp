@@ -352,16 +352,13 @@
     
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume"
-                         :ee "aaaa"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
                          :class (get-output-stream-string class-stream)
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             (chain mode (of-local "register" "main" $el))
-                                            (fetch-contact (lisp (string-upcase system))
-                                                           (lisp (string-upcase (uic-base aspect)))
-                                                           (create height (@ $el offset-height)
-                                                                   width  (@ $el offset-width))
-                                                           (lambda (data)))))
+                                            (fetch-contact2 mode (create height (@ $el offset-height)
+                                                                         width  (@ $el offset-width))
+                                                            (lambda (data)))))
                          :hx-vals (json-convert-to (list :system system :face face
                                                          :branch (string (uic-base aspect))))
                          :x-data (psl (create branch-frame $el)))
@@ -369,7 +366,6 @@
                             (setf (uic-root (uic-base aspect)) aspect))
                           (list :class (get-output-stream-string class-stream)
                                 (realize aspect medium (uic-base aspect))))))))
-    
 
 ;; (defmethod generate ((medium uim-web) (aspect uic-series))
 ;;   (let ((last-type-index (1- (length (uic-type aspect))))
@@ -516,11 +512,12 @@
                                                  :do (when (= (@ n class-name) "control drag-handle")
                                                        (setf handle n)
                                                        (break)))
-                                           ;; (chain console (log :hh handle))
-                                           (when (/= "undefined" (typeof in-series))
+                                           ;; (chain console (log :hh handle in-series))
+                                           (when (/= "undefined" (typeof containing-series))
                                              (let ((drops (create element $el drag-handle handle
                                                                   on-drag-start
-                                                                  (mcode-handler-on-drag in-series mode))))
+                                                                  (mcode-handler-on-drag
+                                                                   containing-series mode))))
                                                (draggable drops)
                                                nil))))))
 
@@ -590,16 +587,6 @@
                                                 (uic-type aspect))))
                          (list :|x-on:click|
                                (parenscript:ps* (list 'chain 'methods (list (intern (string base)) 'mode))))
-                         ;; (case trigger-type
-                         ;;   (:local (list :|x-on:click|
-                         ;;                 (parenscript:ps* (list 'chain 'methods
-                         ;;                                        (list (intern (string base)))))))
-                         ;;   (t (list :|x-on:click| ;; :remote
-                         ;;            (ps (fetch-contact (@ mode system) (@ mode branch)
-                         ;;                               (create action (lisp (lisp->camel-case action)))
-                         ;;                               (lambda (data)
-                         ;;                                 (of-local "trigger" "main" "reload")))))))
-
                          ))))))
         `(:button :name ,(or (string name) "") :class "ui button"
                   ,@action-props ,(realize aspect medium name))))))
@@ -731,35 +718,6 @@
                                (setf (getprop (@ window seed-elements) (lisp branch))
                                      (setf (@ mode chart)
                                            (new (chain window (-dygraph $el data config)))))))))))))
-
-#|
-
-(fetch-contact (lisp (string-upcase system))
-(lisp (string-upcase branch))
-(create mode "chart-data")
-(lambda (data)
-(chain console (log :dd data config $el))
-(setf (getprop (@ window seed-elements) (lisp branch))
-(setf (@ mode chart)
-(new (chain
-window (-dygraph $el data config)))))
-
-))))))))
-
-
-(destructuring-bind (system branch) (uic-base aspect)
-               (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
-                                    (string-downcase branch))))
-                 `(:div :id ,token ;; :class ,(uic-type aspect)
-                        :x-init ,(psl (progn (setf (@ window codemirror) nil)
-                                             (setf (getprop (@ window seed-elements) (lisp branch))
-                                                   $el)
-                                             (fetch-contact (lisp (string system))
-                                                            (lisp (string branch))
-                                                            (list (list "text" 0))
-                                                            (lambda (data) 
-
-|#
 
 (defun express (form &optional path) ;; TODO: this will not grow well with the metaform topology
   (if (atom form)
@@ -958,19 +916,12 @@ window (-dygraph $el data config)))))
                   
                   (symbol-macrolet ((formatted2 (rest formatted))
                                     (graph-data2 (rest graph-data)))
-                    ;; (print (list :ia index position input
-                    ;;              node-index pos-parent
-                    ;;              graph-data2 (rest orig-data)
-                    ;;              formatted2))
 
                     (if node-index ;; links are being sorted
                         (when (= node-index pos-parent)
                           (let ((orig-link (nth index (rest (nth node-index graph-data2))))
                                 (orig-flink (nth index (rest (nth node-index (rest orig-data))))))
 
-                            ;; (print (list :oo orig-link
-                            ;;              (nth node-index (rest orig-data))))
-                            
                             (if (zerop index) (setf (rest (nth node-index (rest orig-data)))
                                                     (cddr (nth node-index (rest orig-data))))
                                 (rplacd (nthcdr (1- index)

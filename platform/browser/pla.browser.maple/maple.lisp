@@ -402,7 +402,14 @@
                                                                   branch (@ context branch)
                                                                   input  input)))))
            (then (lambda (response) (chain response (json))))
-           (then (lambda (data) data))
+           (then (lambda (data)
+                   (if (@ data oob-reload)
+                       (chain data oob-reload (for-each (lambda (item)
+                                                          (chain console (log :it item))
+                                                          (chain htmx (trigger (getprop seed-elements
+                                                                                        item)
+                                                                               "reload"))))))
+                   data))
            (then handler))))
 
 (enter-js-element *misc-js* :realize-def
@@ -493,19 +500,18 @@
                                                                :iid item-index
                                                                ;; (@ event self element attributes index)
                                                                n (chain n (get-attribute "index") "XX")))
-                                           (fetch-contact
-                                            (@ mode system) (@ mode branch)
-                                            (create path (chain element parent-element
-                                                                (get-attribute "meta-path"))
-                                                    sort (list (parse-int
-                                                                (chain dragging source element
-                                                                       parent-element
-                                                                       (get-attribute "index")))
-                                                               (+ (parse-int (chain n (get-attribute
-                                                                                       "index")))
-                                                                  (case closest-edge
-                                                                    ("bottom" 0)
-                                                                    ("top"    0)))))
+                                           (fetch-contact2
+                                            mode (create path (chain element parent-element
+                                                                     (get-attribute "meta-path"))
+                                                         sort (list (parse-int
+                                                                     (chain dragging source element
+                                                                            parent-element
+                                                                            (get-attribute "index")))
+                                                                    (+ (parse-int (chain n (get-attribute
+                                                                                            "index")))
+                                                                       (case closest-edge
+                                                                         ("bottom" 0)
+                                                                         ("top"    0)))))
                                             
                                             (lambda () (chain htmx (trigger element "reload"))))
                                            )))))))))))
@@ -735,10 +741,9 @@
 
 (enter-js-element *misc-js* :commit-entities
   (defun commit-entities (mode)
-    (fetch-contact (@ mode system) (@ mode branch)
-                   (create entities (@ mode entities))
-                   (lambda (data)
-                     (chain console (log :en data))))))
+    (fetch-contact2 mode ;; (@ mode system) (@ mode branch)
+                    (create entities (@ mode entities))
+                    (lambda (data) (chain console (log :en data))))))
 
 (enter-js-element *misc-js* :interactor-mousewheel
   (defun interactor-mousewheel (mode)
