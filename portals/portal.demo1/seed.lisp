@@ -36,7 +36,7 @@
              (fx ((uic-series :type '(:ui :column  :portal-summary)))
                  :portal.demo1
                  '(:h3 :|x-on:click|
-                   "fetchContact2(context, { point: 'demo.sheet' }, function(data) { htmx.trigger($el, 'refresh')})"
+                   "fetchContact2(domain, { point: 'demo.sheet' }, function(data) { htmx.trigger($el, 'refresh')})"
                    "demo.sheet")
                  (fx ((uicc-select :key "key" :options (list "demo.sheet")))
                      "demo.sheet")
@@ -49,7 +49,7 @@
              (if (not (of-system :point))
                  "" (grow (of-system :point) :view context)))
 
-         (fx ((uic-series-form :type (:ui :column) :cast t))
+         (fx ((uic-series :type (:ui :column) :cast t))
              (list (fx ((uicc-field :key "key")) ""))))))))
 
 (branch :portal.demo1 :systems
@@ -107,7 +107,7 @@
 ;;                   (if (not (of-system :point))
 ;;                       "" (grow (of-system :point) :view context)))
 
-;;               (fx ((uic-series-form :type (:ui :column) :cast t))
+;;               (fx ((uic-series :type (:ui :column) :cast t))
 ;;                   (list (fx ((uicc-field :key "key")) "")))))))
 ;;        :systems
 ;;        (lambda (context input)

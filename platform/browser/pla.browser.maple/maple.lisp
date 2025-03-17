@@ -68,8 +68,10 @@
                                                                        of-local (lambda (a b c)))))
                           ;; :hx-vals (format nil "js:~a" (ps* `(create :system ,portal-sym :branch :view
                           ;;                                            :data (@ event details))))
-                          :x-data (ps (create context (create system (lisp (string portal-sym))
-                                                              branch "VIEW"))))
+                          :x-data (ps (create domain (create system (lisp (string portal-sym))
+                                                             branch "VIEW")
+                                              mode   (create system (lisp (string portal-sym))
+                                                             branch "VIEW"))))
                     (:script :src "./build/ext.js")
                     (:script :src "./build/int.js"))))))
 
@@ -372,25 +374,25 @@
   (setf (@ window seed-data) (create)
         (@ window seed-elements) (create)))
 
-(enter-js-element *misc-js* :fetch-contact-defs
-  (defun fetch-contact (system branch input handler)
-    (chain (fetch "/contact/"
-                  (create method "POST"
-                          headers (create "Content-type" "application/json; charset=UTF-8"
-                          body (chain -j-s-o-n (stringify (create system system
-                                                                  branch branch
-                                                                  input  input))))))
-           (then (lambda (response) (chain response (json))))
-           (then (lambda (data)
-                   ;; (chain console (log :dt data (@ data oob-reload)))
-                   (if (@ data oob-reload)
-                       (chain data oob-reload (for-each (lambda (item)
-                                                          (chain console (log :it item))
-                                                          (chain htmx (trigger (getprop seed-elements
-                                                                                        item)
-                                                                               "reload"))))))
-                   data))
-           (then handler))))
+;; (enter-js-element *misc-js* :fetch-contact-defs
+;;   (defun fetch-contact (system branch input handler)
+;;     (chain (fetch "/contact/"
+;;                   (create method "POST"
+;;                           headers (create "Content-type" "application/json; charset=UTF-8"
+;;                           body (chain -j-s-o-n (stringify (create system system
+;;                                                                   branch branch
+;;                                                                   input  input))))))
+;;            (then (lambda (response) (chain response (json))))
+;;            (then (lambda (data)
+;;                    ;; (chain console (log :dt data (@ data oob-reload)))
+;;                    (if (@ data oob-reload)
+;;                        (chain data oob-reload (for-each (lambda (item)
+;;                                                           (chain console (log :it item))
+;;                                                           (chain htmx (trigger (getprop seed-elements
+;;                                                                                         item)
+;;                                                                                "reload"))))))
+;;                    data))
+;;            (then handler))))
 
 (enter-js-element *misc-js* :fetch-contact2-defs
   (defun fetch-contact2 (context input handler)
@@ -458,9 +460,9 @@
 (enter-js-element *misc-js* :mcode-handler-on-drag
   (defun mcode-handler-on-drag (element mode)
     (lambda (dragging)
-      (chain console (log :ee element mode))
-      (chain console (log :mm mode dragging (chain dragging source element parent-element
-                                                   (get-attribute "index"))))
+      ;; (chain console (log :ee element mode))
+      ;; (chain console (log :mm mode dragging (chain dragging source element parent-element
+      ;;                                              (get-attribute "index"))))
       (chain console (log :drag-start element (@ element child-nodes length) (@ element child-nodes)))
       (chain -array
              (from (@ element child-nodes))

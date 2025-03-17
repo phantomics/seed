@@ -132,9 +132,6 @@
 (defclass uic-grid (ui-component)
   ())
 
-(defclass uic-series-form (uic-series)
-  ())
-
 (defclass uic-control (ui-component)
   ((%key :accessor uicc-key
          :initform nil
@@ -397,7 +394,7 @@
 ;;         (loop :for type :in types :for ix :from 0
 ;;               :do (format class-stream "~a" (string-downcase type))
 ;;                   (unless (= ix last-type-index) (format class-stream " ")))
-;;         (append (list (typecase aspect (uic-series-form :form) (t :div))
+;;         (append (list :div
 ;;                       :path "" :class (get-output-stream-string class-stream)
 ;;                       :style (if (not (member ltype '(:horizontal :vertical)))
 ;;                                  "" (let ((ratio (/ 100.0 (or (first lprops) breadth-default))))
@@ -485,8 +482,7 @@
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
 
-          (append (list (typecase aspect (uic-series-form :form) (t :div))
-                        :path "" :class (get-output-stream-string class-stream)
+          (append (list :div :path "" :class (get-output-stream-string class-stream)
                         :style (if (and (not (member ltype '(:horizontal :vertical)))
                                         (not (eql :even (first lprops))))
                                    ;; TODO: this needs more rigorous logic for partitioning according
@@ -501,7 +497,9 @@
                                     (psl (create containing-series $el))))
                   
                   (if (and (of-root-type aspect :meta-code)
-                           (member :sortable (uic-type aspect)))
+                           (member :sortable (uic-type (uic-root aspect)))
+                           ;; (member :sortable (uic-type aspect))
+                           )
                       (list :x-init (psl (let ((handle-container) (handle))
                                            (loop :for n :in (@ $el child-nodes)
                                                  :do (when (= (@ n class-name) "field has-addons")
@@ -512,17 +510,20 @@
                                                  :do (when (= (@ n class-name) "control drag-handle")
                                                        (setf handle n)
                                                        (break)))
-                                           ;; (chain console (log :hh handle in-series))
-                                           (when (/= "undefined" (typeof containing-series))
+                                           (chain console (log :hh handle (typeof in-series)))
+                                           (when (/= "undefined" (typeof in-series))
                                              (let ((drops (create element $el drag-handle handle
                                                                   on-drag-start
                                                                   (mcode-handler-on-drag
-                                                                   containing-series mode))))
+                                                                   in-series mode))))
+                                               (chain console (log :aabb))
                                                (draggable drops)
                                                nil))))))
 
                   (if (and (of-root-type aspect :meta-code)
-                           (of-root-type aspect :sortable))
+                           ;; (of-root-type aspect :sortable)
+                           (member :sortable (uic-type (uic-root aspect)))
+                           )
                       ;; `((:div :class "item-heading" "Heading"))
                       `((:div :class "field has-addons"
                               (:p :class "control drag-handle" (:a :class "button is-static" "A"))
