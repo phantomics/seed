@@ -46,10 +46,10 @@
       ;; (print (list :in input))
       (cbind input item
         ("state" :chart)
-        ("ifmod-head" (fx ((:each uicc-button :type (:trigger :local))
+        ("ifmod-head" (fx ((:each uicc-button :type (:local) :cast :@base)
                            (uic-series :type (:ui :controls)))
                           (list :select :draw :retrace-x :retrace-y)))
-        ("ifmod-foot" (fx ((:each uicc-button :type (:trigger :local))
+        ("ifmod-foot" (fx ((:each uicc-button :type (:local))
                            (uic-series :type (:ui :controls)))
                           (list :save :zoom-actual)))
         ("entities"

@@ -85,33 +85,42 @@
   ())
 
 (defclass ui-component ()
-  ((%name :accessor uic-name
-          :initform nil
-          :initarg  :name)
-   (%base :accessor uic-base
-          :initform nil
-          :initarg  :base)
-   (%path :accessor uic-path
-          :initform nil
-          :initarg  :path)
-   (%type :accessor uic-type
-          :initform nil
-          :initarg  :type)
+  ((%name :accessor      uic-name
+          :initform      nil
+          :initarg       :name
+          :documentation "The component's unique name.")
+   (%base :accessor      uic-base
+          :initform      nil
+          :initarg       :base
+          :documentation "The content within the component, which may determine its appearance and/or function.")
+   (%type :accessor      uic-type
+          :initform      nil
+          :initarg       :type
+          :documentation "The type taxonomy of the component, which helps determine its properties.")
    (%root :accessor uic-root
           :initform nil
-          :initarg  :root)
+          :initarg  :root
+          :documentation "The component to which the component belongs.")
+   (%path :accessor      uic-path
+          :initform      nil
+          :initarg       :path
+          :documentation "The path connecting the component to its upstream root component.")
    (%join :accessor uic-join
           :initform nil
-          :initarg  :join)
+          :initarg  :join
+          :documentation "Specification for a server-side data structure with which the component is associated.")
    (%cast :accessor uic-cast
           :initform nil
-          :initarg  :cast)
+          :initarg  :cast
+          :documentation "An effect produced by interaction with the component; this may involve the Seed server or manifest only within the user interface.")
    (%sort :accessor uic-sort
           :initform nil
-          :initarg  :sort)
+          :initarg  :sort
+          :documentation "")
    (%mode :accessor uic-mode
           :initform nil
-          :initarg  :mode)))
+          :initarg  :mode
+          :documentation "")))
 
 (defclass uic-frame (ui-component)
   ((%access :accessor uicf-access
@@ -292,20 +301,6 @@
 
 (defmethod realize ((origin ui-component) (medium ui-medium) (aspect t) &key sort)
   (unless (not (typep aspect 'ui-component))
-    ;; (print (list :ee (uic-join aspect)))
-    ;; (when (uic-join aspect)
-    ;;   (let* ((ajoin (uic-join aspect))
-    ;;          (ojoin (copy-tree (uic-join origin)))
-    ;;          (new-list (if (listp ajoin)
-    ;;                        (if (listp (first ajoin))
-    ;;                            ajoin (list (cons :in  ajoin)
-    ;;                                        (cons :out ajoin)))
-    ;;                        (error "AAA"))))
-    ;;     ;; adapt for one-symbol join specs
-    ;;     ;; (print (list :aoa ajoin ojoin new-list))
-    ;;     (setf ojoin (alist-supersede new-list ojoin)
-    ;;           (uic-join aspect) ojoin))
-    ;;   (setf (uic-join aspect) (uic-join origin)))
     (when sort (setf (uic-sort aspect) sort)))
   (generate medium aspect))
 
@@ -582,13 +577,7 @@
                     ,(ps (chain htmx (find-all (lisp (format nil "#cast-~a form.xp-form"
                                                              (lisp->camel-case (first props)))))
                                (for-each (lambda (form)
-                                           (chain htmx (trigger form "submit"))))))))
-                (t (if (member :trigger (uic-type aspect))
-                       (let ((trigger-type (nth (1+ (position :trigger (uic-type aspect)))
-                                                (uic-type aspect))))
-                         (list :|x-on:click|
-                               (parenscript:ps* (list 'chain 'methods (list (intern (string base)) 'mode))))
-                         ))))))
+                                           (chain htmx (trigger form "submit")))))))))))
         `(:button :name ,(or (string name) "") :class "ui button"
                   ,@action-props ,(realize aspect medium name))))))
                             
@@ -671,32 +660,42 @@
                (cons (first item) (append item-props (last item)))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
-  (let ((main (call-next-method))
-        (furnishing (furnish medium aspect)))
+  (let* ((main (call-next-method))
+         (cast (uic-cast aspect))
+         (base (uic-base aspect))
+         (furnishing (furnish medium aspect)))
 
     ;; (print (list :ava aspect furnishing (uic-cast aspect)))
     ;; (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
-    (setf main (cons (first main)
-                     (append (if furnishing
-                                 (list :x-data (parenscript:ps*
-                                                `(create ,@(loop :for f :in furnishing
-                                                                 :collect (if (symbolp f)
-                                                                              f (cons 'create f)))
-                                                         of-local (manifest-locality)))))
-                             
-                             (if (uic-path aspect)
-                                 (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
-                             (rest main))))
-    
-    (flet ((cast-wrap (base-form)
-             (let* ((cast (uic-cast aspect))
-                    (section-id (if (listp cast) (getf cast :id))))
-               (list :form :id (if (not section-id)
-                                   "" (format nil "cast-~a" (lisp->camel-case section-id)))
-                     :hx-inherit "*" :hx-post "/render/" base-form))))
-      (if (not (uic-cast aspect))
-          main (cast-wrap main)))))
+    (funcall (cond ((eq t cast)
+                    (lambda (base) (list :form :hx-inherit "*" :hx-post "/render/" base)))
+                   (t #'identity))
+             (cons (first main)
+                   (append (typecase cast
+                             (atom (case cast
+                                     (:@base (list :|x-on:click|
+                                                   (parenscript:ps*
+                                                    `(chain methods (,(intern (string base))
+                                                                     mode)))))))
+                             (list (destructuring-bind (method &optional args event) cast
+                                     (case method
+                                       (:ct-domain
+                                        (list :|x-on:click| (psl (fetch-contact2
+                                                                  domain (create point (lisp base))))))
+                                       (:ct-mode
+                                        (list :|x-on:click| (psl (fetch-contact2
+                                                                  mode (create point (lisp base))))))))))
+                           (if furnishing
+                               (list :x-data (parenscript:ps*
+                                              `(create ,@(loop :for f :in furnishing
+                                                               :collect (if (symbolp f)
+                                                                            f (cons 'create f)))
+                                                       of-local (manifest-locality)))))
+                           
+                           (if (uic-path aspect)
+                               (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
+                           (rest main))))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
   ;; Date,EUR/CAD(Open-Ask),EUR/CAD(High-Ask),EUR/CAD(Low-Ask),EUR/CAD(Close-Ask),EUR/CAD(Open-Bid)*,EUR/CAD(High-Bid)*,EUR/CAD(Low-Bid)*,EUR/CAD(Close-Bid)*
