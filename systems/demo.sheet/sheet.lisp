@@ -81,7 +81,7 @@
                                                "girl-relaxed" "girl-irritated")
                (:fx . :uicc-select) (:name . :persona-image) (:type :select))
          (meta (:dialog . "")
-               (:fx . :uicc-field) (:type :text :pair :named :block)))))
+               (:fx . :uicc-field) (:type :text :area :pair :named :block)))))
 :graph-link-template
 (quote (((meta (:title . "Untitled link")
                (:fx . :uicc-field) (:type :text :pair :named :block))
@@ -118,7 +118,7 @@
              "girl-irritated")
             (:fx . :uicc-select) (:name . :persona-image) (:type :select))
            (portal.demo1::meta (:dialog . "") (:fx . :uicc-field)
-            (:type :text :pair :named :block))))
+            (:type :text :area :pair :named :block))))
          (((portal.demo1::meta (:title . "Untitled node") (:fx . :uicc-field)
             (:type :text :pair :named :block))
            (portal.demo1::meta "" (:title . "Image")
@@ -126,7 +126,7 @@
              "girl-irritated")
             (:fx . :uicc-select) (:name . :persona-image) (:type :select))
            (portal.demo1::meta (:dialog . "") (:fx . :uicc-field)
-            (:type :text :pair :named :block))))))
+            (:type :text :area :pair :named :block))))))
 ;; :graph-original
 #|
 (setf *graph-nodes*
