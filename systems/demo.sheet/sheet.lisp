@@ -110,7 +110,23 @@
              (:type :text :pair :named :block))
             (meta (:dialog . "Why are you calling me?") (:fx . :uicc-field)
              (:type :text :area :pair :named :block)))
-           2))))
+           2))
+         (((portal.demo1::meta (:title . "Untitled node") (:fx . :uicc-field)
+            (:type :text :pair :named :block))
+           (portal.demo1::meta "" (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (portal.demo1::meta (:dialog . "") (:fx . :uicc-field)
+            (:type :text :pair :named :block))))
+         (((portal.demo1::meta (:title . "Untitled node") (:fx . :uicc-field)
+            (:type :text :pair :named :block))
+           (portal.demo1::meta "" (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (portal.demo1::meta (:dialog . "") (:fx . :uicc-field)
+            (:type :text :pair :named :block))))))
 ;; :graph-original
 #|
 (setf *graph-nodes*

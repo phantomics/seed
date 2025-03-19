@@ -66,6 +66,34 @@
                      (write-sequence after-bytes output))
                    new-value))))
 
+(defun meta-revise (form pairs &optional cons-items)
+  "Revise contents of a meta-form according to titles, optionally expressed by cons cells whose heads are symbols corresponding to keys in the pairs list."
+  (print (list :fo form pairs))
+  (if (not (listp form))
+      nil (if (and (listp (first form))
+                   (or (not cons-items)
+                       (not (keywordp (first form)))))
+              (progn (loop :for f :in form :do (meta-revise f pairs cons-items))
+                     form)
+              (destructuring-bind (_ item &rest props) form
+                (let* ((this-name (if cons-items (first item)
+                                      (rest (assoc :name props))))
+                       (corresponding (if (not this-name)
+                                          nil (rest (assoc this-name pairs))))
+                       (process (or ;; (match (rest (assoc :type props))
+                                    ;;   ((list :field :numeric :integer)
+                                    ;;    #'parse-number:parse-number))
+                                    #'identity)))
+                  (if corresponding
+                      (if cons-items (setf (rest (second form))
+                                           (funcall process corresponding))
+                          (setf (second form) (funcall process corresponding)))
+                      (when (and (listp item)
+                                 (or (not cons-items)
+                                     (not (keywordp (first item)))))
+                        (loop :for i :in item :do (meta-revise i pairs cons-items))))
+                  form)))))
+
 ;; SECTION: another iteration of the UI component class system, with a simple list/atom foundation
 
 (defclass ui-medium ()
@@ -284,12 +312,13 @@
                                                       (setf (@ mode form) form)))
                                                   :save
                                                   '(lambda (mode)
-                                                    (let ((fdata (new (-form-data (@ mode form)))))
+                                                    (let* ((fdata (new (-form-data (@ mode form))))
+                                                           (obj (chain -object
+                                                                       (from-entries
+                                                                        (chain fdata (entries))))))
+                                                      (setf (@ obj action) "saveNode")
                                                       (chain htmx (trigger (@ mode form) "submit"
-                                                                           (chain -object
-                                                                                  (from-entries
-                                                                                   (chain fdata
-                                                                                          (entries)))))))))))
+                                                                           obj)))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
                                                    (fetch-contact2
@@ -530,7 +559,6 @@
                                                                   on-drag-start
                                                                   (mcode-handler-on-drag
                                                                    in-series mode))))
-                                               (chain console (log :aabb))
                                                (draggable drops)
                                                nil))))))
 
@@ -840,7 +868,7 @@
               formatted   (copy-graph-spec graph-data)))
       
       ;; (print (list :abcd orig-data graph-data formatted))
-      (print (list :in input))
+      ;; (print (list :in input))
       (if (and (assoc "action" input :test #'string=)
                (string= "open" (rest (assoc "action" input :test #'string=))))
           (let* ((path-str (make-string-input-stream
@@ -875,7 +903,7 @@
                 (setf network-changed t)))
 
             (when (and (assoc :action input :test #'eq)
-                       (string= "formSubmit" (rest (assoc :action input :test #'eq))))
+                       (string= "saveNode" (rest (assoc :action input :test #'eq))))
               (meta-revise (if sub-index (first (nth sub-index
                                                      (rest (nth index (rest formatted)))))
                                (cdar (nth index (rest formatted))))
@@ -1102,7 +1130,6 @@
 
             (when network-changed ;; assign changes to the file when they happen
               ;; (print (list :ch "CHANGED" graph-base))
-              (error "AAA")
               (setf (from-system-file package file-name graph-key) graph-base)
               ;; (instantiate-priority-macro-reader (asdf:load-system package)) ;; RESTORE THIS
               )
