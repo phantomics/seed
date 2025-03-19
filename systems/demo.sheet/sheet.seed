@@ -262,7 +262,7 @@
     (lambda (context input)
       (cbind input item
         ("state" :graph-breadth)
-        ("ifmod-head" (fx ((:each uicc-button :type (:trigger :remote))
+        ("ifmod-head" (fx ((:each uicc-button :type (:remote) :cast :@base)
                            (uic-series :type (:ui :controls)))
                           (list :add-node :add-link)))
         ("ifmod-foot" (fx ((:each uicc-button)

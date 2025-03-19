@@ -659,6 +659,16 @@
                                        (1+ (floor (* width next-index)))))))))))
                (cons (first item) (append item-props (last item)))))))
 
+;; (defmethod generate ((medium uim-web) (aspect uic-anchor))
+;;   (let ((base (uic-base aspect)))
+;;     (case (first (uic-type aspect))
+;;       (:branch (if base `(:h4 (:a :|hx-on:click|
+;;                                   ,(psl (chain htmx (trigger this "navigate"
+;;                                                              (create point (lisp (uic-sort aspect))))))
+;;                                   ,(generate medium base)))
+;;                    '(:hr :class "divider")))
+;;       (t (generate medium base)))))
+
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   (let* ((main (call-next-method))
          (cast (uic-cast aspect))
@@ -678,14 +688,20 @@
                                                    (parenscript:ps*
                                                     `(chain methods (,(intern (string base))
                                                                      mode)))))))
-                             (list (destructuring-bind (method &optional args event) cast
-                                     (case method
-                                       (:ct-domain
-                                        (list :|x-on:click| (psl (fetch-contact2
-                                                                  domain (create point (lisp base))))))
-                                       (:ct-mode
-                                        (list :|x-on:click| (psl (fetch-contact2
-                                                                  mode (create point (lisp base))))))))))
+                             (list (destructuring-bind (method &optional margs event eargs) cast
+                                     (append
+                                      (case method
+                                        (:ct-domain
+                                         (list :|x-on:click| (psl (fetch-contact2
+                                                                   domain (create point (lisp base))))))
+                                        (:ct-mode
+                                         (list :|x-on:click| (psl (fetch-contact2
+                                                                   mode (create point (lisp base)))))))
+                                      (if event
+                                          (list :|h-on:click| (parenscript::ps*
+                                                               `(chain htmx
+                                                                       (trigger ,(intern (string event))
+                                                                                (create ,@eargs))))))))))
                            (if furnishing
                                (list :x-data (parenscript:ps*
                                               `(create ,@(loop :for f :in furnishing
