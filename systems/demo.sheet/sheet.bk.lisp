@@ -93,8 +93,8 @@
          (((meta (:title . "Introductory sentence") (:fx . :uicc-field)
             (:type :text :pair :named :block))
            (meta (:image . "none") (:title . "Image")
-            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
-             "girl-irritated")
+            (:options "none" "man-relaxed" "man-irritated"
+                      "girl-relaxed" "girl-irritated")
             (:fx . :uicc-select) (:name . :persona-image)
             (:type :select :dropdown))
            (meta

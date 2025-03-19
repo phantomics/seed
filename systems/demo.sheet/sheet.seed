@@ -20,24 +20,24 @@
             :do (unless s (if interval-found (setf search-complete t)
                               (setf start-point (1+ sx))))
                 (when (= sx branch-point) (setf interval-found t)))
-      
+
       (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
           (loop :for l :in (nthcdr start-point summary) :while l
                 :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
                                           :join   (list :demo.sheet (first l))
                                           :type   (:column)
                                           :mode   (grow :demo.sheet (first l)
-                                                        context (list (list "state" 100)))))
+                                                        context (list (list "state" (second l))))))
                              (fx ((uic-series :type (:ui :header)))
                                  (second l)
                                  (grow :demo.sheet (first l)
-                                       context (list (list "ifmod-head" 100))))
+                                       context (list (list "ifmod-head" t))))
                              (fx ((uic-frame :name (second l) :type (:body)
                                              :access :demo.sheet))
                                  (first l))
                              (fx ((uic-series :type (:ui :footer)))
                                  (list (grow :demo.sheet (first l)
-                                             context (list (list "ifmod-foot" 100)))))))))))
+                                             context (list (list "ifmod-foot" t)))))))))))
 
 (branch :demo.sheet :chart
   (let ((chart-data)
@@ -62,7 +62,7 @@
            (:save (let ((output))
                     (setf output (format nil "(progn~%~{~a~%~})" entities))
                     (setf (from-system-file :demo.sheet "sheet.lisp" :chart-entities :as-string t)
-                          (print output))))))
+                          output)))))
         (t (case (intern (string-upcase (rest (assoc "mode" input :test #'string=)))
                          "KEYWORD")
              (:chart-data (system-file-to-string :demo.sheet "price.csv"))
@@ -255,17 +255,20 @@
 (branch :demo.sheet :graph
   (let ((interactor
           (spec-graph-interface
-           :package :demo.sheet :file-name "sheet.lisp"
-           :holder-id "graphOverview" :associated-node-ids #("graphNode")
-           :node-template-key :graph-node-template :link-template-key :graph-link-template
-           :graph-key :graph :node-indices-key :graph-node-indices)))
+           :package :demo.sheet :file-name "sheet.lisp" :holder-id "graphOverview"
+           :associated-node-ids #("graphNode") :node-template-key :graph-node-template
+           :link-template-key :graph-link-template :graph-key :graph
+           :node-indices-key :graph-node-indices)))
     (lambda (context input)
       (cbind input item
-        ("state" :graph-breadth)
+        ("state" (when (assoc "state" input :test #'string=)
+                     (case (second (assoc "state" input :test #'string=))
+                       (:graph-overview :graph-breadth)
+                       (:graph-node     :meta-code-form))))
         ("ifmod-head" (fx ((:each uicc-button :type (:remote) :cast :@base)
                            (uic-series :type (:ui :controls)))
                           (list :add-node :add-link)))
-        ("ifmod-foot" (fx ((:each uicc-button)
+        ("ifmod-foot" (fx ((:each uicc-button :cast :@base)
                            (uic-series :type (:ui :controls)))
                           (list :save)))
         (t (funcall interactor context input))))))
@@ -295,10 +298,9 @@
         ;;              :image image))
         (spinneret:interpret-html-tree
          `(:div :class "scenario-frame"
-                ,@(unless (eq imsym :no-image)
-                    `(:style ,(format nil "background-image: url(./static/~a.png); background-size: 1500px; background-position-y: -~apx;"
-                                      image (case imsym (:image-active 400)
-                                                  (:image-resting 200)))))
+                ,@(unless (eq imsym :none)
+                    `(:style ,(format nil "background-image: url(./static/characters/~a.jpg); background-size: 1500px; background-position-y: -~apx;"
+                                      image 100)))
                 (:div :class "setting"
                       (:div :class "dialog" ,dialog)
                       (:ol :class "responses"
@@ -323,6 +325,60 @@
                 )
          :stream out)
         (get-output-stream-string out)))))
+
+;; (branch :demo.sheet :play
+;;   (let ((state) (node) (selector))
+;;     (lambda (context input)
+;;       (unless (and (find-package 'demo.sheet)
+;;                    (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
+;;         (instantiate-priority-macro-reader (asdf:load-system :demo.sheet)))
+;;       (unless node (multiple-value-bind (this-node selector-out)
+;;                        (seed.generate::graph-walker
+;;                         (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
+;;                      ;; (print (list :tn1 this-node input))
+;;                      (setf node this-node selector selector-out)))
+;;       (when (assoc :index input :test #'eq)
+;;         (multiple-value-bind (this-node selector-out)
+;;             (funcall selector (read-from-string (rest (assoc :index input :test #'eq))))
+;;           (setf node this-node selector selector-out)))
+;;       (let* ((out (make-string-output-stream))
+;;              (dialog (rest (assoc :dialog (first node))))
+;;              (image (rest (assoc :image (first node))))
+;;              (imsym (intern (string-upcase image) "KEYWORD"))
+;;              (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
+;;                                 (second node))))
+;;         ;; (print (list :dia dialog node responses
+;;         ;;              :image image))
+;;         (spinneret:interpret-html-tree
+;;          `(:div :class "scenario-frame"
+;;                 ,@(unless (eq imsym :no-image)
+;;                     `(:style ,(format nil "background-image: url(./static/~a.png); background-size: 1500px; background-position-y: -~apx;"
+;;                                       image (case imsym (:image-active 400)
+;;                                                   (:image-resting 200)))))
+;;                 (:div :class "setting"
+;;                       (:div :class "dialog" ,dialog)
+;;                       (:ol :class "responses"
+;;                            ,@(loop :for response :in responses :for ix :from 0
+;;                                    :collect
+;;                                    (list :li :|hx-on:click|
+;;                                          (parenscript:ps (parenscript:chain
+;;                                                           htmx (trigger this "reload"
+;;                                                                         (parenscript:create
+;;                                                                          index (parenscript:lisp ix))))
+;;                                            (parenscript:chain console (log "hello")))
+;;                                          :hx-vals (seed.generate::json-convert-to (list :index ix))
+;;                                          response))))
+;;                 ;; ,@(unless (string= image "no-image")
+;;                 ;;     `((:div :class "background-image"
+;;                 ;;             :style
+;;                 ;;             ,(format nil " position: absolute; top: 0; left: 0;
+;;                 ;;                                           margin-top: ~a; pointer-events: none;"
+;;                 ;;                      (if (string= image "image-resting")
+;;                 ;;                          "-200px" "-600px"))
+;;                 ;;             (:img :src ,(format nil "./static/~a.png" image)))))
+;;                 )
+;;          :stream out)
+;;         (get-output-stream-string out)))))
 
 ;; (seed :demo.sheet
 ;;       (:bind :package package :of-system of-system :to-grow grow)

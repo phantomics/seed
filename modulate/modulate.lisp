@@ -113,7 +113,7 @@
           :initform nil
           :initarg  :cast
           :documentation "An effect produced by interaction with the component; this may involve the Seed server or manifest only within the user interface.")
-   (%sort :accessor uic-sort
+   (%sort :accessor uic-sort ;; TODO: remove this when no uses left
           :initform nil
           :initarg  :sort
           :documentation "")
@@ -277,6 +277,14 @@
                                          '(lambda (mode)
                                            ))))
 
+            (:meta-code-form (list :mode    (list :form nil)
+                                   :methods (list :register-form
+                                                  '(lambda (mode)
+                                                    (lambda (form)
+                                                      (setf (@ mode form) form)))
+                                                  :save
+                                                  '(lambda (mode)
+                                                    (chain htmx (trigger (@ mode form) "submit"))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
                                                    (fetch-contact2
@@ -343,7 +351,7 @@
               (unless (= ix last-type-index) (format class-stream " ")))
     
     (cons :div (if system
-                   (list :hx-post "/render/" :hx-trigger "load, reload consume"
+                   (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
                          :class (get-output-stream-string class-stream)
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
@@ -477,7 +485,8 @@
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
 
-          (append (list :div :path "" :class (get-output-stream-string class-stream)
+          (append (list (if (member :enum types) :form :div)
+                        :path "" :class (get-output-stream-string class-stream)
                         :style (if (and (not (member ltype '(:horizontal :vertical)))
                                         (not (eql :even (first lprops))))
                                    ;; TODO: this needs more rigorous logic for partitioning according
@@ -490,7 +499,9 @@
                                                       :collect ratio))))
                         :x-data (if (of-root-type aspect :meta-code)
                                     (psl (create containing-series $el))))
-                  
+                  (if (member :enum types)
+                      (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
+                                             (funcall (chain methods (register-form mode)) $el)))))
                   (if (and (of-root-type aspect :meta-code)
                            (member :sortable (uic-type (uic-root aspect)))
                            ;; (member :sortable (uic-type aspect))
@@ -821,6 +832,7 @@
               formatted   (copy-graph-spec graph-data)))
       
       ;; (print (list :abcd orig-data graph-data formatted))
+      (print (list :in input))
       (if (and (assoc "action" input :test #'string=)
                (string= "open" (rest (assoc "action" input :test #'string=))))
           (let* ((path-str (make-string-input-stream
@@ -1080,8 +1092,9 @@
                           :do (relink item (nth this-index (rest graph-data))
                                       index sub-index))))))
 
-            (when network-changed
+            (when network-changed ;; assign changes to the file when they happen
               ;; (print (list :ch "CHANGED" graph-base))
+              (error "AAA")
               (setf (from-system-file package file-name graph-key) graph-base)
               ;; (instantiate-priority-macro-reader (asdf:load-system package)) ;; RESTORE THIS
               )
@@ -1096,7 +1109,7 @@
                             (express
                              (funcall (if network-changed
                                           #'list (lambda (items)
-                                                   `(meta ,items (:type :series :enum)
+                                                   `(meta ,items (:type :enum)
                                                           (:fx . :uic-series))))
                                       (loop :for item :in (funcall
                                                            ;; nodes have an (index . N)
