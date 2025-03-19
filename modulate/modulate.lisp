@@ -284,7 +284,12 @@
                                                       (setf (@ mode form) form)))
                                                   :save
                                                   '(lambda (mode)
-                                                    (chain htmx (trigger (@ mode form) "submit"))))))
+                                                    (let ((fdata (new (-form-data (@ mode form)))))
+                                                      (chain htmx (trigger (@ mode form) "submit"
+                                                                           (chain -object
+                                                                                  (from-entries
+                                                                                   (chain fdata
+                                                                                          (entries)))))))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
                                                    (fetch-contact2
@@ -359,8 +364,11 @@
                                             (fetch-contact2 mode (create height (@ $el offset-height)
                                                                          width  (@ $el offset-width))
                                                             (lambda (data)))))
-                         :hx-vals (json-convert-to (list :system system :face face
-                                                         :branch (string (uic-base aspect))))
+                         :hx-vals (format nil "js:{...ejoin(~a,event)}"
+                                          (json-convert-to (list :system system :face face
+                                                                 :branch (string (uic-base aspect)))))
+                         ;; :hx-vals (json-convert-to (list :system system :face face
+                         ;;                                 :branch (string (uic-base aspect))))
                          :x-data (psl (create branch-frame $el)))
                    (progn (when (typep (uic-base aspect) 'ui-component)
                             (setf (uic-root (uic-base aspect)) aspect))
@@ -615,7 +623,7 @@
                                                          (@ data text)))))))))))
               ((member :area (uic-type aspect))
                (wrap-label (lisp->camel-case field-name)
-                           `(:textarea :class "textarea" :name ,(or (string (uicc-key aspect)) "")
+                           `(:textarea :class "textarea" :name ,(or (lisp->camel-case field-name) "")
                                        ,(or field-content (uicc-field-default aspect)
                                             ""))))
               (t 
@@ -624,7 +632,7 @@
                            `(:input :class "input" :type "text" :value ,(or field-content
                                                                             (uicc-field-default aspect)
                                                                             "")
-                                    :name ,(or (string (uicc-key aspect)) "")))))))))
+                                    :name ,(or (lisp->camel-case field-name) "")))))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   (let ((base (uic-base aspect)))
@@ -635,7 +643,7 @@
                                     (:a :class "button is-static" ,(lisp->camel-case field-name)))))
              (:p :class "control"
                  (:span :class "select"
-                       (:select :name ,(or (string (uicc-key aspect)) "")
+                       (:select :name ,(or (lisp->camel-case field-name) "")
                          ,@(loop :for item :in (uics-options aspect) :collect `(:option ,item)))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
