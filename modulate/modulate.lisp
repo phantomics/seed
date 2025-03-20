@@ -5,6 +5,9 @@
   "A macro for denoting inline Parenscript code."
   `(subseq (parenscript:ps-inline ,form) 11))
 
+(defmacro meta (form)
+  (first form))
+
 (defun from-system-file (system file key &key as-string)
   "Read a form from a file in the manner of a plist (but not requiring a strict key, value structure)."
   (with-open-file (stream (asdf:system-relative-pathname system (format nil "./~a" file))
@@ -724,6 +727,12 @@
                                      (setf (@ mode chart)
                                            (new (chain window (-dygraph $el data config)))))))))))))
 
+(defun meta-combine (form template)
+  (let ((to-append))
+    (loop :for property :in template :unless (assoc (first property) (cddr form))
+          :do (push property to-append))
+    (append form to-append)))
+
 (defun express (form &optional path) ;; TODO: this will not grow well with the metaform topology
   (if (atom form)
       form (let ((path (or path (list 0))))
@@ -733,7 +742,16 @@
                                             :base (mapcar #'express form
                                                           (loop :for i :below (length form)
                                                                 :collect (cons i path))))
-                 (let* ((types (rest (assoc :type (cddr form))))
+                 (let* ((form (if (not (assoc :template (cddr form)))
+                                  form (let ((out form))
+                                         (loop :for template :in (rest (assoc :template (cddr form)))
+                                               :do (print (list :tt template (symbol-package template)
+                                                                *package*))
+                                                   (setf out (meta-combine
+                                                              out (symbol-value (intern (string template)
+                                                                                        "DEMO.SHEET")))))
+                                         out)))
+                        (types (rest (assoc :type (cddr form))))
                         (fx-class (rest (assoc :fx (cddr form))))
                         (primary-type (first types))
                         (layout (rest (assoc :layout (cddr form))))

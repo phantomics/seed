@@ -58,7 +58,6 @@
 
   (format t "Browser files generated successfully for portal ~a.~%" *package*))
 
-
 ;; (defun build-all ()
 ;;   (build-static-page :portal.demo1 "ui-browser")
 ;;   (build-script-cmirror)

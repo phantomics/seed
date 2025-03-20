@@ -13,6 +13,12 @@
   (declare (ignore params))
   form)
 
+(defmacro meta-template (name &body properties)
+  (let ((symbol (intern (format nil "META-TEMPLATE.~a" (string-upcase name))
+                        (package-name *package*))))
+    (proclaim (list 'special symbol))
+    `(setf (symbol-value ',symbol) (quote ,properties))))
+
 (let ((opening-parenthesis-handler (get-macro-character #\())
       (breaking-chars (concatenate 'string '(#\  #\Tab #\Newline #\Return)))
       (char-store (make-string 5 :initial-element #\ ))

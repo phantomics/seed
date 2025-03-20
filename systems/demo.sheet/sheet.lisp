@@ -93,11 +93,13 @@
         (seed.generate::build-directed-graph
          (((meta (:title . "Introductory sentence") (:fx . :uicc-field)
             (:type :text :pair :named :block))
-           (meta (:image . "none") (:title . "Image")
-            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
-             "girl-irritated")
-            (:fx . :uicc-select) (:name . :persona-image)
-            (:type :select :dropdown))
+           (meta (:image . "none") (:template meta-template.customers-image)
+                 ;; (:title . "Image")
+                 ;; (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+                 ;;           "girl-irritated")
+                 ;; (:fx . :uicc-select) (:name . :persona-image)
+                 ;; (: type :select :dropdown)
+                 )
            (meta
             (:dialog
              . "Two people appear at the counter. Guests, most likely. HELLO")
@@ -114,10 +116,12 @@
            2))
          (((meta (:title . "Why we're here") (:fx . :uicc-field)
             (:type :text :pair :named :block))
-           (meta (:image . "man-relaxed") (:title . "Image")
-            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
-             "girl-irritated")
-            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta (:image . "man-relaxed") (:template meta-template.customers-image)
+                 ;; (:title . "Image")
+                 ;; (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+                 ;;           "girl-irritated")
+                 ;; (:fx . :uicc-select) (:name . :persona-image) (:type :select)
+                 )
            (meta
             (:dialog
              . "We have an event scheduled here, it's happening in two weeks and we haven't received the confirmation we requested from you. ")
@@ -183,13 +187,13 @@
             (:fx . :uicc-select) (:name . :persona-image) (:type :select))
            (meta (:dialog . "") (:fx . :uicc-field)
             (:type :text :area :pair :named :block))))
-         (((portal.demo1::meta (:title . "Untitled node") (:fx . :uicc-field)
+         (((meta (:title . "Untitled node") (:fx . :uicc-field)
             (:type :text :pair :named :block))
-           (portal.demo1::meta (:image . "none") (:title . "Image")
+           (meta (:image . "none") (:title . "Image")
             (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
              "girl-irritated")
             (:fx . :uicc-select) (:name . :persona-image) (:type :select))
-           (portal.demo1::meta (:dialog . "") (:fx . :uicc-field)
+           (meta (:dialog . "") (:fx . :uicc-field)
             (:type :text :area :pair :named :block))))))
 ;; :graph-original
 #|
