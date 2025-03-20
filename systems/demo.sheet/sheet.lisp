@@ -67,7 +67,7 @@
                (:type :submit-control)))
         (:type :series :form)))
 :graph-node-indices
-'(0 1 2 3 4 5 6 7 8)
+'(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17)
 #|
            (meta (:type . :option) (:options :option :switch :input :gate)
             (:fx . :uicc-select) (:name . :type)
@@ -109,22 +109,34 @@
             (:dialog
              . "We have an event scheduled here, it's happening in two weeks and we haven't received the confirmation we requested from you. ")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Back") (:template meta-template.customers-title))
-            (meta (:dialog . "Back to start.")
+          (((meta (:title . "Didn't know")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"I don't have any information on that, are you sure you have a group reservation?\"")
              (:template meta-template.customers-dialog)))
            0)
-          (((portal.demo1::meta (:title . "Untitled link")
-             (:template portal.demo1::meta-template.customers-title))
-            (portal.demo1::meta (:dialog . "")
-             (:template portal.demo1::meta-template.customers-dialog)))))
+          (((meta (:title . "Who are you")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog . "\"Ok, what's the name of the group you're with?\"")
+             (:template meta-template.customers-dialog)))
+           3))
          (((meta (:title . "We got a receipt")
             (:template meta-template.customers-title))
            (meta (:image . "man-irritated")
             (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "\"I know for a fact that our group reservation was acknowledged, your website gave us a receipt number. It's 000XB71.\"")
-            (:template meta-template.customers-dialog))))
+             . "\"I know you got our reservation, your website gave us a receipt number. It's 9906947-XB71.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "No special instructions?")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Ok, I see it in the system but there are no special instructions attached that I can see. What can I help you with?\"")
+             (:template meta-template.customers-dialog)))
+           6))
          (((meta (:title . "Who we are: Annapurna")
             (:template meta-template.customers-title))
            (meta (:image . "girl-relaxed")
@@ -132,27 +144,174 @@
            (meta
             (:dialog
              . "\"We're organizing the 2025 Global Guru Collective for Annapurna Essential Oils. Annapurna is on a mission to use our 2000 years' Vedic study of pure plant essences to bring humankind closer to samadhi.\"")
-            (:template meta-template.customers-dialog))))
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Let me look for it")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"Ok, let me see if I can find that...\" 11")
+             (:template meta-template.customers-dialog)))
+           0)
+          (((meta (:title . "Who are you")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"Annapurna? What's that exactly?\"")
+             (:template meta-template.customers-dialog)))
+           4)
+          (((meta (:title . "What's the event")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"What's the event you're holding?\"")
+             (:template meta-template.customers-dialog)))
+           5))
          (((meta (:title . "Annapurna: Gurus, not sales reps")
             (:template meta-template.customers-title))
            (meta (:image . "girl-relaxed")
             (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "\"You see, Annapurna isn't a business in the traditional sense. We're dedicated to spiritual evolution. We don't have employees, distributors, consultants or coaches. Annapurna products are conveyed to customers by the hands of our Gurus, who learn to impart the wisdom of the four jhanas along with our line of products.\"")
-            (:template meta-template.customers-dialog))))
-         (((meta (:title . "Annapurna: Gurus, not sales reps 1")
+             . "\"Annapurna is a business but it's also much more. It represents the highest and most refined path of spiritual evolution for humans. Other companies have employees, distributors, consultants or coaches, but at Annapurna, our products are conveyed to customers by the hands of our Gurus, who learn to impart the wisdom of the four jhanas along with our line of products.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "What's the event")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"Ok, so what's this event you're holding?\"")
+             (:template meta-template.customers-dialog)))
+           5))
+         (((meta (:title . "Event description")
             (:template meta-template.customers-title))
            (meta (:image . "girl-relaxed")
             (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "\"You see, Annapurna isn't a business in the traditional sense. We're dedicated to spiritual evolution. We don't have employees, distributors, consultants or coaches. Annapurna products are conveyed to customers by the hands of our Gurus, who learn to impart the wisdom of the four jhanas along with our line of products.\"")
+             . "\"It's our Global Guru Conference. This is a weekend chosen each year according to vedic astrology for our Gurus to gather, reaffirm their spiritual paths and learn how to better grow their downline.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Untitled link")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "") (:template meta-template.customers-dialog)))))
+         (((meta (:title . "Event requirements")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Well, it sounds like you lost the instructions we sent so we have no choice but to give you a quick summary of what we need. There are four main things: the flower petal basins, the incense schedule, the singing bowl ceremonies and... our required accomodations for the business intelligence program.")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Untitled link")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "") (:template meta-template.customers-dialog))))
+          (((meta (:title . "Untitled link")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "") (:template meta-template.customers-dialog))))
+          (((meta (:title . "Untitled link")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "") (:template meta-template.customers-dialog))))
+          (((meta (:title . "Untitled link")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "") (:template meta-template.customers-dialog)))))
+         (((meta (:title . "About req: petal basins")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"In each of the conference rooms hosting our presentations we require basins containing a blend of zinnia, lotus and passion fruit petals floating in de-ionized water. Aligned with the podium on an east-west axis, this serves to ground the spatial chakras while our speakers are presenting.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "We can do that")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Sure, we can source floral arrangements no problem. Would you like that billed per room or in a lump sum?\"")
+             (:template meta-template.customers-dialog))))
+          (((meta (:title . "Not our job")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"That sounds like something you should figure out with a florist or your event management company, it's not something we can really help with.\"")
+             (:template meta-template.customers-dialog)))))
+         (((meta (:title . "About req: incense schedule")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"We come to all events equipped with industrial censers and a week's supply of our specialty incense blends. We route these censers into the HVAC systems serving the floors where our Gurus will be staying so we can keep the air infused with these scents on a Vedic horary schedule. This promotes ideal energetic balance for the gathering.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "I suppose we can")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"I suppose we can do that, let me check with our physical plant team about those censers.\"")
+             (:template meta-template.customers-dialog))))
+          (((meta (:title . "Health code?")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Wait, you want to hook big cans of burning incense into the building HVAC system? Are you sure that doesn't break a health code or a fire code or something?\"")
+             (:template meta-template.customers-dialog)))))
+         (((meta (:title . "About req: singing bowls")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Our Gurus will be staying on floors two through eight in Building C. On these floors, at each point where hallways cross we will require your staff to complete 100 revolutions of a mallet in a brass singing bowl every three hours. It'll keep Gurus' brainwaves at a low alpha level throughout the event.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Play singing bowls?")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"You want the busboys to play singing bowls all day? Are you out of your mind?\"")
+             (:template meta-template.customers-dialog))))
+          (((meta (:title . "Can do for a price")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"I mean, it's possible... we can't divert our hotel staff to play music but we could find some local performers to do it, what kind of budget are you looking at for this service?\"")
+             (:template meta-template.customers-dialog)))))
+         (((meta (:title . "About req: biz intel")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Uh... that's going to involve us working with your IT department. If you could give me their contact information...\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "It has to go through me")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Our guests don't deal with the IT department directly. All guest requests are routed through guest services, which means us. How can I help you?\"")
+             (:template meta-template.customers-dialog)))
+           11)
+          (((meta (:title . "Untitled link")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "") (:template meta-template.customers-dialog)))))
+         (((meta (:title . "More info: biz intel")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Well, you see, the issue is that, you see, as part of our spiritual mission it's essential that we be aware of the needs of our Gurus so we can respond to them appropriately.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Get to the point")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Ok, that makes sense, I guess, but what do you want us to do about it?\"")
+             (:template meta-template.customers-dialog))))
+          (((meta (:title . "What does that mean?")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"Respond to their needs?\"")
+             (:template meta-template.customers-dialog)))))
+         (((meta (:title . "Yet more: biz intel")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Our internal intelligence service has alerted us to a potential buildup of negative energy within Annapurna. They suspect that a group of our midlevel distributors are planning to defect to Crystalline Natural Essences and take their downlines with them. This would result in severe karmic pollution along with significant financial losses for Annapurna. In order to prevent this we need an idea of what Gurus are saying to each other.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Untitled link")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "")
+             (:template meta-template.customers-dialog)))))
+         (((meta (:title . "Shoe drops: biz intel")
+            (:template meta-template.customers-title))
+           (meta (:image . "none") (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"What it boils down to is that we will require that special listening devices be installed in each of the rooms we've reserved. It's important that we be able to monitor Gurus' conversations in real time.\"")
             (:template meta-template.customers-dialog))))
-         (((meta (:title . "More stuff")
-            (:template meta-template.customers-title))
-           (meta (:image . "none") (:template meta-template.customers-image))
-           (meta (:dialog . "") (:template meta-template.customers-dialog))))
          (((meta (:title . "Untitled node")
             (:template meta-template.customers-title))
            (meta (:image . "none") (:template meta-template.customers-image))
@@ -163,8 +322,22 @@
            (meta (:dialog . "") (:template meta-template.customers-dialog))))
          (((meta (:title . "Untitled node")
             (:template meta-template.customers-title))
-           (meta (:image . "none") (:template meta-template.customers-image))
-           (meta (:dialog . "") (:template meta-template.customers-dialog))))))
+           (meta (:image . "none")
+            (:template meta-template.customers-image))
+           (meta (:dialog . "")
+            (:template meta-template.customers-dialog))))
+         (((meta (:title . "Untitled node")
+            (:template meta-template.customers-title))
+           (meta (:image . "none")
+            (:template meta-template.customers-image))
+           (meta (:dialog . "")
+            (:template meta-template.customers-dialog))))
+         (((meta (:title . "Untitled node")
+            (:template meta-template.customers-title))
+           (meta (:image . "none")
+            (:template meta-template.customers-image))
+           (meta (:dialog . "")
+            (:template meta-template.customers-dialog))))))
 ;; :graph-original
 #|
 (setf *graph-nodes*
