@@ -67,7 +67,7 @@
                (:type :submit-control)))
         (:type :series :form)))
 :graph-node-indices
-'(0 1 2)
+'(0 1 2 3 4 5 6 7)
 #|
            (meta (:type . :option) (:options :option :switch :input :gate)
             (:fx . :uicc-select) (:name . :type)
@@ -118,12 +118,63 @@
             (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
              "girl-irritated")
             (:fx . :uicc-select) (:name . :persona-image) (:type :select))
-           (meta (:dialog . "This is a test. BBB") (:fx . :uicc-field)
-            (:type :text :area :pair :named :block)))
-          (((portal.demo1::meta (:title . "Untitled link") (:fx . :uicc-field)
+           (meta
+            (:dialog
+             . "We have an event scheduled here, it's happening in two weeks and we haven't received the confirmation we requested from you. ")
+            (:fx . :uicc-field) (:type :text :area :pair :named :block)))
+          (((meta (:title . "Back") (:fx . :uicc-field)
              (:type :text :pair :named :block))
-            (portal.demo1::meta (:dialog . "") (:fx . :uicc-field)
-             (:type :text :pair :named :block)))))
+            (meta (:dialog . "Back to start.") (:fx . :uicc-field)
+             (:type :text :pair :named :block)))
+           0))
+         (((meta (:title . "We got a receipt") (:fx . :uicc-field)
+            (:type :text :pair :named :block))
+           (meta (:image . "man-irritated") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta
+            (:dialog
+             . "\"I know for a fact that our group reservation was acknowledged, your website gave us a receipt number. It's 000XB71.\"")
+            (:fx . :uicc-field) (:type :text :area :pair :named :block))))
+         (((meta (:title . "Who we are: Annapurna") (:fx . :uicc-field)
+            (:type :text :pair :named :block))
+           (meta (:image . "girl-relaxed") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta
+            (:dialog
+             . "\"We're organizing the 2025 Global Guru Collective for Annapurna Essential Oils. Annapurna is on a mission to use our 2000 years' Vedic study of pure plant essences to bring humankind closer to samadhi.\"")
+            (:fx . :uicc-field) (:type :text :area :pair :named :block))))
+         (((meta (:title . "Annapurna: Gurus, not sales reps")
+            (:fx . :uicc-field) (:type :text :pair :named :block))
+           (meta (:image . "girl-relaxed") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta
+            (:dialog
+             . "\"You see, Annapurna isn't a business in the traditional sense. We're dedicated to spiritual evolution. We don't have employees, distributors, consultants or coaches. Annapurna products are conveyed to customers by the hands of our Gurus, who learn to impart the wisdom of the four jhanas along with our line of products.\"")
+            (:fx . :uicc-field) (:type :text :area :pair :named :block))))
+         (((meta (:title . "Annapurna: Gurus, not sales reps 1")
+            (:fx . :uicc-field) (:type :text :pair :named :block))
+           (meta (:image . "girl-relaxed") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta
+            (:dialog
+             . "\"You see, Annapurna isn't a business in the traditional sense. We're dedicated to spiritual evolution. We don't have employees, distributors, consultants or coaches. Annapurna products are conveyed to customers by the hands of our Gurus, who learn to impart the wisdom of the four jhanas along with our line of products.\"")
+            (:fx . :uicc-field) (:type :text :area :pair :named :block))))
+         (((meta (:title . "More stuff") (:fx . :uicc-field)
+            (:type :text :pair :named :block))
+           (meta (:image . "none") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta (:dialog . "") (:fx . :uicc-field)
+            (:type :text :area :pair :named :block))))
          (((meta (:title . "Untitled node") (:fx . :uicc-field)
             (:type :text :pair :named :block))
            (meta (:image . "none") (:title . "Image")
@@ -131,6 +182,14 @@
              "girl-irritated")
             (:fx . :uicc-select) (:name . :persona-image) (:type :select))
            (meta (:dialog . "") (:fx . :uicc-field)
+            (:type :text :area :pair :named :block))))
+         (((portal.demo1::meta (:title . "Untitled node") (:fx . :uicc-field)
+            (:type :text :pair :named :block))
+           (portal.demo1::meta (:image . "none") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (portal.demo1::meta (:dialog . "") (:fx . :uicc-field)
             (:type :text :area :pair :named :block))))))
 ;; :graph-original
 #|

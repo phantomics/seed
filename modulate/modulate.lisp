@@ -410,71 +410,6 @@
                           (list :class (get-output-stream-string class-stream)
                                 (realize aspect medium (uic-base aspect))))))))
 
-;; (defmethod generate ((medium uim-web) (aspect uic-series))
-;;   (let ((last-type-index (1- (length (uic-type aspect))))
-;;         (class-stream (make-string-output-stream))
-;;         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
-;;                         (uic-type aspect)))
-;;         (breadth-default 12))
-;;     (format class-stream "ui ")
-;;     (format class-stream "~a" (typecase aspect (uic-series "series ")
-;;                                         ;; (uic-set-frame "frame ")
-;;                                         (t "")))
-
-;;     (print (list :ll (uic-series-layout aspect)))
-;;     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
-;;       (case ltype
-;;         ((:horizontal :vertical) (format class-stream "series grid-layout ")))
-
-;;       (flet ((enclose-by-type (types element)
-;;                (loop :for type :in types
-;;                      :do (setf element (case type
-;;                                          (:column `(:div :class "column-inner" ,element))
-;;                                          (t element))))
-;;                element))
-
-;;         (loop :for item :in (uic-base aspect)
-;;               :when (and (typep item 'ui-component) (not (uic-root item)))
-;;                 :do (setf (uic-root item) aspect))
-        
-;;         (loop :for type :in types :for ix :from 0
-;;               :do (format class-stream "~a" (string-downcase type))
-;;                   (unless (= ix last-type-index) (format class-stream " ")))
-;;         (append (list :div
-;;                       :path "" :class (get-output-stream-string class-stream)
-;;                       :style (if (not (member ltype '(:horizontal :vertical)))
-;;                                  "" (let ((ratio (/ 100.0 (or (first lprops) breadth-default))))
-;;                                       (format nil "grid-template-~a: ~{~a% ~};"
-;;                                               (if (eq ltype :horizontal) "columns" "rows")
-;;                                               (loop :for i :below (or (first lprops) breadth-default)
-;;                                                     :collect ratio))))
-;;                       :x-data (psl (create containing-series $el)))
-
-;;                 (if (of-root-type aspect :meta-code)
-;;                     (list :x-init (psl (draggable-provision $el in-series))))
-
-;;                 (if (of-root-type aspect :meta-code)
-;;                     ;; `((:div :class "item-heading" "Heading"))
-;;                     `((:div :class "field has-addons"
-;;                             (:p :class "control drag-handle" (:a :class "button is-static" "A"))
-;;                             (:p :class "control is-expanded" (:a :class "button is-static" "Series")))))
-
-                
-;;                 (loop :for ix :from 0 :for item :in (uic-base aspect)
-;;                       :collect (let ((map (nth ix (uic-series-maps aspect))))
-;;                                  (format class-stream "item ")
-;;                                  (when (and (uic-series-point aspect)
-;;                                             (= ix (uic-series-point aspect)))
-;;                                    (format class-stream "point "))
-;;                                  (loop :for itype :in (rest (assoc :type map))
-;;                                        :do (format class-stream "~a " (string-downcase itype)))
-;;                                  (locate medium aspect ix
-;;                                          `(:div :class ,(get-output-stream-string class-stream)
-;;                                                     :x-data ,(psl (create in-series containing-series))
-;;                                                     ,(enclose-by-type
-;;                                                       types (realize aspect medium item
-;;                                                                      :sort ix)))))))))))
-
 (defmethod generate ((medium uim-web) (aspect uic-series))
   (let ((last-type-index (1- (length (uic-type aspect))))
         (class-stream (make-string-output-stream))
@@ -546,9 +481,7 @@
                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
                                              (funcall (chain methods (register-form mode)) $el)))))
                   (if (and (of-root-type aspect :meta-code)
-                           (member :sortable (uic-type (uic-root aspect)))
-                           ;; (member :sortable (uic-type aspect))
-                           )
+                           (member :sortable (uic-type (uic-root aspect))))
                       (list :x-init (psl (let ((handle-container) (handle))
                                            (loop :for n :in (@ $el child-nodes)
                                                  :do (when (= (@ n class-name) "field has-addons")
@@ -945,7 +878,8 @@
                                       (make-array (length indices)
                                                   :initial-contents indices))
                         (from-system-file package file-name node-indices-key)
-                        (append indices (length indices)))))
+                        (list (first indices)
+                              (append (second indices) (list (length (second indices))))))))
 
               ;; add a link between nodes
               (when (string= "addLink" (rest (assoc "action" input :test #'string=)))

@@ -244,13 +244,13 @@
 
     `(.scenario-frame
       :height "100%" ;; :display grid :grid-template-columns "100%"
-      :background "#000" :color "#ddd" :font-family serif :font-weight bold
+      :background "#fff" :color "#777" :font-family serif :font-weight bold
       :line-height 2.6em
       ;; :grid-template-rows "[dialog-start] 60% [dialog-end] 40% [response-end]"
-      :text-shadow "2px 2px 0 #282828"
+      :text-shadow "1px 1px 0 #555"
       (.setting :position absolute :margin 1em :z-index 10000  :bottom 0 :left 0 :width "90%"
-                :background "rgba(80,80,80,0.7)" :border "4px solid #999" :border-radius 1em
-                :box-shadow "3px 3px 1px rgba(20,20,20,0.8)"
+                :background "rgba(220,220,220,0.7)" :border "4px solid #ccc" :border-radius 1em
+                :box-shadow "3px 3px 1px rgba(20,20,20,0.4)"
                 (.dialog :bottom 0 :z-index 6000
                          :font-size 32px :padding 12px)
                 (.responses ;; :grid-row-start "dialog-end" :grid-row-end "response-end"

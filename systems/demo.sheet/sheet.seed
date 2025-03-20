@@ -299,8 +299,8 @@
         (spinneret:interpret-html-tree
          `(:div :class "scenario-frame"
                 ,@(unless (eq imsym :none)
-                    `(:style ,(format nil "background-image: url(./static/characters/~a.jpg); background-size: 1500px; background-position-y: -~apx;"
-                                      image 100)))
+                    `(:style ,(format nil "background-image: url(./static/characters/~a.jpg); background-size: 500px; background-position-y: top; background-position-x: right; background-repeat: no-repeat;"
+                                      image)))
                 (:div :class "setting"
                       (:div :class "dialog" ,dialog)
                       (:ol :class "responses"
