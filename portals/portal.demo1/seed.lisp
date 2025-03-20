@@ -50,7 +50,7 @@
                  "" (grow (of-system :point) :view context)))
 
          (fx ((uic-series :type (:ui :column) :cast t))
-             (list (fx ((uicc-field :key "key")) ""))))))))
+             (list (fx ((uicc-field :name "key")) ""))))))))
 
 (branch :portal.demo1 :systems
   (lambda (context input)

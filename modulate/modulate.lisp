@@ -83,15 +83,20 @@
                        (process (or ;; (match (rest (assoc :type props))
                                     ;;   ((list :field :numeric :integer)
                                     ;;    #'parse-number:parse-number))
-                                    #'identity)))
+                                 #'identity)))
+                  
+                  (print (list :iii item props corresponding this-name process
+                               :ci cons-items))
                   (if corresponding
-                      (if cons-items (setf (rest (second form))
-                                           (funcall process corresponding))
+                      (if cons-items (setf (second form)
+                                           (cons (caadr form)
+                                                 (funcall process corresponding)))
                           (setf (second form) (funcall process corresponding)))
                       (when (and (listp item)
                                  (or (not cons-items)
                                      (not (keywordp (first item)))))
                         (loop :for i :in item :do (meta-revise i pairs cons-items))))
+                  (print (list :out form))
                   form)))))
 
 ;; SECTION: another iteration of the UI component class system, with a simple list/atom foundation
@@ -312,6 +317,7 @@
                                                       (setf (@ mode form) form)))
                                                   :save
                                                   '(lambda (mode)
+                                                    ;; (chain htmx (trigger (@ mode form) "submit"))))))
                                                     (let* ((fdata (new (-form-data (@ mode form))))
                                                            (obj (chain -object
                                                                        (from-entries
@@ -633,7 +639,7 @@
   (flet ((wrap-label (label base) `(:div (:label (:span ,label)) ,base)))
     (let ((base (uic-base aspect)))
       (destructuring-bind (field-name &rest field-content)
-          (if (listp base) base (cons nil base))
+          (if (listp base) base (cons (uic-name aspect) base))
         (cond ((member :code (uic-type aspect))
                (destructuring-bind (system branch) (uic-base aspect)
                  (let ((token (format nil "cm-texteditor-~a-~a" (string-downcase system)
@@ -665,14 +671,17 @@
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   (let ((base (uic-base aspect)))
     (destructuring-bind (field-name &rest field-content)
-        (if (listp base) base (cons nil base))
+        (if (listp base) base (cons (uic-name aspect) base))
       `(:div :class "field has-addons"
              ,@(if field-name `((:p :class "control"
                                     (:a :class "button is-static" ,(lisp->camel-case field-name)))))
              (:p :class "control"
                  (:span :class "select"
                        (:select :name ,(or (lisp->camel-case field-name) "")
-                         ,@(loop :for item :in (uics-options aspect) :collect `(:option ,item)))))))))
+                         ,@(loop :for item :in (uics-options aspect)
+                                 :collect (let ((selected (if (equalp item field-content)
+                                                              `(:selected "selected"))))
+                                            `(:option ,@selected ,item))))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
   (let ((default-segments 12)) ;; default number of segments for a grid layout
@@ -818,7 +827,10 @@
                 ;; remove (meta) forms; should this be factored into a dedicated function?
                 :collect (let ((node (nth index nodes)))
                            (cons (cons (cons :index nx) (first node))
-                                 (cons :closed (rest node))))))))
+                                 (if (rest node)
+                                     (cons :closed (rest node)))
+                                 ;; (cons :closed (rest node))
+                                 ))))))
 
 (defun copy-graph-spec (original)
   (cons (first original)
@@ -869,8 +881,6 @@
               graph-data  (format-graph-spec-to-edit (copy-tree orig-data) nodes-order)
               formatted   (copy-graph-spec graph-data)))
 
-      (setf aaaa node-template)
-      
       ;; (print (list :abcd orig-data graph-data formatted))
       ;; (print (list :in input))
       (if (and (assoc "action" input :test #'string=)
@@ -889,7 +899,6 @@
               (setf el-width  (rest (assoc "width"  input :test #'string=))
                     el-height (rest (assoc "height" input :test #'string=))))
 
-            ;; (print (list :f1 formatted))
             (when (and input (assoc "path" input :test #'string=))
               (let ((action (rest (assoc "action" input :test #'string=)))
                     (inst (make-string-input-stream
@@ -916,6 +925,7 @@
                                       (nth sub-index (rest (nth index (rest orig-data))))
                                       (nth index (rest orig-data))))
                            input t)
+              (print (list :aabb formatted orig-data))
               (setf network-changed t))
 
             (when (assoc "action" input :test #'string=)
@@ -939,24 +949,36 @@
 
               ;; add a link between nodes
               (when (string= "addLink" (rest (assoc "action" input :test #'string=)))
+                (print (list :si sub-index (rest (nth index (rest orig-data)))
+                             (nth index (rest orig-data))))
                 (if sub-index (rplacd (nth sub-index (rest (nth index (rest orig-data))))
                                       (cons link-template
                                             (nthcdr (1+ sub-index)
                                                     (rest (nth index (rest orig-data))))))
-                    (rplacd (last (rest (nth index (rest orig-data))))
-                            (list link-template)))
+                    (if (rest (nth index (rest orig-data)))
+                        (rplacd (last (rest (nth index (rest orig-data))))
+                                (list link-template))
+                        (rplacd (nth index (rest orig-data))
+                                (list link-template))))
+                (print 700)
                 (if sub-index (rplacd (nth sub-index (rest (nth index (rest graph-data))))
                                       (cons link-template
                                             (nthcdr (1+ sub-index)
                                                     (rest (nth index (rest graph-data))))))
-                    (rplacd (last (rest (nth index (rest graph-data))))
-                            (list link-template)))
+                    (if (rest (nth index (rest graph-data)))
+                        (rplacd (last (rest (nth index (rest graph-data))))
+                                (list link-template))
+                        (rplacd (nth index (rest graph-data))
+                                (list link-template))))
                 (if sub-index (rplacd (nth sub-index (rest (nth index (rest formatted))))
                                       (cons link-template
                                             (nthcdr (1+ sub-index)
                                                     (rest (nth index (rest formatted))))))
-                    (rplacd (last (rest (nth index (rest formatted))))
-                            (list link-template))))
+                    (if (rest (nth index (rest formatted)))
+                        (rplacd (last (rest (nth index (rest formatted))))
+                                (list link-template))
+                        (rplacd (nth index (rest formatted))
+                                (list link-template)))))
 
               ;; delete a node or link
               (when (string= "deleteItem" (rest (assoc "action" input :test #'string=)))
@@ -1142,7 +1164,7 @@
               )
             
             ;; (print (list :af (assoc :face input :test #'eq)))
-            ;; (print (list :ew el-width))
+            ;; (print (list :ew el-width formatted))
             ;; the output-stream is created in the seed package - best elsewhere?
             (if (and (assoc :face input :test #'eq)
                      (string= "graphNode" (rest (assoc :face input :test #'eq))))
@@ -1360,6 +1382,7 @@
                                                            (= (third parent) (first point))))
                                                   " selected" "")
                                               (if is-link " link-group" ""))))
+                    ;; (print (list :exp is-expandable item))
                     (push `(:g :class ,group-class
                                :transform ,(format nil "translate(~a,~a)" x-offset y-offset)
                                (:g :class "title-frame"
