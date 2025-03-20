@@ -813,6 +813,8 @@
               interface output)))
   interface)
 
+(defvar aaaa)
+
 (defun spec-graph-interface (&key package file-name graph-key holder-id associated-node-ids
                                node-template-key link-template-key node-indices-key)
   (let ((el-width) (el-height) (formatted)
@@ -830,6 +832,8 @@
                             (make-array (length indices) :initial-contents indices))
               graph-data  (format-graph-spec-to-edit (copy-tree orig-data) nodes-order)
               formatted   (copy-graph-spec graph-data)))
+
+      (setf aaaa node-template)
       
       ;; (print (list :abcd orig-data graph-data formatted))
       (print (list :in input))
@@ -884,15 +888,18 @@
               ;; add a node
               (when (string= "addNode" (rest (assoc "action" input :test #'string=)))
                 ;; add newest node index to end of indices
-                (rplacd (last formatted)
-                        (list (list (cons (cons :index (length (second indices-form)))
-                                          (first node-template)))))
-                (rplacd (last (second indices-form))
-                        (list (length (second indices-form))))
-                (rplacd (last orig-data) (list node-template))
-                (setf nodes-order (let* ((indices (second indices-form)))
-                                    (make-array (length indices)
-                                                :initial-contents indices))))
+                (let ((indices (from-system-file package file-name node-indices-key)))
+                  (rplacd (last formatted)
+                          (list (list (cons (cons :index (length (second indices-form)))
+                                            (first node-template)))))
+                  (rplacd (last (second indices-form))
+                          (list (length (second indices-form))))
+                  (rplacd (last orig-data) (list node-template))
+                  (setf nodes-order (let* ((indices (second indices-form)))
+                                      (make-array (length indices)
+                                                  :initial-contents indices))
+                        (from-system-file package file-name node-indices-key)
+                        (append indices (length indices)))))
 
               ;; add a link between nodes
               (when (string= "addLink" (rest (assoc "action" input :test #'string=)))
@@ -1094,7 +1101,6 @@
 
             (when network-changed ;; assign changes to the file when they happen
               ;; (print (list :ch "CHANGED" graph-base))
-              (error "AAA")
               (setf (from-system-file package file-name graph-key) graph-base)
               ;; (instantiate-priority-macro-reader (asdf:load-system package)) ;; RESTORE THIS
               )

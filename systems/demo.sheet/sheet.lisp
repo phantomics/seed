@@ -67,7 +67,7 @@
                (:type :submit-control)))
         (:type :series :form)))
 :graph-node-indices
-'(0)
+'(0 1 2)
 #|
            (meta (:type . :option) (:options :option :switch :input :gate)
             (:fx . :uicc-select) (:name . :type)
@@ -77,11 +77,12 @@
 :graph-node-template
 (quote (((meta (:title . "Untitled node")
                (:fx . :uicc-field) (:type :text :pair :named :block))
-         (meta "" (:title . "Image") (:options "none" "man-relaxed" "man-irritated"
-                                               "girl-relaxed" "girl-irritated")
+         (meta (:image . "none") (:title . "Image")
+               (:options "none" "man-relaxed" "man-irritated"
+                         "girl-relaxed" "girl-irritated")
                (:fx . :uicc-select) (:name . :persona-image) (:type :select))
          (meta (:dialog . "")
-               (:fx . :uicc-field) (:type :text :pair :named :block)))))
+               (:fx . :uicc-field) (:type :text :area :pair :named :block)))))
 :graph-link-template
 (quote (((meta (:title . "Untitled link")
                (:fx . :uicc-field) (:type :text :pair :named :block))
@@ -90,8 +91,8 @@
 :graph
 (setf *graph-nodes*
         (seed.generate::build-directed-graph
-         (((meta (:title . "Introductory sentence") (:fx . :uicc-field)
-            (:type :text :pair :named :block))
+         (((meta (:title . "Introductory sentence")
+            (:fx . :uicc-field) (:type :text :pair :named :block))
            (meta (:image . "none") (:title . "Image")
             (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
              "girl-irritated")
@@ -103,14 +104,30 @@
             (:fx . :uicc-field) (:type :text :area :pair :named :block)))
           (((meta (:title . "Ask who?") (:fx . :uicc-field)
              (:type :text :pair :named :block))
-            (meta (:dialog . "Who are you?") (:fx . :uicc-field)
-             (:type :text :area :pair :named :block)))
+            (meta (:dialog . "Who are you?")
+             (:fx . :uicc-field) (:type :text :area :pair :named :block)))
            1)
           (((meta (:title . "Ask why?") (:fx . :uicc-field)
              (:type :text :pair :named :block))
-            (meta (:dialog . "Why are you calling me?") (:fx . :uicc-field)
-             (:type :text :area :pair :named :block)))
-           2))))
+            (meta (:dialog . "Why are you calling me?")
+             (:fx . :uicc-field) (:type :text :area :pair :named :block)))
+           2))
+         (((meta (:title . "Untitled node")
+            (:fx . :uicc-field) (:type :text :pair :named :block))
+           (meta (:image . "none") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta (:dialog . "") (:fx . :uicc-field)
+            (:type :text :area :pair :named :block))))
+         (((meta (:title . "Untitled node")
+            (:fx . :uicc-field) (:type :text :pair :named :block))
+           (meta (:image . "none") (:title . "Image")
+            (:options "none" "man-relaxed" "man-irritated" "girl-relaxed"
+             "girl-irritated")
+            (:fx . :uicc-select) (:name . :persona-image) (:type :select))
+           (meta (:dialog . "") (:fx . :uicc-field)
+            (:type :text :area :pair :named :block))))))
 ;; :graph-original
 #|
 (setf *graph-nodes*
