@@ -67,7 +67,7 @@
                (:type :submit-control)))
         (:type :series :form)))
 :graph-node-indices
-'(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20)
+'(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27)
 #|
            (meta (:type . :option) (:options :option :switch :input :gate)
             (:fx . :uicc-select) (:name . :type)
@@ -89,7 +89,7 @@
            (meta (:image . "none") (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "Two people appear at the counter. Guests, most likely.")
+             . "You're working the front desk at the Globus Hotel Resort when two people appear at the counter. Guests, most likely.")
             (:template meta-template.customers-dialog)))
           (((meta (:title . "Ask who?")
              (:template meta-template.customers-title))
@@ -107,7 +107,7 @@
             (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "We have an event scheduled here, it's happening in two weeks and we haven't received the confirmation we requested from you. ")
+             . "\"Excuse me, we have an event scheduled here, it's happening in two weeks and we haven't received the confirmation we requested from you.\"")
             (:template meta-template.customers-dialog)))
           (((meta (:title . "Didn't know")
              (:template meta-template.customers-title))
@@ -172,7 +172,14 @@
              (:template meta-template.customers-title))
             (meta (:dialog . "\"Ok, so what's this event you're holding?\"")
              (:template meta-template.customers-dialog)))
-           5))
+           5)
+          (((meta (:title . "Four jhanas?")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"The four jannas? Is that like a nickname for weed or something?\"")
+             (:template meta-template.customers-dialog)))
+           19))
          (((meta (:title . "Event description")
             (:template meta-template.customers-title))
            (meta (:image . "girl-relaxed")
@@ -405,7 +412,7 @@
             (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "\"Excellent, excellent. Don't forget to get us you bank information, you're due for a... special bonus.\"")
+             . "\"Excellent, excellent. Don't forget to get us you bank information, you're due for... compensation.\"")
             (:template meta-template.customers-dialog)))
           (((meta (:title . "Other questions")
              (:template meta-template.customers-title))
@@ -446,24 +453,154 @@
             (:dialog
              . "\"Look, maybe you just don't understand how business is done on our level. This is a precaution we're taking for the well-being of our Gurus more than anything. Can you help us help them? If you can work with us you may be qualified for a... personal bonus paid directly.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Untitled link")
+          (((meta (:title . "Sign me up!")
              (:template meta-template.customers-title))
-            (meta (:dialog . "") (:template meta-template.customers-dialog))))
-          (((meta (:title . "Untitled link")
+            (meta
+             (:dialog . "\"A special bonus? Sign me up! Consider it done!\"")
+             (:template meta-template.customers-dialog)))
+           16)
+          (((meta (:title . "I'll pretend I didn't hear that")
              (:template meta-template.customers-title))
-            (meta (:dialog . "") (:template meta-template.customers-dialog)))))
-         (((meta (:title . "Untitled node")
+            (meta
+             (:dialog
+              . "\"You're offering me...? I'll pretend I didn't hear that.\"")
+             (:template meta-template.customers-dialog)))
+           17))
+         (((meta (:title . "Recruit 1: four jhanas")
             (:template meta-template.customers-title))
-           (meta (:image . "none") (:template meta-template.customers-image))
-           (meta (:dialog . "") (:template meta-template.customers-dialog))))
-         (((meta (:title . "Untitled node")
+           (meta (:image . "girl-relaxed")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"The jhanas are four essential meditative practices, the four modes of mindfulness, of doing-in-not-doing. You know something... now that you bring this up I'm starting to sense that you have a natural spiritual affinity.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "I feel that way too")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"I feel that way too, could just be an acid flashback though.\"")
+             (:template meta-template.customers-dialog)))
+           20))
+         (((meta (:title . "Recruit 2: natural affinity")
             (:template meta-template.customers-title))
-           (meta (:image . "none") (:template meta-template.customers-image))
-           (meta (:dialog . "") (:template meta-template.customers-dialog))))
-         (((meta (:title . "Untitled node")
+           (meta (:image . "girl-relaxed")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Yes, I can feel that this meeting was fated. It is for moments like this that we walk the paths of samsara. I sense within you the potential to be an Annapurna Guru.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "No offense but...")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Uh, no offense but I should probably just concentrate on the job I'm doing right now.\"")
+             (:template meta-template.customers-dialog)))
+           24)
+          (((meta (:title . "What does a Guru do?")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"So what does a Guru do?\"")
+             (:template meta-template.customers-dialog)))
+           21))
+         (((meta (:title . "Recruit 3: A Guru's role")
             (:template meta-template.customers-title))
-           (meta (:image . "none") (:template meta-template.customers-image))
-           (meta (:dialog . "") (:template meta-template.customers-dialog))))))
+           (meta (:image . "girl-relaxed")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"As a Guru your hand will help to balance the scales of maya in the physical world, guiding the unawakened on their journey to cast off the scales of dhamma. You can also become a millionaire in as little as three months. You can be a part of this global shift in consciousness but only if you act now.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Not appropriate")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Uh, I don't think it's appropriate for me to discuss this with you at work.\"")
+             (:template meta-template.customers-dialog)))
+           24)
+          (((meta (:title . "Act now?")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"Act now? Why the sense of urgency?\"")
+             (:template meta-template.customers-dialog)))
+           22))
+         (((meta (:title . "Recruit 4: The imperative")
+            (:template meta-template.customers-title))
+           (meta (:image . "girl-relaxed")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Our upline Gurus have foreseen that in the near future, the souls of humanity will enter a higher vibrational state bringing with it the chance to commune with souls from past cosmic cycles. It is imperative that we use our tools of herbal aromatherapy to raise the consciousness of as many people as possible in the meantime. You have the chance to help us reach this goal.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Pyramid scheme?")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"Is this like one of those pyramid schemes?\"")
+             (:template meta-template.customers-dialog)))
+           24)
+          (((meta (:title . "What would it involve")
+             (:template meta-template.customers-title))
+            (meta (:dialog . "\"So what's the first step to be a Guru?\"")
+             (:template meta-template.customers-dialog)))
+           23))
+         (((meta (:title . "Recruit 5: The Offer")
+            (:template meta-template.customers-title))
+           (meta (:image . "girl-relaxed")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"If you enroll as a Guru now you could work for just 15 minutes a day the next two months and make an extra quarter million dollars. All you have to do is recruit your friends and family. You can ask the guests here if they'd like to join too! You can buy our business starter package with an essential oil sampler for just $2500.\"")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Can't afford")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Did you say $2500? How am I supposed to afford that?\"")
+             (:template meta-template.customers-dialog)))
+           24))
+         (((meta (:title . "Recruit no: loser")
+            (:template meta-template.customers-title))
+           (meta (:image . "girl-irritated")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
+            (:template meta-template.customers-dialog)))
+          (((meta (:title . "Thanks a lot")
+             (:template meta-template.customers-title))
+            (meta
+             (:dialog
+              . "\"Thanks a lot, in any case I had some questions about your event coming up.\"")
+             (:template meta-template.customers-dialog)))
+           5))
+         (((meta (:title . "Untitled")
+            (:template meta-template.customers-title))
+           (meta (:image . "girl-irritated")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
+            (:template meta-template.customers-dialog))))
+         (((meta (:title . "Untitled")
+            (:template meta-template.customers-title))
+           (meta (:image . "girl-irritated")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
+            (:template meta-template.customers-dialog))))
+         (((meta (:title . "Untitled")
+            (:template meta-template.customers-title))
+           (meta (:image . "girl-irritated")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
+            (:template meta-template.customers-dialog))))
+         (((meta (:title . "Recruit no: loser")
+            (:template meta-template.customers-title))
+           (meta (:image . "girl-irritated")
+            (:template meta-template.customers-image))
+           (meta
+            (:dialog
+             . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
+            (:template meta-template.customers-dialog))))))
 ;; :graph-original
 #|
 (setf *graph-nodes*
