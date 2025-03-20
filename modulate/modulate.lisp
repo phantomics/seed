@@ -745,8 +745,8 @@
                  (let* ((form (if (not (assoc :template (cddr form)))
                                   form (let ((out form))
                                          (loop :for template :in (rest (assoc :template (cddr form)))
-                                               :do (print (list :tt template (symbol-package template)
-                                                                *package*))
+                                               :do ;; (print (list :tt template (symbol-package template)
+                                                   ;;              *package*))
                                                    (setf out (meta-combine
                                                               out (symbol-value (intern (string template)
                                                                                         "DEMO.SHEET")))))
