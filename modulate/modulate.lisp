@@ -66,6 +66,34 @@
                      (write-sequence after-bytes output))
                    new-value))))
 
+(defun meta-revise (form pairs &optional cons-items)
+  "Revise contents of a meta-form according to titles, optionally expressed by cons cells whose heads are symbols corresponding to keys in the pairs list."
+  (print (list :fo form pairs))
+  (if (not (listp form))
+      nil (if (and (listp (first form))
+                   (or (not cons-items)
+                       (not (keywordp (first form)))))
+              (progn (loop :for f :in form :do (meta-revise f pairs cons-items))
+                     form)
+              (destructuring-bind (_ item &rest props) form
+                (let* ((this-name (if cons-items (first item)
+                                      (rest (assoc :name props))))
+                       (corresponding (if (not this-name)
+                                          nil (rest (assoc this-name pairs))))
+                       (process (or ;; (match (rest (assoc :type props))
+                                    ;;   ((list :field :numeric :integer)
+                                    ;;    #'parse-number:parse-number))
+                                    #'identity)))
+                  (if corresponding
+                      (if cons-items (setf (rest (second form))
+                                           (funcall process corresponding))
+                          (setf (second form) (funcall process corresponding)))
+                      (when (and (listp item)
+                                 (or (not cons-items)
+                                     (not (keywordp (first item)))))
+                        (loop :for i :in item :do (meta-revise i pairs cons-items))))
+                  form)))))
+
 ;; SECTION: another iteration of the UI component class system, with a simple list/atom foundation
 
 (defclass ui-medium ()
@@ -284,7 +312,13 @@
                                                       (setf (@ mode form) form)))
                                                   :save
                                                   '(lambda (mode)
-                                                    (chain htmx (trigger (@ mode form) "submit"))))))
+                                                    (let* ((fdata (new (-form-data (@ mode form))))
+                                                           (obj (chain -object
+                                                                       (from-entries
+                                                                        (chain fdata (entries))))))
+                                                      (setf (@ obj action) "saveNode")
+                                                      (chain htmx (trigger (@ mode form) "submit"
+                                                                           obj)))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
                                                    (fetch-contact2
@@ -359,8 +393,11 @@
                                             (fetch-contact2 mode (create height (@ $el offset-height)
                                                                          width  (@ $el offset-width))
                                                             (lambda (data)))))
-                         :hx-vals (json-convert-to (list :system system :face face
-                                                         :branch (string (uic-base aspect))))
+                         :hx-vals (format nil "js:{...ejoin(~a,event)}"
+                                          (json-convert-to (list :system system :face face
+                                                                 :branch (string (uic-base aspect)))))
+                         ;; :hx-vals (json-convert-to (list :system system :face face
+                         ;;                                 :branch (string (uic-base aspect))))
                          :x-data (psl (create branch-frame $el)))
                    (progn (when (typep (uic-base aspect) 'ui-component)
                             (setf (uic-root (uic-base aspect)) aspect))
@@ -522,7 +559,6 @@
                                                                   on-drag-start
                                                                   (mcode-handler-on-drag
                                                                    in-series mode))))
-                                               (chain console (log :aabb))
                                                (draggable drops)
                                                nil))))))
 
@@ -615,7 +651,7 @@
                                                          (@ data text)))))))))))
               ((member :area (uic-type aspect))
                (wrap-label (lisp->camel-case field-name)
-                           `(:textarea :class "textarea" :name ,(or (string (uicc-key aspect)) "")
+                           `(:textarea :class "textarea" :name ,(or (lisp->camel-case field-name) "")
                                        ,(or field-content (uicc-field-default aspect)
                                             ""))))
               (t 
@@ -624,7 +660,7 @@
                            `(:input :class "input" :type "text" :value ,(or field-content
                                                                             (uicc-field-default aspect)
                                                                             "")
-                                    :name ,(or (string (uicc-key aspect)) "")))))))))
+                                    :name ,(or (lisp->camel-case field-name) "")))))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   (let ((base (uic-base aspect)))
@@ -635,7 +671,7 @@
                                     (:a :class "button is-static" ,(lisp->camel-case field-name)))))
              (:p :class "control"
                  (:span :class "select"
-                       (:select :name ,(or (string (uicc-key aspect)) "")
+                       (:select :name ,(or (lisp->camel-case field-name) "")
                          ,@(loop :for item :in (uics-options aspect) :collect `(:option ,item)))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
@@ -836,7 +872,7 @@
       (setf aaaa node-template)
       
       ;; (print (list :abcd orig-data graph-data formatted))
-      (print (list :in input))
+      ;; (print (list :in input))
       (if (and (assoc "action" input :test #'string=)
                (string= "open" (rest (assoc "action" input :test #'string=))))
           (let* ((path-str (make-string-input-stream
@@ -871,7 +907,7 @@
                 (setf network-changed t)))
 
             (when (and (assoc :action input :test #'eq)
-                       (string= "formSubmit" (rest (assoc :action input :test #'eq))))
+                       (string= "saveNode" (rest (assoc :action input :test #'eq))))
               (meta-revise (if sub-index (first (nth sub-index
                                                      (rest (nth index (rest formatted)))))
                                (cdar (nth index (rest formatted))))

@@ -488,34 +488,6 @@
                                   :do (setf output (set-in-element-spec name i value)))
                             output)))))))
 
-(defun meta-revise (form pairs &optional cons-items)
-  "Revise contents of a meta-form according to titles, optionally expressed by cons cells whose heads are symbols corresponding to keys in the pairs list."
-  ;; (print (list :fo form pairs))
-  (if (not (listp form))
-      nil (if (and (listp (first form))
-                   (or (not cons-items)
-                       (not (keywordp (first form)))))
-              (progn (loop :for f :in form :do (meta-revise f pairs cons-items))
-                     form)
-              (destructuring-bind (_ item &rest props) form
-                (let* ((this-name (if cons-items (first item)
-                                      (rest (assoc :name props))))
-                       (corresponding (if (not this-name)
-                                          nil (rest (assoc this-name pairs))))
-                       (process (or (match (rest (assoc :type props))
-                                      ((list :field :numeric :integer)
-                                       #'parse-number:parse-number))
-                                    #'identity)))
-                  (if corresponding
-                      (if cons-items (setf (rest (second form))
-                                           (funcall process corresponding))
-                          (setf (second form) (funcall process corresponding)))
-                      (when (and (listp item)
-                                 (or (not cons-items)
-                                     (not (keywordp (first item)))))
-                        (loop :for i :in item :do (meta-revise i pairs cons-items))))
-                  form)))))
-
 (defun text-wrap (text &key syntax unwrap (trailing-newlines 1))
   (case syntax
     (:progn (if unwrap (let ((first-break) (end-point) (tnl-count 0))
