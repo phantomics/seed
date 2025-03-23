@@ -46,7 +46,7 @@
       ;; (print (list :in input))
       (cbind input item
         ("state" :chart)
-        ("ifmod-head" (fx ((:each uicc-button :type (:local) :cast :@base)
+        ("ifmod-head" (fx ((:each uicc-button :type (:local) :call :@base)
                            (uic-series :type (:ui :controls)))
                           (list :select :draw :retrace-x :retrace-y)))
         ("ifmod-foot" (fx ((:each uicc-button :type (:local))
@@ -265,10 +265,10 @@
                      (case (second (assoc "state" input :test #'string=))
                        (:graph-overview :graph-breadth)
                        (:graph-node     :meta-code-form))))
-        ("ifmod-head" (fx ((:each uicc-button :type (:remote) :cast :@base)
+        ("ifmod-head" (fx ((:each uicc-button :type (:remote) :call :@base)
                            (uic-series :type (:ui :controls)))
                           (list :add-node :add-link)))
-        ("ifmod-foot" (fx ((:each uicc-button :cast :@base)
+        ("ifmod-foot" (fx ((:each uicc-button :call :@base)
                            (uic-series :type (:ui :controls)))
                           (list :save)))
         (t (funcall interactor context input))))))
@@ -313,16 +313,7 @@
                                                                          index (parenscript:lisp ix))))
                                            (parenscript:chain console (log "hello")))
                                          :hx-vals (seed.generate::json-convert-to (list :index ix))
-                                         response))))
-                ;; ,@(unless (string= image "no-image")
-                ;;     `((:div :class "background-image"
-                ;;             :style
-                ;;             ,(format nil " position: absolute; top: 0; left: 0;
-                ;;                                           margin-top: ~a; pointer-events: none;"
-                ;;                      (if (string= image "image-resting")
-                ;;                          "-200px" "-600px"))
-                ;;             (:img :src ,(format nil "./static/~a.png" image)))))
-                )
+                                         response)))))
          :stream out)
         (get-output-stream-string out)))))
 
@@ -693,20 +684,6 @@
 ;;              (get-output-stream-string out))))
 
 ;;        ))
-
-
-;; (fx ((uic-series :layout (:vertical :of 12 1 10 1)
-;;                  :join (:demo.sheet :graph) :type (:column)
-;;                  :cast (:id :graph-node)
-;;                  ))
-;;     (fx ((:each uicc-button)
-;;          (uic-series :type (:ui :header)))
-;;         (list (list :save :cast-forms :graph-node)))
-;;     (fx ((uic-access :name :graph-node))
-;;         :graph)
-;;     (fx ((:each uicc-button)
-;;          (uic-series :type (:ui :footer)))
-;;         (list (list :save))))))))
 
 ;; (-<> (uic ((:type :set :linear :columnar :workspace :even)
 ;;            (:members :column :column)

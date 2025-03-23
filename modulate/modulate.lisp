@@ -145,10 +145,14 @@
           :initform nil
           :initarg  :join
           :documentation "Specification for a server-side data structure with which the component is associated.")
-   (%cast :accessor uic-cast
+   (%cast :accessor uic-call
           :initform nil
-          :initarg  :cast
+          :initarg  :call
           :documentation "An effect produced by interaction with the component; this may involve the Seed server or manifest only within the user interface.")
+   ;; (%cast :accessor uic-cast ;; may not be needed
+   ;;        :initform nil
+   ;;        :initarg  :cast
+   ;;        :documentation "An event coinciding with use of the component; this affects the UI engine.")
    (%sort :accessor uic-sort ;; TODO: remove this when no uses left
           :initform nil
           :initarg  :sort
@@ -418,7 +422,7 @@
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
-        (breadth-default 12))
+        (breadth-default 12) (cast (uic-call aspect)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
       ;; (print (list :ll (uic-series-layout aspect)))
@@ -466,7 +470,11 @@
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
 
-          (append (list (if (member :enum types) :form :div)
+          (append (list (if (or (eq t cast) (member :enum types))
+                            ;; the series should be expressed as a form if it is conveying an
+                            ;; enum structure or if its :cast property is set to t indicating
+                            ;; that it is a form whose submission causes its rerendering
+                            :form :div)
                         :path "" :class (get-output-stream-string class-stream)
                         :style (if (and (not (member ltype '(:horizontal :vertical)))
                                         (not (eql :even (first lprops))))
@@ -480,6 +488,8 @@
                                                       :collect ratio))))
                         :x-data (if (of-root-type aspect :meta-code)
                                     (psl (create containing-series $el))))
+                  (if (eq t cast)
+                      (list :hx-inherit "*" :hx-post "/render/"))
                   (if (member :enum types)
                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
                                              (funcall (chain methods (register-form mode)) $el)))))
@@ -558,17 +568,7 @@
          (name (if (symbolp base) base)))
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
-      ;; (print (list :aa action base (uic-type aspect)))
-      (let ((action-props
-              (case action
-                (:cast-forms ;; TODO: IS THIS STILL NEEDED?
-                 `(:|x-on:click|
-                    ,(ps (chain htmx (find-all (lisp (format nil "#cast-~a form.xp-form"
-                                                             (lisp->camel-case (first props)))))
-                               (for-each (lambda (form)
-                                           (chain htmx (trigger form "submit")))))))))))
-        `(:button :name ,(or (string name) "") :class "ui button"
-                  ,@action-props ,(realize aspect medium name))))))
+        `(:button :name ,(or (string name) "") :class "ui button" ,(realize aspect medium name)))))
                             
 (defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
@@ -662,48 +662,44 @@
 ;;       (t (generate medium base)))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
+  "Generation method qualifier manifesting cast effects for UI components."
   (let* ((main (call-next-method))
-         (cast (uic-cast aspect))
+         (cast (uic-call aspect))
          (base (uic-base aspect))
          (furnishing (furnish medium aspect)))
-
-    ;; (print (list :ava aspect furnishing (uic-cast aspect)))
+    ;; (print (list :ava aspect furnishing (uic-call aspect)))
     ;; (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
-    (funcall (cond ((eq t cast)
-                    (lambda (base) (list :form :hx-inherit "*" :hx-post "/render/" base)))
-                   (t #'identity))
-             (cons (first main)
-                   (append (typecase cast
-                             (atom (case cast
-                                     (:@base (list :|x-on:click|
-                                                   (parenscript:ps*
-                                                    `(chain methods (,(intern (string base))
-                                                                     mode)))))))
-                             (list (destructuring-bind (method &optional margs event eargs) cast
-                                     (append
-                                      (case method
-                                        (:ct-domain
-                                         (list :|x-on:click| (psl (fetch-contact2
-                                                                   domain (create point (lisp base))))))
-                                        (:ct-mode
-                                         (list :|x-on:click| (psl (fetch-contact2
-                                                                   mode (create point (lisp base)))))))
-                                      (if event
-                                          (list :|h-on:click| (parenscript::ps*
-                                                               `(chain htmx
-                                                                       (trigger ,(intern (string event))
-                                                                                (create ,@eargs))))))))))
-                           (if furnishing
-                               (list :x-data (parenscript:ps*
-                                              `(create ,@(loop :for f :in furnishing
-                                                               :collect (if (symbolp f)
-                                                                            f (cons 'create f)))
-                                                       of-local (manifest-locality)))))
-                           
-                           (if (uic-path aspect)
-                               (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
-                           (rest main))))))
+
+    (cons (first main)
+          (append (typecase cast
+                    (atom (case cast
+                            (:@base (list :|x-on:click|
+                                          (parenscript:ps*
+                                           `(chain methods (,(intern (string base)) mode)))))))
+                    (list (destructuring-bind (method &optional margs event eargs) cast
+                            (append
+                             (case method
+                               (:ct-domain
+                                (list :|x-on:click| (psl (fetch-contact2
+                                                          domain (create point (lisp base))))))
+                               (:ct-mode
+                                (list :|x-on:click| (psl (fetch-contact2
+                                                          mode (create point (lisp base)))))))
+                             (if event
+                                 (list :|h-on:click| (parenscript::ps*
+                                                      `(chain htmx (trigger ,(intern (string event))
+                                                                            (create ,@eargs))))))))))
+                  (if furnishing
+                      (list :x-data (parenscript:ps*
+                                     `(create ,@(loop :for f :in furnishing
+                                                      :collect (if (symbolp f)
+                                                                   f (cons 'create f)))
+                                              of-local (manifest-locality)))))
+                  
+                  (if (uic-path aspect)
+                      (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
+                  (rest main)))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
   ;; Date,EUR/CAD(Open-Ask),EUR/CAD(High-Ask),EUR/CAD(Low-Ask),EUR/CAD(Close-Ask),EUR/CAD(Open-Bid)*,EUR/CAD(High-Bid)*,EUR/CAD(Low-Bid)*,EUR/CAD(Close-Bid)*
@@ -1123,10 +1119,8 @@
                 (render (funcall context :medium)
                         (fx ((uic-frame :type (:meta-code)))
                             (express
-                             (funcall (if network-changed
-                                          #'list (lambda (items)
-                                                   `(meta ,items (:type :enum)
-                                                          (:fx . :uic-series))))
+                             (funcall (lambda (items)
+                                        `(meta ,items (:type :enum) (:fx . :uic-series)))
                                       (loop :for item :in (funcall
                                                            ;; nodes have an (index . N)
                                                            ;; form to omit, links don't

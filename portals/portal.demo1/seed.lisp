@@ -49,7 +49,7 @@
              (if (not (of-system :point))
                  "" (grow (of-system :point) :view context)))
 
-         (fx ((uic-series :type (:ui :column) :cast t))
+         (fx ((uic-series :type (:ui :column) :call t)) ;; should this be :cast?
              (list (fx ((uicc-field :name "key")) ""))))))))
 
 (branch :portal.demo1 :systems

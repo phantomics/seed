@@ -147,7 +147,7 @@
             (:template meta-template.customers-dialog)))
           (((meta (:title . "Let me look for it")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Ok, let me see if I can find that...\" 11")
+            (meta (:dialog . "\"Ok, let me see if I can find that...\"")
              (:template meta-template.customers-dialog)))
            0)
           (((meta (:title . "Who are you")
@@ -277,7 +277,7 @@
             (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "\"Our Gurus will be staying on floors two through eight in Building C. On these floors, at each point where hallways cross we will require your staff to complete 100 revolutions of a mallet in a brass singing bowl every three hours. It'll keep Gurus' brainwaves at a low alpha level throughout the event.\"")
+             . "\"Our Gurus will be staying on floors two through eight in Building C. On these floors, at each point where hallways cross we will require your staff to complete 100 revolutions of a mallet in a brass singing bowl every three hours. It'll keep Gurus' brainwaves at an alpha level throughout the event.\"")
             (:template meta-template.customers-dialog)))
           (((meta (:title . "Play singing bowls?")
              (:template meta-template.customers-title))
@@ -545,7 +545,7 @@
             (:template meta-template.customers-image))
            (meta
             (:dialog
-             . "\"If you enroll as a Guru now you could work for just 15 minutes a day the next two months and make an extra quarter million dollars. All you have to do is recruit your friends and family. You can ask the guests here if they'd like to join too! You can buy our business starter package with an essential oil sampler for just $2500.\"")
+             . "\"If you enroll as a Guru now you could work for just 15 minutes a day for the next two months and make an extra quarter million dollars. All you have to do is recruit your friends and family. You can ask the guests here if they'd like to join too! You can buy our business starter package with an essential oil sampler for just $2500.\"")
             (:template meta-template.customers-dialog)))
           (((meta (:title . "Can't afford")
              (:template meta-template.customers-title))
