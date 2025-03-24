@@ -565,10 +565,12 @@
 
 (defmethod generate ((medium uim-web) (aspect uicc-button))
   (let* ((base (uic-base aspect))
-         (name (if (symbolp base) base)))
+         (name (if (or (symbolp base) (stringp base))
+                   base)))
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
-        `(:button :name ,(or (string name) "") :class "ui button" ,(realize aspect medium name)))))
+      `(:button :name ,(or (string name) "") ,@(call-furnish medium aspect)
+        :class "ui button" ,(realize aspect medium name)))))
                             
 (defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
@@ -616,9 +618,11 @@
                         (:select :name ,(or (lisp->camel-case field-name) "")
                           ,@(call-furnish medium aspect)
                           ,@(loop :for item :in (uics-options aspect)
-                                  :collect (let ((selected (if (equalp item field-content)
-                                                               `(:selected "selected"))))
-                                             `(:option ,@selected ,item))))))))))
+                                  :collect (let* ((item-out (if (not (symbolp item))
+                                                                item (lisp->camel-case item)))
+                                                  (selected (if (equalp item-out field-content)
+                                                                `(:selected "selected"))))
+                                             `(:option ,@selected ,item-out))))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
   (let ((default-segments 12)) ;; default number of segments for a grid layout
@@ -665,22 +669,23 @@
 (defmethod call-furnish ((medium uim-web) (aspect ui-component))
   (if (not (uic-call aspect))
       nil (destructuring-bind (method &rest args) (uic-call aspect)
-            (let ((action (typecase aspect
-                            (uicc-button :|x-on:click|)
-                            (uicc-select :|x-on:change|)
-                            (t :|x-on:click|)))
-                  (to-address (if (eq :@domain (first args)) 'domain 'mode))
-                  (args (mapcar (lambda (item)
-                                  ;; (print (list :it item))
-                                  (case item
-                                    (:@base (typecase aspect
-                                              (uicc-select `(@ $event target value))
-                                              (t base)))
-                                    (t item)))
-                                (if (not (eq :@domain (first args)))
-                                    args (rest args))))
-                  (method (if (eq :@fetch method)
-                              'fetch-contact2 method)))
+            (let* ((base (uic-base aspect))
+                   (action (typecase aspect
+                             (uicc-button :|x-on:click|)
+                             (uicc-select :|x-on:change|)
+                             (t :|x-on:click|)))
+                   (to-address (if (eq :@domain (first args)) 'domain 'mode))
+                   (args (mapcar (lambda (item)
+                                   ;; (print (list :it item))
+                                   (case item
+                                     (:@base (typecase aspect
+                                               (uicc-select `(@ $event target value))
+                                               (t base)))
+                                     (t item)))
+                                 (if (not (eq :@domain (first args)))
+                                     args (rest args))))
+                   (method (if (eq :@fetch method)
+                               'fetch-contact2 method)))
               (list action (ps* (if (eq :@fetch method)
                                     (list method to-address (cons 'create args))
                                     (funcall (if (eql 'fetch-contact2 method)
@@ -859,8 +864,6 @@
                                     (rest point) (cons :closed (rest point)))))))
               interface output)))
   interface)
-
-(defvar aaaa)
 
 (defun spec-graph-interface (&key package file-name graph-key holder-id associated-node-ids
                                node-template-key link-template-key node-indices-key)

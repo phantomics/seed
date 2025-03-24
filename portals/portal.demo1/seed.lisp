@@ -40,9 +40,12 @@
                    "fetchContact2(domain, { point: 'demo.sheet' }, function(data) { htmx.trigger($el, 'refresh')})"
                    "demo.sheet")
                  
-                 (fx ((uicc-select :key "key" :options (list "demo.sheet")
-                                   :call (:@fetch :point :@base)))
+                 (fx ((uicc-button :call (:@fetch :point :@base)))
                      "demo.sheet")
+                 
+                 (fx ((uicc-select :key "key" :options (list :demo.sheet :demo.other)
+                                   :call (:@fetch :point :@base)))
+                     "")
                  (if (of-system :point)
                      (fx ((:each uic-anchor :type '(:branch))
                           (uic-series :type '(:ui :navigation)
