@@ -3,7 +3,7 @@
 
 (defmacro psl (form)
   "A macro for denoting inline Parenscript code."
-  `(subseq (parenscript:ps-inline ,form) 11))
+  `(subseq (ps-inline ,form) 11))
 
 (defmacro meta (form)
   (first form))
@@ -422,7 +422,7 @@
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
-        (breadth-default 12) (cast (uic-call aspect)))
+        (breadth-default 12) (call (uic-call aspect)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
       ;; (print (list :ll (uic-series-layout aspect)))
@@ -470,9 +470,9 @@
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
 
-          (append (list (if (or (eq t cast) (member :enum types))
+          (append (list (if (or (eq t call) (member :enum types))
                             ;; the series should be expressed as a form if it is conveying an
-                            ;; enum structure or if its :cast property is set to t indicating
+                            ;; enum structure or if its :call property is set to t indicating
                             ;; that it is a form whose submission causes its rerendering
                             :form :div)
                         :path "" :class (get-output-stream-string class-stream)
@@ -488,7 +488,7 @@
                                                       :collect ratio))))
                         :x-data (if (of-root-type aspect :meta-code)
                                     (psl (create containing-series $el))))
-                  (if (eq t cast)
+                  (if (eq t call)
                       (list :hx-inherit "*" :hx-post "/render/"))
                   (if (member :enum types)
                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
@@ -505,7 +505,7 @@
                                                  :do (when (= (@ n class-name) "control drag-handle")
                                                        (setf handle n)
                                                        (break)))
-                                           (chain console (log :hh handle (typeof in-series)))
+                                           ;; (chain console (log :hh handle (typeof in-series)))
                                            (when (/= "undefined" (typeof in-series))
                                              (let ((drops (create element $el drag-handle handle
                                                                   on-drag-start
@@ -613,11 +613,12 @@
                                     (:a :class "button is-static" ,(lisp->camel-case field-name)))))
              (:p :class "control"
                  (:span :class "select"
-                       (:select :name ,(or (lisp->camel-case field-name) "")
-                         ,@(loop :for item :in (uics-options aspect)
-                                 :collect (let ((selected (if (equalp item field-content)
-                                                              `(:selected "selected"))))
-                                            `(:option ,@selected ,item))))))))))
+                        (:select :name ,(or (lisp->camel-case field-name) "")
+                          ,@(call-furnish medium aspect)
+                          ,@(loop :for item :in (uics-options aspect)
+                                  :collect (let ((selected (if (equalp item field-content)
+                                                               `(:selected "selected"))))
+                                             `(:option ,@selected ,item))))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
   (let ((default-segments 12)) ;; default number of segments for a grid layout
@@ -661,39 +662,90 @@
 ;;                    '(:hr :class "divider")))
 ;;       (t (generate medium base)))))
 
+(defmethod call-furnish ((medium uim-web) (aspect ui-component))
+  (if (not (uic-call aspect))
+      nil (destructuring-bind (method &rest args) (uic-call aspect)
+            (let ((action (typecase aspect
+                            (uicc-button :|x-on:click|)
+                            (uicc-select :|x-on:change|)
+                            (t :|x-on:click|)))
+                  (to-address (if (eq :@domain (first args)) 'domain 'mode))
+                  (args (mapcar (lambda (item)
+                                  ;; (print (list :it item))
+                                  (case item
+                                    (:@base (typecase aspect
+                                              (uicc-select `(@ $event target value))
+                                              (t base)))
+                                    (t item)))
+                                (if (not (eq :@domain (first args)))
+                                    args (rest args))))
+                  (method (if (eq :@fetch method)
+                              'fetch-contact2 method)))
+              (list action (ps* (if (eq :@fetch method)
+                                    (list method to-address (cons 'create args))
+                                    (funcall (if (eql 'fetch-contact2 method)
+                                                 #'identity (lambda (item)
+                                                              (list 'chain 'methods item)))
+                                             (list method to-address
+                                                   (if (> 2 (length args))
+                                                       ;; if args' length is 2 or more,
+                                                       ;; express them as an object,
+                                                       ;; otherwise as a unitary valye
+                                                       (first args)
+                                                       (cons 'parenscript:create
+                                                             args)))))))))))
+
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
-  "Generation method qualifier manifesting cast effects for UI components."
+  "Generation method qualifier manifesting call effects for UI components."
   (let* ((main (call-next-method))
-         (cast (uic-call aspect))
+         (call (uic-call aspect))
          (base (uic-base aspect))
          (furnishing (furnish medium aspect)))
     ;; (print (list :ava aspect furnishing (uic-call aspect)))
-    ;; (if pairs (list :x-data (parenscript:ps* `(create mode (create ,@pairs)
+    ;; (if pairs (list :x-data (ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
 
     (cons (first main)
-          (append (typecase cast
-                    (atom (case cast
-                            (:@base (list :|x-on:click|
-                                          (parenscript:ps*
-                                           `(chain methods (,(intern (string base)) mode)))))))
-                    (list (destructuring-bind (method &optional margs event eargs) cast
-                            (append
-                             (case method
-                               (:ct-domain
-                                (list :|x-on:click| (psl (fetch-contact2
-                                                          domain (create point (lisp base))))))
-                               (:ct-mode
-                                (list :|x-on:click| (psl (fetch-contact2
-                                                          mode (create point (lisp base)))))))
-                             (if event
-                                 (list :|h-on:click| (parenscript::ps*
-                                                      `(chain htmx (trigger ,(intern (string event))
-                                                                            (create ,@eargs))))))))))
+          (append (let ((action (typecase aspect
+                                  (uicc-button :|x-on:click|)
+                                  (uicc-select :|x-on:change|)
+                                  (t :|x-on:click|))))
+                    (typecase call
+                      (atom (case call
+                              (:@base (list action (ps* `(chain methods (,(intern (string base)) mode)))))))
+                      ;; (list (destructuring-bind (method &rest args) call
+                      ;;         ;; (print (list :asp aspect))
+                      ;;         (let ((to-address (if (eq :@domain (first args))
+                      ;;                               'domain 'mode))
+                      ;;               (args (mapcar (lambda (item)
+                      ;;                               ;; (print (list :it item))
+                      ;;                               (case item
+                      ;;                                 (:@base (typecase aspect
+                      ;;                                           (uicc-select `(@ $event target value))
+                      ;;                                           (t base)))
+                      ;;                                 (t item)))
+                      ;;                             (if (not (eq :@domain (first args)))
+                      ;;                                 args (rest args))))
+                      ;;               (method (if (eq :@fetch method)
+                      ;;                           'fetch-contact2 method)))
+
+                      ;;           (list action (ps* (if (eq :@fetch method)
+                      ;;                                 (list method to-address
+                      ;;                                       (cons 'create args))
+                      ;;                                 (list 'chain 'methods
+                      ;;                                       (list method to-address
+                      ;;                                             (if (> 2 (length args))
+                      ;;                                                 ;; if args' length is 2 or more,
+                      ;;                                                 ;; express them as an object,
+                      ;;                                                 ;; otherwise as a unitary valye
+                      ;;                                                 (first args)
+                      ;;                                                 (cons 'parenscript:create
+                      ;;                                                       args))))))))))
+
+                      ))
                   (if furnishing
-                      (list :x-data (parenscript:ps*
-                                     `(create ,@(loop :for f :in furnishing
-                                                      :collect (if (symbolp f)
+                      (list :x-data (ps* `(create ,@(loop :for f :in furnishing
+                                                          :collect (if (symbolp f)
                                                                    f (cons 'create f)))
                                               of-local (manifest-locality)))))
                   
