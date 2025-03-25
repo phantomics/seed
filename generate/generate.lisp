@@ -359,7 +359,7 @@
       (:body (cl-who:with-html-output (stream-out)
                (:div :id "datagrid-tree" :class (getf props :item-classes)
                      :x-init ;; TODO: add branch push here
-                     (psl (fetch-contact2 ;; TODO: update
+                     (psl (fetch-contact ;; TODO: update
                            $el props ;; (lisp (string-upcase (getf props :system)))
                            ;; (lisp (string-upcase (getf props :branch)))
                            nil (lambda (data)
@@ -469,8 +469,8 @@
          (:save (cl-who:with-html-output (stream-out)
                   (:button :class "ui button"
                            :|x-on:click|
-                           (psl (fetch-contact2 $el props ;; (lisp (string-upcase (getf props :system)))
-                                                ;; (lisp (string-upcase (getf props :branch)))
+                           (psl (fetch-contact $el props ;; (lisp (string-upcase (getf props :system)))
+                                               ;; (lisp (string-upcase (getf props :branch)))
                                                (@ (getprop (@ window seed-data) (lisp token))
                                                   data)
                                                (lambda (data) (chain console (log :sv)))))

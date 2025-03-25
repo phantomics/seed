@@ -394,28 +394,8 @@
 ;;                    data))
 ;;            (then handler))))
 
-;; (enter-js-element *misc-js* :fetch-contact2-defs
-;;   (defun fetch-contact2 (context input handler)
-;;     ;; (chain console (log :cc context))
-;;     (chain (fetch "/contact/"
-;;                   (create method "POST"
-;;                           headers (create "Content-type" "application/json; charset=UTF-8")
-;;                           body (chain -j-s-o-n (stringify (create system (@ context system)
-;;                                                                   branch (@ context branch)
-;;                                                                   input  input)))))
-;;            (then (lambda (response) (chain response (json))))
-;;            (then (lambda (data)
-;;                    (if (@ data oob-reload)
-;;                        (chain data oob-reload (for-each (lambda (item)
-;;                                                           (chain console (log :it item))
-;;                                                           (chain htmx (trigger (getprop seed-elements
-;;                                                                                         item)
-;;                                                                                "reload"))))))
-;;                    data))
-;;            (then handler))))
-
-(enter-js-element *misc-js* :fetch-contact2-defs
-  (defun fetch-contact2 (element context input event)
+(enter-js-element *misc-js* :fetch-contact-defs
+  (defun fetch-contact (element context input event)
     ;; (chain console (log :cc context))
     (chain (fetch "/contact/"
                   (create method "POST"
@@ -426,15 +406,13 @@
            (then (lambda (response) (chain response (json))))
            (then (lambda (data)
                    (if (@ data oob-reload)
-                       (chain data oob-reload (for-each (lambda (item)
-                                                          ;; (chain console (log :it item))
-                                                          (chain htmx (trigger (getprop seed-elements
-                                                                                        item)
-                                                                               "reload"))))))
+                       (chain data oob-reload
+                              (for-each (lambda (item)
+                                          ;; (chain console (log :it item))
+                                          (chain htmx (trigger (getprop seed-elements item) "reload"))))))
                    data))
            (then (if (= "function" (typeof event))
                      event (lambda (data)
-                             (chain console (log :aaa data))
                              (chain htmx (trigger element (@ event next)))))))))
 
 (enter-js-element *misc-js* :realize-def
@@ -525,7 +503,7 @@
                                                                :iid item-index
                                                                ;; (@ event self element attributes index)
                                                                n (chain n (get-attribute "index") "XX")))
-                                           (fetch-contact2
+                                           (fetch-contact
                                             element mode
                                             (create path (chain element parent-element
                                                                 (get-attribute "meta-path"))
@@ -731,9 +709,8 @@
 
 (enter-js-element *misc-js* :commit-entities
   (defun commit-entities (mode)
-    (fetch-contact2 null mode ;; (@ mode system) (@ mode branch)
-                    (create entities (@ mode entities))
-                    (lambda (data) (chain console (log :en data))))))
+    (fetch-contact null mode (create entities (@ mode entities))
+                   (lambda (data) (chain console (log :en data))))))
 
 (enter-js-element *misc-js* :interactor-mousewheel
   (defun interactor-mousewheel (mode)

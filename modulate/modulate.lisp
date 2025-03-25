@@ -254,6 +254,10 @@
 
 (defgeneric furnish (medium component &optional base))
 
+(defgeneric furnish-type (medium component &optional other-classes))
+
+(defgeneric furnish-call (medium component))
+
 (defgeneric of-root-type (aspect type))
 
 (defgeneric realize (origin medium aspect &key sort))
@@ -295,7 +299,7 @@
                                       :entities '(list))
                           :methods (list :save
                                          '(lambda (mode)
-                                           (fetch-contact2
+                                           (fetch-contact
                                             $el mode (create action "save")
                                             (lambda (data))))
                                          :select
@@ -334,13 +338,13 @@
                                                                            obj)))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
-                                                   (fetch-contact2
+                                                   (fetch-contact
                                                     $el mode (create action "addNode")
                                                     (lambda (data)
                                                       (chain mode (of-local "trigger" "main" "reload")))))
                                                  :add-link
                                                  '(lambda (mode)
-                                                   (fetch-contact2
+                                                   (fetch-contact
                                                     $el mode (create action "addLink")
                                                     (lambda (data)
                                                       (chain mode (of-local "trigger" "main" "reload"))))))))
@@ -383,27 +387,27 @@
   (list :raw aspect))
 
 (defmethod generate ((medium uim-web) (aspect uic-frame))
-  (let ((class-stream (make-string-output-stream))
+  (let (;; (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
         (face (lisp->camel-case (uic-name aspect)))
         (system (uicf-access aspect))
         (last-type-index (1- (length (uic-type aspect)))))
 
-    (when system
-      (format class-stream "access")
-      (when types (format class-stream " ")))
-    (loop :for type :in types :for ix :from 0
-          :do (format class-stream "~a" (string-downcase type))
-              (unless (= ix last-type-index) (format class-stream " ")))
+    ;; (when system
+    ;;   (format class-stream "access")
+    ;;   (when types (format class-stream " ")))
+    ;; (loop :for type :in types :for ix :from 0
+    ;;       :do (format class-stream "~a" (string-downcase type))
+    ;;           (unless (= ix last-type-index) (format class-stream " ")))
     
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
-                         :class (get-output-stream-string class-stream)
+                         :class (furnish-type medium aspect '(:access))
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             (chain mode (of-local "register" "main" $el))
-                                            (fetch-contact2 $el mode (create height (@ $el offset-height)
+                                            (fetch-contact $el mode (create height (@ $el offset-height)
                                                                              width  (@ $el offset-width))
                                                             (lambda (data)))))
                          :hx-vals (format nil "js:{...ejoin(~a,event)}"
@@ -414,7 +418,7 @@
                          :x-data (psl (create branch-frame $el)))
                    (progn (when (typep (uic-base aspect) 'ui-component)
                             (setf (uic-root (uic-base aspect)) aspect))
-                          (list :class (get-output-stream-string class-stream)
+                          (list :class (furnish-type medium aspect '(:access))
                                 (realize aspect medium (uic-base aspect))))))))
 
 (defmethod generate ((medium uim-web) (aspect uic-series))
@@ -425,7 +429,6 @@
         (breadth-default 12) (call (uic-call aspect)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
-      ;; (print (list :ll (uic-series-layout aspect)))
 
       (flet ((enclose-by-type (types element)
                (loop :for type :in types
@@ -456,15 +459,6 @@
                                                      ,(enclose-by-type
                                                        types (realize aspect medium item
                                                                       :sort ix))))))))
-
-          
-          (format class-stream "ui ")
-          (format class-stream "~a" (typecase aspect (uic-series "series ")
-                                              ;; (uic-set-frame "frame ")
-                                              (t "")))
-          
-          (case ltype
-            ((:horizontal :vertical) (format class-stream "series grid-layout ")))
           
           (loop :for type :in types :for ix :from 0
                 :do (format class-stream "~a" (string-downcase type))
@@ -475,7 +469,11 @@
                             ;; enum structure or if its :call property is set to t indicating
                             ;; that it is a form whose submission causes its rerendering
                             :form :div)
-                        :path "" :class (get-output-stream-string class-stream)
+                        :path "" :class (furnish-type medium aspect
+                                                      (append '(:ui :series)
+                                                              (case ltype
+                                                                ((:horizontal :vertical)
+                                                                 '(:series :grid-layout)))))
                         :style (if (and (not (member ltype '(:horizontal :vertical)))
                                         (not (eql :even (first lprops))))
                                    ;; TODO: this needs more rigorous logic for partitioning according
@@ -505,7 +503,7 @@
                                                  :do (when (= (@ n class-name) "control drag-handle")
                                                        (setf handle n)
                                                        (break)))
-                                           ;; (chain console (log :hh handle (typeof in-series)))
+                                           
                                            (when (/= "undefined" (typeof in-series))
                                              (let ((drops (create element $el drag-handle handle
                                                                   on-drag-start
@@ -515,10 +513,7 @@
                                                nil))))))
 
                   (if (and (of-root-type aspect :meta-code)
-                           ;; (of-root-type aspect :sortable)
-                           (member :sortable (uic-type (uic-root aspect)))
-                           )
-                      ;; `((:div :class "item-heading" "Heading"))
+                           (member :sortable (uic-type (uic-root aspect))))
                       `((:div :class "field has-addons"
                               (:p :class "control drag-handle" (:a :class "button is-static" "A"))
                               (:p :class "control is-expanded" (:a :class "button is-static" "Series")))))
@@ -542,7 +537,7 @@
           (branch (string-downcase branch)))
       `(:div :id "datagrid-cells" ;; :class (getf props :item-classes)
              :x-init ,(psl (progn (setf (getprop (@ window seed-elements) (lisp branch)) $el)
-                                  (fetch-contact2
+                                  (fetch-contact
                                    $el mode (list (list "cells" 0))
                                    (lambda (data)
                                      (let ((grid (canvas-datagrid
@@ -569,8 +564,9 @@
                    base)))
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
-      `(:button :name ,(or (string name) "") ,@(call-furnish medium aspect)
-        :class "ui button" ,(realize aspect medium name)))))
+      `(:button :name ,(or (string name) "") ,@(furnish-call medium aspect)
+        :class ,(furnish-type medium aspect '(:ui :button))
+        ,(realize aspect medium name)))))
                             
 (defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
@@ -586,7 +582,7 @@
                           :x-init ,(psl (progn (setf (@ window codemirror) nil)
                                                (setf (getprop (@ window seed-elements) (lisp branch))
                                                      $el)
-                                               (fetch-contact2
+                                               (fetch-contact
                                                 $el mode (list (list "text" 0))
                                                 (lambda (data) 
                                                   (setf (getprop (@ window seed-data) (lisp token))
@@ -607,7 +603,9 @@
                                     :name ,(or (lisp->camel-case field-name) "")))))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
-  (let ((base (uic-base aspect)))
+  (let* ((base (uic-base aspect))
+         (original-type (uic-type aspect))
+         (types (if (listp original-type) original-type (list original-type))))
     (destructuring-bind (field-name &rest field-content)
         (if (listp base) base (cons (uic-name aspect) base))
       `(:div :class "field has-addons"
@@ -616,13 +614,16 @@
              (:p :class "control"
                  (:span :class "select"
                         (:select :name ,(or (lisp->camel-case field-name) "")
-                          ,@(call-furnish medium aspect)
-                          ,@(loop :for item :in (uics-options aspect)
-                                  :collect (let* ((item-out (if (not (symbolp item))
-                                                                item (lisp->camel-case item)))
-                                                  (selected (if (equalp item-out field-content)
-                                                                `(:selected "selected"))))
-                                             `(:option ,@selected ,item-out))))))))))
+                          :class ,(furnish-type medium aspect)
+                          ,@(furnish-call medium aspect)
+                          ,@(append (if (member :default-blank types)
+                                        `((:option "")))
+                                    (loop :for item :in (uics-options aspect)
+                                          :collect (let* ((item-out (if (not (symbolp item))
+                                                                        item (lisp->camel-case item)))
+                                                          (selected (if (equalp item-out field-content)
+                                                                        `(:selected "selected"))))
+                                                     `(:option ,@selected ,item-out)))))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
   (let ((default-segments 12)) ;; default number of segments for a grid layout
@@ -666,7 +667,21 @@
 ;;                    '(:hr :class "divider")))
 ;;       (t (generate medium base)))))
 
-(defmethod call-furnish ((medium uim-web) (aspect ui-component))
+(defmethod furnish-type ((medium uim-web) (aspect ui-component) &optional other-classes)
+  (let* ((original-type (uic-type aspect))
+         (types (if (listp original-type) original-type (list original-type)))
+         (class-stream (make-string-output-stream))
+         (last-type-index (1- (length types))))
+    
+    (loop :for oc :in other-classes :do (format class-stream "~a " oc))
+
+    (loop :for type :in types :for ix :from 0
+          :do (format class-stream "~a" (string-downcase type))
+              (unless (= ix last-type-index) (format class-stream " ")))
+
+    (get-output-stream-string class-stream)))
+
+(defmethod furnish-call ((medium uim-web) (aspect ui-component))
   (let ((base (uic-base aspect)))
     (labels ((js-format-plist (items)
                (if (not (listp items))
@@ -693,10 +708,10 @@
                                          (if (not (eq :@domain (first args)))
                                              args (rest args))))
                            (method (if (eq :@fetch method)
-                                       'fetch-contact2 method)))
+                                       'fetch-contact method)))
                       (list action (ps* (if (eq :@fetch method)
                                             (list method '$el to-address args)
-                                            (funcall (if (eql 'fetch-contact2 method)
+                                            (funcall (if (eql 'fetch-contact method)
                                                          #'identity (lambda (item)
                                                                       (list 'chain 'methods item)))
                                                      (append (list method '$el to-address)
@@ -734,7 +749,7 @@
                       ;;                             (if (not (eq :@domain (first args)))
                       ;;                                 args (rest args))))
                       ;;               (method (if (eq :@fetch method)
-                      ;;                           'fetch-contact2 method)))
+                      ;;                           'fetch-contact method)))
 
                       ;;           (list action (ps* (if (eq :@fetch method)
                       ;;                                 (list method to-address
@@ -774,7 +789,7 @@
                                                         mousemove  (funcall interactor-mousemove  mode)
                                                         mousewheel (funcall interactor-mousewheel mode)))))
 
-                            (fetch-contact2
+                            (fetch-contact
                              $el mode (create mode "chart-data")
                              (lambda (data)
                                ;; (chain console (log :dd data config $el))
@@ -1216,22 +1231,22 @@
         :class "svg-visualizer" :width ,width :height ,(max height y-offset)
         :x-init (psl (enable-drag $el))
         :x-data (psl (create open-node     (lambda (path)
-                                             (fetch-contact2
+                                             (fetch-contact
                                               $el mode (create action "open" path path)
                                               (lambda (data)
                                                 (chain htmx (trigger ,branch-id "reload")))))
                              expand-node   (lambda (path)
-                                             (fetch-contact2
+                                             (fetch-contact
                                               $el mode (create action "expand" path path)
                                               (lambda (data)
                                                 (chain htmx (trigger ,branch-id "reload")))))
                              contract-node (lambda (path)
-                                             (fetch-contact2
+                                             (fetch-contact
                                               $el mode (create action "contract" path path)
                                               (lambda (data)
                                                 (chain htmx (trigger ,branch-id "reload")))))
                              connect-node  (lambda (index)
-                                             (fetch-contact2
+                                             (fetch-contact
                                               $el mode (create action "connect" index index)
                                               (lambda (data)
                                                 (chain htmx (trigger ,branch-id "reload")))))
@@ -1239,7 +1254,7 @@
                                              (let ((selected-element null) (dragging-link false)
                                                    (drag-node null) (dragging-index nil))
                                                (defun shift-node (index target)
-                                                 (fetch-contact2
+                                                 (fetch-contact
                                                   $el mode (create action "shiftNode" index index target target)
                                                   (lambda (data)
                                                     (chain htmx (trigger ,branch-id "reload")))))

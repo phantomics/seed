@@ -1,6 +1,6 @@
 window.seedData = {  };
 window.seedElements = {  };
-function fetchContact2(element, context, input, event) {
+function fetchContact(element, context, input, event) {
     __PS_MV_REG = [];
     return fetch('/contact/', { method : 'POST',
                                 headers : { 'Content-type' : 'application/json; charset=UTF-8' },
@@ -18,7 +18,6 @@ function fetchContact2(element, context, input, event) {
         };
         return data;
     }).then('function' === typeof(event) ? event : function (data) {
-        console.log('aaa', data);
         return htmx.trigger(element, event.next);
     });
 };
@@ -100,7 +99,7 @@ function mcodeHandlerOnDrag(element, mode) {
                     };
                     console.log('drix', element, closestEdge, event, itemIndex, 'iid', itemIndex, n, n.getAttribute('index')['XX']);
                     __PS_MV_REG = [];
-                    return fetchContact2(element, mode, { path : element.parentElement.getAttribute('meta-path'), sort : [parseInt(dragging.source.element.parentElement.getAttribute('index')), parseInt(n.getAttribute('index')) + (function () {
+                    return fetchContact(element, mode, { path : element.parentElement.getAttribute('meta-path'), sort : [parseInt(dragging.source.element.parentElement.getAttribute('index')), parseInt(n.getAttribute('index')) + (function () {
                         switch (closestEdge) {
                         case 'bottom':
                             return 0;
@@ -268,7 +267,7 @@ if ('undefined' === typeof candlestickChartEntityTemplates) {
 };
 function commitEntities(mode) {
     __PS_MV_REG = [];
-    return fetchContact2(null, mode, { entities : mode.entities }, function (data) {
+    return fetchContact(null, mode, { entities : mode.entities }, function (data) {
         return console.log('en', data);
     });
 };
