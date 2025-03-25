@@ -394,8 +394,28 @@
 ;;                    data))
 ;;            (then handler))))
 
+;; (enter-js-element *misc-js* :fetch-contact2-defs
+;;   (defun fetch-contact2 (context input handler)
+;;     ;; (chain console (log :cc context))
+;;     (chain (fetch "/contact/"
+;;                   (create method "POST"
+;;                           headers (create "Content-type" "application/json; charset=UTF-8")
+;;                           body (chain -j-s-o-n (stringify (create system (@ context system)
+;;                                                                   branch (@ context branch)
+;;                                                                   input  input)))))
+;;            (then (lambda (response) (chain response (json))))
+;;            (then (lambda (data)
+;;                    (if (@ data oob-reload)
+;;                        (chain data oob-reload (for-each (lambda (item)
+;;                                                           (chain console (log :it item))
+;;                                                           (chain htmx (trigger (getprop seed-elements
+;;                                                                                         item)
+;;                                                                                "reload"))))))
+;;                    data))
+;;            (then handler))))
+
 (enter-js-element *misc-js* :fetch-contact2-defs
-  (defun fetch-contact2 (context input handler)
+  (defun fetch-contact2 (context input event)
     ;; (chain console (log :cc context))
     (chain (fetch "/contact/"
                   (create method "POST"
@@ -407,12 +427,16 @@
            (then (lambda (data)
                    (if (@ data oob-reload)
                        (chain data oob-reload (for-each (lambda (item)
-                                                          (chain console (log :it item))
+                                                          ;; (chain console (log :it item))
                                                           (chain htmx (trigger (getprop seed-elements
                                                                                         item)
                                                                                "reload"))))))
                    data))
-           (then handler))))
+           (then (if (= "function" (typeof event))
+                     event (lambda (data)
+                             (chain console (log :aaa data))
+                             (chain htmx (trigger (chain document (get-element-by-id "main"))
+                                                  (@ event next)))))))))
 
 (enter-js-element *misc-js* :realize-def
   (defun realize (system branch element)

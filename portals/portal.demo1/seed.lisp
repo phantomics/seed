@@ -36,15 +36,15 @@
              (fx ((uic-series :type '(:ui :column  :portal-summary)))
                  :portal.demo1
                  
-                 '(:h3 :|x-on:click|
-                   "fetchContact2(domain, { point: 'demo.sheet' }, function(data) { htmx.trigger($el, 'refresh')})"
-                   "demo.sheet")
+                 ;; '(:h3 :|x-on:click|
+                 ;;   "fetchContact2(domain, { point: 'demo.sheet' }, function(data) { htmx.trigger($el, 'refresh')})"
+                 ;;   "demo.sheet")
                  
-                 (fx ((uicc-button :call (:@fetch :point :@base)))
+                 (fx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
                      "demo.sheet")
                  
                  (fx ((uicc-select :key "key" :options (list :demo.sheet :demo.other)
-                                   :call (:@fetch :point :@base)))
+                                   :call (:@fetch (:point :@base) (:next :refresh))))
                      "")
                  (if (of-system :point)
                      (fx ((:each uic-anchor :type '(:branch))

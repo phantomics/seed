@@ -667,38 +667,40 @@
 ;;       (t (generate medium base)))))
 
 (defmethod call-furnish ((medium uim-web) (aspect ui-component))
-  (if (not (uic-call aspect))
-      nil (destructuring-bind (method &rest args) (uic-call aspect)
-            (let* ((base (uic-base aspect))
-                   (action (typecase aspect
-                             (uicc-button :|x-on:click|)
-                             (uicc-select :|x-on:change|)
-                             (t :|x-on:click|)))
-                   (to-address (if (eq :@domain (first args)) 'domain 'mode))
-                   (args (mapcar (lambda (item)
-                                   ;; (print (list :it item))
-                                   (case item
-                                     (:@base (typecase aspect
-                                               (uicc-select `(@ $event target value))
-                                               (t base)))
-                                     (t item)))
-                                 (if (not (eq :@domain (first args)))
-                                     args (rest args))))
-                   (method (if (eq :@fetch method)
-                               'fetch-contact2 method)))
-              (list action (ps* (if (eq :@fetch method)
-                                    (list method to-address (cons 'create args))
-                                    (funcall (if (eql 'fetch-contact2 method)
-                                                 #'identity (lambda (item)
-                                                              (list 'chain 'methods item)))
-                                             (list method to-address
-                                                   (if (> 2 (length args))
-                                                       ;; if args' length is 2 or more,
-                                                       ;; express them as an object,
-                                                       ;; otherwise as a unitary valye
-                                                       (first args)
-                                                       (cons 'parenscript:create
-                                                             args)))))))))))
+  (let ((base (uic-base aspect)))
+    (labels ((js-format-plist (items)
+               (if (not (listp items))
+                   items (cons 'parenscript:create
+                               (loop :for item :in items
+                                     :collect (if (listp item)
+                                                  (js-format-plist item)
+                                                  (case item
+                                                    (:@base (typecase aspect
+                                                              (uicc-select
+                                                               `(@ $event target value))
+                                                              (t base)))
+                                                    (t item))))))))
+      (if (not (uic-call aspect))
+          nil (if (atom (uic-call aspect))
+                  nil
+                  (destructuring-bind (method &rest args) (uic-call aspect)
+                    (let* ((action (typecase aspect
+                                     (uicc-button :|x-on:click|)
+                                     (uicc-select :|x-on:change|)
+                                     (t :|x-on:click|)))
+                           (to-address (if (eq :@domain (first args)) 'domain 'mode))
+                           (args (mapcar #'js-format-plist
+                                         (if (not (eq :@domain (first args)))
+                                             args (rest args))))
+                           (method (if (eq :@fetch method)
+                                       'fetch-contact2 method)))
+                      (list action (ps* (if (eq :@fetch method)
+                                            (list method to-address args)
+                                            (funcall (if (eql 'fetch-contact2 method)
+                                                         #'identity (lambda (item)
+                                                                      (list 'chain 'methods item)))
+                                                     (append (list method to-address)
+                                                             args))))))))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   "Generation method qualifier manifesting call effects for UI components."
