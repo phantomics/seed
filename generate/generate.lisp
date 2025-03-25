@@ -360,7 +360,7 @@
                (:div :id "datagrid-tree" :class (getf props :item-classes)
                      :x-init ;; TODO: add branch push here
                      (psl (fetch-contact2 ;; TODO: update
-                           props ;; (lisp (string-upcase (getf props :system)))
+                           $el props ;; (lisp (string-upcase (getf props :system)))
                            ;; (lisp (string-upcase (getf props :branch)))
                            nil (lambda (data)
                                  (let* ((grid-schema
@@ -469,7 +469,7 @@
          (:save (cl-who:with-html-output (stream-out)
                   (:button :class "ui button"
                            :|x-on:click|
-                           (psl (fetch-contact2 props ;; (lisp (string-upcase (getf props :system)))
+                           (psl (fetch-contact2 $el props ;; (lisp (string-upcase (getf props :system)))
                                                 ;; (lisp (string-upcase (getf props :branch)))
                                                (@ (getprop (@ window seed-data) (lisp token))
                                                   data)

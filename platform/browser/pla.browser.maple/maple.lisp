@@ -415,7 +415,7 @@
 ;;            (then handler))))
 
 (enter-js-element *misc-js* :fetch-contact2-defs
-  (defun fetch-contact2 (context input event)
+  (defun fetch-contact2 (element context input event)
     ;; (chain console (log :cc context))
     (chain (fetch "/contact/"
                   (create method "POST"
@@ -435,8 +435,7 @@
            (then (if (= "function" (typeof event))
                      event (lambda (data)
                              (chain console (log :aaa data))
-                             (chain htmx (trigger (chain document (get-element-by-id "main"))
-                                                  (@ event next)))))))))
+                             (chain htmx (trigger element (@ event next)))))))))
 
 (enter-js-element *misc-js* :realize-def
   (defun realize (system branch element)
@@ -527,17 +526,18 @@
                                                                ;; (@ event self element attributes index)
                                                                n (chain n (get-attribute "index") "XX")))
                                            (fetch-contact2
-                                            mode (create path (chain element parent-element
-                                                                     (get-attribute "meta-path"))
-                                                         sort (list (parse-int
-                                                                     (chain dragging source element
-                                                                            parent-element
-                                                                            (get-attribute "index")))
-                                                                    (+ (parse-int (chain n (get-attribute
-                                                                                            "index")))
-                                                                       (case closest-edge
-                                                                         ("bottom" 0)
-                                                                         ("top"    0)))))
+                                            element mode
+                                            (create path (chain element parent-element
+                                                                (get-attribute "meta-path"))
+                                                    sort (list (parse-int
+                                                                (chain dragging source element
+                                                                       parent-element
+                                                                       (get-attribute "index")))
+                                                               (+ (parse-int (chain n (get-attribute
+                                                                                       "index")))
+                                                                  (case closest-edge
+                                                                    ("bottom" 0)
+                                                                    ("top"    0)))))
                                             
                                             (lambda () (chain htmx (trigger element "reload"))))
                                            )))))))))))
@@ -731,7 +731,7 @@
 
 (enter-js-element *misc-js* :commit-entities
   (defun commit-entities (mode)
-    (fetch-contact2 mode ;; (@ mode system) (@ mode branch)
+    (fetch-contact2 null mode ;; (@ mode system) (@ mode branch)
                     (create entities (@ mode entities))
                     (lambda (data) (chain console (log :en data))))))
 

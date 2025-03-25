@@ -1,4 +1,4 @@
-;;;; seed.lisp 
+;;;; seed.lisp
 
 (in-package #:portal.demo1)
 
