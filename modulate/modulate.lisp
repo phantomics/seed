@@ -157,7 +157,7 @@
           :initform nil
           :initarg  :sort
           :documentation "")
-   (%mode :accessor uic-mode
+   (%mode :accessor uic-role
           :initform nil
           :initarg  :mode
           :documentation "")))
@@ -213,6 +213,15 @@
 (defclass uich-candle (uic-chart)
   ())
 
+(defclass ui-role ()
+  ((%name :accessor uir-name
+          :initform nil
+          :initarg  :name))
+  (:documentation "The ui-role class describes roles for ui components, which define their relationships with their subcomponents and neighboring components."))
+
+(defclass uir-meta-form (ui-role)
+  ())
+
 (defmacro fx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
   (labels ((format-params (items)
@@ -254,7 +263,7 @@
 
 (defgeneric furnish (medium component &optional base))
 
-(defgeneric furnish-type (medium component &optional other-classes))
+(defgeneric furnish-type (medium component &optional other-types))
 
 (defgeneric furnish-call (medium component))
 
@@ -284,19 +293,19 @@
 
 (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
   (let* ((pairs (if (uic-join aspect)
-                    (list :mode (list :system (first  (uic-join aspect))
-                                      :branch (second (uic-join aspect))
+                    (list :mode (list :system   (first  (uic-join aspect))
+                                      :branch   (second (uic-join aspect))
                                       :of-local '(manifest-locality)))))
          (base (merge-furnishings base pairs)))
     (merge-furnishings
-     base (case (uic-mode aspect)
-            (:chart (list :mode (list :interaction "select"
-                                      :draw-entity "line"
-                                      :moving-from 'nil
-                                      :mousedown 'false
-                                      :active-entity 'nil
-                                      :entities-in-flux '(list)
-                                      :entities '(list))
+     base (case (uic-role aspect)
+            (:chart (list :mode    (list :interaction "select"
+                                         :draw-entity "line"
+                                         :moving-from 'nil
+                                         :mousedown 'false
+                                         :active-entity 'nil
+                                         :entities-in-flux '(list)
+                                         :entities '(list))
                           :methods (list :save
                                          '(lambda (mode)
                                            (fetch-contact
@@ -320,7 +329,6 @@
                                          :zoom-actual
                                          '(lambda (mode)
                                            ))))
-
             (:meta-code-form (list :mode    (list :form nil)
                                    :methods (list :register-form
                                                   '(lambda (mode)
@@ -348,7 +356,6 @@
                                                     $el mode (create action "addLink")
                                                     (lambda (data)
                                                       (chain mode (of-local "trigger" "main" "reload"))))))))
-
             ))))
 
 (defun alist-supersede (new original)
@@ -667,13 +674,13 @@
 ;;                    '(:hr :class "divider")))
 ;;       (t (generate medium base)))))
 
-(defmethod furnish-type ((medium uim-web) (aspect ui-component) &optional other-classes)
+(defmethod furnish-type ((medium uim-web) (aspect ui-component) &optional other-types)
   (let* ((original-type (uic-type aspect))
          (types (if (listp original-type) original-type (list original-type)))
          (class-stream (make-string-output-stream))
          (last-type-index (1- (length types))))
     
-    (loop :for oc :in other-classes :do (format class-stream "~a " oc))
+    (loop :for ot :in other-types :do (format class-stream "~a " (string-downcase ot)))
 
     (loop :for type :in types :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
@@ -697,25 +704,24 @@
                                                     (t item))))))))
       (if (not (uic-call aspect))
           nil (if (atom (uic-call aspect))
-                  nil
-                  (destructuring-bind (method &rest args) (uic-call aspect)
-                    (let* ((action (typecase aspect
-                                     (uicc-button :|x-on:click|)
-                                     (uicc-select :|x-on:change|)
-                                     (t :|x-on:click|)))
-                           (to-address (if (eq :@domain (first args)) 'domain 'mode))
-                           (args (mapcar #'js-format-plist
-                                         (if (not (eq :@domain (first args)))
-                                             args (rest args))))
-                           (method (if (eq :@fetch method)
-                                       'fetch-contact method)))
-                      (list action (ps* (if (eq :@fetch method)
-                                            (list method '$el to-address args)
-                                            (funcall (if (eql 'fetch-contact method)
-                                                         #'identity (lambda (item)
-                                                                      (list 'chain 'methods item)))
-                                                     (append (list method '$el to-address)
-                                                             args))))))))))))
+                  nil (destructuring-bind (method &rest args) (uic-call aspect)
+                        (let* ((action (typecase aspect
+                                         (uicc-button :|x-on:click|)
+                                         (uicc-select :|x-on:change|)
+                                         (t :|x-on:click|)))
+                               (to-address (if (eq :@domain (first args)) 'domain 'mode))
+                               (args (mapcar #'js-format-plist
+                                             (if (not (eq :@domain (first args)))
+                                                 args (rest args))))
+                               (method (if (eq :@fetch method)
+                                           'fetch-contact method)))
+                          (list action (ps* (if (eq :@fetch method)
+                                                (list method '$el to-address args)
+                                                (funcall (if (eql 'fetch-contact method)
+                                                             #'identity (lambda (item)
+                                                                          (list 'chain 'methods item)))
+                                                         (append (list method '$el to-address)
+                                                                 args))))))))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   "Generation method qualifier manifesting call effects for UI components."
@@ -735,35 +741,6 @@
                     (typecase call
                       (atom (case call
                               (:@base (list action (ps* `(chain methods (,(intern (string base)) mode)))))))
-                      ;; (list (destructuring-bind (method &rest args) call
-                      ;;         ;; (print (list :asp aspect))
-                      ;;         (let ((to-address (if (eq :@domain (first args))
-                      ;;                               'domain 'mode))
-                      ;;               (args (mapcar (lambda (item)
-                      ;;                               ;; (print (list :it item))
-                      ;;                               (case item
-                      ;;                                 (:@base (typecase aspect
-                      ;;                                           (uicc-select `(@ $event target value))
-                      ;;                                           (t base)))
-                      ;;                                 (t item)))
-                      ;;                             (if (not (eq :@domain (first args)))
-                      ;;                                 args (rest args))))
-                      ;;               (method (if (eq :@fetch method)
-                      ;;                           'fetch-contact method)))
-
-                      ;;           (list action (ps* (if (eq :@fetch method)
-                      ;;                                 (list method to-address
-                      ;;                                       (cons 'create args))
-                      ;;                                 (list 'chain 'methods
-                      ;;                                       (list method to-address
-                      ;;                                             (if (> 2 (length args))
-                      ;;                                                 ;; if args' length is 2 or more,
-                      ;;                                                 ;; express them as an object,
-                      ;;                                                 ;; otherwise as a unitary valye
-                      ;;                                                 (first args)
-                      ;;                                                 (cons 'parenscript:create
-                      ;;                                                       args))))))))))
-
                       ))
                   (if furnishing
                       (list :x-data (ps* `(create ,@(loop :for f :in furnishing
@@ -944,7 +921,7 @@
                                       (nth sub-index (rest (nth index (rest orig-data))))
                                       (nth index (rest orig-data))))
                            input t)
-              (print (list :aabb formatted orig-data))
+              ;; (print (list :aabb formatted orig-data))
               (setf network-changed t))
 
             (when (assoc "action" input :test #'string=)
@@ -969,8 +946,8 @@
 
               ;; add a link between nodes
               (when (string= "addLink" (rest (assoc "action" input :test #'string=)))
-                (print (list :si sub-index (rest (nth index (rest orig-data)))
-                             (nth index (rest orig-data))))
+                ;; (print (list :si sub-index (rest (nth index (rest orig-data)))
+                ;;              (nth index (rest orig-data))))
                 (if sub-index (rplacd (nth sub-index (rest (nth index (rest orig-data))))
                                       (cons link-template
                                             (nthcdr (1+ sub-index)
@@ -980,7 +957,7 @@
                                 (list link-template))
                         (rplacd (nth index (rest orig-data))
                                 (list link-template))))
-                (print 700)
+                ;; (print 700)
                 (if sub-index (rplacd (nth sub-index (rest (nth index (rest graph-data))))
                                       (cons link-template
                                             (nthcdr (1+ sub-index)

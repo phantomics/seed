@@ -23,11 +23,12 @@
 
       (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
           (loop :for l :in (nthcdr start-point summary) :while l
-                :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+                :collect (progn (print :vvv)
+                         (fx ((uic-series :layout (:vertical :of 12 1 10 1)
                                           :join   (list :demo.sheet (first l))
                                           :type   (:column)
-                                          :mode   (grow :demo.sheet (first l)
-                                                        context (list (list "state" (second l))))))
+                                          :mode   (print (grow :demo.sheet (print (first l))
+                                                        context (list (list "state" (second l)))))))
                              (fx ((uic-series :type (:ui :header)))
                                  (second l)
                                  (grow :demo.sheet (first l)
@@ -37,13 +38,13 @@
                                  (first l))
                              (fx ((uic-series :type (:ui :footer)))
                                  (list (grow :demo.sheet (first l)
-                                             context (list (list "ifmod-foot" t)))))))))))
+                                             context (list (list "ifmod-foot" t))))))))))))
 
 (branch :demo.sheet :chart
   (let ((chart-data)
         (entities (rest (from-system-file :demo.sheet "sheet.lisp" :chart-entities))))
     (lambda (context input)
-      ;; (print (list :in input))
+      (print (list :in input))
       (cbind input item
         ("state" :chart)
         ("ifmod-head" (fx ((:each uicc-button :type (:local) :call :@base)
@@ -74,6 +75,7 @@
   (let ((entities))
     (lambda (context input)
       (cbind input item
+        ("state" :meta-code-form)
         ("ifmod-head" (fx ((:each uicc-button)
                            (uic-series :type (:ui :controls)))
                           (list :save)))
