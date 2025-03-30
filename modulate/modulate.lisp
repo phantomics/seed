@@ -394,20 +394,12 @@
   (list :raw aspect))
 
 (defmethod generate ((medium uim-web) (aspect uic-frame))
-  (let (;; (class-stream (make-string-output-stream))
-        (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
+  (let ((types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
         (face (lisp->camel-case (uic-name aspect)))
         (system (uicf-access aspect))
         (last-type-index (1- (length (uic-type aspect)))))
 
-    ;; (when system
-    ;;   (format class-stream "access")
-    ;;   (when types (format class-stream " ")))
-    ;; (loop :for type :in types :for ix :from 0
-    ;;       :do (format class-stream "~a" (string-downcase type))
-    ;;           (unless (= ix last-type-index) (format class-stream " ")))
-    
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
@@ -415,8 +407,8 @@
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             (chain mode (of-local "register" "main" $el))
                                             (fetch-contact $el mode (create height (@ $el offset-height)
-                                                                             width  (@ $el offset-width))
-                                                            (lambda (data)))))
+                                                                            width  (@ $el offset-width))
+                                                           (lambda (data)))))
                          :hx-vals (format nil "js:{...ejoin(~a,event)}"
                                           (json-convert-to (list :system system :face face
                                                                  :branch (string (uic-base aspect)))))
@@ -463,9 +455,17 @@
                                                            (list :x-data
                                                                  (psl (create in-series
                                                                               containing-series))))
+                                                     ,@(if (and (of-root-type aspect :meta-code)
+                                                                (member :sortable (uic-type aspect)))
+                                                           (list :x-init
+                                                                 (psl (initialize-draggable
+                                                                       $el mode in-series))))
                                                      ,(enclose-by-type
                                                        types (realize aspect medium item
                                                                       :sort ix))))))))
+          
+          ;; (print (list :it items (of-root-type aspect :meta-code)
+          ;;              (uic-type aspect)))
           
           (loop :for type :in types :for ix :from 0
                 :do (format class-stream "~a" (string-downcase type))
@@ -493,31 +493,12 @@
                                                       :collect ratio))))
                         :x-data (if (of-root-type aspect :meta-code)
                                     (psl (create containing-series $el))))
+                  
                   (if (eq t call)
                       (list :hx-inherit "*" :hx-post "/render/"))
                   (if (member :enum types)
                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
                                              (funcall (chain methods (register-form mode)) $el)))))
-                  (if (and (of-root-type aspect :meta-code)
-                           (member :sortable (uic-type (uic-root aspect))))
-                      (list :x-init (psl (let ((handle-container) (handle))
-                                           (loop :for n :in (@ $el child-nodes)
-                                                 :do (when (= (@ n class-name) "field has-addons")
-                                                       (setf handle-container n)
-                                                       (break)))
-                                           ;; (chain console (log (@ $el child-nodes)))
-                                           (loop :for n :in (@ handle-container child-nodes)
-                                                 :do (when (= (@ n class-name) "control drag-handle")
-                                                       (setf handle n)
-                                                       (break)))
-                                           
-                                           (when (/= "undefined" (typeof in-series))
-                                             (let ((drops (create element $el drag-handle handle
-                                                                  on-drag-start
-                                                                  (mcode-handler-on-drag
-                                                                   in-series mode))))
-                                               (draggable drops)
-                                               nil))))))
 
                   (if (and (of-root-type aspect :meta-code)
                            (member :sortable (uic-type (uic-root aspect))))
@@ -536,6 +517,41 @@
                                                                   (reverse (first envelopes)))))
                         (reverse envelopes))
                       items)))))))
+
+#|
+
+(when (and (of-root-type aspect :meta-code)
+                             (member :sortable (uic-type aspect))
+                             ;; (of-root-type aspect :sortable)
+                             )
+                    ;; (print (list :ty types))
+                    (list :x-init (psl (let ((handle-container) (handle))
+                                         (chain console (log :aa $el))
+                                           (loop :for n :in (@ $el child-nodes)
+                                                 :do (when (= (@ n class-name) "field has-addons")
+                                                       (chain console (log :bbb n))
+                                                       (setf handle-container
+                                                             (chain n (query-selector
+                                                                       ".control.drag-handle")))
+                                                       (break)))
+                                           (chain console (log 77 (@ $el child-nodes) handle-container))
+                                           (when handle-container
+                                             (loop :for n :in (@ handle-container child-nodes)
+                                                   :do (when (= (@ n class-name) "control drag-handle")
+                                                         (setf handle n)
+                                                         (break))))
+                                           
+                                           (when (/= "undefined" (typeof in-series))
+                                             (let ((drops (create element $el drag-handle handle
+                                                                  on-drag-start
+                                                                  (mcode-handler-on-drag
+                                                                   in-series mode))))
+                                               ;; (chain console (log :dd drops))
+                                               (draggable drops)
+                                               nil))))))
+
+
+|#
 
 (defmethod generate ((medium uim-web) (aspect uic-grid))
   (destructuring-bind (system branch) (uic-base aspect)

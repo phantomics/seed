@@ -458,6 +458,46 @@
 ;;         (chain console (log (draggable (create element element drag-handle handle
 ;;                                                on-drag-start (mcode-handler-on-drag in-series)))))))))
 
+(enter-js-element *misc-js* :initialize-draggable
+  (defun initialize-draggable (element mode in-series)
+    ;; (print (list :ty types))
+    (let ((handle-container) (handle))
+      (chain -array (from (@ element child-nodes))
+             (filter (lambda (item) (instanceof item -h-t-m-l-element)))
+             (map (lambda (n item-index)
+                    (if (= "FORM" (@ n tag-name))
+                        (chain -array (from (@ n child-nodes))
+                               (filter (lambda (item) (instanceof item -h-t-m-l-element)))
+                               (map (lambda (n item-index)
+                                      (when (= (@ n class-name) "field has-addons")
+                                        (setf handle-container n)))))
+                        (when (= (@ n class-name) "field has-addons")
+                          (setf handle-container n))))))
+      
+      ;; (chain console (log :aa element handle-container))
+      
+      ;; (loop :for n :in (@ element child-nodes)
+      ;;       :do (when (= (@ n class-name) "field has-addons")
+      ;;             (chain console (log :bbb n))
+      ;;             (setf handle-container (chain n (query-selector ".control.drag-handle")))
+      ;;             (break)))
+      
+      ;; (chain console (log 77 (@ element child-nodes) handle-container))
+      (when handle-container
+        (loop :for n :in (@ handle-container child-nodes)
+              :do (when (= (@ n class-name) "control drag-handle")
+                    (setf handle n)
+                    (break))))
+
+      (chain console (log :ha handle in-series))
+      
+      (when (/= "undefined" (typeof in-series))
+        (let ((drops (create element element drag-handle handle
+                             on-drag-start (mcode-handler-on-drag in-series mode))))
+          (chain console (log :dd drops))
+          (draggable drops)
+          nil)))))
+
 (enter-js-element *misc-js* :mcode-handler-on-drag
   (defun mcode-handler-on-drag (element mode)
     (lambda (dragging)
