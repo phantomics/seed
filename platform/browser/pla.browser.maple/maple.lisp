@@ -474,14 +474,6 @@
                         (when (= (@ n class-name) "field has-addons")
                           (setf handle-container n))))))
       
-      ;; (chain console (log :aa element handle-container))
-      
-      ;; (loop :for n :in (@ element child-nodes)
-      ;;       :do (when (= (@ n class-name) "field has-addons")
-      ;;             (chain console (log :bbb n))
-      ;;             (setf handle-container (chain n (query-selector ".control.drag-handle")))
-      ;;             (break)))
-      
       ;; (chain console (log 77 (@ element child-nodes) handle-container))
       (when handle-container
         (loop :for n :in (@ handle-container child-nodes)
@@ -489,12 +481,12 @@
                     (setf handle n)
                     (break))))
 
-      (chain console (log :ha handle in-series))
+      ;; (chain console (log :ha handle in-series))
       
       (when (/= "undefined" (typeof in-series))
         (let ((drops (create element element drag-handle handle
                              on-drag-start (mcode-handler-on-drag in-series mode))))
-          (chain console (log :dd drops))
+          ;; (chain console (log :dd drops))
           (draggable drops)
           nil)))))
 
@@ -504,7 +496,7 @@
       ;; (chain console (log :ee element mode))
       ;; (chain console (log :mm mode dragging (chain dragging source element parent-element
       ;;                                              (get-attribute "index"))))
-      (chain console (log :drag-start element (@ element child-nodes length) (@ element child-nodes)))
+      ;; (chain console (log :drag-start element (@ element child-nodes length) (@ element child-nodes)))
       (chain -array
              (from (@ element child-nodes))
              (filter (lambda (item) (instanceof item -h-t-m-l-element)))
@@ -539,17 +531,21 @@
                                                  (extract-closest-edge (@ event self data))))
                                            (when (@ n next-element-sibling)
                                              (chain n next-element-sibling (remove)))
-                                           (chain console (log :drix element closest-edge event item-index
-                                                               :iid item-index
-                                                               ;; (@ event self element attributes index)
-                                                               n (chain n (get-attribute "index") "XX")))
+
+                                           ;; (chain console (log :drix element closest-edge event item-index
+                                           ;;                     :iid item-index
+                                           ;;                     ;; (@ event self element attributes index)
+                                           ;;                     n (chain n (get-attribute "index") "XX")
+                                           ;;                     :pe (@ n parent-element)
+                                           ;;                     (@ n parent-element parent-element)))
+
                                            (fetch-contact
                                             element mode
-                                            (create path (chain element parent-element
+                                            (create path (chain element ;; parent-element
                                                                 (get-attribute "meta-path"))
                                                     sort (list (parse-int
                                                                 (chain dragging source element
-                                                                       parent-element
+                                                                       ;; parent-element
                                                                        (get-attribute "index")))
                                                                (+ (parse-int (chain n (get-attribute
                                                                                        "index")))
