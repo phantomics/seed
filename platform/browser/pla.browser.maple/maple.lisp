@@ -441,23 +441,6 @@
           ("trigger" (loop :for item :in (getprop types option)
                            :do (chain htmx (trigger item body)))))))))
 
-;; (enter-js-element *misc-js* :draggable-provision
-;;   (defun draggable-provision (element in-series)
-;;     (let ((handle-container) (handle))
-;;       (loop :for n :in (@ element child-nodes)
-;;             :do (when (= (@ n class-name) "field has-addons")
-;;                   (setf handle-container n)
-;;                   (break)))
-;;       ;; (chain console (log (@ element child-nodes)))
-;;       (loop :for n :in (@ handle-container child-nodes)
-;;             :do (when (= (@ n class-name) "control drag-handle")
-;;                   (setf handle n)
-;;                   (break)))
-;;       (chain console (log :hh handle element))
-;;       (when (/= "undefined" (typeof in-series))
-;;         (chain console (log (draggable (create element element drag-handle handle
-;;                                                on-drag-start (mcode-handler-on-drag in-series)))))))))
-
 (enter-js-element *misc-js* :initialize-draggable
   (defun initialize-draggable (element mode in-series)
     ;; (print (list :ty types))
