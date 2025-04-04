@@ -9,7 +9,7 @@
            #:uic-frame #:uic-anchor #:uic-series #:uic-grid #:uicc-button
            #:uicc-field #:uicc-text-line #:uich-candle #:spec-graph-interface
            ;; roles
-           #:uir-call-form)
+           #:uir-call-form #:uir-sortable)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)
   (:shadowing-import-from #:parenscript #:ps #:ps* #:ps-inline #:defpsmacro #:create #:@ #:chain
                           #:new #:getprop #:instanceof #:lisp)

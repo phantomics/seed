@@ -228,6 +228,11 @@
              :initform nil
              :initarg  :options)))
 
+(defclass uir-sortable (ui-role)
+  ((%range :accessor uirsrt-range
+           :initform nil
+           :initarg  :range)))
+
 (defmacro fx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
   (labels ((format-params (items)
@@ -830,11 +835,13 @@
                                     :path (reverse path)
                                     :type (rest (assoc :type (cddr form)))
                                     :role (loop :for r :in roles
-                                                :collect (let ((class (intern (string (first r))
-                                                                              "PORTAL.DEMO1")))
-                                                           (if (atom r)
-                                                               (make-instance class)
-                                                               (apply #'make-instance class (rest r))))))))
+                                                :collect (if (atom r)
+                                                             (make-instance
+                                                              (intern (string r) "PORTAL.DEMO1"))
+                                                             (apply #'make-instance
+                                                                    (intern (string (first r))
+                                                                            "PORTAL.DEMO1")
+                                                                    (rest r)))))))
                    ;; (when roles (setf portal.demo1::iioo out))
                    (when layout (setf (uic-series-layout out) layout))
                    (when (eql class 'uicc-select)

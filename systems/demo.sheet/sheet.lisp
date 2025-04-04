@@ -49,7 +49,7 @@
               (meta 50 (:fx . :uicc-field) (:type :numeric :integer))
               (meta 73 (:fx . :uicc-field) (:type :numeric :integer))
               (meta 60  (:fx . :uicc-field) (:type :numeric :integer)))
-        (:fx . :uic-series) (:type :called)))
+        (:fx . :uic-series) (:type :called) (:role uir-sortable)))
 ;; :chart-entities
 ;; (quote
 ;;  (meta ((meta "This is a test."
