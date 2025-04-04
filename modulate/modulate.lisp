@@ -835,7 +835,7 @@
                                                            (if (atom r)
                                                                (make-instance class)
                                                                (apply #'make-instance class (rest r))))))))
-                   (when roles (setf portal.demo1::iioo out))
+                   ;; (when roles (setf portal.demo1::iioo out))
                    (when layout (setf (uic-series-layout out) layout))
                    (when (eql class 'uicc-select)
                      (setf (uics-options out) (rest (assoc :options (cddr form)))))
