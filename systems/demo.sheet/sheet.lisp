@@ -8,6 +8,8 @@
 (defvar *active-graph-item* nil)
 (defvar *input* nil)
 
+(defvar *chart-styles* nil)
+
 ;; (quote
 ;; (list
 ;;  (DRAW LINE 1534114800000 1.5352056 1538067600000 1.4786885)
@@ -28,33 +30,53 @@
 (for-cells "C2.G8" "{5+⍵}")
 (for-cells "A3.B4" "{3×⍵}")
 )
+:chart-styles
+(progn (proclaim '(special *base-line-style*))
+       (setf (symbol-value '*base-line-style*)
+             (chart-style :style-line :base-line :color '(:red :green :green)
+               :stroke '(:solid :dots))))
 :chart-entities
-(quote
- (meta ((meta "This is a test."
-              (:fx . :uicc-field) (:type :text))
-        (meta "This is a test 2."
-              (:fx . :uicc-field) (:type :text))
-        (meta ((meta (:point-from . 10)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named))
-               (meta (:point-to . 20)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
-              (:fx . :uic-series) (:type :enum) (:layout :group :rows (2)))
-        (meta ((meta (:point-from . 11)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named))
-               (meta (:point-to . 21)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
-              (:fx . :uic-series) (:type :enum) (:layout :group :rows (2)))
-        (meta ((meta (:point-from . 12)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named))
-               (meta (:point-to . 22)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
-              (:fx . :uic-series) (:type :enum) (:layout :group :rows (2)))
-        (meta ((meta (:point-from . 13)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named))
-               (meta (:point-to . 23)
-                     (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
-              (:fx . :uic-series) (:type :enum) (:layout :group :rows (2))))
-      (:fx . :uic-series) (:type :sortable)))
+(chart-view :chart-test "data"
+  (meta (line (meta *base-line-style* (:fx . :uicc-select)
+                    (:type :select) (:role (uir-call-form :options (list 'line 'retrace))))
+              (meta 123 (:fx . :uicc-field) (:type :numeric :integer))
+              (meta 100 (:fx . :uicc-field) (:type :numeric :integer))
+              (meta 145 (:fx . :uicc-field) (:type :numeric :integer))
+              (meta 90  (:fx . :uicc-field) (:type :numeric :integer)))
+        (line (meta *base-line-style* (:fx . :uicc-select)
+                    (:type :select) (:role (uir-call-form :options (list 'line 'retrace))))
+              (meta 23 (:fx . :uicc-field) (:type :numeric :integer))
+              (meta 50 (:fx . :uicc-field) (:type :numeric :integer))
+              (meta 73 (:fx . :uicc-field) (:type :numeric :integer))
+              (meta 60  (:fx . :uicc-field) (:type :numeric :integer)))
+        (:fx . :uic-series) (:type :called)))
+;; :chart-entities
+;; (quote
+;;  (meta ((meta "This is a test."
+;;               (:fx . :uicc-field) (:type :text))
+;;         (meta "This is a test 2."
+;;               (:fx . :uicc-field) (:type :text))
+;;         (meta ((meta (:point-from . 10)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named))
+;;                (meta (:point-to . 20)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
+;;               (:fx . :uic-series) (:type :enum) (:layout :group :rows (2)))
+;;         (meta ((meta (:point-from . 11)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named))
+;;                (meta (:point-to . 21)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
+;;               (:fx . :uic-series) (:type :enum) (:layout :group :rows (2)))
+;;         (meta ((meta (:point-from . 12)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named))
+;;                (meta (:point-to . 22)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
+;;               (:fx . :uic-series) (:type :enum) (:layout :group :rows (2)))
+;;         (meta ((meta (:point-from . 13)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named))
+;;                (meta (:point-to . 23)
+;;                      (:fx . :uicc-field) (:type :numeric :integer :pair :named)))
+;;               (:fx . :uic-series) (:type :enum) (:layout :group :rows (2))))
+;;       (:fx . :uic-series) (:type :sortable)))
 :form
 (setf *profile*
       '(meta ((meta "Dave" (:title . "Name") (:name . :name) (:type :field :text))

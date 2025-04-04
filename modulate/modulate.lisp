@@ -157,9 +157,13 @@
           :initform nil
           :initarg  :sort
           :documentation "")
-   (%mode :accessor uic-role
+   (%mode :accessor uic-mode
           :initform nil
           :initarg  :mode
+          :documentation "")
+   (%role :accessor uic-role
+          :initform nil
+          :initarg  :role
           :documentation "")))
 
 (defclass uic-frame (ui-component)
@@ -219,8 +223,10 @@
           :initarg  :name))
   (:documentation "The ui-role class describes roles for ui components, which define their relationships with their subcomponents and neighboring components."))
 
-(defclass uir-meta-form (ui-role)
-  ())
+(defclass uir-call-form (ui-role)
+  ((%options :accessor uircf-options
+             :initform nil
+             :initarg  :options)))
 
 (defmacro fx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
@@ -298,7 +304,7 @@
                                       :of-local '(manifest-locality)))))
          (base (merge-furnishings base pairs)))
     (merge-furnishings
-     base (case (uic-role aspect)
+     base (case (uic-mode aspect)
             (:chart (list :mode    (list :interaction "select"
                                          :draw-entity "line"
                                          :moving-from 'nil
@@ -769,7 +775,6 @@
                   (rest main)))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
-  ;; Date,EUR/CAD(Open-Ask),EUR/CAD(High-Ask),EUR/CAD(Low-Ask),EUR/CAD(Close-Ask),EUR/CAD(Open-Bid)*,EUR/CAD(High-Bid)*,EUR/CAD(Low-Bid)*,EUR/CAD(Close-Bid)*
   (destructuring-bind (system branch) (uic-base aspect)
     `(:div :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
@@ -796,37 +801,41 @@
           :do (push property to-append))
     (append form to-append)))
 
-(defun express (form &optional path) ;; TODO: this will not grow well with the metaform topology
+(defun express (form &optional params path) ;; TODO: this will not grow well with the metaform topology
   (if (atom form)
-      form (let ((path (or path (list 0))))
+      form (let ((path (or path '(0))))
              (if (not (and (symbolp (first form))
                            (string= "META" (string (first form)))))
                  (make-instance 'uic-series :path (reverse path)
-                                            :base (mapcar #'express form
-                                                          (loop :for i :below (length form)
-                                                                :collect (cons i path))))
+                                            :base (loop :for i :from 0 :for f :in form
+                                                        :collect (express f params (cons i path))))
+                 ;; TODO: URGENT: remove 2 explicit interns below
                  (let* ((form (if (not (assoc :template (cddr form)))
                                   form (let ((out form))
                                          (loop :for template :in (rest (assoc :template (cddr form)))
-                                               :do ;; (print (list :tt template (symbol-package template)
-                                                   ;;              *package*))
-                                                   (setf out (meta-combine
+                                               :do (setf out (meta-combine
                                                               out (symbol-value (intern (string template)
                                                                                         "DEMO.SHEET")))))
                                          out)))
                         (types (rest (assoc :type (cddr form))))
+                        (roles (rest (assoc :role (cddr form))))
                         (fx-class (rest (assoc :fx (cddr form))))
-                        (primary-type (first types))
                         (layout (rest (assoc :layout (cddr form))))
                         (class (when fx-class (intern (string fx-class) "SEED.MODULATE")))
-                        (out (make-instance class :base (if (eql class 'uic-series)
-                                                            (mapcar #'express (second form)
-                                                                    (loop :for i :below (length (second form))
-                                                                          :collect (cons i path)))
-                                                            (second form))
-                                                  :path (reverse path)
-                                                  :type (rest (assoc :type (cddr form))))))
-                   
+                        (out (make-instance
+                              class :base (if (eql class 'uic-series)
+                                              (loop :for i :from 0 :for f :in (second form)
+                                                    :collect (express f params (cons i path)))
+                                              (second form))
+                                    :path (reverse path)
+                                    :type (rest (assoc :type (cddr form)))
+                                    :role (loop :for r :in roles
+                                                :collect (let ((class (intern (string (first r))
+                                                                              "PORTAL.DEMO1")))
+                                                           (if (atom class)
+                                                               (make-instance class)
+                                                               (apply #'make-instance class (rest r))))))))
+                   ;; (when roles (setf portal.demo1::iioo out))
                    (when layout (setf (uic-series-layout out) layout))
                    (when (eql class 'uicc-select)
                      (setf (uics-options out) (rest (assoc :options (cddr form)))))

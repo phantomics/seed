@@ -97,7 +97,7 @@
                                        (cons moved (nthcdr move-to elist)))))))
                      (print :complete)))))
         (t (unless entities
-             (setf entities (second (from-system-file :demo.sheet "sheet.lisp" :chart-entities))))
+             (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities))))
            (when context
              (render (funcall context :medium)
                      (fx ((uic-frame :type (:meta-code)))
@@ -184,7 +184,7 @@
         (setf (from-system-file :demo.sheet "sheet.lisp" :form) original)))
 
     (render (funcall context :medium)
-            (express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
+            (seed.modulate::express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
     
     
     ;; (let ((out (make-string-output-stream)))
