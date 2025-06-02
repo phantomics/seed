@@ -223,6 +223,10 @@
           :initarg  :name))
   (:documentation "The ui-role class describes roles for ui components, which define their relationships with their subcomponents and neighboring components."))
 
+
+(defun has-role (component role-sym)
+  (member role-sym (uic-role component) :test (lambda (r c) (typep c r))))
+
 (defclass uir-call-form (ui-role)
   ((%options :accessor uircf-options
              :initform nil
@@ -436,7 +440,8 @@
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
-        (breadth-default 12) (call (uic-call aspect)))
+        (breadth-default 12) (call (uic-call aspect))
+        (layout (uic-series-layout aspect)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -451,29 +456,47 @@
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
 
-        (let ((items (loop :for ix :from 0 :for item :in (uic-base aspect)
-                           :collect (let ((map (nth ix (uic-series-maps aspect))))
-                                      (format class-stream "item ")
-                                      (when (and (uic-series-point aspect)
-                                                 (= ix (uic-series-point aspect)))
-                                        (format class-stream "point "))
-                                      (loop :for itype :in (rest (assoc :type map))
-                                            :do (format class-stream "~a " (string-downcase itype)))
-                                      (locate medium aspect ix
-                                              `(:div :class ,(get-output-stream-string class-stream)
-                                                     :index ,ix
-                                                     ,@(if (of-root-type aspect :meta-code)
-                                                           (list :x-data
-                                                                 (psl (create in-series
-                                                                              containing-series))))
-                                                     ,@(if (and (of-root-type aspect :meta-code)
-                                                                (member :sortable (uic-type aspect)))
-                                                           (list :x-init
-                                                                 (psl (initialize-draggable
-                                                                       $el mode in-series))))
-                                                     ,(enclose-by-type
-                                                       types (realize aspect medium item
-                                                                      :sort ix))))))))
+        (let* ((items (loop :for ix :from 0
+                            ;; if this is a call-form, the form's head symbol is not displayed
+                            ;; with the others; in most cases it is either not shown or displayed
+                            ;; in a special manner as in a series header
+                            :for item :in (funcall (if (has-role aspect 'uir-call-form)
+                                                       #'rest #'identity)
+                                                   (uic-base aspect))
+                            :collect (let ((map (nth ix (uic-series-maps aspect))))
+                                       (format class-stream "item ")
+                                       (when (and (uic-series-point aspect)
+                                                  (= ix (uic-series-point aspect)))
+                                         (format class-stream "point "))
+                                       (loop :for itype :in (rest (assoc :type map))
+                                             :do (format class-stream "~a " (string-downcase itype)))
+                                       (locate medium aspect ix
+                                               `(:div :class ,(get-output-stream-string class-stream)
+                                                      :index ,ix
+                                                      ,@(if (of-root-type aspect :meta-code)
+                                                            (list :x-data
+                                                                  (psl (create in-series
+                                                                               containing-series))))
+                                                      ,@(if (and (of-root-type aspect :meta-code)
+                                                                 (member :sortable (uic-type aspect)))
+                                                            (list :x-init
+                                                                  (psl (initialize-draggable
+                                                                        $el mode in-series))))
+                                                      ,(enclose-by-type
+                                                        types (realize aspect medium item
+                                                                       :sort ix)))))))
+               (parent-sortable (and (typep    (uic-root aspect) 'ui-component)
+                                     (has-role (uic-root aspect) 'uir-sortable)))
+               (header (let ((segments))
+                         (when (and parent-sortable (of-root-type aspect :meta-code))
+                           (push '(:p :class "control drag-handle" (:a :class "button is-static" "A"))
+                                 segments))
+                         (when (has-role aspect 'uir-call-form)
+                           (push `(:p :class "control is-expanded"
+                                      (:a :class "button is-static" ,(first (uic-base aspect))))
+                                 segments))
+                         (if segments (list (append (list :div :class "series-heading field has-addons")
+                                                    (reverse segments)))))))
           
           ;; (print (list :it items (of-root-type aspect :meta-code)
           ;;              (uic-type aspect)))
@@ -482,6 +505,8 @@
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
 
+          ;; (print (list :ro (uic-role aspect) ltype lprops))
+          
           (append (list (if (or (eq t call) (member :enum types))
                             ;; the series should be expressed as a form if it is conveying an
                             ;; enum structure or if its :call property is set to t indicating
@@ -511,23 +536,31 @@
                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
                                              (funcall (chain methods (register-form mode)) $el)))))
 
-                  (if (and (of-root-type aspect :meta-code)
-                           (member :sortable (uic-type (uic-root aspect))))
-                      `((:div :class "field has-addons"
-                              (:p :class "control drag-handle" (:a :class "button is-static" "A"))
-                              (:p :class "control is-expanded" (:a :class "button is-static" "Series")))))
-                  
-                  (if (eq :group ltype)
-                      (let ((envelopes))
-                        (loop :for item :in (getf lprops :rows)
-                              :do (push nil envelopes)
-                                  (loop :for c :below item
-                                        :do (push (list :div :class "column" (nth c items))
-                                                  (first envelopes)))
-                                  (setf (first envelopes) (append (list :div :class "columns")
-                                                                  (reverse (first envelopes)))))
-                        (reverse envelopes))
-                      items)))))))
+                  ;; header
+
+                  (if (eq :groups ltype)
+                      (let ((envelopes) (item-index 0)
+                            (rows (getf lprops :rows)))
+
+                        (dolist (item rows)
+                          (push nil envelopes)
+                          (when (and header (zerop item-index) (minusp item))
+                            ;; (print :mm)
+                            (push (first header)
+                                  (first envelopes)))
+                          ;; (print (list :aa item)) 
+                          (loop :for c :below (abs item)
+                                :do (push (list :div :class "column"
+                                                (nth (+ c item-index) items))
+                                          (first envelopes)))
+                          (setf (first envelopes) (append (list :div :class "columns")
+                                                          (reverse (first envelopes))))
+                          (incf item-index (max 1 item)))
+                        
+                        (append (reverse envelopes)
+                                (if (< item-index (1- (length items)))
+                                    (nthcdr (1+ item-index) items))))
+                      (append header items))))))))
 
 #|
 
@@ -707,7 +740,7 @@
          (class-stream (make-string-output-stream))
          (last-type-index (1- (length types))))
     
-    (loop :for ot :in other-types :do (format class-stream "~a " (string-downcase ot)))
+    (dolist (ot other-types) (format class-stream "~a " (string-downcase ot)))
 
     (loop :for type :in types :for ix :from 0
           :do (format class-stream "~a" (string-downcase type))
@@ -809,6 +842,7 @@
 (defun express (form &optional params path) ;; TODO: this will not grow well with the metaform topology
   (if (atom form)
       form (let ((path (or path '(0))))
+             ;; (print (list :ff form))
              (if (not (and (symbolp (first form))
                            (string= "META" (string (first form)))))
                  (make-instance 'uic-series :path (reverse path)
@@ -822,28 +856,31 @@
                                                               out (symbol-value (intern (string template)
                                                                                         "DEMO.SHEET")))))
                                          out)))
-                        (types (rest (assoc :type (cddr form))))
-                        (roles (rest (assoc :role (cddr form))))
-                        (fx-class (rest (assoc :fx (cddr form))))
-                        (layout (rest (assoc :layout (cddr form))))
+                        (fx-property (rest (assoc :fx (cddr form))))
+                        (fx-class (first fx-property))
+                        ;; (layout (rest (assoc :layout (cddr form))))
                         (class (when fx-class (intern (string fx-class) "SEED.MODULATE")))
-                        (out (make-instance
-                              class :base (if (eql class 'uic-series)
-                                              (loop :for i :from 0 :for f :in (second form)
-                                                    :collect (express f params (cons i path)))
-                                              (second form))
-                                    :path (reverse path)
-                                    :type (rest (assoc :type (cddr form)))
-                                    :role (loop :for r :in roles
-                                                :collect (if (atom r)
-                                                             (make-instance
-                                                              (intern (string r) "PORTAL.DEMO1"))
-                                                             (apply #'make-instance
-                                                                    (intern (string (first r))
-                                                                            "PORTAL.DEMO1")
-                                                                    (rest r)))))))
+                        (props (list :base (if (eql class 'uic-series)
+                                               (loop :for i :from 0 :for f :in (second form)
+                                                     :collect (express f params (cons i path)))
+                                               (second form))
+                                     :path (reverse path)
+                                     :type (rest (assoc :type (cddr form)))
+                                     :role (loop :for r :in (rest (assoc :role (cddr form)))
+                                                 :collect (if (atom r)
+                                                              (make-instance
+                                                               (intern (string r) "PORTAL.DEMO1"))
+                                                              (apply #'make-instance
+                                                                     (intern (string (first r))
+                                                                             "PORTAL.DEMO1")
+                                                                     (rest r))))))
+                        (out))
                    ;; (when roles (setf portal.demo1::iioo out))
-                   (when layout (setf (uic-series-layout out) layout))
+                   (setf out (apply #'make-instance class (append props (rest fx-property))))
+                   ;; (when layout
+                   ;;   (if (typep out 'uic-series)
+                   ;;       (setf (uic-series-layout out) layout)
+                   ;;       (error "Assigned layout to a component that's not a uic-series.")))
                    (when (eql class 'uicc-select)
                      (setf (uics-options out) (rest (assoc :options (cddr form)))))
                    out)))))
@@ -1195,13 +1232,14 @@
             ;; (print (list :af (assoc :face input :test #'eq)))
             ;; (print (list :ew el-width formatted))
             ;; the output-stream is created in the seed package - best elsewhere?
+            ;; (print (list :eoeo input))
             (if (and (assoc :face input :test #'eq)
                      (string= "graphNode" (rest (assoc :face input :test #'eq))))
                 (render (funcall context :medium)
                         (fx ((uic-frame :type (:meta-code)))
                             (express
                              (funcall (lambda (items)
-                                        `(meta ,items (:type :enum) (:fx . :uic-series)))
+                                        `(meta ,items (:type :enum) (:fx :uic-series)))
                                       (loop :for item :in (funcall
                                                            ;; nodes have an (index . N)
                                                            ;; form to omit, links don't

@@ -343,6 +343,37 @@
                      (write-sequence after-bytes output))
                    new-value))))
 
+;; (meta (line (meta *base-line-style* (:fx :uicc-select) (:type :select))
+;;                     (meta :x-start (:fx :uicc-field) (:type :numeric :integer))
+;;                     (meta :y-start (:fx :uicc-field) (:type :numeric :integer))
+;;                     (meta :x-end   (:fx :uicc-field) (:type :numeric :integer))
+;;                     (meta :y-end   (:fx :uicc-field) (:type :numeric :integer)))
+;;               (:fx :uic-series :layout (:groups :rows (-1 2 2)))
+;;       (:role (uir-call-form :options (list 'line 'retrace))))
+
+(defun seek-key (form key)
+  (let ((to-return))
+    (loop :for item :in form :for i :from 0 :until to-return
+          :do (if (listp item)
+                  (let ((next (seek-key item key)))
+                    (when next (setf to-return (cons i next))))
+                  (when (eq key item) (setf to-return (list i)))))
+    to-return))
+
+(defun set-key (form value path)
+  (if (rest path) (set-key (nth (first path) form) value (rest path))
+      (setf (nth (first path) form) value)))
+
+(defun build-templater (form &rest keys)
+  (let ((paths) (assigners))
+    (dolist (key keys)
+      (setf (getf paths key) (seek-key form key)))
+    (lambda (&rest pairs)
+      (let ((output (copy-tree form)))
+        (loop :for (key value) :on pairs :by #'cddr
+              :do (set-key output value (getf paths key)))
+        output))))
+
 (defmacro psl (form)
   "A macro for denoting inline Parenscript code."
   `(subseq (parenscript:ps-inline ,form) 11))

@@ -170,6 +170,7 @@
     ;; meta-code UIFX styles
 
     `(.meta-code
+      (.columns :margin 0)
       (.ui.series
        :padding 0.5rem)
 
@@ -654,7 +655,7 @@
 		      (setf (@ ctx stroke-style) "black"
 			    (@ ctx line-width) 1)))
 	 (intersect-line (lambda (ent chart point callback)
-                           (chain console (log :ch chart ent))
+                           ;; (chain console (log :ch chart ent))
 			   (let ((line-points (list (chain chart (to-dom-coords (@ ent points 0 0)
 										(@ ent points 0 1)))
 						    (chain chart (to-dom-coords (@ ent points 1 0)
@@ -757,7 +758,6 @@
 (enter-js-element *misc-js* :interactor-mousedown
   (defun interactor-mousedown (mode)
     (lambda (event g context)
-      (chain console (log "aaa" g))
       (setf (@ mode mousedown) t)
       (let ((canvas-coords (list (@ event layer-x) (@ event layer-y)))
 	    (dom-coords (chain g (event-to-dom-coords event)))
@@ -820,13 +820,12 @@
 						   (@ mode draw-entity))))))
 	       (chain mode entities (push new-entity))
 	       (chain mode entities-in-flux (push new-entity))
-	       (setf (@ mode active-entity)
-		     new-entity)))))))))
+	       (setf (@ mode active-entity) new-entity)))))))))
 
 (enter-js-element *misc-js* :interactor-mouseup
   (defun interactor-mouseup (mode)
     (lambda (event chart context)
-      (chain console (log "bbb" (@ mode entities)))
+      (chain console (log "bbb" (@ mode entities) context))
       (let ((self this))
         (setf (@ mode mousedown) false)
         (case (@ mode interaction)

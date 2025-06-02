@@ -203,6 +203,10 @@ form .ui.selection.dropdown{
 
 
 
+.meta-code .columns{
+    margin: 0;
+}
+
 .meta-code .ui.series{
     padding: 0.5rem;
 }
@@ -448,7 +452,7 @@ form .ui.selection.dropdown{
     font-family: serif;
     font-weight: bold;
     line-height: 2.6em;
-    text-shadow: 1px 1px 0 #555;
+    text-shadow: 1px 1px 0 #fff;
 }
 
 .scenario-frame .setting{

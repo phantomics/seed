@@ -39,9 +39,11 @@
                                  (list (grow :demo.sheet (first l)
                                              context (list (list "ifmod-foot" t)))))))))))
 
-(branch :demo.sheet :chart
-  (let ((chart-data)
-        (entities (rest (from-system-file :demo.sheet "sheet.lisp" :chart-entities))))
+(let ((chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
+      (line-templater (build-templater (from-system-file :demo.sheet "sheet.lisp"
+                                                         :chart-entity-template-line)
+                                       :x-start :y-start :x-end :y-end)))
+  (branch :demo.sheet :chart
     (lambda (context input)
       ;; (print (list :in input))
       (cbind input item
@@ -53,14 +55,22 @@
                            (uic-series :type (:ui :controls)))
                           (list :save :zoom-actual)))
         ("entities"
-         (loop :for entity :in (rest item)
-               :do (push (reduce #'append (cons (list 'draw :line) (astr :points entity)))
-                         entities)))
+         (let ((collected))
+           (dolist (espec (rest (assoc "entities" input :test #'string=)))
+             (destructuring-bind (x-start y-start x-end y-end)
+                 (reduce #'append (rest (assoc "points" espec :test #'string=)))
+               (print (list :in2 input chart-entities))
+               (push (funcall line-templater :x-start x-start :y-start y-start :x-end x-end :y-end y-end)
+                     collected)))
+           (setf (second chart-entities)
+                 (append (second chart-entities) (reverse collected)))
+           (print (list :cd chart-entities))
+           "done"))
         ("action"
          ;; (print (list :it item))
          (case (intern (string-upcase (rest item)) "KEYWORD")
            (:save (let ((output))
-                    (setf output (format nil "(progn~%~{~a~%~})" entities))
+                    (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
                     (setf (from-system-file :demo.sheet "sheet.lisp" :chart-entities :as-string t)
                           output)))))
         (t (case (intern (string-upcase (rest (assoc "mode" input :test #'string=)))
@@ -68,40 +78,41 @@
              (:chart-data (system-file-to-string :demo.sheet "price.csv"))
              (t (render (funcall context :medium)
                         (fx ((uich-candle :type (:green-red)))
-                            :demo.sheet :chart)))))))))
+                            :demo.sheet :chart))))))))
 
-(branch :demo.sheet :chentity
-  (let ((entities))
-    (lambda (context input)
-      (cbind input item
-        ("state" :meta-code-form)
-        ("ifmod-head" (fx ((:each uicc-button)
-                           (uic-series :type (:ui :controls)))
-                          (list :save)))
-        ("ifmod-foot" (fx ((:each uicc-button)
-                           (uic-series :type (:ui :controls)))
-                          (list :save)))
-        ("path"
-         (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" (rest item)))))
-           (cbind input argument
-             ("sort" (destructuring-bind (index move-to) (rest argument)
-                       (symbol-macrolet ((elist (second entities)))
-                         (let ((moved (nth index elist)))
-                           ;; (print (list :en index move-to elist :mm moved))
-                           (if (zerop index) (setf elist (rest elist))
-                               (rplacd (nthcdr (1- index) elist)
-                                       (rest (nthcdr index elist))))
-                           ;; (print (list :en2 index move-to elist :mov moved))
-                           (if (zerop move-to) (setf elist (cons moved elist))
-                               (rplacd (nthcdr (1- move-to) elist)
-                                       (cons moved (nthcdr move-to elist)))))))
-                     (print :complete)))))
-        (t (unless entities
-             (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities))))
-           (when context
-             (render (funcall context :medium)
-                     (fx ((uic-frame :type (:meta-code)))
-                         (seed.modulate::express entities)))))))))
+  (branch :demo.sheet :chentity
+      (lambda (context input)
+        (cbind input item
+          ("state" :meta-code-form)
+          ("ifmod-head" (fx ((:each uicc-button)
+                             (uic-series :type (:ui :controls)))
+                            (list :save)))
+          ("ifmod-foot" (fx ((:each uicc-button)
+                             (uic-series :type (:ui :controls)))
+                            (list :save)))
+          ("path"
+           (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" (rest item)))))
+             (cbind input argument
+               ("sort" (destructuring-bind (index move-to) (rest argument)
+                         (symbol-macrolet ((elist (second chart-entities)))
+                           (let ((moved (nth index elist)))
+                             ;; (print (list :en index move-to elist :mm moved))
+                             (if (zerop index) (setf elist (rest elist))
+                                 (rplacd (nthcdr (1- index) elist)
+                                         (rest (nthcdr index elist))))
+                             ;; (print (list :en2 index move-to elist :mov moved))
+                             (if (zerop move-to) (setf elist (cons moved elist))
+                                 (rplacd (nthcdr (1- move-to) elist)
+                                         (cons moved (nthcdr move-to elist)))))))
+                       (print :complete)))))
+          (t (unless chart-entities
+               ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
+               (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
+               )
+             (when context
+               (render (funcall context :medium)
+                       (fx ((uic-frame :type (:meta-code)))
+                           (seed.modulate::express chart-entities)))))))))
 
 (branch :demo.sheet :main
   (lambda (context input)
@@ -261,6 +272,7 @@
            :link-template-key :graph-link-template :graph-key :graph
            :node-indices-key :graph-node-indices)))
     (lambda (context input)
+      (print (list :ii context input))
       (cbind input item
         ("state" (when (assoc "state" input :test #'string=)
                      (case (second (assoc "state" input :test #'string=))
@@ -272,7 +284,7 @@
         ("ifmod-foot" (fx ((:each uicc-button :call :@base)
                            (uic-series :type (:ui :controls)))
                           (list :save)))
-        (t (funcall interactor context input))))))
+        (t (print :ggg) (funcall interactor context input))))))
 
 (branch :demo.sheet :play
   (let ((state) (node) (selector))

@@ -12,7 +12,8 @@
            #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender
            #:psl #:astr
-           #:system-file-to-string #:from-system-file #:text-wrap #:setf-value #:of-array-spec
+           #:system-file-to-string #:from-system-file #:build-templater
+           #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec)
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)
