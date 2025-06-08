@@ -41,6 +41,12 @@
 ;;   (print env)
 ;;   (setf *test1* (getf env :lack.session)))
 
+(setf (symbol-function 'http-body.json:json-parse)
+      (lambda (content-type content-length stream)
+        (jonathan:parse (babel:octets-to-string (slurp-stream stream content-length)
+                                                :encoding (detect-charset content-type :utf-8))
+                        :as :alist)))
+
 (defun set-cookie (key val)
   (push val (lack.response:response-set-cookies ningle:*response*))
   (push key (lack.response:response-set-cookies ningle:*response*)))
@@ -66,6 +72,7 @@
 				 :port port :server :hunchentoot :address "0.0.0.0")))
     (setf (ningle:route service "/render/" :method :POST)
           (lambda (value)
+            (setf cl-user::iioo (list ningle:*request* *request-env*))
             (let ((session-id (get-cookie "session")))
               (unless session-id (let ((new-id (gensym "SSID")))
                                    (set-cookie "session" (list :value (string new-id)

@@ -41,7 +41,8 @@
                                                        ;; (loop :for ,p :in ,input
                                                        ;;       :collect (cons (camel-case->keyword (first ,p))
                                                        ;;               (rest ,p)))
-                                                       ,input))))
+                                                       ,input
+                                                       ))))
                       :renderer-fetch (lambda (,params ,session-api)
                                         ;; (print (list :par ,params ,session-api))
                                         (let ((,system-name (get-name "system" ,params))
@@ -729,7 +730,7 @@
 
 (enter-js-element *misc-js* :commit-entities
   (defun commit-entities (mode)
-    (fetch-contact null mode (create entities (@ mode entities))
+    (fetch-contact null mode (create entities (@ mode entities-in-flux))
                    (lambda (data) (chain console (log :en data (@ mode linked-branch-id)))
                      (chain htmx (trigger (+ "#" (@ mode linked-branch-id)) "reload"))))))
 
@@ -818,7 +819,7 @@
 		    (new-entity (chain -object (assign (create)
                                                        base (getprop candlestick-chart-entity-templates
 						                     (@ mode draw-entity))))))
-	       (chain mode entities (push new-entity))
+	       ;; (chain mode entities (push new-entity))
 	       (chain mode entities-in-flux (push new-entity))
 	       (setf (@ mode active-entity) new-entity)))))))))
 

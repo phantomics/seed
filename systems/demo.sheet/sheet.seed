@@ -42,7 +42,8 @@
 (let ((chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
       (line-templater (build-templater (from-system-file :demo.sheet "sheet.lisp"
                                                          :chart-entity-template-line)
-                                       :x-start :y-start :x-end :y-end)))
+                                       :x-start :y-start :x-end :y-end))
+      (entity-data))
   (branch :demo.sheet :chart
     (lambda (context input)
       ;; (print (list :in input))
@@ -59,13 +60,17 @@
            (dolist (espec (rest (assoc "entities" input :test #'string=)))
              (destructuring-bind (x-start y-start x-end y-end)
                  (reduce #'append (rest (assoc "points" espec :test #'string=)))
-               (print (list :in2 input chart-entities))
+               ;; (print (list :in2 input chart-entities))
+               (push (list :points (rest (assoc "points" espec :test #'string=))
+                           :name   (rest (assoc "name" espec :test #'string=))
+                           :type   (rest (assoc "type" espec :test #'string=)))
+                     entity-data)
                (push (funcall line-templater :x-start x-start :y-start y-start :x-end x-end :y-end y-end)
                      collected)))
            (setf (second chart-entities)
                  (append (second chart-entities) (reverse collected)))
-           (print (list :cd chart-entities))
-           "done"))
+           "done"
+           entity-data))
         ("action"
          ;; (print (list :it item))
          (case (intern (string-upcase (rest item)) "KEYWORD")
