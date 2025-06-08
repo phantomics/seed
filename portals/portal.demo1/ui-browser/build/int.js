@@ -302,7 +302,8 @@ if ('undefined' === typeof candlestickChartEntityTemplates) {
 function commitEntities(mode) {
     __PS_MV_REG = [];
     return fetchContact(null, mode, { entities : mode.entities }, function (data) {
-        return console.log('en', data);
+        console.log('en', data, mode.linkedBranchId);
+        return htmx.trigger('#' + mode.linkedBranchId, 'reload');
     });
 };
 function interactorMousewheel(mode) {
@@ -378,14 +379,17 @@ function interactorMousedown(mode) {
             if (0 !== remainder) {
                 dataPos[0] -= remainder;
             };
+            var thisDate = new Date();
             var base = { type : mode.drawEntity,
                          inFlux : true,
+                         name : 'obj-' + thisDate.getTime(),
                          points : [[dataPos[0], dataPos[1]], [dataPos[0], dataPos[1]]],
                          pointsInFlux : []
                        };
             var newEntity = Object.assign({  }, base, candlestickChartEntityTemplates[mode.drawEntity]);
             mode.entities.push(newEntity);
             mode.entitiesInFlux.push(newEntity);
+            __PS_MV_REG = [];
             return mode.activeEntity = newEntity;
         };
     };

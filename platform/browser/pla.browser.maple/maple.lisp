@@ -730,7 +730,8 @@
 (enter-js-element *misc-js* :commit-entities
   (defun commit-entities (mode)
     (fetch-contact null mode (create entities (@ mode entities))
-                   (lambda (data) (chain console (log :en data))))))
+                   (lambda (data) (chain console (log :en data (@ mode linked-branch-id)))
+                     (chain htmx (trigger (+ "#" (@ mode linked-branch-id)) "reload"))))))
 
 (enter-js-element *misc-js* :interactor-mousewheel
   (defun interactor-mousewheel (mode)
@@ -807,17 +808,16 @@
 		  (remainder (mod (@ data-pos 0) time-interval)))
 	     (if (/= 0 remainder)
 		 (setf (@ data-pos 0) (- (@ data-pos 0) remainder)))
-	     (let* ((base (create type (@ mode draw-entity)
+	     (let* ((this-date (new (-date)))
+                    (base (create type (@ mode draw-entity)
 				  in-flux true
+                                  name   (+ "obj-" (chain this-date (get-time)))
 				  points (list (list (@ data-pos 0) (@ data-pos 1))
 					       (list (@ data-pos 0) (@ data-pos 1)))
 				  points-in-flux (list)))
-		    (new-entity ;; (chain j-query (extend t base (getprop self "entityTemplates"
-		      ;; 				       (@ mode draw-entity))))
-                      (chain -object
-                             (assign (create)
-                                     base (getprop candlestick-chart-entity-templates
-						   (@ mode draw-entity))))))
+		    (new-entity (chain -object (assign (create)
+                                                       base (getprop candlestick-chart-entity-templates
+						                     (@ mode draw-entity))))))
 	       (chain mode entities (push new-entity))
 	       (chain mode entities-in-flux (push new-entity))
 	       (setf (@ mode active-entity) new-entity)))))))))

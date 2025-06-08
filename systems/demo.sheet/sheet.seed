@@ -109,7 +109,9 @@
                ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
                (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
                )
+             (print (list :ccc context))
              (when context
+               (print (list :con (funcall context :medium)))
                (render (funcall context :medium)
                        (fx ((uic-frame :type (:meta-code)))
                            (seed.modulate::express chart-entities)))))))))

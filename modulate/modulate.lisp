@@ -316,6 +316,7 @@
      base (case (uic-mode aspect)
             (:chart (list :mode    (list :interaction "select"
                                          :draw-entity "line"
+                                         :linked-branch-id "branch-entitiesView"
                                          :moving-from 'nil
                                          :mousedown 'false
                                          :active-entity 'nil
