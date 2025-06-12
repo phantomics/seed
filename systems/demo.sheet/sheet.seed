@@ -50,7 +50,7 @@
       (cbind input item
         ("state" :chart)
         ("ifmod-head" (fx ((:each uicc-button :type (:local) :call :@base)
-                           (uic-series :type (:ui :controls)))
+                           (uic-series :type (:ui :controls :extog)))
                           (list :select :draw :retrace-x :retrace-y)))
         ("ifmod-foot" (fx ((:each uicc-button :type (:local))
                            (uic-series :type (:ui :controls)))
@@ -60,18 +60,26 @@
            (dolist (espec (rest (assoc "entities" input :test #'string=)))
              (destructuring-bind (x-start y-start x-end y-end)
                  (reduce #'append (rest (assoc "points" espec :test #'string=)))
-               ;; (print (list :in2 input chart-entities))
+               (print (list :in2 input chart-entities))
                (let ((points (rest (assoc "points" espec :test #'string=)))
-                     (name   (rest (assoc "name" espec :test #'string=)))
-                     (type   (rest (assoc "type" espec :test #'string=))))
-                 (unless (loop :for ent :in entity-data :when (string= name (getf ent :name)) :return ent)
-                   (push (list :points points :name name :type type :points-in-flux nil)
-                         entity-data)))
-               (push (funcall line-templater :x-start x-start :y-start y-start :x-end x-end :y-end y-end)
-                     collected)))
+                     (name   (rest (assoc "name"   espec :test #'string=)))
+                     (type   (rest (assoc "type"   espec :test #'string=)))
+                     (ratios (rest (assoc "ratios" espec :test #'string=))))
+                 (let ((index)
+                       (item (list :points points :name name :type type :points-in-flux nil
+                                   :in-flux :true :ratios ratios)))
+                   (loop :for ent :in entity-data :for i :from 0
+                         :do (if (string= name (getf ent :name))
+                                 (setf index i)
+                                 (setf (getf ent :in-flux) :false)))
+                   ;; (print (list :ent entity-data))
+                   (if index (setf (nth index entity-data) item)
+                       (progn (push item entity-data)
+                              (push (funcall line-templater :x-start x-start :y-start y-start
+                                                            :x-end x-end :y-end y-end)
+                                    collected)))))))
            (setf (second chart-entities)
                  (append (second chart-entities) (reverse collected)))
-           "done"
            entity-data))
         ("action"
          ;; (print (list :it item))
@@ -116,9 +124,9 @@
                ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
                (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
                )
-             (print (list :ccc context))
+             ;; (print (list :ccc context))
              (when context
-               (print (list :con (funcall context :medium)))
+               ;; (print (list :con (funcall context :medium)))
                (render (funcall context :medium)
                        (fx ((uic-frame :type (:meta-code)))
                            (seed.modulate::express chart-entities)))))))))
@@ -281,7 +289,7 @@
            :link-template-key :graph-link-template :graph-key :graph
            :node-indices-key :graph-node-indices)))
     (lambda (context input)
-      (print (list :ii context input))
+      ;; (print (list :ii context input))
       (cbind input item
         ("state" (when (assoc "state" input :test #'string=)
                      (case (second (assoc "state" input :test #'string=))
@@ -293,7 +301,7 @@
         ("ifmod-foot" (fx ((:each uicc-button :call :@base)
                            (uic-series :type (:ui :controls)))
                           (list :save)))
-        (t (print :ggg) (funcall interactor context input))))))
+        (t (funcall interactor context input))))))
 
 (branch :demo.sheet :play
   (let ((state) (node) (selector))

@@ -344,7 +344,9 @@
                                                  (@ mode draw-entity) "retraceY"))
                                          :zoom-actual
                                          '(lambda (mode)
-                                           ))))
+                                           )
+                                         :when-toggled `(lambda (mode)
+                                                          (chain console (log 202 mode))))))
             (:meta-code-form (list :mode    (list :form nil)
                                    :methods (list :register-form
                                                   '(lambda (mode)
@@ -442,7 +444,8 @@
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
         (breadth-default 12) (call (uic-call aspect))
-        (layout (uic-series-layout aspect)))
+        (layout (uic-series-layout aspect))
+        (x-inits))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -457,6 +460,18 @@
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
 
+        ;; (when (member :enum types)
+        ;;   (push (psl (if (not (= "undefined" (typeof (@ methods register-form))))
+        ;;                  (funcall (chain methods (register-form mode)) $el)))
+        ;;         x-inits))
+
+        ;; (when (and (member :controls types) (member :extog types))
+        ;;   (push (psl (create register-toggle (register-exclusive-toggle-array
+        ;;                                       mode (@ methods when-toggled)
+        ;;                                       (@ methods when-untoggled))))
+        ;;         x-inits))
+
+        
         (let* ((items (loop :for ix :from 0
                             ;; if this is a call-form, the form's head symbol is not displayed
                             ;; with the others; in most cases it is either not shown or displayed
@@ -490,7 +505,7 @@
                                      (has-role (uic-root aspect) 'uir-sortable)))
                (header (let ((segments))
                          (when (and parent-sortable (of-root-type aspect :meta-code))
-                           (push '(:p :class "control drag-handle" (:a :class "button is-static" "A"))
+                           (push '(:p :class "control drag-handle" (:a :class "button is-static" "≣"))
                                  segments))
                          (when (has-role aspect 'uir-call-form)
                            (push `(:p :class "control is-expanded"
@@ -533,9 +548,16 @@
                   
                   (if (eq t call)
                       (list :hx-inherit "*" :hx-post "/render/"))
+                  
                   (if (member :enum types)
                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
                                              (funcall (chain methods (register-form mode)) $el)))))
+
+                  (if (and (member :controls types) (member :extog types))
+                      (list :x-data (psl (create this-toggle null
+                                                 toggle-state (create index null)))
+                            :x-init (psl (setf this-toggle (register-exclusive-toggle-array mode methods
+                                                                                            toggle-state)))))
 
                   ;; header
 
@@ -544,19 +566,19 @@
                             (rows (getf lprops :rows)))
 
                         (dolist (item rows)
-                          (push nil envelopes)
-                          (when (and header (zerop item-index) (minusp item))
-                            ;; (print :mm)
-                            (push (first header)
-                                  (first envelopes)))
-                          ;; (print (list :aa item)) 
-                          (loop :for c :below (abs item)
-                                :do (push (list :div :class "column"
-                                                (nth (+ c item-index) items))
-                                          (first envelopes)))
-                          (setf (first envelopes) (append (list :div :class "columns")
-                                                          (reverse (first envelopes))))
-                          (incf item-index (max 1 item)))
+                          (let ((in-header (and header (zerop item-index) (minusp item))))
+                            (push nil envelopes)
+                            (when in-header
+                              (push (first header)
+                                    (first envelopes)))
+                            ;; (print (list :aa item)) 
+                            (loop :for c :below (abs item)
+                                  :do (push (list :div :class (if in-header "following" "column")
+                                                  (nth (+ c item-index) items))
+                                            (first envelopes)))
+                            (setf (first envelopes) (append (list :div :class "columns")
+                                                            (reverse (first envelopes))))
+                            (incf item-index (max 1 item))))
                         
                         (append (reverse envelopes)
                                 (if (< item-index (1- (length items)))
@@ -629,12 +651,17 @@
 (defmethod generate ((medium uim-web) (aspect uicc-button))
   (let* ((base (uic-base aspect))
          (name (if (or (symbolp base) (stringp base))
-                   base)))
+                   base))
+         (root-types (funcall (if (listp (uic-type aspect)) #'identity #'list)
+                              (uic-type (uic-root aspect)))))
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
       `(:button :name ,(or (string name) "") ,@(furnish-call medium aspect)
-        :class ,(furnish-type medium aspect '(:ui :button))
-        ,(realize aspect medium name)))))
+                ;; ,@(and (member :controls root-types) (member :extog root-types)
+                ;;        `(:|x-on:click| ,(psl (funcall this-toggle (lisp name)
+                ;;                                       (lisp (uic-sort aspect))))))
+                :class ,(furnish-type medium aspect '(:ui :button))
+                ,(realize aspect medium name)))))
                             
 (defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
@@ -674,8 +701,10 @@
   (let* ((base (uic-base aspect))
          (original-type (uic-type aspect))
          (types (if (listp original-type) original-type (list original-type))))
+    (print (list :bba base))
     (destructuring-bind (field-name &rest field-content)
-        (if (listp base) base (cons (uic-name aspect) base))
+        (if (and base (listp base))
+            base (cons (uic-name aspect) base))
       `(:div :class "field has-addons"
              ,@(if field-name `((:p :class "control"
                                     (:a :class "button is-static" ,(lisp->camel-case field-name)))))
@@ -815,7 +844,7 @@
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
   (destructuring-bind (system branch) (uic-base aspect)
-    `(:div :id ,(format nil "~a-~a" system branch)
+    `(:div :class "chart-holder" :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
                           (let ((config (create plotter (funcall get-candle-plotter mode)
                                                 height (@ $el offset-height)

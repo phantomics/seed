@@ -110,6 +110,16 @@
        :margin "1rem 0"
        (.symbol :font-weight "normal")
        (.divider :margin "0.5rem 0")))
+
+    `(.ui.series.placard
+      (label :display none)
+      (.item :margin-bottom 1rem)
+      (.button :width 100%)
+      (.column :padding-top 60%)
+      :background "#e6e6e6"
+      :height 100%
+      :text-align center
+      :margin "0 36%")
     
     `(.ui.grid :height "100%" (.group :height "100%"))
 
@@ -150,10 +160,11 @@
     
     `((:or .ui.header .ui.footer)
       :width "100%" :height "100%" :padding 8px :margin 0 :background "#eee"
-      :display grid :grid-template-columns "20% 80%" :grid-template-rows 100%)
+      :display grid :grid-template-rows 100%)
 
     `(.ui.header
       :border-bottom "2px solid #ccc"
+      :grid-template-columns "20% 80%"
       (h2.branch-name :margin 0 :grid-column-start 1)
       (.controls :text-align right))
     
@@ -171,8 +182,13 @@
     ;; meta-code UIFX styles
 
     `(.meta-code
-      (.columns :margin 0)
+      (.columns
+       :margin 0)
       (.ui.series
+       (.series-heading
+        (.control
+         :font-family "PragmataPro, iosevka, Mono"))
+       (.following :padding-left 0.5rem)
        :padding 0.5rem)
 
       (.item ;; comment to make even
@@ -189,6 +205,12 @@
        ;; offset-terminal: -3px;
        :background-color black
        :height 2px))
+
+    ;; chart view styles
+
+    `(.chart-holder
+      (.dygraph-legend :background "#fff" :padding 0.2rem)
+      :height "calc(100% - 2rem)")
     
     ;; d3 graph view styles
     
@@ -443,6 +465,38 @@
           ("trigger" (loop :for item :in (getprop types option)
                            :do (chain htmx (trigger item body)))))))))
 
+;; (enter-js-element *misc-js* :extog-array
+;;   (defun register-exclusive-toggle-array (object)
+;;     (lambda (array-key item-key)
+      
+;;       (unless (getprop object array-key)
+;;         (setf (getprop object array-key) (create)))
+
+;;       (setf (getprop object array-key item-key) false)
+
+;;       (lambda (item-key)
+;;         (setf (getprop object array-key item-key) true)
+
+;;         (loop :for k :in (chain -object (keys (getprop object array-key)))
+;;               :do (if (= k item-key)
+;;                       (progn (funcall to-activate k)
+;;                              (setf (getprop object array-key k) true))
+;;                       (progn (when (getprop object array-key)
+;;                                (funcall to-deactivate k))
+;;                              (setf (getprop object array-key k) false))))))))
+
+(enter-js-element *misc-js* :extog-array
+  (defun register-exclusive-toggle-array (data actions state)
+    (chain console (log :ta data actions))
+    (lambda (key index)
+
+      (funcall (getprop actions key))
+
+      (setf (@ state index) index)
+      
+      (chain console (log :ss index key))
+      )))
+
 (enter-js-element *misc-js* :initialize-draggable
   (defun initialize-draggable (element mode in-series)
     ;; (print (list :ty types))
@@ -601,7 +655,7 @@
 				    (chain chart (to-dom-coords (@ ent points 1 0) (@ ent points 1 1)))
 				    (@ ent layer-points 1)))))
 	 (draw-line (lambda (ctx ent chart points)
-		      (if (@ ent in-flux)
+		      (if (and (@ ent in-flux) (/= "false" (@ ent in-flux)))
 			  (setf (@ ctx line-width) 2))
 		      (chain ctx (begin-path))
 		      (let ((points (if points points (derive-points ent chart)))
@@ -610,7 +664,7 @@
 			(chain ctx (line-to (@ points 1 0) (@ points 1 1)))
 			(chain ctx (close-path))
 			(chain ctx (stroke))
-			(if (@ ent in-flux)
+			(if (and (@ ent in-flux) (/= "false" (@ ent in-flux)))
 			    (let* ((diffs (list (list (- (@ points 0 0) (@ points 1 0))
 						      (- (@ points 0 1) (@ points 1 1)))
 						(list (- (@ points 1 0) (@ points 0 0))
@@ -782,7 +836,7 @@
                                                                     (@ ent points 0 1)))
 					    (chain g (to-dom-coords (@ ent points 1 0)
                                                                     (@ ent points 1 1)))))
-			        (if (@ ent in-flux)
+			        (if (and (@ ent in-flux) (/= "false" (@ ent in-flux)))
 				    (if (and (> 8 (abs (- (@ ent layer-points 0 0) (@ dom-coords 0))))
 					     (> 8 (abs (- (@ ent layer-points 0 1) (@ dom-coords 1)))))
 				        (chain (@ ent points-in-flux) (push 0))
@@ -791,7 +845,8 @@
 						 (> 8 (abs (- (@ ent layer-points 1 1)
                                                               (@ dom-coords 1)))))
 					    (chain (@ ent points-in-flux) (push 1)))))
-			        (if (not (@ ent in-flux))
+			        (if (or (not (@ ent in-flux))
+                                        (= "false" (@ ent in-flux)))
 				    ;; only push the entity if it isn't already in flux, else
 				    ;; entities can be pushed into the in-flux list multiple times
 				    (progn (setf (@ ent in-flux) true)
@@ -840,7 +895,7 @@
         	      (chain chart (draw-graph_)))
                (progn (loop for ent in (@ mode entities)
         		    do (chain console (log :ee ent))
-                               (if (@ ent in-flux)
+                               (if (and (@ ent in-flux) (/= "false" (@ ent in-flux)))
         			   (setf (@ ent points 0)
                                          (chain chart (to-data-coords (@ ent layer-points 0 0)
                                                                       (@ ent layer-points 0 1)))
@@ -906,6 +961,7 @@
                                                                 time-coord)))))))
         	              (setf (@ mode moving-from) (list (@ event layer-x)
                                                                (@ event layer-y)))
+                              (cl :xx (@ ent type))
         	              (funcall (getprop draw-methods (@ ent type) "draw")
         	        	       temp-canvas ent chart))
 
@@ -999,7 +1055,9 @@
 		        (@ ctx line-width) 1.5)
 		  (chain console (log :ents (@ mode entities)))
 		  (loop :for ent :in (@ mode entities)
-		        :do (if (not (and (@ mode mousedown) (@ ent in-flux)))
+		        :do (if (not (and (@ mode mousedown) (@ ent in-flux)
+                                          ;; (/= "false" (@ ent in-flux))
+                                          ))
 		                (funcall (getprop draw-methods (@ ent type) "draw")
 		        	         ctx ent (@ mode chart))))
 		  )))))))

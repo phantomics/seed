@@ -66,6 +66,29 @@ body{
     margin: 0.5rem 0;
 }
 
+.ui.series.placard{
+    background: #e6e6e6;
+    height: 100%;
+    text-align: center;
+    margin: 0 36%;
+}
+
+.ui.series.placard label{
+    display: none;
+}
+
+.ui.series.placard .item{
+    margin-bottom: 1rem;
+}
+
+.ui.series.placard .button{
+    width: 100%;
+}
+
+.ui.series.placard .column{
+    padding-top: 60%;
+}
+
 .ui.grid{
     height: 100%;
 }
@@ -146,12 +169,12 @@ body{
     margin: 0;
     background: #eee;
     display: grid;
-    grid-template-columns: 20% 80%;
     grid-template-rows: 100%;
 }
 
 .ui.header{
     border-bottom: 2px solid #ccc;
+    grid-template-columns: 20% 80%;
 }
 
 .ui.header h2.branch-name{
@@ -213,6 +236,16 @@ form .ui.selection.dropdown{
 
 
 
+.meta-code .ui.series .series-heading .control{
+    font-family: PragmataPro, iosevka, Mono;
+}
+
+.meta-code .ui.series .following{
+    padding-left: 0.5rem;
+}
+
+
+
 .meta-code .item .input,
 .meta-code .item .textarea,
 .meta-code .item .select{
@@ -222,6 +255,15 @@ form .ui.selection.dropdown{
 .meta-code .drop-marker{
     background-color: black;
     height: 2px;
+}
+
+.chart-holder{
+    height: calc(100% - 2rem);
+}
+
+.chart-holder .dygraph-legend{
+    background: #fff;
+    padding: 0.2rem;
 }
 
 .d3view-graph-foldout,

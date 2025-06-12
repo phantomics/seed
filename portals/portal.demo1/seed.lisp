@@ -39,9 +39,9 @@
                  (fx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
                      "demo.sheet")
                  
-                 (fx ((uicc-select :type :default-blank :options (list :demo.sheet :demo.other)
-                                   :call (:@fetch (:point :@base) (:next :refresh))))
-                     "")
+                 ;; (fx ((uicc-select :type :default-blank :options (list :demo.sheet :demo.other)
+                 ;;                   :call (:@fetch (:point :@base) (:next :refresh))))
+                 ;;     "")
                  
                  (if (of-system :point)
                      (fx ((:each uic-anchor :type '(:branch))
@@ -52,8 +52,17 @@
              (if (not (of-system :point))
                  "" (grow (of-system :point) :view context)))
 
-         (fx ((uic-series :type (:ui :column) :call t)) ;; should this be :cast?
-             (list (fx ((uicc-field :name "key")) ""))))))))
+         (fx ((uic-series :type (:ui :main :placard)))
+             (list (fx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
+                       (list "please input your key"
+                             (fx ((uicc-field :name "key")) "")
+                             (fx ((uicc-button :call t))
+                                 "enter")
+                             )))))))))
+
+         
+;; (fx ((uic-series :type (:ui :column) :call t)) ;; should this be :cast?
+;;     (list (fx ((uicc-field :name "key")) ""))))))))
 
 (branch :portal.demo1 :systems
   (lambda (context input)

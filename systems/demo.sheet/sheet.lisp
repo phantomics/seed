@@ -41,24 +41,10 @@
             (meta :y-start (:fx :uicc-field) (:type :numeric :float))
             (meta :x-end   (:fx :uicc-field) (:type :numeric :integer))
             (meta :y-end   (:fx :uicc-field) (:type :numeric :float)))
-      (:fx :uic-series :layout (:groups :rows (-1 2 2)))
+      (:fx :uic-series :layout (:groups :rows (-1 4)))
       (:role (uir-call-form :options (list 'line 'retrace))))
 :chart-entities
-(meta (chart-view :chart-test "data"
-        (meta (line (meta *base-line-style* (:fx :uicc-select) (:type :select))
-                    (meta 123 (:fx :uicc-field) (:type :numeric :integer))
-                    (meta 100 (:fx :uicc-field) (:type :numeric :integer))
-                    (meta 145 (:fx :uicc-field) (:type :numeric :integer))
-                    (meta 90  (:fx :uicc-field) (:type :numeric :integer)))
-              (:fx :uic-series :layout (:groups :rows (-1 2 2)))
-              (:role (uir-call-form :options (list 'line 'retrace))))
-        (meta (line (meta *base-line-style* (:fx :uicc-select) (:type :select))
-                    (meta 23 (:fx :uicc-field) (:type :numeric :integer))
-                    (meta 50 (:fx :uicc-field) (:type :numeric :integer))
-                    (meta 73 (:fx :uicc-field) (:type :numeric :integer))
-                    (meta 60  (:fx :uicc-field) (:type :numeric :integer)))
-              (:fx :uic-series :layout (:groups :rows (-1 2 2)))
-              (:role (uir-call-form :options (list 'line 'retrace)))))
+(meta (chart-view :chart-test "data")
       (:fx :uic-series :layout (:groups :rows (-2))) (:type :called) (:role uir-call-form (uir-sortable :range 2)))
 ;; :chart-entities
 ;; (quote
