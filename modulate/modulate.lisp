@@ -556,8 +556,10 @@
                   (if (and (member :controls types) (member :extog types))
                       (list :x-data (psl (create this-toggle null
                                                  toggle-state (create index null)))
-                            :x-init (psl (setf this-toggle (register-exclusive-toggle-array mode methods
-                                                                                            toggle-state)))))
+                            :x-init (psl ;; ($next-tick (lambda ()
+                                                       (setf this-toggle
+                                                             (register-exclusive-toggle-array
+                                                              mode methods toggle-state)))))
 
                   ;; header
 
@@ -657,9 +659,14 @@
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
       `(:button :name ,(or (string name) "") ,@(furnish-call medium aspect)
-                ;; ,@(and (member :controls root-types) (member :extog root-types)
-                ;;        `(:|x-on:click| ,(psl (funcall this-toggle (lisp name)
-                ;;                                       (lisp (uic-sort aspect))))))
+                ,@(and (member :controls root-types) (member :extog root-types)
+                       (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
+                                                         (lisp (uic-sort aspect))))
+                             :|x-bind:class|
+                          ;; ,(psl (if (= (@ toggle-state index) (lisp (uic-sort aspect)))
+                          ;;                           "is-focused"))
+                             (format nil "toggleState.index === ~a ? 'is-focused' : ''"
+                                     (uic-sort aspect))))
                 :class ,(furnish-type medium aspect '(:ui :button))
                 ,(realize aspect medium name)))))
                             
@@ -701,7 +708,6 @@
   (let* ((base (uic-base aspect))
          (original-type (uic-type aspect))
          (types (if (listp original-type) original-type (list original-type))))
-    (print (list :bba base))
     (destructuring-bind (field-name &rest field-content)
         (if (and base (listp base))
             base (cons (uic-name aspect) base))

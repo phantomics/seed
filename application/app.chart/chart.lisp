@@ -90,7 +90,7 @@
                     ))
         )))
 
-(defmacro line (style xfrom yfrom xto yto)
+(defmacro span (style xfrom yfrom xto yto)
   `(make-instance 'enspan-retrace :points (list ,xfrom ,yfrom ,xto ,yto)
                                   :style ,style))
 

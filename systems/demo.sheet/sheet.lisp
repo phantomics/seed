@@ -36,7 +36,7 @@
              (chart-style :style-line :base-line :color '(:red :green :green)
                :stroke '(:solid :dots))))
 :chart-entity-template-line
-(meta (line (meta *base-line-style* (:fx :uicc-select) (:type :select))
+(meta (span (meta :type (:fx :uicc-select) (:type :select) (:options "line" "retraceX" "retraceY"))
             (meta :x-start (:fx :uicc-field) (:type :numeric :integer))
             (meta :y-start (:fx :uicc-field) (:type :numeric :float))
             (meta :x-end   (:fx :uicc-field) (:type :numeric :integer))
