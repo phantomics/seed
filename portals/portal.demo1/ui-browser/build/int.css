@@ -33,6 +33,7 @@ body{
 
 .sidebar{
     background: #d5d5d5;
+    height: 100vh;
 }
 
 .sidebar .heading{
@@ -48,22 +49,40 @@ body{
     padding: 3px 12px;
 }
 
+.ui.column.portal-summary{
+    height: 100vh;
+    grid-template-rows: [start] 12.5% [middle] 75.0% [end] 12.5%;
+}
 
-
-.portal-summary .symbol{
+.ui.column.portal-summary .symbol{
     font-weight: bold;
 }
 
-.portal-summary .navigation{
+.ui.column.portal-summary .navigation{
     margin: 1rem 0;
 }
 
-.portal-summary .navigation .symbol{
+.ui.column.portal-summary .navigation .symbol{
     font-weight: normal;
 }
 
-.portal-summary .navigation .divider{
+.ui.column.portal-summary .navigation .divider{
     margin: 0.5rem 0;
+}
+
+.ui.column.portal-summary > .item:nth-child(1){
+    grid-row-start: 1;
+    grid-row-end: 2;
+}
+
+.ui.column.portal-summary > .item:nth-child(2){
+    grid-row-start: 2;
+    grid-row-end: 3;
+}
+
+.ui.column.portal-summary > .item:nth-child(3){
+    grid-row-start: 3;
+    grid-row-end: 4;
 }
 
 .ui.series.placard{
@@ -105,7 +124,6 @@ body{
 .ui.grid-layout .column{
     display: grid;
     overflow: auto;
-    grid-template-rows: 1fr;
 }
 
 .ui.grid-layout .column .container{
@@ -122,6 +140,10 @@ body{
     height: 100%;
     background: #fff;
     overflow: auto;
+}
+
+.ui.grid-layout > .column{
+    grid-template-rows: 1fr;
 }
 
 .ui.grid-layout.main{

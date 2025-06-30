@@ -13,6 +13,7 @@
                               "parenscript"
                               "paren6"
                               "seed.sublimate"
+                              "symbol-munger"
                               "com.inuoe.jzon" "trivial-package-local-nicknames")
   :components ((:file "package")
                (:file "setup")

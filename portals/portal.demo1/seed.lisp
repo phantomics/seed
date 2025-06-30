@@ -7,7 +7,12 @@
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
 (branch :portal.demo1 :view
+  #'seed.generate::common-json-intake
   (lambda (context input)
+    (print (list :oo input))
+    input)
+  (lambda (context input)
+    (print (list :cc input))
     (let ((key-input (rest (assoc :key input :test #'eq))))
       (when (and key-input (string= "demo" (string-downcase key-input)))
         (funcall context :user :hello)))
@@ -34,20 +39,25 @@
          (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                           :maps '(((:type :sidebar)) ((:type :main)))))
              (fx ((uic-series :type '(:ui :column  :portal-summary)))
-                 :portal.demo1
-                 
-                 (fx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
-                     "demo.sheet")
-                 
-                 ;; (fx ((uicc-select :type :default-blank :options (list :demo.sheet :demo.other)
-                 ;;                   :call (:@fetch (:point :@base) (:next :refresh))))
-                 ;;     "")
+                 (fx ((uic-series :type '(:ui :list)))
+                     (list :portal.demo1
+                           
+                           (fx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
+                               "demo.sheet")
+                           
+                           (fx ((uicc-select :type :default-blank :options (list :demo.sheet :demo.other)
+                                             :call (:@fetch (:point :@base) (:next :refresh))))
+                               (or (of-system :point) ""))))
                  
                  (if (of-system :point)
                      (fx ((:each uic-anchor :type '(:branch))
                           (uic-series :type '(:ui :navigation)
                                       :point (funcall context :branch-point)))
-                         (mapcar #'second (grow (of-system :point) :summary)))))
+                         (mapcar #'second (grow (of-system :point) :summary))))
+                 
+                 (fx ((uic-series :type '(:ui :list)))
+                     (fx ((uicc-field :name "key")) "")
+                     (fx ((uicc-button :call t)) "enter")))
              
              (if (not (of-system :point))
                  "" (grow (of-system :point) :view context)))
@@ -59,13 +69,14 @@
                              (fx ((uicc-button :call t))
                                  "enter")
                              )))))))))
-
          
 ;; (fx ((uic-series :type (:ui :column) :call t)) ;; should this be :cast?
 ;;     (list (fx ((uicc-field :name "key")) ""))))))))
 
 (branch :portal.demo1 :systems
+  #'seed.generate::common-json-intake
   (lambda (context input)
+    (print (list :xx input))
     (if input (let ((epsym (intern input "KEYWORD")))
                 (of-system :point (intern input "KEYWORD"))
                 (instantiate-priority-macro-reader (asdf:load-system epsym)

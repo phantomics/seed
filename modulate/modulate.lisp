@@ -719,8 +719,9 @@
                         (:select :name ,(or (lisp->camel-case field-name) "")
                           :class ,(furnish-type medium aspect)
                           ,@(furnish-call medium aspect)
-                          ,@(append (if (member :default-blank types)
-                                        `((:option "")))
+                          ,@(append (and (member :default-blank types)
+                                         (not field-content)
+                                         `((:option "")))
                                     (loop :for item :in (uics-options aspect)
                                           :collect (let* ((item-out (if (not (symbolp item))
                                                                         item (lisp->camel-case item)))
@@ -972,7 +973,7 @@
         (link-template (second (from-system-file package file-name link-template-key)))
         (indices-form (from-system-file package file-name node-indices-key)))
     
-    (lambda (context input)  
+    (lambda (context input)
       (unless graph-base
         (setf graph-base  (from-system-file package file-name graph-key)
               orig-data   (third graph-base)

@@ -12,6 +12,13 @@
             :do (with-open-file (input f)
                   (loop :for i := (read input nil) :while i :do (eval i)))))))
 
+(defun chain-fns (fns)
+  (if (rest fns)
+      (let ((context (gensym)) (input (gensym)))
+        `(lambda (,context ,input)
+           (-<> ,input ,@(loop :for item :in fns :collect `(funcall ,item ,context <>)))))
+      (first fns)))
+
 (defmacro seed (name &body props)
   (let* ((access (rest (assoc :access props)))
          (contacts (rest (assoc :contacts props)))
@@ -27,8 +34,7 @@
          (session (gensym "SS")) (input (gensym "IN")) (portal-state (gensym "PR")))
     `(progn ,@(if (or expand-regardless (and branch (not (fboundp branch))))
                   `((defmacro ,branch (,system ,key &body ,input)
-                      (append (list ',defbranch ,system ,key)
-                              ,input))))
+                      (list ',defbranch ,system ,key (chain-fns ,input)))))
             ,@(loop :for joiner :in join-by :collect (list joiner name))
             ,@(when access
                 `((let ((,portal-state (list :point nil
@@ -43,7 +49,6 @@
                           ,@(if (or expand-regardless (and branch (not (fboundp branch))))
                                 `((symbol-function ',defbranch)
                                   (lambda (,system ,key &optional ,input)
-                                    ;; (print (list :ky ,system ,key))
                                     (if (member ,system ,branches)
                                         (if ,input (setf (getf (getf ,branches ,system) ,key) ,input)
                                             (getf (getf ,branches ,system) ,key))
@@ -98,6 +103,14 @@
                   (append (build-key-path new-value (rest keys))
                           found))))
       (setf (getf system (first keys)) new-value)))
+
+(defmacro abind (type keys alist &rest body)
+  (let ((alist-sym (gensym)))
+    `(let* ((,alist-sym ,alist)
+            ,@(loop :for key :in keys
+                    :collect (list key `(rest (assoc ,(string (camel-case->lisp-name key)) ,alist-sym
+                                                     ,@(case type (:string '(:test #'string=))))))))
+       ,@body)))
 
 (defmacro cbind (input item &body clauses)
   ;; TODO: OPTIMIZE, ELIMINATE REDUNDANCY
@@ -281,6 +294,11 @@
     (let ((contents (make-string (file-length stream))))
       (read-sequence contents stream)
       contents)))
+
+(defun common-json-intake (state input)
+  (declare (ignore state))
+  (if (not (stringp input))
+      input (jonathan:parse input :as :alist)))
 
 (defun from-system-file (system file key &key as-string)
   "Read a form from a file in the manner of a plist (but not requiring a strict key, value structure)."

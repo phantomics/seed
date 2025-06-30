@@ -13,9 +13,32 @@
         (:mousetrap "https://craig.global.ssl.fastly.net/js/mousetrap/mousetrap.min.js")
         (:dygraph "https://dygraphs.com/2.2.1/dist/dygraph.min.js")))
 
+(defun stream->string (stream &key (initial-size 1024))
+  (do* ((buffer (make-array initial-size :element-type '(unsigned-byte 8)
+                            :adjustable t :fill-pointer t))
+        (buffer-size initial-size)
+        (next (read-sequence buffer stream)))
+       ((< next buffer-size)
+        (setf (fill-pointer buffer) next)
+        (return (babel:octets-to-string buffer)))
+    (setf buffer-size (* 2 buffer-size))
+    (adjust-array buffer buffer-size :fill-pointer t)
+    (setf next (read-sequence buffer stream :start next))))
+
+(defun decompose-path (string)
+  (let* ((separator (position #\* string))
+         (sy-string (subseq string 0 separator))
+         (br-string (subseq string (1+ separator) (length string))))
+    (dotimes (n separator)
+      (setf (aref sy-string n) (aref string n)))
+    (dotimes (n (- (length string) 1 separator))
+      (setf (aref br-string n) (aref string (+ n 1 separator))))
+    (values (intern sy-string "KEYWORD")
+            (intern br-string "KEYWORD"))))
+
 (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))
-        (input (gensym)) (port (gensym)) (value (gensym)) (stopper (gensym))
+        (input (gensym)) (port (gensym)) (value (gensym)) (stopper (gensym)) (in-string (gensym))
         (restarter (gensym)) (system-name (gensym)) (branch-name (gensym)) (p (gensym)))
     `(let ((,pkg-name (intern (package-name (symbol-package ',to-start)) "KEYWORD")))
        (proclaim '(special ,to-start ,to-restart ,to-stop))
@@ -28,23 +51,14 @@
                      (http-contact-service-start
                       :package-name ,pkg-name :port ,port
                       :interactor-fetch (lambda (,params ,session-api)
-                                          (let ((,system-name (get-name "system" ,params))
-                                                (,branch-name (get-name "branch" ,params))
-                                                (,input (rest (assoc "input" ,params :test #'string=))))
-                                            ;; (print (list :aa ,params
-                                            ;;              (loop :for ,p :in ,input
-                                            ;;                    :collect (cons (camel-case->keyword (first ,p))
-                                            ;;                                   (rest ,p)))))
-                                            ;; (print (list :aa system-form branch-form))
-                                            (json-convert-to
-                                             (,to-grow ,system-name ,branch-name ,session-api
-                                                       ;; (loop :for ,p :in ,input
-                                                       ;;       :collect (cons (camel-case->keyword (first ,p))
-                                                       ;;               (rest ,p)))
-                                                       ,input
-                                                       ))))
+                                          (let* ((,input (second (assoc "input" ,params :test #'string=))))
+                                            (multiple-value-bind (,system-name ,branch-name)
+                                                (decompose-path (rest (assoc "path" ,params :test #'string=)))
+                                            ;; (print (list :par ,params ,session-api ,in-string))
+                                            (json-convert-to (,to-grow ,system-name ,branch-name ,session-api
+                                                                       (stream->string ,input))))))
                       :renderer-fetch (lambda (,params ,session-api)
-                                        ;; (print (list :par ,params ,session-api))
+                                        (print (list :par2 ,params ,session-api))
                                         (let ((,system-name (get-name "system" ,params))
                                               (,branch-name (get-name "branch" ,params)))
                                           (,to-grow ,system-name ,branch-name ,session-api
@@ -53,6 +67,80 @@
                                                                          (rest ,p)))))))
                    (setf (symbol-function ',to-stop)    ,stopper
                          (symbol-function ',to-restart) ,restarter))))))))
+
+;; (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
+;;   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))
+;;         (input (gensym)) (port (gensym)) (value (gensym)) (stopper (gensym))
+;;         (restarter (gensym)) (system-name (gensym)) (branch-name (gensym)) (p (gensym)))
+;;     `(let ((,pkg-name (intern (package-name (symbol-package ',to-start)) "KEYWORD")))
+;;        (proclaim '(special ,to-start ,to-restart ,to-stop))
+;;        (flet ((get-name (,key ,params)
+;;                 (let ((,value (rest (assoc ,key ,params :test #'string=))))
+;;                   (and ,value (intern (string-upcase ,value) "KEYWORD")))))
+;;          (setf (symbol-function ',to-start)
+;;                (lambda (&optional (,port 9090))
+;;                  (multiple-value-bind (,stopper ,restarter)
+;;                      (http-contact-service-start
+;;                       :package-name ,pkg-name :port ,port
+;;                       :interactor-fetch (lambda (,params ,session-api)
+;;                                           (print (list :par ,params ,session-api))
+;;                                           (setf cl-user::aaa ,params)
+;;                                           (destructuring-bind (,system-name ,branch-name ,input)
+;;                                               (jonathan:parse (caar ,params) :keywords-to-read
+;;                                                               '("system" "branch" "input"))
+;;                                             (json-convert-to (,to-grow ,system-name ,branch-name
+;;                                                                        ,session-api ,input))))
+;;                       :renderer-fetch (lambda (,params ,session-api)
+;;                                         (print (list :par2 ,params ,session-api))
+;;                                         (let ((,system-name (get-name "system" ,params))
+;;                                               (,branch-name (get-name "branch" ,params)))
+;;                                           (,to-grow ,system-name ,branch-name ,session-api
+;;                                                     (loop :for ,p :in ,params
+;;                                                           :collect (cons (camel-case->keyword (first ,p))
+;;                                                                          (rest ,p)))))))
+;;                    (setf (symbol-function ',to-stop)    ,stopper
+;;                          (symbol-function ',to-restart) ,restarter))))))))
+
+;; (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
+;;   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))
+;;         (input (gensym)) (port (gensym)) (value (gensym)) (stopper (gensym))
+;;         (restarter (gensym)) (system-name (gensym)) (branch-name (gensym)) (p (gensym)))
+;;     `(let ((,pkg-name (intern (package-name (symbol-package ',to-start)) "KEYWORD")))
+;;        (proclaim '(special ,to-start ,to-restart ,to-stop))
+;;        (flet ((get-name (,key ,params)
+;;                 (let ((,value (rest (assoc ,key ,params :test #'string=))))
+;;                   (and ,value (intern (string-upcase ,value) "KEYWORD")))))
+;;          (setf (symbol-function ',to-start)
+;;                (lambda (&optional (,port 9090))
+;;                  (multiple-value-bind (,stopper ,restarter)
+;;                      (http-contact-service-start
+;;                       :package-name ,pkg-name :port ,port
+;;                       :interactor-fetch (lambda (,params ,session-api)
+;;                                           (let ((,system-name (get-name "system" ,params))
+;;                                                 (,branch-name (get-name "branch" ,params))
+;;                                                 (,input (rest (assoc "input" ,params :test #'string=))))
+;;                                             ;; (print (list :aa ,params
+;;                                             ;;              (loop :for ,p :in ,input
+;;                                             ;;                    :collect (cons (camel-case->keyword (first ,p))
+;;                                             ;;                                   (rest ,p)))))
+;;                                             ;; (print (list :aa system-form branch-form))
+;;                                             (json-convert-to
+;;                                              (,to-grow ,system-name ,branch-name ,session-api
+;;                                                        ;; (loop :for ,p :in ,input
+;;                                                        ;;       :collect (cons (camel-case->keyword (first ,p))
+;;                                                        ;;               (rest ,p)))
+;;                                                        ,input
+;;                                                        ))))
+;;                       :renderer-fetch (lambda (,params ,session-api)
+;;                                         ;; (print (list :par ,params ,session-api))
+;;                                         (let ((,system-name (get-name "system" ,params))
+;;                                               (,branch-name (get-name "branch" ,params)))
+;;                                           (,to-grow ,system-name ,branch-name ,session-api
+;;                                                     (loop :for ,p :in ,params
+;;                                                           :collect (cons (camel-case->keyword (first ,p))
+;;                                                                          (rest ,p)))))))
+;;                    (setf (symbol-function ',to-stop)    ,stopper
+;;                          (symbol-function ',to-restart) ,restarter))))))))
 
 (defun build-static-page (stream portal-sym)
   (let ((spinneret:*html* stream))
@@ -99,17 +187,31 @@
     ;; `(.container :background "#fff")
     
     `(.sidebar
-      :background "#d5d5d5"
+      :background "#d5d5d5" :height 100vh
       (.heading :font-size "160%" :font-weight "bold"
                 :padding 8px :margin-bottom 6px)
       (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
 
-    `(.portal-summary
+    `(.ui.column.portal-summary
+      :height 100vh
+      :grid-template-rows "[start] 12.5% [middle] 75.0% [end] 12.5%"
       (.symbol :font-weight "bold")
       (.navigation
        :margin "1rem 0"
        (.symbol :font-weight "normal")
        (.divider :margin "0.5rem 0")))
+
+    `((:and (.ui.column.portal-summary > .item)
+            (:nth-child 1))
+      :grid-row-start 1 :grid-row-end 2)
+
+    `((:and (.ui.column.portal-summary > .item)
+            (:nth-child 2))
+      :grid-row-start 2 :grid-row-end 3)
+
+    `((:and (.ui.column.portal-summary > .item)
+            (:nth-child 3))
+      :grid-row-start 3 :grid-row-end 4)
 
     `(.ui.series.placard
       (label :display none)
@@ -126,11 +228,13 @@
     `(.ui.grid-layout
       :display "grid" :height "100%"
       (.column
-       :display grid :overflow auto :grid-template-rows 1fr
+       :display grid :overflow auto
        (.container :position "relative" :height "100%") ;;  :display grid)
        (.column-inner
         :padding 0 :overflow auto
         (.access.body :height "100%" :background "#fff" :overflow auto))))
+
+    `((.ui.grid-layout > .column)  :grid-template-rows 1fr)
 
     `(.ui.grid-layout.main
       :grid-template-rows "100%"
@@ -418,26 +522,47 @@
 ;;                    data))
 ;;            (then handler))))
 
+;; (enter-js-element *misc-js* :fetch-contact-defs
+;;   (defun fetch-contact (element context input event)
+;;     ;; (chain console (log :cc context))
+;;     (chain (fetch "/contact/"
+;;                   (create method "POST"
+;;                           headers (create "Content-type" "application/json; charset=UTF-8")
+;;                           body (chain -j-s-o-n (stringify (create system (@ context system)
+;;                                                                   branch (@ context branch)
+;;                                                                   input  input)))))
+;;            (then (lambda (response) (chain response (json))))
+;;            (then (lambda (data)
+;;                    (if (@ data oob-reload)
+;;                        (chain data oob-reload
+;;                               (for-each (lambda (item)
+;;                                           ;; (chain console (log :it item))
+;;                                           (chain htmx (trigger (getprop seed-elements item) "reload"))))))
+;;                    data))
+;;            (then (if (= "function" (typeof event))
+;;                      event (lambda (data)
+;;                              (chain htmx (trigger element (@ event next)))))))))
+
 (enter-js-element *misc-js* :fetch-contact-defs
   (defun fetch-contact (element context input event)
     ;; (chain console (log :cc context))
-    (chain (fetch "/contact/"
-                  (create method "POST"
-                          headers (create "Content-type" "application/json; charset=UTF-8")
-                          body (chain -j-s-o-n (stringify (create system (@ context system)
-                                                                  branch (@ context branch)
-                                                                  input  input)))))
-           (then (lambda (response) (chain response (json))))
-           (then (lambda (data)
-                   (if (@ data oob-reload)
-                       (chain data oob-reload
-                              (for-each (lambda (item)
-                                          ;; (chain console (log :it item))
-                                          (chain htmx (trigger (getprop seed-elements item) "reload"))))))
-                   data))
-           (then (if (= "function" (typeof event))
-                     event (lambda (data)
-                             (chain htmx (trigger element (@ event next)))))))))
+    (let ((data-in (new (-form-data))))
+      (chain data-in (append "path"  (chain (+ (@ context system) "*" (@ context branch))
+                                            (to-upper-case))))
+      (chain data-in (append "input" (new (-blob (list (chain -j-s-o-n (stringify input)))
+                                                 (create type "application/json")))))
+      (chain (fetch "/contact/" (create method "POST" body data-in))
+             (then (lambda (response) (chain response (json))))
+             (then (lambda (data)
+                     (if (@ data oob-reload)
+                         (chain data oob-reload
+                                (for-each (lambda (item)
+                                            ;; (chain console (log :it item))
+                                            (chain htmx (trigger (getprop seed-elements item) "reload"))))))
+                     data))
+             (then (if (= "function" (typeof event))
+                       event (lambda (data)
+                               (chain htmx (trigger element (@ event next))))))))))
 
 (enter-js-element *misc-js* :realize-def
   (defun realize (system branch element)

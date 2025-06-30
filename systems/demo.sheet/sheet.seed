@@ -1,7 +1,9 @@
 (seed :demo.sheet (:join-by join))
 
 (branch :demo.sheet :summary
-  (let ((layout '((:main :code-view) (:cells :cells-view) nil
+  #'seed.generate::common-json-intake
+  (let ((layout '((:build :branch-build) nil
+                  (:main :code-view) (:cells :cells-view) nil
                   (:graph :graph-overview) (:graph :graph-node) nil
                   (:chart :chart-candle)  (:chentity :entities-view))))
     (lambda (context input)
@@ -9,6 +11,7 @@
       layout)))
 
 (branch :demo.sheet :view
+  #'seed.generate::common-json-intake
   (lambda (context input)
     ;; (print (list :bp package (funcall context :branch-point)))
     (let ((context (second (assoc :session input)))
@@ -39,12 +42,32 @@
                                  (list (grow :demo.sheet (first l)
                                              context (list (list "ifmod-foot" t)))))))))))
 
+(branch :demo.sheet :build
+  #'seed.generate::common-json-intake
+  (lambda (context input)
+    (cbind input item
+      ("state" :chart)
+      ("ifmod-head" (fx ((:each uicc-button :type (:local)) ; :call :@base)
+                         (uic-series :type (:ui :controls :extog)))
+                        (list :select :draw :retrace-x :retrace-y)))
+      ("ifmod-foot" (fx ((:each uicc-button :type (:local))
+                         (uic-series :type (:ui :controls)))
+                        (list :save :zoom-actual)))
+      (t (let ((context (second (assoc :session input)))
+               (summary (grow :demo.sheet :summary))
+               (start-point 0) (interval-found) (search-complete))
+
+           (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+               (list (fx ((uicc-button :type (:local)))
+                         "addItem"))))))))
+
 (let ((chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
       (line-templater (build-templater (from-system-file :demo.sheet "sheet.lisp"
                                                          :chart-entity-template-line)
-                                       :x-start :y-start :x-end :y-end))
+                                       :type :x-start :y-start :x-end :y-end))
       (entity-data))
   (branch :demo.sheet :chart
+    #'seed.generate::common-json-intake
     (lambda (context input)
       ;; (print (list :in input))
       (cbind input item
@@ -60,7 +83,7 @@
            (dolist (espec (rest (assoc "entities" input :test #'string=)))
              (destructuring-bind (x-start y-start x-end y-end)
                  (reduce #'append (rest (assoc "points" espec :test #'string=)))
-               (print (list :in2 input chart-entities))
+               ;; (print (list :in2 input chart-entities))
                (let ((points (rest (assoc "points" espec :test #'string=)))
                      (name   (rest (assoc "name"   espec :test #'string=)))
                      (type   (rest (assoc "type"   espec :test #'string=)))
@@ -76,7 +99,7 @@
                    (if index (setf (nth index entity-data) item)
                        (progn (push item entity-data)
                               (push (funcall line-templater :x-start x-start :y-start y-start
-                                                            :x-end x-end :y-end y-end)
+                                                            :x-end x-end :y-end y-end :type type)
                                     collected)))))))
            (setf (second chart-entities)
                  (append (second chart-entities) (reverse collected)))
@@ -96,42 +119,44 @@
                             :demo.sheet :chart))))))))
 
   (branch :demo.sheet :chentity
-      (lambda (context input)
-        (cbind input item
-          ("state" :meta-code-form)
-          ("ifmod-head" (fx ((:each uicc-button)
-                             (uic-series :type (:ui :controls)))
-                            (list :save)))
-          ("ifmod-foot" (fx ((:each uicc-button)
-                             (uic-series :type (:ui :controls)))
-                            (list :save)))
-          ("path"
-           (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" (rest item)))))
-             (cbind input argument
-               ("sort" (destructuring-bind (index move-to) (rest argument)
-                         (symbol-macrolet ((elist (second chart-entities)))
-                           (let ((moved (nth index elist)))
-                             ;; (print (list :en index move-to elist :mm moved))
-                             (if (zerop index) (setf elist (rest elist))
-                                 (rplacd (nthcdr (1- index) elist)
-                                         (rest (nthcdr index elist))))
-                             ;; (print (list :en2 index move-to elist :mov moved))
-                             (if (zerop move-to) (setf elist (cons moved elist))
-                                 (rplacd (nthcdr (1- move-to) elist)
-                                         (cons moved (nthcdr move-to elist)))))))
-                       (print :complete)))))
-          (t (unless chart-entities
-               ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
-               (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
-               )
-             ;; (print (list :ccc context))
-             (when context
-               ;; (print (list :con (funcall context :medium)))
-               (render (funcall context :medium)
-                       (fx ((uic-frame :type (:meta-code)))
-                           (seed.modulate::express chart-entities)))))))))
+    #'seed.generate::common-json-intake
+    (lambda (context input)
+      (cbind input item
+        ("state" :meta-code-form)
+        ("ifmod-head" (fx ((:each uicc-button)
+                           (uic-series :type (:ui :controls)))
+                          (list :save)))
+        ("ifmod-foot" (fx ((:each uicc-button)
+                           (uic-series :type (:ui :controls)))
+                          (list :save)))
+        ("path"
+         (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" (rest item)))))
+           (cbind input argument
+             ("sort" (destructuring-bind (index move-to) (rest argument)
+                       (symbol-macrolet ((elist (second chart-entities)))
+                         (let ((moved (nth index elist)))
+                           ;; (print (list :en index move-to elist :mm moved))
+                           (if (zerop index) (setf elist (rest elist))
+                               (rplacd (nthcdr (1- index) elist)
+                                       (rest (nthcdr index elist))))
+                           ;; (print (list :en2 index move-to elist :mov moved))
+                           (if (zerop move-to) (setf elist (cons moved elist))
+                               (rplacd (nthcdr (1- move-to) elist)
+                                       (cons moved (nthcdr move-to elist)))))))
+                     (print :complete)))))
+        (t (unless chart-entities
+             ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
+             (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
+             )
+           ;; (print (list :ccc context))
+           (when context
+             ;; (print (list :con (funcall context :medium)))
+             (render (funcall context :medium)
+                     (fx ((uic-frame :type (:meta-code)))
+                         (seed.modulate::express chart-entities)))))))))
 
 (branch :demo.sheet :main
+  #'seed.generate::common-json-intake
   (lambda (context input)
     (cbind input item
       ("state")
@@ -160,6 +185,7 @@
                          :demo.sheet :main)))))))
   
 (branch :demo.sheet :cells
+  #'seed.generate::common-json-intake
   (lambda (context input)
     ;; (print (list :aa input))
     (cbind input item
@@ -199,11 +225,13 @@
                      :demo.sheet :cells))))))
   
 (branch :demo.sheet :code
+  #'seed.generate::common-json-intake
   (lambda (context input)
     (seed.generate::form-as-vectors
      (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5)))))))
        
 (branch :demo.sheet :form
+  #'seed.generate::common-json-intake
   (lambda (context input)
     (when (third input)
       ;; only process input if fields apart form system/branch are present
@@ -226,6 +254,7 @@
     ))
 
 (branch :demo.sheet :table
+  #'seed.generate::common-json-intake
   (let ((original (from-system-file :demo.sheet "sheet.lisp" :table)))
     (lambda (context input)
       (when (fourth input)
@@ -274,27 +303,28 @@
         ;;  :stream out)
         (get-output-stream-string out)))))
 
-(branch :demo.sheet :esgraph
-  (spec-graph-interface
-   :package :demo.sheet :file-name "sheet.lisp" 
-   :holder-id "esgraphOverview" :associated-node-ids #("graphNode")
-   :node-template-key :esgraph-node-template :link-template-key :esgraph-link-template
-   :graph-key :esgraph :node-indices-key :esgraph-node-indices))
+;; (branch :demo.sheet :esgraph
+;;   ;; #'seed.generate::common-json-intake
+;;   (spec-graph-interface
+;;    :package :demo.sheet :file-name "sheet.lisp" 
+;;    :holder-id "esgraphOverview" :associated-node-ids #("graphNode")
+;;    :node-template-key :esgraph-node-template :link-template-key :esgraph-link-template
+;;    :graph-key :esgraph :node-indices-key :esgraph-node-indices))
 
-(branch :demo.sheet :graph
-  (let ((interactor
-          (spec-graph-interface
-           :package :demo.sheet :file-name "sheet.lisp" :holder-id "graphOverview"
-           :associated-node-ids #("graphNode") :node-template-key :graph-node-template
-           :link-template-key :graph-link-template :graph-key :graph
-           :node-indices-key :graph-node-indices)))
+(let ((interactor
+        (spec-graph-interface
+         :package :demo.sheet :file-name "sheet.lisp" :holder-id "graphOverview"
+         :associated-node-ids #("graphNode") :node-template-key :graph-node-template
+         :link-template-key :graph-link-template :graph-key :graph
+         :node-indices-key :graph-node-indices)))
+  (branch :demo.sheet :graph
+    #'seed.generate::common-json-intake
     (lambda (context input)
-      ;; (print (list :ii context input))
       (cbind input item
         ("state" (when (assoc "state" input :test #'string=)
-                     (case (second (assoc "state" input :test #'string=))
-                       (:graph-overview :graph-breadth)
-                       (:graph-node     :meta-code-form))))
+                   (case (second (assoc "state" input :test #'string=))
+                     (:graph-overview :graph-breadth)
+                     (:graph-node     :meta-code-form))))
         ("ifmod-head" (fx ((:each uicc-button :type (:remote) :call :@base)
                            (uic-series :type (:ui :controls)))
                           (list :add-node :add-link)))
@@ -304,6 +334,7 @@
         (t (funcall interactor context input))))))
 
 (branch :demo.sheet :play
+  ;; #'seed.generate::common-json-intake
   (let ((state) (node) (selector))
     (lambda (context input)
       (unless (and (find-package 'demo.sheet)
@@ -314,6 +345,7 @@
                         (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
                      ;; (print (list :tn1 this-node input))
                      (setf node this-node selector selector-out)))
+      ;; (print (list :in input))
       (when (assoc :index input :test #'eq)
         (multiple-value-bind (this-node selector-out)
             (funcall selector (read-from-string (rest (assoc :index input :test #'eq))))

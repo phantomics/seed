@@ -25,27 +25,18 @@
   (if (ppcre:scan "^(?:/contact/|/render/)" path)
       nil path))
 
-;; (defun main (env)
-;;   (let* ((session (getf env :lack.session))
-;;          (login (gethash :login session)))
-;;     (cond
-;;       (login
-;;        (list 200 (list :content-type "text/plain")
-;;              (list (format nil "Welcome, ~A!"
-;;                            login))))
-;;       (t
-;;        '(403 (:content-type "text/plain")
-;;          ("Access denied"))))))
+;; (setf (symbol-function 'http-body.json:json-parse)
+;;       (lambda (content-type content-length stream)
+;;         (list (list (babel:octets-to-string (slurp-stream stream content-length)
+;;                                             :encoding (detect-charset content-type :utf-8))))
+;;         ;; (jonathan:parse (babel:octets-to-string (slurp-stream stream content-length)
+;;         ;;                                         :encoding (detect-charset content-type :utf-8))
+;;         ;;                 :as :alist)
+;;         ))
 
-;; (defun testprint (env)
-;;   (print env)
-;;   (setf *test1* (getf env :lack.session)))
-
-(setf (symbol-function 'http-body.json:json-parse)
-      (lambda (content-type content-length stream)
-        (jonathan:parse (babel:octets-to-string (slurp-stream stream content-length)
-                                                :encoding (detect-charset content-type :utf-8))
-                        :as :alist)))
+;; notes: lack/src/request.lisp contains the code governing input, changing it from a string to
+;; an alist by way of http-body:parse, and there is a check for each element being a cons to
+;; pass it through; thus the (list (list ...)) above
 
 (defun set-cookie (key val)
   (push val (lack.response:response-set-cookies ningle:*response*))
@@ -61,6 +52,7 @@
                        (setf (gethash session-id store) session-store))
           (getf session-store key)))))
 
+
 (defun http-contact-service-start (&key interactor-fetch renderer-fetch (port 8080)
                                      (package-name (intern (package-name *package*) "KEYWORD")))
   ;; (print (list :int interactor-fetch renderer-fetch))
@@ -68,11 +60,11 @@
 	 (service (make-instance 'app))
 	 (handler (clack:clackup (lack.builder:builder :session (:static :path #'match-static-path
                                                                          :root root-path)
-				                       service)
-				 :port port :server :hunchentoot :address "0.0.0.0")))
+			                               service)
+                                 :port port :server :hunchentoot :address "0.0.0.0")))
+    ;; (setf cl-user::iibb service)
     (setf (ningle:route service "/render/" :method :POST)
           (lambda (value)
-            (setf cl-user::iioo (list ningle:*request* *request-env*))
             (let ((session-id (get-cookie "session")))
               (unless session-id (let ((new-id (gensym "SSID")))
                                    (set-cookie "session" (list :value (string new-id)
