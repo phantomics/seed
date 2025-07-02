@@ -14,8 +14,7 @@
         (:dygraph "https://dygraphs.com/2.2.1/dist/dygraph.min.js")))
 
 (defun stream->string (stream &key (initial-size 1024))
-  (do* ((buffer (make-array initial-size :element-type '(unsigned-byte 8)
-                            :adjustable t :fill-pointer t))
+  (do* ((buffer (make-array initial-size :adjustable t :fill-pointer t :element-type '(unsigned-byte 8)))
         (buffer-size initial-size)
         (next (read-sequence buffer stream)))
        ((< next buffer-size)
@@ -26,15 +25,9 @@
     (setf next (read-sequence buffer stream :start next))))
 
 (defun decompose-path (string)
-  (let* ((separator (position #\* string))
-         (sy-string (subseq string 0 separator))
-         (br-string (subseq string (1+ separator) (length string))))
-    (dotimes (n separator)
-      (setf (aref sy-string n) (aref string n)))
-    (dotimes (n (- (length string) 1 separator))
-      (setf (aref br-string n) (aref string (+ n 1 separator))))
-    (values (intern sy-string "KEYWORD")
-            (intern br-string "KEYWORD"))))
+  (let ((split-at (position #\* string)))
+    (values (intern (subseq string 0             split-at)        "KEYWORD")
+            (intern (subseq string (1+ split-at) (length string)) "KEYWORD"))))
 
 (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))
@@ -61,45 +54,14 @@
                                         (print (list :par2 ,params ,session-api))
                                         (let ((,system-name (get-name "system" ,params))
                                               (,branch-name (get-name "branch" ,params)))
-                                          (,to-grow ,system-name ,branch-name ,session-api
-                                                    (loop :for ,p :in ,params
-                                                          :collect (cons (camel-case->keyword (first ,p))
-                                                                         (rest ,p)))))))
+                                          (,to-grow ,system-name ,branch-name ,session-api ,params
+                                                    ;; (loop :for ,p :in ,params
+                                                    ;;       :collect (cons (camel-case->keyword (first ,p))
+                                                    ;;                      (rest ,p)))
+
+                                                    ))))
                    (setf (symbol-function ',to-stop)    ,stopper
                          (symbol-function ',to-restart) ,restarter))))))))
-
-;; (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
-;;   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))
-;;         (input (gensym)) (port (gensym)) (value (gensym)) (stopper (gensym))
-;;         (restarter (gensym)) (system-name (gensym)) (branch-name (gensym)) (p (gensym)))
-;;     `(let ((,pkg-name (intern (package-name (symbol-package ',to-start)) "KEYWORD")))
-;;        (proclaim '(special ,to-start ,to-restart ,to-stop))
-;;        (flet ((get-name (,key ,params)
-;;                 (let ((,value (rest (assoc ,key ,params :test #'string=))))
-;;                   (and ,value (intern (string-upcase ,value) "KEYWORD")))))
-;;          (setf (symbol-function ',to-start)
-;;                (lambda (&optional (,port 9090))
-;;                  (multiple-value-bind (,stopper ,restarter)
-;;                      (http-contact-service-start
-;;                       :package-name ,pkg-name :port ,port
-;;                       :interactor-fetch (lambda (,params ,session-api)
-;;                                           (print (list :par ,params ,session-api))
-;;                                           (setf cl-user::aaa ,params)
-;;                                           (destructuring-bind (,system-name ,branch-name ,input)
-;;                                               (jonathan:parse (caar ,params) :keywords-to-read
-;;                                                               '("system" "branch" "input"))
-;;                                             (json-convert-to (,to-grow ,system-name ,branch-name
-;;                                                                        ,session-api ,input))))
-;;                       :renderer-fetch (lambda (,params ,session-api)
-;;                                         (print (list :par2 ,params ,session-api))
-;;                                         (let ((,system-name (get-name "system" ,params))
-;;                                               (,branch-name (get-name "branch" ,params)))
-;;                                           (,to-grow ,system-name ,branch-name ,session-api
-;;                                                     (loop :for ,p :in ,params
-;;                                                           :collect (cons (camel-case->keyword (first ,p))
-;;                                                                          (rest ,p)))))))
-;;                    (setf (symbol-function ',to-stop)    ,stopper
-;;                          (symbol-function ',to-restart) ,restarter))))))))
 
 ;; (defmacro implement-start-controls (to-grow to-start to-restart to-stop)
 ;;   (let ((pkg-name (gensym)) (key (gensym)) (params (gensym)) (session-api (gensym))

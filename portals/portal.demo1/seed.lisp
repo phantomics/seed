@@ -7,71 +7,70 @@
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
 (branch :portal.demo1 :view
-  #'seed.generate::common-json-intake
+  ;; #'seed.generate::common-json-intake
+  (seed.generate::build-intaker :key :point)
+  #'seed.generate::convert-old-params
+  ;; (lambda (context input)
+  ;;   (print (list :oo input))
+  ;;   input)
   (lambda (context input)
-    (print (list :oo input))
-    input)
-  (lambda (context input)
-    (print (list :cc input))
-    (let ((key-input (rest (assoc :key input :test #'eq))))
-      (when (and key-input (string= "demo" (string-downcase key-input)))
-        (funcall context :user :hello)))
+    ;; (print (list :cc input))
+    (destructuring-bind (&key key point &allow-other-keys) input
+      (when (and key (string= "demo" (string-downcase key)))
+        (funcall context :user :hello))
 
-    (when (and context (assoc :point input))
-      ;; when a point is selected, assign it
-      (funcall context :branch-point (read-from-string (rest (assoc :point input)))))
+      (print (list :po point))
+      (if (and (stringp point) (loop :for i :across point :always (digit-char-p i)))
+          (when (and context point)
+            ;; when a point is selected, assign it
+            (funcall context :branch-point (read-from-string point)))
 
-    (when (and context (assoc "point" input :test #'string=))
-      ;; when a system is selected, assign it - case of new selector controls
-      (let ((epsym (intern (string-upcase (rest (assoc "point" input :test #'string=)))
-                           "KEYWORD")))
-        (of-system :point epsym)
-        (instantiate-priority-macro-reader (asdf:load-system epsym)
-          (load-seed-system epsym))))
+          (when (and context point) ;; (assoc "point" input :test #'string=))
+            ;; when a system is selected, assign it - case of new selector controls
+            (let ((epsym (intern (string-upcase point) "KEYWORD")))
+              (of-system :point epsym)
+              (instantiate-priority-macro-reader (asdf:load-system epsym)
+                (load-seed-system epsym)))))
 
-    (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
+      (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
 
-      (funcall context :medium medium)
+        (funcall context :medium medium)
 
-      (render
-       medium
-       (authorize (funcall context :user)
-         (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
-                          :maps '(((:type :sidebar)) ((:type :main)))))
-             (fx ((uic-series :type '(:ui :column  :portal-summary)))
-                 (fx ((uic-series :type '(:ui :list)))
-                     (list :portal.demo1
-                           
-                           (fx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
-                               "demo.sheet")
-                           
-                           (fx ((uicc-select :type :default-blank :options (list :demo.sheet :demo.other)
-                                             :call (:@fetch (:point :@base) (:next :refresh))))
-                               (or (of-system :point) ""))))
-                 
-                 (if (of-system :point)
-                     (fx ((:each uic-anchor :type '(:branch))
-                          (uic-series :type '(:ui :navigation)
-                                      :point (funcall context :branch-point)))
-                         (mapcar #'second (grow (of-system :point) :summary))))
-                 
-                 (fx ((uic-series :type '(:ui :list)))
-                     (fx ((uicc-field :name "key")) "")
-                     (fx ((uicc-button :call t)) "enter")))
-             
-             (if (not (of-system :point))
-                 "" (grow (of-system :point) :view context)))
+        (render medium
+                (authorize (funcall context :user)
+                  (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
+                                   :maps '(((:type :sidebar)) ((:type :main)))))
+                      (fx ((uic-series :type '(:ui :column  :portal-summary)))
+                          (fx ((uic-series :type '(:ui :list)))
+                              (list :portal.demo1
+                                    (fx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
+                                        "demo.sheet")
+                                    
+                                    (fx ((uicc-select :type :default-blank
+                                                      :options (list :demo.sheet :demo.other)
+                                                      :call (:@fetch (:point :@base) (:next :refresh))))
+                                        (or (of-system :point) ""))))
+                          
+                          (and (of-system :point)
+                               (fx ((:each uic-anchor :type '(:branch))
+                                    (uic-series :type  '(:ui :navigation)
+                                                :point (funcall context :branch-point)))
+                                   (mapcar #'second (grow (of-system :point) :summary))))
+                          
+                          (fx ((uic-series :type '(:ui :list)))
+                              (fx ((uicc-field  :name "key")) "")
+                              (fx ((uicc-button :call t)) "enter")))
+                      
+                      (if (not (of-system :point))
+                          "" (grow (of-system :point) :view context)))
 
-         (fx ((uic-series :type (:ui :main :placard)))
-             (list (fx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
-                       (list "please input your key"
-                             (fx ((uicc-field :name "key")) "")
-                             (fx ((uicc-button :call t))
-                                 "enter")
-                             )))))))))
-         
-;; (fx ((uic-series :type (:ui :column) :call t)) ;; should this be :cast?
-;;     (list (fx ((uicc-field :name "key")) ""))))))))
+                  (fx ((uic-series :type (:ui :main :placard)))
+                      (list (fx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
+                                (list "please input your key"
+                                      (fx ((uicc-field  :name "key")) "")
+                                      (fx ((uicc-button :call t))
+                                          "enter")
+                                      ))))))))))
 
 (branch :portal.demo1 :systems
   #'seed.generate::common-json-intake

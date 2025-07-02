@@ -2,7 +2,7 @@
 
 (branch :demo.sheet :summary
   #'seed.generate::common-json-intake
-  (let ((layout '((:build :branch-build) nil
+  (let ((layout '(;; (:build :branch-build) nil
                   (:main :code-view) (:cells :cells-view) nil
                   (:graph :graph-overview) (:graph :graph-node) nil
                   (:chart :chart-candle)  (:chentity :entities-view))))
@@ -42,266 +42,388 @@
                                  (list (grow :demo.sheet (first l)
                                              context (list (list "ifmod-foot" t)))))))))))
 
-(branch :demo.sheet :build
-  #'seed.generate::common-json-intake
-  (lambda (context input)
-    (cbind input item
-      ("state" :chart)
-      ("ifmod-head" (fx ((:each uicc-button :type (:local)) ; :call :@base)
-                         (uic-series :type (:ui :controls :extog)))
-                        (list :select :draw :retrace-x :retrace-y)))
-      ("ifmod-foot" (fx ((:each uicc-button :type (:local))
-                         (uic-series :type (:ui :controls)))
-                        (list :save :zoom-actual)))
-      (t (let ((context (second (assoc :session input)))
-               (summary (grow :demo.sheet :summary))
-               (start-point 0) (interval-found) (search-complete))
+;; (branch :demo.sheet :build
+;;   #'seed.generate::common-json-intake
+;;   (lambda (context input)
+;;     (cbind input item
+;;       ("state" :chart)
+;;       ("ifmod-head" (fx ((:each uicc-button :type (:local)) ; :call :@base)
+;;                          (uic-series :type (:ui :controls :extog)))
+;;                         (list :select :draw :retrace-x :retrace-y)))
+;;       ("ifmod-foot" (fx ((:each uicc-button :type (:local))
+;;                          (uic-series :type (:ui :controls)))
+;;                         (list :save :zoom-actual)))
+;;       (t (let ((context (second (assoc :session input)))
+;;                (summary (grow :demo.sheet :summary))
+;;                (start-point 0) (interval-found) (search-complete))
 
-           (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-               (list (fx ((uicc-button :type (:local)))
-                         "addItem"))))))))
+;;            (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+;;                (list (fx ((uicc-button :type (:local)))
+;;                          "addItem"))))))))
+
+;; (branch :demo.sheet :chart
+;;   #'seed.generate::common-json-intake
+;;   ;; (seed.generate::build-intaker :entities :action :mode)
+;;   (lambda (context input)
+;;     ;; (print (list :in input))
+;;     (cbind input item
+;;       ("state" :chart)
+;;       ("ifmod-head" (fx ((:each uicc-button :type (:local)) ; :call :@base)
+;;                          (uic-series :type (:ui :controls :extog)))
+;;                         (list :select :draw :retrace-x :retrace-y)))
+;;       ("ifmod-foot" (fx ((:each uicc-button :type (:local))
+;;                          (uic-series :type (:ui :controls)))
+;;                         (list :save :zoom-actual)))
+;;       ("entities"
+;;        (let ((collected))
+;;          (dolist (espec (rest (assoc "entities" input :test #'string=)))
+;;            (destructuring-bind (x-start y-start x-end y-end)
+;;                (reduce #'append (rest (assoc "points" espec :test #'string=)))
+;;              ;; (print (list :in2 input chart-entities))
+;;              (let ((points (rest (assoc "points" espec :test #'string=)))
+;;                    (name   (rest (assoc "name"   espec :test #'string=)))
+;;                    (type   (rest (assoc "type"   espec :test #'string=)))
+;;                    (ratios (rest (assoc "ratios" espec :test #'string=))))
+;;                (let ((index)
+;;                      (item (list :points points :name name :type type :points-in-flux nil
+;;                                  :in-flux :true :ratios ratios)))
+;;                  (loop :for ent :in entity-data :for i :from 0
+;;                        :do (if (string= name (getf ent :name))
+;;                                (setf index i)
+;;                                (setf (getf ent :in-flux) :false)))
+;;                  ;; (print (list :ent entity-data))
+;;                  (if index (setf (nth index entity-data) item)
+;;                      (progn (push item entity-data)
+;;                             (push (funcall line-templater :x-start x-start :y-start y-start
+;;                                                           :x-end x-end :y-end y-end :type type)
+;;                                   collected)))))))
+;;          (setf (second chart-entities)
+;;                (append (second chart-entities) (reverse collected)))
+;;          entity-data))
+;;       ("action"
+;;        ;; (print (list :it item))
+;;        (case (intern (string-upcase (rest item)) "KEYWORD")
+;;          (:save (let ((output))
+;;                   (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
+;;                   (setf (from-system-file :demo.sheet "sheet.lisp" :chart-entities :as-string t)
+;;                         output)))))
+;;       (t (case (intern (string-upcase (rest (assoc "mode" input :test #'string=)))
+;;                        "KEYWORD")
+;;            (:chart-data (system-file-to-string :demo.sheet "price.csv"))
+;;            (t (render (funcall context :medium)
+;;                       (fx ((uich-candle :type (:green-red)))
+;;                           :demo.sheet :chart))))))))
+
+;; (branch :demo.sheet :chentity
+;;   #'seed.generate::common-json-intake
+;;   (lambda (context input)
+;;     (cbind input item
+;;       ("state" :meta-code-form)
+;;       ("ifmod-head" (fx ((:each uicc-button)
+;;                          (uic-series :type (:ui :controls)))
+;;                         (list :save)))
+;;       ("ifmod-foot" (fx ((:each uicc-button)
+;;                          (uic-series :type (:ui :controls)))
+;;                         (list :save)))
+;;       ("path"
+;;        (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" (rest item)))))
+;;          (cbind input argument
+;;            ("sort" (destructuring-bind (index move-to) (rest argument)
+;;                      (symbol-macrolet ((elist (second chart-entities)))
+;;                        (let ((moved (nth index elist)))
+;;                          ;; (print (list :en index move-to elist :mm moved))
+;;                          (if (zerop index) (setf elist (rest elist))
+;;                              (rplacd (nthcdr (1- index) elist)
+;;                                      (rest (nthcdr index elist))))
+;;                          ;; (print (list :en2 index move-to elist :mov moved))
+;;                          (if (zerop move-to) (setf elist (cons moved elist))
+;;                              (rplacd (nthcdr (1- move-to) elist)
+;;                                      (cons moved (nthcdr move-to elist)))))))
+;;                    (print :complete)))))
+;;       (t (unless chart-entities
+;;            ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
+;;            (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
+;;            )
+;;          ;; (print (list :ccc context))
+;;          (when context
+;;            ;; (print (list :con (funcall context :medium)))
+;;            (render (funcall context :medium)
+;;                    (fx ((uic-frame :type (:meta-code)))
+;;                        (seed.modulate::express chart-entities))))))))
 
 (let ((chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
       (line-templater (build-templater (from-system-file :demo.sheet "sheet.lisp"
                                                          :chart-entity-template-line)
                                        :type :x-start :y-start :x-end :y-end))
       (entity-data))
+  
   (branch :demo.sheet :chart
-    #'seed.generate::common-json-intake
+    (seed.generate::build-intaker :entities :action :mode
+                                  ;; entities ->
+                                  :name :type :in-flux :points :points-in-flux :ratios)
+    #'seed.generate::convert-old-params
     (lambda (context input)
       ;; (print (list :in input))
-      (cbind input item
-        ("state" :chart)
-        ("ifmod-head" (fx ((:each uicc-button :type (:local)) ; :call :@base)
+      (destructuring-bind (&key state ifmod-head ifmod-foot action entities mode &allow-other-keys) input
+        (cond
+          (state :chart)
+          (ifmod-head (fx ((:each uicc-button :type (:local)) ; :call :@base)
                            (uic-series :type (:ui :controls :extog)))
                           (list :select :draw :retrace-x :retrace-y)))
-        ("ifmod-foot" (fx ((:each uicc-button :type (:local))
+          (ifmod-foot (fx ((:each uicc-button :type (:local))
                            (uic-series :type (:ui :controls)))
                           (list :save :zoom-actual)))
-        ("entities"
-         (let ((collected))
-           (dolist (espec (rest (assoc "entities" input :test #'string=)))
-             (destructuring-bind (x-start y-start x-end y-end)
-                 (reduce #'append (rest (assoc "points" espec :test #'string=)))
-               ;; (print (list :in2 input chart-entities))
-               (let ((points (rest (assoc "points" espec :test #'string=)))
-                     (name   (rest (assoc "name"   espec :test #'string=)))
-                     (type   (rest (assoc "type"   espec :test #'string=)))
-                     (ratios (rest (assoc "ratios" espec :test #'string=))))
-                 (let ((index)
-                       (item (list :points points :name name :type type :points-in-flux nil
-                                   :in-flux :true :ratios ratios)))
-                   (loop :for ent :in entity-data :for i :from 0
-                         :do (if (string= name (getf ent :name))
-                                 (setf index i)
-                                 (setf (getf ent :in-flux) :false)))
-                   ;; (print (list :ent entity-data))
-                   (if index (setf (nth index entity-data) item)
-                       (progn (push item entity-data)
-                              (push (funcall line-templater :x-start x-start :y-start y-start
-                                                            :x-end x-end :y-end y-end :type type)
-                                    collected)))))))
-           (setf (second chart-entities)
-                 (append (second chart-entities) (reverse collected)))
-           entity-data))
-        ("action"
-         ;; (print (list :it item))
-         (case (intern (string-upcase (rest item)) "KEYWORD")
-           (:save (let ((output))
-                    (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
-                    (setf (from-system-file :demo.sheet "sheet.lisp" :chart-entities :as-string t)
-                          output)))))
-        (t (case (intern (string-upcase (rest (assoc "mode" input :test #'string=)))
-                         "KEYWORD")
-             (:chart-data (system-file-to-string :demo.sheet "price.csv"))
-             (t (render (funcall context :medium)
-                        (fx ((uich-candle :type (:green-red)))
-                            :demo.sheet :chart))))))))
+          (entities
+           (let ((collected))
+             (dolist (espec entities)
+               (destructuring-bind (&key name type in-flux points points-in-flux ratios) espec
+                 (destructuring-bind (x-start y-start x-end y-end) (reduce #'append points)
+                   (print (list :in2 entities name type points))
+                   (let ((index)
+                         (item (list :points points :name name :type type :points-in-flux nil
+                                     :in-flux :true :ratios ratios)))
+                     (loop :for ent :in entity-data :for i :from 0
+                           :do (if (string= name (getf ent :name))
+                                   (setf index i)
+                                   (setf (getf ent :in-flux) :false)))
+                     ;; (print (list :ent entity-data))
+                     (if index (setf (nth index entity-data) item)
+                         (progn (push item entity-data)
+                                (push (funcall line-templater :x-start x-start :y-start y-start
+                                                              :x-end x-end :y-end y-end :type type)
+                                      collected)))))))
+             (setf (second chart-entities)
+                   (append (second chart-entities) (reverse collected)))
+             entity-data))
+          (action
+           (case (intern (string-upcase (rest item)) "KEYWORD")
+             (:save (let ((output))
+                      (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
+                      (setf (from-system-file :demo.sheet "sheet.lisp" :chart-entities :as-string t)
+                            output)))))
+          (t (case (intern (string-upcase mode) "KEYWORD")
+               (:chart-data (system-file-to-string :demo.sheet "price.csv"))
+               (t (render (funcall context :medium)
+                          (fx ((uich-candle :type (:green-red)))
+                              :demo.sheet :chart)))))))))
 
   (branch :demo.sheet :chentity
-    #'seed.generate::common-json-intake
+    (seed.generate::build-intaker :path :action :mode)
+    #'seed.generate::convert-old-params
     (lambda (context input)
-      (cbind input item
-        ("state" :meta-code-form)
-        ("ifmod-head" (fx ((:each uicc-button)
-                           (uic-series :type (:ui :controls)))
-                          (list :save)))
-        ("ifmod-foot" (fx ((:each uicc-button)
-                           (uic-series :type (:ui :controls)))
-                          (list :save)))
-        ("path"
-         (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" (rest item)))))
-           (cbind input argument
-             ("sort" (destructuring-bind (index move-to) (rest argument)
-                       (symbol-macrolet ((elist (second chart-entities)))
-                         (let ((moved (nth index elist)))
-                           ;; (print (list :en index move-to elist :mm moved))
-                           (if (zerop index) (setf elist (rest elist))
-                               (rplacd (nthcdr (1- index) elist)
-                                       (rest (nthcdr index elist))))
-                           ;; (print (list :en2 index move-to elist :mov moved))
-                           (if (zerop move-to) (setf elist (cons moved elist))
-                               (rplacd (nthcdr (1- move-to) elist)
-                                       (cons moved (nthcdr move-to elist)))))))
-                     (print :complete)))))
-        (t (unless chart-entities
-             ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
-             (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
-             )
-           ;; (print (list :ccc context))
-           (when context
-             ;; (print (list :con (funcall context :medium)))
-             (render (funcall context :medium)
-                     (fx ((uic-frame :type (:meta-code)))
-                         (seed.modulate::express chart-entities)))))))))
+      (destructuring-bind (&key state ifmod-head ifmod-foot path sort &allow-other-keys) input
+        (cond (state :meta-code-form)
+              (ifmod-head (fx ((:each uicc-button)
+                               (uic-series :type (:ui :controls)))
+                              (list :save)))
+              (ifmod-foot (fx ((:each uicc-button)
+                               (uic-series :type (:ui :controls)))
+                              (list :save)))
+              (path (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" path))))
+                      (cond (sort (destructuring-bind (index move-to) sort
+                                    (symbol-macrolet ((elist (second chart-entities)))
+                                      (let ((moved (nth index elist)))
+                                        ;; (print (list :en index move-to elist :mm moved))
+                                        (if (zerop index) (setf elist (rest elist))
+                                            (rplacd (nthcdr (1- index) elist)
+                                                    (rest (nthcdr index elist))))
+                                        ;; (print (list :en2 index move-to elist :mov moved))
+                                        (if (zerop move-to) (setf elist (cons moved elist))
+                                            (rplacd (nthcdr (1- move-to) elist)
+                                                    (cons moved (nthcdr move-to elist)))))))
+                                  (print :complete)))))
+              (t (unless chart-entities
+                   ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
+                   (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
+                   )
+                 ;; (print (list :ccc context))
+                 (when context
+                   ;; (print (list :con (funcall context :medium)))
+                   (render (funcall context :medium)
+                           (fx ((uic-frame :type (:meta-code)))
+                               (seed.modulate::express chart-entities))))))))))
+
+(defun common-json-intake (state input)
+  (declare (ignore state))
+  (if (not (stringp input))
+      input (jonathan:parse input :as :alist)))
 
 (branch :demo.sheet :main
-  #'seed.generate::common-json-intake
+  (seed.generate::build-intaker :text)
+  #'seed.generate::convert-old-params
   (lambda (context input)
-    (cbind input item
-      ("state")
-      ("ifmod-head" (fx ((:each uicc-button)
-                         (uic-series :type (:ui :controls)))
-                        (list :save :abc)))
-      ("ifmod-foot" (fx ((:each uicc-button)
-                         (uic-series :type (:ui :controls)))
-                        (list :save)))
-      (t (if (assoc "text" input :test #'string=)
-             (if (zerop (second (assoc "text" input :test #'string=)))
-                 (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
-                                                          :main :as-string t)
-                                        :unwrap t :syntax :progn :trailing-newlines 2))
-                 (let ((input (apply #'concatenate 'string
-                                     (loop :for i :in (rest (assoc "text" input :test #'string=))
-                                           :append (list i '(#\Newline))))))
-                   (setf (from-system-file :demo.sheet "sheet.lisp" :main :as-string t)
-                         (text-wrap input :syntax :progn))
-                   (load-seed-system package)
-                   (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
-                                                            :main :as-string t)
-                                          :unwrap t :syntax :progn))))
-             (render (funcall context :medium)
-                     (fx ((uicc-field :type (:code)))
-                         :demo.sheet :main)))))))
+    ;; (print (list :in input))
+    (destructuring-bind (&key state ifmod-head ifmod-foot text &allow-other-keys) input
+      (cond (state)
+            (ifmod-head (fx ((:each uicc-button)
+                             (uic-series :type (:ui :controls)))
+                            (list :save :abc)))
+            (ifmod-foot (fx ((:each uicc-button)
+                             (uic-series :type (:ui :controls)))
+                            (list :save)))
+            (t (if text
+                   (if (zerop (first text))
+                       (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+                                                                :main :as-string t)
+                                              :unwrap t :syntax :progn :trailing-newlines 2))
+                       (let ((input (apply #'concatenate 'string
+                                           (loop :for i :in text :append (list i '(#\Newline))))))
+                         (setf (from-system-file :demo.sheet "sheet.lisp" :main :as-string t)
+                               (text-wrap input :syntax :progn))
+                         (load-seed-system package)
+                         (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+                                                                  :main :as-string t)
+                                                :unwrap t :syntax :progn))))
+                   (render (funcall context :medium)
+                           (fx ((uicc-field :type (:code)))
+                               :demo.sheet :main))))))))
   
 (branch :demo.sheet :cells
-  #'seed.generate::common-json-intake
+  (seed.generate::build-intaker :cells)
+  #'seed.generate::convert-old-params
   (lambda (context input)
-    ;; (print (list :aa input))
-    (cbind input item
-      ("state")
-      ("ifmod-head"
-       (fx ((:each uicc-button)
-            (uic-series :type (:ui :controls)))
-           (list :save :abc)))
-      ("ifmod-foot" (fx ((:each uicc-button)
-                         (uic-series :type (:ui :controls)))
-                        (list :save)))
-      ("cells"
-       (let ((display-baseline))
-         (if (/= 0 (second item))
-             (if (and (listp input) (listp (first input))
-                      (stringp (caar input)))
-                 (cond ((string= "toggleBaseline" (caar input))
-                        (setf display-baseline (not display-baseline))))
-                 (let ((original (from-system-file :demo.sheet "sheet.lisp" :cells)))
-                   (setf (of-array-spec :initial-contents (setf-value original))
-                         `(quote ,(loop :for row :in input
-                                        :collect (loop :for cell :in row
-                                                       :collect (parse-number:parse-number
-                                                                 cell))))
-                         (from-system-file :demo.sheet "sheet.lisp" :cells) original)
-                   ;; (instantiate-priority-macro-reader (asdf:load-system package))
-                   (load-seed-system :demo.sheet)))
-             (if display-baseline
-                 (encode (symbol-value (intern "*CELL-MATRIX*" (string :demo.sheet))))
-                 (list :ty :ar :ct
-                       (second (of-array-spec :initial-contents
-                                              (setf-value
-                                               (from-system-file
-                                                :demo.sheet "sheet.lisp" :cells)))))))))
-      (t (render (funcall context :medium)
-                 (fx ((uic-grid :type (:code)))
-                     :demo.sheet :cells))))))
+    (destructuring-bind (&key state ifmod-head ifmod-foot cells &allow-other-keys) input
+      (print (list :ci input))
+      (cond (state)
+            (ifmod-head (fx ((:each uicc-button)
+                             (uic-series :type (:ui :controls)))
+                            (list :save :abc)))
+            (ifmod-foot (fx ((:each uicc-button)
+                             (uic-series :type (:ui :controls)))
+                            (list :save)))
+            (cells (let ((display-baseline))
+                     (print (list :cc cells))
+                     (if (not (zerop (first cells)))
+                         (if (symbolp (first input))
+                             (cond ((eq :toggle-baseline (first input))
+                                    (setf display-baseline (not display-baseline))))
+                             (let ((original (from-system-file :demo.sheet "sheet.lisp" :cells)))
+                               (setf (of-array-spec :initial-contents (setf-value original))
+                                     `(quote ,(loop :for row :in input
+                                                    :collect (loop :for cell :in row
+                                                                   :collect (parse-number:parse-number
+                                                                             cell))))
+                                     (from-system-file :demo.sheet "sheet.lisp" :cells) original)
+                               ;; (instantiate-priority-macro-reader (asdf:load-system package))
+                               (load-seed-system :demo.sheet)))
+                         (if display-baseline
+                             (encode (symbol-value (intern "*CELL-MATRIX*" (string :demo.sheet))))
+                             (list :ty :ar :ct
+                                   (second (of-array-spec :initial-contents
+                                                          (setf-value
+                                                           (from-system-file
+                                                            :demo.sheet "sheet.lisp" :cells)))))))))
+            (t (render (funcall context :medium)
+                       (fx ((uic-grid :type (:code)))
+                           :demo.sheet :cells)))))))
+
+;; (branch :demo.sheet :cells
+;;   #'seed.generate::common-json-intake
+;;   (lambda (context input)
+;;     (cbind input item
+;;       ("state")
+;;       ("ifmod-head"
+;;        (fx ((:each uicc-button)
+;;             (uic-series :type (:ui :controls)))
+;;            (list :save :abc)))
+;;       ("ifmod-foot" (fx ((:each uicc-button)
+;;                          (uic-series :type (:ui :controls)))
+;;                         (list :save)))
+;;       ("cells"
+;;        (let ((display-baseline))
+;;          (print (list :ci input))
+;;          (if (/= 0 (second item))
+;;              (if (and (listp input) (listp (first input))
+;;                       (stringp (caar input)))
+;;                  (cond ((string= "toggleBaseline" (caar input))
+;;                         (setf display-baseline (not display-baseline))))
+;;                  (let ((original (from-system-file :demo.sheet "sheet.lisp" :cells)))
+;;                    (setf (of-array-spec :initial-contents (setf-value original))
+;;                          `(quote ,(loop :for row :in input
+;;                                         :collect (loop :for cell :in row
+;;                                                        :collect (parse-number:parse-number
+;;                                                                  cell))))
+;;                          (from-system-file :demo.sheet "sheet.lisp" :cells) original)
+;;                    ;; (instantiate-priority-macro-reader (asdf:load-system package))
+;;                    (load-seed-system :demo.sheet)))
+;;              (if display-baseline
+;;                  (encode (symbol-value (intern "*CELL-MATRIX*" (string :demo.sheet))))
+;;                  (list :ty :ar :ct
+;;                        (second (of-array-spec :initial-contents
+;;                                               (setf-value
+;;                                                (from-system-file
+;;                                                 :demo.sheet "sheet.lisp" :cells)))))))))
+;;       (t (render (funcall context :medium)
+;;                  (fx ((uic-grid :type (:code)))
+;;                      :demo.sheet :cells))))))
   
-(branch :demo.sheet :code
-  #'seed.generate::common-json-intake
-  (lambda (context input)
-    (seed.generate::form-as-vectors
-     (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5)))))))
+;; (branch :demo.sheet :code
+;;   #'seed.generate::common-json-intake
+;;   (lambda (context input)
+;;     (seed.generate::form-as-vectors
+;;      (seed.generate::form-span (encode '((+ 1 (* 3 4)) (* 8 5)))))))
        
-(branch :demo.sheet :form
-  #'seed.generate::common-json-intake
-  (lambda (context input)
-    (when (third input)
-      ;; only process input if fields apart form system/branch are present
-      (let ((original (from-system-file :demo.sheet "sheet.lisp" :form)))
-        (meta-revise (second (third original)) input)
-        (setf (from-system-file :demo.sheet "sheet.lisp" :form) original)))
+;; (branch :demo.sheet :form
+;;   #'seed.generate::common-json-intake
+;;   (lambda (context input)
+;;     (when (third input)
+;;       ;; only process input if fields apart form system/branch are present
+;;       (let ((original (from-system-file :demo.sheet "sheet.lisp" :form)))
+;;         (meta-revise (second (third original)) input)
+;;         (setf (from-system-file :demo.sheet "sheet.lisp" :form) original)))
 
-    (render (funcall context :medium)
-            (seed.modulate::express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))
-    
-    
-    ;; (let ((out (make-string-output-stream)))
-    ;;   (spinneret:interpret-html-tree
-    ;;    ;; (render-fieldset (second (third (from-system-file :demo.sheet "sheet.lisp" :form))))
-    ;;    (htrender (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))
-    ;;              :params (list :system :demo.sheet :branch :form))
-    ;;    :stream out)
-    ;;   (get-output-stream-string out))
+;;     (render (funcall context :medium)
+;;             (seed.modulate::express (second (third (from-system-file :demo.sheet "sheet.lisp" :form)))))))
 
-    ))
-
-(branch :demo.sheet :table
-  #'seed.generate::common-json-intake
-  (let ((original (from-system-file :demo.sheet "sheet.lisp" :table)))
-    (lambda (context input)
-      (when (fourth input)
-        ;; only process input if fields apart form system/branch are present
-        (meta-revise (second (third original)) input)
-        ;; (setf (from-system-file :demo.sheet "sheet.lisp" :table) original)
-        (let ((val-key :t) (unit-key) (count 0)
-              (vout (make-string-output-stream))
-              (uout (make-string-output-stream)))
-          (format vout "#~%") (format uout "~%#~%")
-          (loop :while val-key :for ix :from 0
-                :do (setf val-key  (intern (format nil "V-~a" ix) "KEYWORD")
-                          unit-key (intern (format nil "U-~a" ix) "KEYWORD"))
-                    (if (assoc val-key input)
-                        (progn (when (= 5 count)
-                                 (setf count 0)
-                                 (format vout "~%#~%")
-                                 (format uout "~%#~%"))
-                               (format vout "  ~a  |" (rest (assoc val-key  input)))
-                               (format uout " ~a |" (or (rest (assoc unit-key input))
-                                                        "nounit"))
-                               (incf count))
-                        (setf val-key nil)))
-          ;; (print (list :st (concatenate 'string
-          ;;                               (get-output-stream-string vout)
-          ;;                               (get-output-stream-string uout))))
-          (with-open-file (in-file "/tmp/input.txt"
-        		           :direction :output :if-exists :supersede
-                                   :if-does-not-exist :create)
-            (format in-file (get-output-stream-string vout))
-            (format in-file (get-output-stream-string uout))
-            ;; (loop :for char := (read-char vout) :while char :do (write-char char in-file))
-            ;; (loop :for char := (read-char uout) :while char :do (write-char char in-file))
-            )
-          (uiop:run-program
-           (format nil "faketime 15-11-05 ~a ~a solve /tmp/input.txt /tmp/out.txt"
-                   "~/src/old/dpneo/ecalc/app/ecalc"
-                   "~/src/old/dpneo/ecalc/app/uc.json"))
-          ))
-      (let ((out (make-string-output-stream)))
-        ;; TODO: REPLACE THIS
+;; (branch :demo.sheet :table
+;;   #'seed.generate::common-json-intake
+;;   (let ((original (from-system-file :demo.sheet "sheet.lisp" :table)))
+;;     (lambda (context input)
+;;       (when (fourth input)
+;;         ;; only process input if fields apart form system/branch are present
+;;         (meta-revise (second (third original)) input)
+;;         ;; (setf (from-system-file :demo.sheet "sheet.lisp" :table) original)
+;;         (let ((val-key :t) (unit-key) (count 0)
+;;               (vout (make-string-output-stream))
+;;               (uout (make-string-output-stream)))
+;;           (format vout "#~%") (format uout "~%#~%")
+;;           (loop :while val-key :for ix :from 0
+;;                 :do (setf  val-key (intern (format nil "V-~a" ix) "KEYWORD")
+;;                           unit-key (intern (format nil "U-~a" ix) "KEYWORD"))
+;;                     (if (assoc val-key input)
+;;                         (progn (when (= 5 count)
+;;                                  (setf count 0)
+;;                                  (format vout "~%#~%")
+;;                                  (format uout "~%#~%"))
+;;                                (format vout "  ~a  |" (rest (assoc val-key  input)))
+;;                                (format uout " ~a |" (or (rest (assoc unit-key input))
+;;                                                         "nounit"))
+;;                                (incf count))
+;;                         (setf val-key nil)))
+;;           ;; (print (list :st (concatenate 'string
+;;           ;;                               (get-output-stream-string vout)
+;;           ;;                               (get-output-stream-string uout))))
+;;           (with-open-file (in-file "/tmp/input.txt"
+;;         		           :direction :output :if-exists :supersede
+;;                                    :if-does-not-exist :create)
+;;             (format in-file (get-output-stream-string vout))
+;;             (format in-file (get-output-stream-string uout))
+;;             ;; (loop :for char := (read-char vout) :while char :do (write-char char in-file))
+;;             ;; (loop :for char := (read-char uout) :while char :do (write-char char in-file))
+;;             )
+;;           (uiop:run-program
+;;            (format nil "faketime 15-11-05 ~a ~a solve /tmp/input.txt /tmp/out.txt"
+;;                    "~/src/old/dpneo/ecalc/app/ecalc"
+;;                    "~/src/old/dpneo/ecalc/app/uc.json"))
+;;           ))
+;;       (let ((out (make-string-output-stream)))
+;;         ;; TODO: REPLACE THIS
         
-        ;; (spinneret:interpret-html-tree
-        ;;  (htrender (second (third original))
-        ;;            :params (list :system :demo.sheet :branch :table))
-        ;;  :stream out)
-        (get-output-stream-string out)))))
+;;         ;; (spinneret:interpret-html-tree
+;;         ;;  (htrender (second (third original))
+;;         ;;            :params (list :system :demo.sheet :branch :table))
+;;         ;;  :stream out)
+;;         (get-output-stream-string out)))))
 
 ;; (branch :demo.sheet :esgraph
 ;;   ;; #'seed.generate::common-json-intake
@@ -318,66 +440,122 @@
          :link-template-key :graph-link-template :graph-key :graph
          :node-indices-key :graph-node-indices)))
   (branch :demo.sheet :graph
-    #'seed.generate::common-json-intake
+    (seed.generate::build-intaker :action :index :target :width :height :path :face)
+    #'seed.generate::convert-old-params
     (lambda (context input)
-      (cbind input item
-        ("state" (when (assoc "state" input :test #'string=)
-                   (case (second (assoc "state" input :test #'string=))
-                     (:graph-overview :graph-breadth)
-                     (:graph-node     :meta-code-form))))
-        ("ifmod-head" (fx ((:each uicc-button :type (:remote) :call :@base)
-                           (uic-series :type (:ui :controls)))
-                          (list :add-node :add-link)))
-        ("ifmod-foot" (fx ((:each uicc-button :call :@base)
-                           (uic-series :type (:ui :controls)))
-                          (list :save)))
-        (t (funcall interactor context input))))))
+      (destructuring-bind (&key state ifmod-head ifmod-foot
+                             action index target width height path face &allow-other-keys)
+          input
+        (cond (state (when state (case (first state)
+                                   (:graph-overview :graph-breadth)
+                                   (:graph-node     :meta-code-form))))
+              (ifmod-head (fx ((:each uicc-button :type (:remote) :call :@base)
+                               (uic-series :type (:ui :controls)))
+                              (list :add-node :add-link)))
+              (ifmod-foot (fx ((:each uicc-button :call :@base)
+                               (uic-series :type (:ui :controls)))
+                              (list :save)))
+              (t (funcall interactor context input)))))))
+
+;; (let ((interactor
+;;         (spec-graph-interface
+;;          :package :demo.sheet :file-name "sheet.lisp" :holder-id "graphOverview"
+;;          :associated-node-ids #("graphNode") :node-template-key :graph-node-template
+;;          :link-template-key :graph-link-template :graph-key :graph
+;;          :node-indices-key :graph-node-indices)))
+;;   (branch :demo.sheet :graph
+;;     #'seed.generate::common-json-intake
+;;     (lambda (context input)
+;;       (cbind input item
+;;         ("state" (when (assoc "state" input :test #'string=)
+;;                    (case (second (assoc "state" input :test #'string=))
+;;                      (:graph-overview :graph-breadth)
+;;                      (:graph-node     :meta-code-form))))
+;;         ("ifmod-head" (fx ((:each uicc-button :type (:remote) :call :@base)
+;;                            (uic-series :type (:ui :controls)))
+;;                           (list :add-node :add-link)))
+;;         ("ifmod-foot" (fx ((:each uicc-button :call :@base)
+;;                            (uic-series :type (:ui :controls)))
+;;                           (list :save)))
+;;         (t (funcall interactor context input))))))
 
 (branch :demo.sheet :play
-  ;; #'seed.generate::common-json-intake
+  (seed.generate::build-intaker :index)
+  #'seed.generate::convert-old-params
   (let ((state) (node) (selector))
     (lambda (context input)
-      (unless (and (find-package 'demo.sheet)
-                   (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
-        (instantiate-priority-macro-reader (asdf:load-system :demo.sheet)))
-      (unless node (multiple-value-bind (this-node selector-out)
-                       (seed.generate::graph-walker
-                        (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
-                     ;; (print (list :tn1 this-node input))
-                     (setf node this-node selector selector-out)))
-      ;; (print (list :in input))
-      (when (assoc :index input :test #'eq)
-        (multiple-value-bind (this-node selector-out)
-            (funcall selector (read-from-string (rest (assoc :index input :test #'eq))))
-          (setf node this-node selector selector-out)))
-      (let* ((out (make-string-output-stream))
-             (dialog (rest (assoc :dialog (first node))))
-             (image (rest (assoc :image (first node))))
-             (imsym (intern (string-upcase image) "KEYWORD"))
-             (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
-                                (second node))))
-        ;; (print (list :dia dialog node responses
-        ;;              :image image))
-        (spinneret:interpret-html-tree
-         `(:div :class "scenario-frame"
-                ,@(unless (eq imsym :none)
-                    `(:style ,(format nil "background-image: url(./static/characters/~a.jpg); background-size: 500px; background-position-y: top; background-position-x: right; background-repeat: no-repeat;"
-                                      image)))
-                (:div :class "setting"
-                      (:div :class "dialog" ,dialog)
-                      (:ol :class "responses"
-                           ,@(loop :for response :in responses :for ix :from 0
-                                   :collect
-                                   (list :li :|hx-on:click|
-                                         (parenscript:ps (parenscript:chain
-                                                          htmx (trigger this "reload"
-                                                                        (parenscript:create
-                                                                         index (parenscript:lisp ix))))
-                                           (parenscript:chain console (log "hello")))
-                                         :hx-vals (seed.generate::json-convert-to (list :index ix))
-                                         response)))))
-         :stream out)
-        (get-output-stream-string out)))))
+      (destructuring-bind (&key index &allow-other-keys) input
+        (print (list :inx input))
+        (unless (and (find-package 'demo.sheet)
+                     (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
+          (instantiate-priority-macro-reader (asdf:load-system :demo.sheet)))
+        (unless node (multiple-value-bind (this-node selector-out)
+                         (seed.generate::graph-walker
+                          (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
+                       ;; (print (list :tn1 this-node input))
+                       (setf node this-node selector selector-out)))
+        ;; (print (list :in input))
+        (when index
+          (multiple-value-bind (this-node selector-out)
+              (funcall selector (read-from-string index))
+            (setf node this-node selector selector-out)))
+        (let* ((out (make-string-output-stream))
+               (dialog (rest (assoc :dialog (first node))))
+               (image (rest (assoc :image (first node))))
+               (imsym (intern (string-upcase image) "KEYWORD"))
+               (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
+                                  (second node))))
+          ;; (print (list :dia dialog node responses
+          ;;              :image image))
+          (spinneret:interpret-html-tree
+           `(:div :class "scenario-frame"
+                  ,@(unless (eq imsym :none)
+                      `(:style ,(format nil "background-image: url(./static/characters/~a.jpg); background-size: 500px; background-position-y: top; background-position-x: right; background-repeat: no-repeat;"
+                                        image)))
+                  (:div :class "setting"
+                        (:div :class "dialog" ,dialog)
+                        (:ol :class "responses"
+                             ,@(loop :for response :in responses :for ix :from 0
+                                     :collect
+                                     (list :li :|hx-on:click|
+                                           (parenscript:ps (parenscript:chain
+                                                            htmx (trigger this "reload"
+                                                                          (parenscript:create
+                                                                           index (parenscript:lisp ix))))
+                                             (parenscript:chain console (log "hello")))
+                                           :hx-vals (seed.generate::json-convert-to (list :index ix))
+                                           response)))))
+           :stream out)
+          (get-output-stream-string out))))))
+
+;; (branch :demo.sheet :main
+;;   #'seed.generate::common-json-intake
+;;   (lambda (context input)    
+;;     (cbind input item
+;;       ("state")
+;;       ("ifmod-head" (fx ((:each uicc-button)
+;;                          (uic-series :type (:ui :controls)))
+;;                         (list :save :abc)))
+;;       ("ifmod-foot" (fx ((:each uicc-button)
+;;                          (uic-series :type (:ui :controls)))
+;;                         (list :save)))
+;;       (t (if (assoc "text" input :test #'string=)
+;;              (if (zerop (second (assoc "text" input :test #'string=)))
+;;                  (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+;;                                                           :main :as-string t)
+;;                                         :unwrap t :syntax :progn :trailing-newlines 2))
+;;                  (let ((input (apply #'concatenate 'string
+;;                                      (loop :for i :in (rest (assoc "text" input :test #'string=))
+;;                                            :append (list i '(#\Newline))))))
+;;                    (setf (from-system-file :demo.sheet "sheet.lisp" :main :as-string t)
+;;                          (text-wrap input :syntax :progn))
+;;                    (load-seed-system package)
+;;                    (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
+;;                                                             :main :as-string t)
+;;                                           :unwrap t :syntax :progn))))
+;;              (render (funcall context :medium)
+;;                      (fx ((uicc-field :type (:code)))
+;;                          :demo.sheet :main)))))))
 
 ;; (branch :demo.sheet :play
 ;;   (let ((state) (node) (selector))

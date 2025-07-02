@@ -15,7 +15,7 @@
            #:system-file-to-string #:from-system-file #:build-templater
            #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec)
-  (:shadowing-import-from #:symbol-munger #:camel-case->lisp-name)
+  (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->lisp-name)
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)
