@@ -295,12 +295,23 @@
       (read-sequence contents stream)
       contents)))
 
-(defun common-json-intake (state input)
-  (declare (ignore state))
-  (if (not (stringp input))
-      input (jonathan:parse input :as :alist)))
+(defun adapt-from-alist (&rest properties)
+  (lambda (state input)
+    (declare (ignore state))
+    (if (not (and (listp input) (listp (first input))))
+        input (let ((output)
+                    (to-port (or (and (keywordp (caar input))
+                                      #'identity)
+                                 (and (stringp (caar input))
+                                      (lambda (i) (intern (string-upcase (camel-case->lisp-name i))
+                                                          "KEYWORD"))))))
+                (dolist (pair input)
+                  (let ((formatted (funcall to-port (first pair))))
+                    (when (member formatted properties)
+                      (setf (getf output formatted) (rest pair)))))
+                output))))
 
-(defun build-intaker (&rest properties)
+(defun adapt-from-json (&rest properties)
   (let ((strings (mapcar #'lisp->camel-case properties)))
     (lambda (state input)
       (declare (ignore state))
@@ -308,21 +319,6 @@
           input (jonathan:parse input :as :plist :normalize-all t :keyword-normalizer
                                 (lambda (in) (and (member in strings :test #'string=)
                                                   (string-upcase (camel-case->lisp-name in)))))))))
-
-;; TODO: remove alexandria dependency once this function is no longer needed
-(defun convert-old-params (state input)
-  (if (not (and (listp input) (listp (first input))))
-      input (alexandria::alist-plist (mapcar (lambda (exp) (cons (intern (string-upcase (first exp)) "KEYWORD")
-                                                                 (rest exp)))
-                                             input))))
-
-(defmacro bind-from-json (symbols input &body body)
-  (let ((in (gensym)) (strings (mapcar #'symbol-munger:lisp->camel-case symbols)))
-    `(destructuring-bind ,(cons '&key symbols)
-         (jonathan:parse ,input :as :plist :keyword-normalizer
-                         (lambda (,in) (and (member ,in ',strings :test #'string=)
-                                            (string-upcase (symbol-munger:camel-case->lisp-name ,in)))))
-       ,@body)))
 
 (defun from-system-file (system file key &key as-string)
   "Read a form from a file in the manner of a plist (but not requiring a strict key, value structure)."

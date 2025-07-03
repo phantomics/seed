@@ -71,7 +71,7 @@
 
 (defun meta-revise (form pairs &optional cons-items)
   "Revise contents of a meta-form according to titles, optionally expressed by cons cells whose heads are symbols corresponding to keys in the pairs list."
-  (print (list :fo form pairs))
+  ;; (print (list :fo form pairs))
   (if (not (listp form))
       nil (if (and (listp (first form))
                    (or (not cons-items)
@@ -99,7 +99,7 @@
                                  (or (not cons-items)
                                      (not (keywordp (first item)))))
                         (loop :for i :in item :do (meta-revise i pairs cons-items))))
-                  (print (list :out form))
+                  ;; (print (list :out form))
                   form)))))
 
 ;; SECTION: another iteration of the UI component class system, with a simple list/atom foundation

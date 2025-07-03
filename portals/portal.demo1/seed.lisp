@@ -7,25 +7,20 @@
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
 (branch :portal.demo1 :view
-  ;; #'seed.generate::common-json-intake
-  (seed.generate::build-intaker :key :point)
-  #'seed.generate::convert-old-params
-  ;; (lambda (context input)
-  ;;   (print (list :oo input))
-  ;;   input)
+  (adapt-from-json :key :point)
+  (adapt-from-alist :system :branch :key :point)
   (lambda (context input)
-    ;; (print (list :cc input))
     (destructuring-bind (&key key point &allow-other-keys) input
       (when (and key (string= "demo" (string-downcase key)))
         (funcall context :user :hello))
 
-      (print (list :po point))
+      ;; (print (list :po point))
       (if (and (stringp point) (loop :for i :across point :always (digit-char-p i)))
           (when (and context point)
             ;; when a point is selected, assign it
             (funcall context :branch-point (read-from-string point)))
 
-          (when (and context point) ;; (assoc "point" input :test #'string=))
+          (when (and context point)
             ;; when a system is selected, assign it - case of new selector controls
             (let ((epsym (intern (string-upcase point) "KEYWORD")))
               (of-system :point epsym)
@@ -60,7 +55,7 @@
                           (fx ((uic-series :type '(:ui :list)))
                               (fx ((uicc-field  :name "key")) "")
                               (fx ((uicc-button :call t)) "enter")))
-                      
+b                      
                       (if (not (of-system :point))
                           "" (grow (of-system :point) :view context)))
 
@@ -73,9 +68,8 @@
                                       ))))))))))
 
 (branch :portal.demo1 :systems
-  #'seed.generate::common-json-intake
+  (adapt-from-alist :system :branch)
   (lambda (context input)
-    (print (list :xx input))
     (if input (let ((epsym (intern input "KEYWORD")))
                 (of-system :point (intern input "KEYWORD"))
                 (instantiate-priority-macro-reader (asdf:load-system epsym)

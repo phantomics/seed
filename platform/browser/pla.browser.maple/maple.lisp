@@ -47,19 +47,14 @@
                                           (let* ((,input (second (assoc "input" ,params :test #'string=))))
                                             (multiple-value-bind (,system-name ,branch-name)
                                                 (decompose-path (rest (assoc "path" ,params :test #'string=)))
-                                            ;; (print (list :par ,params ,session-api ,in-string))
-                                            (json-convert-to (,to-grow ,system-name ,branch-name ,session-api
-                                                                       (stream->string ,input))))))
+                                              ;; (print (list :par ,params ,session-api ,in-string))
+                                              (json-convert-to (,to-grow ,system-name ,branch-name ,session-api
+                                                                         (stream->string ,input))))))
                       :renderer-fetch (lambda (,params ,session-api)
-                                        (print (list :par2 ,params ,session-api))
+                                        ;; (print (list :par2 ,params ,session-api))
                                         (let ((,system-name (get-name "system" ,params))
                                               (,branch-name (get-name "branch" ,params)))
-                                          (,to-grow ,system-name ,branch-name ,session-api ,params
-                                                    ;; (loop :for ,p :in ,params
-                                                    ;;       :collect (cons (camel-case->keyword (first ,p))
-                                                    ;;                      (rest ,p)))
-
-                                                    ))))
+                                          (,to-grow ,system-name ,branch-name ,session-api ,params))))
                    (setf (symbol-function ',to-stop)    ,stopper
                          (symbol-function ',to-restart) ,restarter))))))))
 

@@ -1,7 +1,6 @@
 (seed :demo.sheet (:join-by join))
 
 (branch :demo.sheet :summary
-  #'seed.generate::common-json-intake
   (let ((layout '(;; (:build :branch-build) nil
                   (:main :code-view) (:cells :cells-view) nil
                   (:graph :graph-overview) (:graph :graph-node) nil
@@ -11,39 +10,39 @@
       layout)))
 
 (branch :demo.sheet :view
-  #'seed.generate::common-json-intake
+  (adapt-from-json :path :session)
   (lambda (context input)
-    ;; (print (list :bp package (funcall context :branch-point)))
-    (let ((context (second (assoc :session input)))
-          (summary (grow :demo.sheet :summary))
-          (branch-point (or (funcall context :branch-point) 0))
-          (start-point 0) (interval-found) (search-complete))
-      
-      (loop :for s :in summary :for sx :from 0 :until search-complete 
-            :do (unless s (if interval-found (setf search-complete t)
-                              (setf start-point (1+ sx))))
-                (when (= sx branch-point) (setf interval-found t)))
+    (destructuring-bind (&key session &allow-other-keys) input
+      ;; (print (list :bp package (funcall context :branch-point)))
+      (let ((context (first session))
+            (summary (grow :demo.sheet :summary))
+            (branch-point (or (funcall context :branch-point) 0))
+            (start-point 0) (interval-found) (search-complete))
+        
+        (loop :for s :in summary :for sx :from 0 :until search-complete 
+              :do (unless s (if interval-found (setf search-complete t)
+                                (setf start-point (1+ sx))))
+                  (when (= sx branch-point) (setf interval-found t)))
 
-      (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-          (loop :for l :in (nthcdr start-point summary) :while l
-                :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
-                                          :join   (list :demo.sheet (first l))
-                                          :type   (:column)
-                                          :mode   (grow :demo.sheet (first l)
-                                                        context (list (list "state" (second l))))))
-                             (fx ((uic-series :type (:ui :header)))
-                                 (second l)
-                                 (grow :demo.sheet (first l)
-                                       context (list (list "ifmod-head" t))))
-                             (fx ((uic-frame :name (second l) :type (:body)
-                                             :access :demo.sheet))
-                                 (first l))
-                             (fx ((uic-series :type (:ui :footer)))
-                                 (list (grow :demo.sheet (first l)
-                                             context (list (list "ifmod-foot" t)))))))))))
+        (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+            (loop :for l :in (nthcdr start-point summary) :while l
+                  :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+                                            :join   (list :demo.sheet (first l))
+                                            :type   (:column)
+                                            :mode   (grow :demo.sheet (first l)
+                                                          context (list :state (second l)))))
+                               (fx ((uic-series :type (:ui :header)))
+                                   (second l)
+                                   (grow :demo.sheet (first l)
+                                         context (list :ifmod-head t)))
+                               (fx ((uic-frame :name (second l) :type (:body)
+                                               :access :demo.sheet))
+                                   (first l))
+                               (fx ((uic-series :type (:ui :footer)))
+                                   (list (grow :demo.sheet (first l)
+                                               context (list :ifmod-foot t)))))))))))
 
 ;; (branch :demo.sheet :build
-;;   #'seed.generate::common-json-intake
 ;;   (lambda (context input)
 ;;     (cbind input item
 ;;       ("state" :chart)
@@ -62,8 +61,7 @@
 ;;                          "addItem"))))))))
 
 ;; (branch :demo.sheet :chart
-;;   #'seed.generate::common-json-intake
-;;   ;; (seed.generate::build-intaker :entities :action :mode)
+;;   ;; (adapt-from-json :entities :action :mode)
 ;;   (lambda (context input)
 ;;     ;; (print (list :in input))
 ;;     (cbind input item
@@ -115,7 +113,6 @@
 ;;                           :demo.sheet :chart))))))))
 
 ;; (branch :demo.sheet :chentity
-;;   #'seed.generate::common-json-intake
 ;;   (lambda (context input)
 ;;     (cbind input item
 ;;       ("state" :meta-code-form)
@@ -158,10 +155,8 @@
       (entity-data))
   
   (branch :demo.sheet :chart
-    (seed.generate::build-intaker :entities :action :mode
-                                  ;; entities ->
-                                  :name :type :in-flux :points :points-in-flux :ratios)
-    #'seed.generate::convert-old-params
+    (adapt-from-json :entities :action :mode ;; next line: entities properties
+                               :name :type :in-flux :points :points-in-flux :ratios)
     (lambda (context input)
       ;; (print (list :in input))
       (destructuring-bind (&key state ifmod-head ifmod-foot action entities mode &allow-other-keys) input
@@ -178,7 +173,7 @@
              (dolist (espec entities)
                (destructuring-bind (&key name type in-flux points points-in-flux ratios) espec
                  (destructuring-bind (x-start y-start x-end y-end) (reduce #'append points)
-                   (print (list :in2 entities name type points))
+                   ;; (print (list :in2 entities name type points))
                    (let ((index)
                          (item (list :points points :name name :type type :points-in-flux nil
                                      :in-flux :true :ratios ratios)))
@@ -208,8 +203,7 @@
                               :demo.sheet :chart)))))))))
 
   (branch :demo.sheet :chentity
-    (seed.generate::build-intaker :path :action :mode)
-    #'seed.generate::convert-old-params
+    (adapt-from-json :path :action :mode)
     (lambda (context input)
       (destructuring-bind (&key state ifmod-head ifmod-foot path sort &allow-other-keys) input
         (cond (state :meta-code-form)
@@ -243,16 +237,9 @@
                            (fx ((uic-frame :type (:meta-code)))
                                (seed.modulate::express chart-entities))))))))))
 
-(defun common-json-intake (state input)
-  (declare (ignore state))
-  (if (not (stringp input))
-      input (jonathan:parse input :as :alist)))
-
 (branch :demo.sheet :main
-  (seed.generate::build-intaker :text)
-  #'seed.generate::convert-old-params
+  (adapt-from-json :text)
   (lambda (context input)
-    ;; (print (list :in input))
     (destructuring-bind (&key state ifmod-head ifmod-foot text &allow-other-keys) input
       (cond (state)
             (ifmod-head (fx ((:each uicc-button)
@@ -279,11 +266,9 @@
                                :demo.sheet :main))))))))
   
 (branch :demo.sheet :cells
-  (seed.generate::build-intaker :cells)
-  #'seed.generate::convert-old-params
+  (adapt-from-json :cells)
   (lambda (context input)
     (destructuring-bind (&key state ifmod-head ifmod-foot cells &allow-other-keys) input
-      (print (list :ci input))
       (cond (state)
             (ifmod-head (fx ((:each uicc-button)
                              (uic-series :type (:ui :controls)))
@@ -292,7 +277,6 @@
                              (uic-series :type (:ui :controls)))
                             (list :save)))
             (cells (let ((display-baseline))
-                     (print (list :cc cells))
                      (if (not (zerop (first cells)))
                          (if (symbolp (first input))
                              (cond ((eq :toggle-baseline (first input))
@@ -440,13 +424,13 @@
          :link-template-key :graph-link-template :graph-key :graph
          :node-indices-key :graph-node-indices)))
   (branch :demo.sheet :graph
-    (seed.generate::build-intaker :action :index :target :width :height :path :face)
-    #'seed.generate::convert-old-params
+    (adapt-from-json :action :index :target :width :height :path :face)
+    (adapt-from-alist :system :branch :face)
     (lambda (context input)
       (destructuring-bind (&key state ifmod-head ifmod-foot
                              action index target width height path face &allow-other-keys)
           input
-        (cond (state (when state (case (first state)
+        (cond (state (when state (case state
                                    (:graph-overview :graph-breadth)
                                    (:graph-node     :meta-code-form))))
               (ifmod-head (fx ((:each uicc-button :type (:remote) :call :@base)
@@ -480,12 +464,11 @@
 ;;         (t (funcall interactor context input))))))
 
 (branch :demo.sheet :play
-  (seed.generate::build-intaker :index)
-  #'seed.generate::convert-old-params
+  (adapt-from-json :index)
   (let ((state) (node) (selector))
     (lambda (context input)
       (destructuring-bind (&key index &allow-other-keys) input
-        (print (list :inx input))
+        ;; (print (list :inx input))
         (unless (and (find-package 'demo.sheet)
                      (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
           (instantiate-priority-macro-reader (asdf:load-system :demo.sheet)))

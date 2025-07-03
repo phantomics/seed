@@ -5,7 +5,8 @@
   (:shadowing-import-from #:seed.contact.http #:http-contact-service-start)
   (:shadowing-import-from #:seed.sublimate #:meta-template #:instantiate-priority-macro-reader)
   (:shadowing-import-from #:seed.generate #:seed #:branch #:interface-format-form #:load-seed-system
-                          #:system-file-to-string #:from-system-file #:build-templater
+                          #:system-file-to-string #:adapt-from-alist #:adapt-from-json
+                          #:from-system-file #:build-templater
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->keyword)
   (:shadowing-import-from #:seed.modulate #:fx #:fx-assign #:render #:uim-web #:uim-web-stream
