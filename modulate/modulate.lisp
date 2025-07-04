@@ -237,7 +237,7 @@
            :initform nil
            :initarg  :range)))
 
-(defmacro fx (specs &rest form)
+(defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
   (labels ((format-params (items)
              (loop :for item :in items
@@ -263,7 +263,7 @@
                                    (first form) (cons 'list form))))
          ,(process-spec evaluated-form specs)))))
 
-;; (defmacro fx-assign (params &body item)
+;; (defmacro dx-assign (params &body item)
 ;;   (let ((item-sym (gensym)))
 ;;     `(let ((,item-sym ,item))
 ;;        ,(loop :for p :in params
@@ -1264,7 +1264,7 @@
                 ;; the output-stream is created in the seed package - best elsewhere?
                 (if (and face (string= "graphNode" face))
                     (render (funcall context :medium)
-                            (fx ((uic-frame :type (:meta-code)))
+                            (dx ((uic-frame :type (:meta-code)))
                                 (express
                                  (funcall (lambda (items)
                                             `(meta ,items (:type :enum) (:fx :uic-series)))
@@ -1602,7 +1602,7 @@
 ;;             (if (and (assoc :face input :test #'eq)
 ;;                      (string= "graphNode" (rest (assoc :face input :test #'eq))))
 ;;                 (render (funcall context :medium)
-;;                         (fx ((uic-frame :type (:meta-code)))
+;;                         (dx ((uic-frame :type (:meta-code)))
 ;;                             (express
 ;;                              (funcall (lambda (items)
 ;;                                         `(meta ,items (:type :enum) (:fx :uic-series)))

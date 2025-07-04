@@ -24,21 +24,21 @@
                                 (setf start-point (1+ sx))))
                   (when (= sx branch-point) (setf interval-found t)))
 
-        (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+        (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
             (loop :for l :in (nthcdr start-point summary) :while l
-                  :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+                  :collect (dx ((uic-series :layout (:vertical :of 12 1 10 1)
                                             :join   (list :demo.sheet (first l))
                                             :type   (:column)
                                             :mode   (grow :demo.sheet (first l)
                                                           context (list :state (second l)))))
-                               (fx ((uic-series :type (:ui :header)))
+                               (dx ((uic-series :type (:ui :header)))
                                    (second l)
                                    (grow :demo.sheet (first l)
                                          context (list :ifmod-head t)))
-                               (fx ((uic-frame :name (second l) :type (:body)
+                               (dx ((uic-frame :name (second l) :type (:body)
                                                :access :demo.sheet))
                                    (first l))
-                               (fx ((uic-series :type (:ui :footer)))
+                               (dx ((uic-series :type (:ui :footer)))
                                    (list (grow :demo.sheet (first l)
                                                context (list :ifmod-foot t)))))))))))
 
@@ -46,18 +46,18 @@
 ;;   (lambda (context input)
 ;;     (cbind input item
 ;;       ("state" :chart)
-;;       ("ifmod-head" (fx ((:each uicc-button :type (:local)) ; :call :@base)
+;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :@base)
 ;;                          (uic-series :type (:ui :controls :extog)))
 ;;                         (list :select :draw :retrace-x :retrace-y)))
-;;       ("ifmod-foot" (fx ((:each uicc-button :type (:local))
+;;       ("ifmod-foot" (dx ((:each uicc-button :type (:local))
 ;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :save :zoom-actual)))
 ;;       (t (let ((context (second (assoc :session input)))
 ;;                (summary (grow :demo.sheet :summary))
 ;;                (start-point 0) (interval-found) (search-complete))
 
-;;            (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-;;                (list (fx ((uicc-button :type (:local)))
+;;            (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+;;                (list (dx ((uicc-button :type (:local)))
 ;;                          "addItem"))))))))
 
 ;; (branch :demo.sheet :chart
@@ -66,10 +66,10 @@
 ;;     ;; (print (list :in input))
 ;;     (cbind input item
 ;;       ("state" :chart)
-;;       ("ifmod-head" (fx ((:each uicc-button :type (:local)) ; :call :@base)
+;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :@base)
 ;;                          (uic-series :type (:ui :controls :extog)))
 ;;                         (list :select :draw :retrace-x :retrace-y)))
-;;       ("ifmod-foot" (fx ((:each uicc-button :type (:local))
+;;       ("ifmod-foot" (dx ((:each uicc-button :type (:local))
 ;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :save :zoom-actual)))
 ;;       ("entities"
@@ -109,17 +109,17 @@
 ;;                        "KEYWORD")
 ;;            (:chart-data (system-file-to-string :demo.sheet "price.csv"))
 ;;            (t (render (funcall context :medium)
-;;                       (fx ((uich-candle :type (:green-red)))
+;;                       (dx ((uich-candle :type (:green-red)))
 ;;                           :demo.sheet :chart))))))))
 
 ;; (branch :demo.sheet :chentity
 ;;   (lambda (context input)
 ;;     (cbind input item
 ;;       ("state" :meta-code-form)
-;;       ("ifmod-head" (fx ((:each uicc-button)
+;;       ("ifmod-head" (dx ((:each uicc-button)
 ;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :save)))
-;;       ("ifmod-foot" (fx ((:each uicc-button)
+;;       ("ifmod-foot" (dx ((:each uicc-button)
 ;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :save)))
 ;;       ("path"
@@ -145,7 +145,7 @@
 ;;          (when context
 ;;            ;; (print (list :con (funcall context :medium)))
 ;;            (render (funcall context :medium)
-;;                    (fx ((uic-frame :type (:meta-code)))
+;;                    (dx ((uic-frame :type (:meta-code)))
 ;;                        (seed.modulate::express chart-entities))))))))
 
 (let ((chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
@@ -162,10 +162,10 @@
       (destructuring-bind (&key state ifmod-head ifmod-foot action entities mode &allow-other-keys) input
         (cond
           (state :chart)
-          (ifmod-head (fx ((:each uicc-button :type (:local)) ; :call :@base)
+          (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :@base)
                            (uic-series :type (:ui :controls :extog)))
                           (list :select :draw :retrace-x :retrace-y)))
-          (ifmod-foot (fx ((:each uicc-button :type (:local))
+          (ifmod-foot (dx ((:each uicc-button :type (:local))
                            (uic-series :type (:ui :controls)))
                           (list :save :zoom-actual)))
           (entities
@@ -199,7 +199,7 @@
           (t (case (intern (string-upcase mode) "KEYWORD")
                (:chart-data (system-file-to-string :demo.sheet "price.csv"))
                (t (render (funcall context :medium)
-                          (fx ((uich-candle :type (:green-red)))
+                          (dx ((uich-candle :type (:green-red)))
                               :demo.sheet :chart)))))))))
 
   (branch :demo.sheet :chentity
@@ -207,10 +207,10 @@
     (lambda (context input)
       (destructuring-bind (&key state ifmod-head ifmod-foot path sort &allow-other-keys) input
         (cond (state :meta-code-form)
-              (ifmod-head (fx ((:each uicc-button)
+              (ifmod-head (dx ((:each uicc-button)
                                (uic-series :type (:ui :controls)))
                               (list :save)))
-              (ifmod-foot (fx ((:each uicc-button)
+              (ifmod-foot (dx ((:each uicc-button)
                                (uic-series :type (:ui :controls)))
                               (list :save)))
               (path (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" path))))
@@ -234,7 +234,7 @@
                  (when context
                    ;; (print (list :con (funcall context :medium)))
                    (render (funcall context :medium)
-                           (fx ((uic-frame :type (:meta-code)))
+                           (dx ((uic-frame :type (:meta-code)))
                                (seed.modulate::express chart-entities))))))))))
 
 (branch :demo.sheet :main
@@ -242,10 +242,10 @@
   (lambda (context input)
     (destructuring-bind (&key state ifmod-head ifmod-foot text &allow-other-keys) input
       (cond (state)
-            (ifmod-head (fx ((:each uicc-button)
+            (ifmod-head (dx ((:each uicc-button)
                              (uic-series :type (:ui :controls)))
                             (list :save :abc)))
-            (ifmod-foot (fx ((:each uicc-button)
+            (ifmod-foot (dx ((:each uicc-button)
                              (uic-series :type (:ui :controls)))
                             (list :save)))
             (t (if text
@@ -262,7 +262,7 @@
                                                                   :main :as-string t)
                                                 :unwrap t :syntax :progn))))
                    (render (funcall context :medium)
-                           (fx ((uicc-field :type (:code)))
+                           (dx ((uicc-field :type (:code)))
                                :demo.sheet :main))))))))
   
 (branch :demo.sheet :cells
@@ -270,10 +270,10 @@
   (lambda (context input)
     (destructuring-bind (&key state ifmod-head ifmod-foot cells &allow-other-keys) input
       (cond (state)
-            (ifmod-head (fx ((:each uicc-button)
+            (ifmod-head (dx ((:each uicc-button)
                              (uic-series :type (:ui :controls)))
                             (list :save :abc)))
-            (ifmod-foot (fx ((:each uicc-button)
+            (ifmod-foot (dx ((:each uicc-button)
                              (uic-series :type (:ui :controls)))
                             (list :save)))
             (cells (let ((display-baseline))
@@ -298,7 +298,7 @@
                                                            (from-system-file
                                                             :demo.sheet "sheet.lisp" :cells)))))))))
             (t (render (funcall context :medium)
-                       (fx ((uic-grid :type (:code)))
+                       (dx ((uic-grid :type (:code)))
                            :demo.sheet :cells)))))))
 
 ;; (branch :demo.sheet :cells
@@ -307,10 +307,10 @@
 ;;     (cbind input item
 ;;       ("state")
 ;;       ("ifmod-head"
-;;        (fx ((:each uicc-button)
+;;        (dx ((:each uicc-button)
 ;;             (uic-series :type (:ui :controls)))
 ;;            (list :save :abc)))
-;;       ("ifmod-foot" (fx ((:each uicc-button)
+;;       ("ifmod-foot" (dx ((:each uicc-button)
 ;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :save)))
 ;;       ("cells"
@@ -338,7 +338,7 @@
 ;;                                                (from-system-file
 ;;                                                 :demo.sheet "sheet.lisp" :cells)))))))))
 ;;       (t (render (funcall context :medium)
-;;                  (fx ((uic-grid :type (:code)))
+;;                  (dx ((uic-grid :type (:code)))
 ;;                      :demo.sheet :cells))))))
   
 ;; (branch :demo.sheet :code
@@ -433,10 +433,10 @@
         (cond (state (when state (case state
                                    (:graph-overview :graph-breadth)
                                    (:graph-node     :meta-code-form))))
-              (ifmod-head (fx ((:each uicc-button :type (:remote) :call :@base)
+              (ifmod-head (dx ((:each uicc-button :type (:remote) :call :@base)
                                (uic-series :type (:ui :controls)))
                               (list :add-node :add-link)))
-              (ifmod-foot (fx ((:each uicc-button :call :@base)
+              (ifmod-foot (dx ((:each uicc-button :call :@base)
                                (uic-series :type (:ui :controls)))
                               (list :save)))
               (t (funcall interactor context input)))))))
@@ -455,10 +455,10 @@
 ;;                    (case (second (assoc "state" input :test #'string=))
 ;;                      (:graph-overview :graph-breadth)
 ;;                      (:graph-node     :meta-code-form))))
-;;         ("ifmod-head" (fx ((:each uicc-button :type (:remote) :call :@base)
+;;         ("ifmod-head" (dx ((:each uicc-button :type (:remote) :call :@base)
 ;;                            (uic-series :type (:ui :controls)))
 ;;                           (list :add-node :add-link)))
-;;         ("ifmod-foot" (fx ((:each uicc-button :call :@base)
+;;         ("ifmod-foot" (dx ((:each uicc-button :call :@base)
 ;;                            (uic-series :type (:ui :controls)))
 ;;                           (list :save)))
 ;;         (t (funcall interactor context input))))))
@@ -516,10 +516,10 @@
 ;;   (lambda (context input)    
 ;;     (cbind input item
 ;;       ("state")
-;;       ("ifmod-head" (fx ((:each uicc-button)
+;;       ("ifmod-head" (dx ((:each uicc-button)
 ;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :save :abc)))
-;;       ("ifmod-foot" (fx ((:each uicc-button)
+;;       ("ifmod-foot" (dx ((:each uicc-button)
 ;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :save)))
 ;;       (t (if (assoc "text" input :test #'string=)
@@ -537,7 +537,7 @@
 ;;                                                             :main :as-string t)
 ;;                                           :unwrap t :syntax :progn))))
 ;;              (render (funcall context :medium)
-;;                      (fx ((uicc-field :type (:code)))
+;;                      (dx ((uicc-field :type (:code)))
 ;;                          :demo.sheet :main)))))))
 
 ;; (branch :demo.sheet :play
@@ -618,21 +618,21 @@
 ;;                                    (setf start-point (1+ sx))))
 ;;                      (when (= sx branch-point) (setf interval-found t)))
            
-;;            (fx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+;;            (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
 ;;                (loop :for l :in (nthcdr start-point summary) :while l
-;;                      :collect (fx ((uic-series :layout (:vertical :of 12 1 10 1)
+;;                      :collect (dx ((uic-series :layout (:vertical :of 12 1 10 1)
 ;;                                                :join   (list :demo.sheet (first l))
 ;;                                                :type   (:column)
 ;;                                                :mode   (grow :demo.sheet (first l)
 ;;                                                              context (list (list "state" 100)))))
-;;                                   (fx ((uic-series :type (:ui :header)))
+;;                                   (dx ((uic-series :type (:ui :header)))
 ;;                                       (second l)
 ;;                                       (grow :demo.sheet (first l)
 ;;                                             context (list (list "ifmod-head" 100))))
-;;                                   (fx ((uic-frame :name (second l) :type (:body)
+;;                                   (dx ((uic-frame :name (second l) :type (:body)
 ;;                                                   :access :demo.sheet))
 ;;                                       (first l))
-;;                                   (fx ((uic-series :type (:ui :footer)))
+;;                                   (dx ((uic-series :type (:ui :footer)))
 ;;                                       (list (grow :demo.sheet (first l)
 ;;                                                   context (list (list "ifmod-foot" 100))))))))))
 ;;        :chart
@@ -642,10 +642,10 @@
 ;;            ;; (print (list :in input))
 ;;            (cbind input item
 ;;              ("state" :chart)
-;;              ("ifmod-head" (fx ((:each uicc-button :type (:trigger :local))
+;;              ("ifmod-head" (dx ((:each uicc-button :type (:trigger :local))
 ;;                                 (uic-series :type (:ui :controls)))
 ;;                                (list :select :draw :retrace-x :retrace-y)))
-;;              ("ifmod-foot" (fx ((:each uicc-button :type (:trigger :local))
+;;              ("ifmod-foot" (dx ((:each uicc-button :type (:trigger :local))
 ;;                                 (uic-series :type (:ui :controls)))
 ;;                                (list :save :zoom-actual)))
 ;;              ("entities"
@@ -663,16 +663,16 @@
 ;;                               "KEYWORD")
 ;;                   (:chart-data (system-file-to-string :demo.sheet "price.csv"))
 ;;                   (t (render (funcall context :medium)
-;;                              (fx ((uich-candle :type (:green-red)))
+;;                              (dx ((uich-candle :type (:green-red)))
 ;;                                  :demo.sheet :chart))))))))
 ;;        :chentity
 ;;        (let ((entities))
 ;;          (lambda (context input)
 ;;            (cbind input item
-;;              ("ifmod-head" (fx ((:each uicc-button)
+;;              ("ifmod-head" (dx ((:each uicc-button)
 ;;                                 (uic-series :type (:ui :controls)))
 ;;                                (list :save)))
-;;              ("ifmod-foot" (fx ((:each uicc-button)
+;;              ("ifmod-foot" (dx ((:each uicc-button)
 ;;                                 (uic-series :type (:ui :controls)))
 ;;                                (list :save)))
 ;;              ("path"
@@ -694,16 +694,16 @@
 ;;                   (setf entities (second (from-system-file :demo.sheet "sheet.lisp" :chart-entities))))
 ;;                 (when context
 ;;                   (render (funcall context :medium)
-;;                           (fx ((uic-frame :type (:meta-code)))
+;;                           (dx ((uic-frame :type (:meta-code)))
 ;;                               (seed.modulate::express entities))))))))
 ;;        :main
 ;;        (lambda (context input)
 ;;          (cbind input item
 ;;            ("state")
-;;            ("ifmod-head" (fx ((:each uicc-button)
+;;            ("ifmod-head" (dx ((:each uicc-button)
 ;;                               (uic-series :type (:ui :controls)))
 ;;                              (list :save :abc)))
-;;            ("ifmod-foot" (fx ((:each uicc-button)
+;;            ("ifmod-foot" (dx ((:each uicc-button)
 ;;                               (uic-series :type (:ui :controls)))
 ;;                              (list :save)))
 ;;            (t (if (assoc "text" input :test #'string=)
@@ -721,7 +721,7 @@
 ;;                                                                  :main :as-string t)
 ;;                                                :unwrap t :syntax :progn))))
 ;;                   (render (funcall context :medium)
-;;                           (fx ((uicc-field :type (:code)))
+;;                           (dx ((uicc-field :type (:code)))
 ;;                               :demo.sheet :main))))))
 ;;        :cells
 ;;        (lambda (context input)
@@ -729,10 +729,10 @@
 ;;          (cbind input item
 ;;            ("state")
 ;;            ("ifmod-head"
-;;             (fx ((:each uicc-button)
+;;             (dx ((:each uicc-button)
 ;;                  (uic-series :type (:ui :controls)))
 ;;                 (list :save :abc)))
-;;            ("ifmod-foot" (fx ((:each uicc-button)
+;;            ("ifmod-foot" (dx ((:each uicc-button)
 ;;                               (uic-series :type (:ui :controls)))
 ;;                              (list :save)))
 ;;            ("cells"
@@ -759,7 +759,7 @@
 ;;                                                     (from-system-file
 ;;                                                      :demo.sheet "sheet.lisp" :cells)))))))))
 ;;            (t (render (funcall context :medium)
-;;                       (fx ((uic-grid :type (:code)))
+;;                       (dx ((uic-grid :type (:code)))
 ;;                           :demo.sheet :cells)))))
 ;;        :code
 ;;        (lambda (context input)
@@ -851,10 +851,10 @@
 ;;          (lambda (context input)
 ;;            (cbind input item
 ;;              ("state" :graph-breadth)
-;;              ("ifmod-head" (fx ((:each uicc-button :type (:trigger :remote))
+;;              ("ifmod-head" (dx ((:each uicc-button :type (:trigger :remote))
 ;;                                 (uic-series :type (:ui :controls)))
 ;;                                (list :add-node :add-link)))
-;;              ("ifmod-foot" (fx ((:each uicc-button)
+;;              ("ifmod-foot" (dx ((:each uicc-button)
 ;;                               (uic-series :type (:ui :controls)))
 ;;                              (list :save)))
 ;;              (t (funcall interactor context input)))))

@@ -33,37 +33,37 @@
 
         (render medium
                 (authorize (funcall context :user)
-                  (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
+                  (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                                    :maps '(((:type :sidebar)) ((:type :main)))))
-                      (fx ((uic-series :type '(:ui :column  :portal-summary)))
-                          (fx ((uic-series :type '(:ui :list)))
+                      (dx ((uic-series :type '(:ui :column  :portal-summary)))
+                          (dx ((uic-series :type '(:ui :list)))
                               (list :portal.demo1
-                                    (fx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
-                                        "demo.sheet")
+                                    ;; (dx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
+                                    ;;     "demo.sheet")
                                     
-                                    (fx ((uicc-select :type :default-blank
+                                    (dx ((uicc-select :type :default-blank
                                                       :options (list :demo.sheet :demo.other)
                                                       :call (:@fetch (:point :@base) (:next :refresh))))
-                                        (or (of-system :point) ""))))
+                                        (of-system :point))))
                           
                           (and (of-system :point)
-                               (fx ((:each uic-anchor :type '(:branch))
+                               (dx ((:each uic-anchor :type '(:branch))
                                     (uic-series :type  '(:ui :navigation)
                                                 :point (funcall context :branch-point)))
                                    (mapcar #'second (grow (of-system :point) :summary))))
                           
-                          (fx ((uic-series :type '(:ui :list)))
-                              (fx ((uicc-field  :name "key")) "")
-                              (fx ((uicc-button :call t)) "enter")))
-b                      
+                          (dx ((uic-series :type '(:ui :list)))
+                              (dx ((uicc-field  :name "key")) "")
+                              (dx ((uicc-button :call t)) "enter")))
+                      
                       (if (not (of-system :point))
                           "" (grow (of-system :point) :view context)))
 
-                  (fx ((uic-series :type (:ui :main :placard)))
-                      (list (fx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
+                  (dx ((uic-series :type (:ui :main :placard)))
+                      (list (dx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
                                 (list "please input your key"
-                                      (fx ((uicc-field  :name "key")) "")
-                                      (fx ((uicc-button :call t))
+                                      (dx ((uicc-field  :name "key")) "")
+                                      (dx ((uicc-button :call t))
                                           "enter")
                                       ))))))))))
 
@@ -108,14 +108,14 @@ b
 ;;            (render
 ;;             medium
 ;;             (authorize (funcall context :user)
-;;               (fx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
+;;               (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
 ;;                                :maps '(((:type :sidebar)) ((:type :main)))))
-;;                   (fx ((uic-series :type '(:ui :column  :portal-summary)))
+;;                   (dx ((uic-series :type '(:ui :column  :portal-summary)))
 ;;                       :portal.demo1
 ;;                       '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
 ;;                         "demo.sheet")
 ;;                       (if (of-system :point)
-;;                           (fx ((:each uic-anchor :type '(:branch))
+;;                           (dx ((:each uic-anchor :type '(:branch))
 ;;                                (uic-series :type '(:ui :navigation)
 ;;                                            :point (funcall context :branch-point)))
 ;;                               (mapcar #'second (grow (of-system :point) :summary)))))
@@ -123,8 +123,8 @@ b
 ;;                   (if (not (of-system :point))
 ;;                       "" (grow (of-system :point) :view context)))
 
-;;               (fx ((uic-series :type (:ui :column) :cast t))
-;;                   (list (fx ((uicc-field :key "key")) "")))))))
+;;               (dx ((uic-series :type (:ui :column) :cast t))
+;;                   (list (dx ((uicc-field :key "key")) "")))))))
 ;;        :systems
 ;;        (lambda (context input)
 ;;          (if input (let ((epsym (intern input "KEYWORD")))

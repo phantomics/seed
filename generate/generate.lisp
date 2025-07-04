@@ -121,17 +121,6 @@
                                 (let ((,item (assoc ,(first c) ,input :test #'string=)))
                                   ,@(rest c)))))))
 
-#|
-
-(macroexpand-1 `(seed.generate::cbind input item ("ifmod-head" (fx ((:each uicc-button)
-                                                           (uic-series :type (:ui :controls)))
-                                                          (list :save :abc)))
-         ("bla" (fx ((:each uicc-button)
-                                                           (uic-series :type (:ui :controls)))
-                                                          (list :save :abc)))))
-
-|#
-
 ;; SECTION: data processing functions
 
 (defun array-to-list (input)

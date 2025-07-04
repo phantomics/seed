@@ -2,7 +2,7 @@
 
 (defpackage #:seed.modulate
   (:use #:cl #:symbol-munger #:spinneret #:com.inuoe.jzon)
-  (:export #:meta-template #:encode #:render #:fx #:fx-assign
+  (:export #:meta-template #:encode #:render #:dx #:fx-assign
            ;; media
            #:uim-web
            ;; components

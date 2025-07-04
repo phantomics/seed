@@ -9,7 +9,7 @@
                           #:from-system-file #:build-templater
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->keyword)
-  (:shadowing-import-from #:seed.modulate #:fx #:fx-assign #:render #:uim-web #:uim-web-stream
+  (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:uir-call-form #:uir-sortable)
