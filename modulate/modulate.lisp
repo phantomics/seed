@@ -5,7 +5,7 @@
   "A macro for denoting inline Parenscript code."
   `(subseq (ps-inline ,form) 11))
 
-(defmacro meta (form)
+(defmacro fx (form)
   (first form))
 
 (defun from-system-file (system file key &key as-string)
@@ -882,7 +882,7 @@
       form (let ((path (or path '(0))))
              ;; (print (list :ff form))
              (if (not (and (symbolp (first form))
-                           (string= "META" (string (first form)))))
+                           (string= "FX" (string (first form)))))
                  (make-instance 'uic-series :path (reverse path)
                                             :base (loop :for i :from 0 :for f :in form
                                                         :collect (express f params (cons i path))))
@@ -1267,7 +1267,7 @@
                             (dx ((uic-frame :type (:meta-code)))
                                 (express
                                  (funcall (lambda (items)
-                                            `(meta ,items (:type :enum) (:fx :uic-series)))
+                                            `(fx ,items (:type :enum) (:fx :uic-series)))
                                           (loop :for item :in (funcall
                                                                ;; nodes have an (index . N)
                                                                ;; form to omit, links don't
@@ -1778,7 +1778,7 @@
       (opener-code (psl (open-node (chain $el (get-attribute "index")))))
       (connector-code (psl (connect-node (chain $el (get-attribute "index"))))))
   (flet ((meta-strip (form)
-           (loop :for item :in form :collect (if (not (string= "META" (string (first item))))
+           (loop :for item :in form :collect (if (not (string= "FX" (string (first item))))
                                                  item (second item)))))
     (defun svrender-layer (gmodel &key x-offset y-offset parent point (path-string "")
                                     (height 400) (width 400) (depth 1)

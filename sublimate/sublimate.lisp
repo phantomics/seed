@@ -23,7 +23,7 @@
       (breaking-chars (concatenate 'string '(#\  #\Tab #\Newline #\Return)))
       (char-store (make-string 5 :initial-element #\ ))
       (expand-prefix "(SEED.SUBLIMATE::EXPAND-META ")
-      (matching) (index 0) (to-match "META "))
+      (matching) (index 0) (to-match "FX "))
   (defun priority-macro-reader-extension (stream character)
     "Extend a character reader macro, typically for the left/opening parenthesis '(', to check for the presence of certain macro names so that those macros may be expanded in the read phase, before any other macros are expanded."
 
@@ -36,7 +36,7 @@
                               ;; (print (list :aa char))
                               ;; (dotimes (n 10)
                               ;;   (princ (read-char stream nil)))
-                              (unless (if (= 4 index)
+                              (unless (if (= 2 index)
                                           (position char breaking-chars :test #'char=)
                                           (char= m (char-upcase char)))
                                 (setf matching nil))

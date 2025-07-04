@@ -8,7 +8,7 @@
         )
   (:export #:system #:seed #:branch #:in-system-context #:interact #:with-meta
            #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web #:of-system
-           #:abind #:cbind #:interface-spec #:meta #:uic #:uic-set #:encode #:load-seed-system
+           #:abind #:cbind #:interface-spec #:fx #:uic #:uic-set #:encode #:load-seed-system
            #:form-span #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender
            #:psl #:astr

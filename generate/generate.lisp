@@ -81,7 +81,7 @@
   (append (list :props item) props))
 
 (defun with-meta (item &rest props)
-  `(meta ,item ,@props))
+  `(fx ,item ,@props))
 
 (defun of-system (system &rest keys)
   (let ((found (getf system (first keys))))

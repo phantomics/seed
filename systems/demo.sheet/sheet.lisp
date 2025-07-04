@@ -36,586 +36,586 @@
              (chart-style :style-line :base-line :color '(:red :green :green)
                :stroke '(:solid :dots))))
 :chart-entity-template-line
-(meta (span (meta :type (:fx :uicc-select) (:type :select) (:options "line" "retraceX" "retraceY"))
-            (meta :x-start (:fx :uicc-field) (:type :numeric :integer))
-            (meta :y-start (:fx :uicc-field) (:type :numeric :float))
-            (meta :x-end   (:fx :uicc-field) (:type :numeric :integer))
-            (meta :y-end   (:fx :uicc-field) (:type :numeric :float)))
+(fx (span (fx :type (:fx :uicc-select) (:type :select) (:options "line" "retraceX" "retraceY"))
+            (fx :x-start (:fx :uicc-field) (:type :numeric :integer))
+            (fx :y-start (:fx :uicc-field) (:type :numeric :float))
+            (fx :x-end   (:fx :uicc-field) (:type :numeric :integer))
+            (fx :y-end   (:fx :uicc-field) (:type :numeric :float)))
       (:fx :uic-series :layout (:groups :rows (-1 4)))
       (:role (uir-call-form :options (list 'line 'retrace))))
 :chart-entities
-(meta (chart-view :chart-test "data")
+(fx (chart-view :chart-test "data")
       (:fx :uic-series :layout (:groups :rows (-2))) (:type :called) (:role uir-call-form (uir-sortable :range 2)))
 ;; :chart-entities
 ;; (quote
-;;  (meta ((meta "This is a test."
+;;  (fx ((fx "This is a test."
 ;;               (:fx :uicc-field) (:type :text))
-;;         (meta "This is a test 2."
+;;         (fx "This is a test 2."
 ;;               (:fx :uicc-field) (:type :text))
-;;         (meta ((meta (:point-from . 10)
+;;         (fx ((fx (:point-from . 10)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named))
-;;                (meta (:point-to . 20)
+;;                (fx (:point-to . 20)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named)))
 ;;               (:fx :uic-series) (:type :enum) (:layout :group :rows (2)))
-;;         (meta ((meta (:point-from . 11)
+;;         (fx ((fx (:point-from . 11)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named))
-;;                (meta (:point-to . 21)
+;;                (fx (:point-to . 21)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named)))
 ;;               (:fx :uic-series) (:type :enum) (:layout :group :rows (2)))
-;;         (meta ((meta (:point-from . 12)
+;;         (fx ((fx (:point-from . 12)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named))
-;;                (meta (:point-to . 22)
+;;                (fx (:point-to . 22)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named)))
 ;;               (:fx :uic-series) (:type :enum) (:layout :group :rows (2)))
-;;         (meta ((meta (:point-from . 13)
+;;         (fx ((fx (:point-from . 13)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named))
-;;                (meta (:point-to . 23)
+;;                (fx (:point-to . 23)
 ;;                      (:fx :uicc-field) (:type :numeric :integer :pair :named)))
 ;;               (:fx :uic-series) (:type :enum) (:layout :group :rows (2))))
 ;;       (:fx :uic-series) (:type :sortable)))
 :form
 (setf *profile*
-      '(meta ((meta "Dave" (:title . "Name") (:name . :name) (:type :field :text))
-              (meta 34 (:title . "Age") (:name . :age)
+      '(fx ((fx "Dave" (:title . "Name") (:name . :name) (:type :field :text))
+              (fx 34 (:title . "Age") (:name . :age)
                (:type :field :numeric :integer))
-              (meta "Red" (:title . "Fav. Color") (:options "Red" "Green" "Blue")
+              (fx "Red" (:title . "Fav. Color") (:options "Red" "Green" "Blue")
                (:name . :fav-color) (:type :select))
-              (meta nil (:title . "Member?") (:name . :member) (:type :boolean))
-              (meta nil (:title . "Submit") (:name . :submit)
+              (fx nil (:title . "Member?") (:name . :member) (:type :boolean))
+              (fx nil (:title . "Submit") (:name . :submit)
                (:type :submit-control)))
         (:type :series :form)))
 :graph-node-indices
 '(0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27)
 #|
-           (meta (:type . :option) (:options :option :switch :input :gate)
+           (fx (:type . :option) (:options :option :switch :input :gate)
             (:fx :uicc-select) (:name . :type)
             (:type :select :dropdown))
 
 |#
 :graph-node-template
-(quote (((meta (:title . "Untitled node") (:template meta-template.customers-title))
-         (meta (:image . "none") (:template meta-template.customers-image))
-         (meta (:dialog . "") (:template meta-template.customers-dialog)))))
+(quote (((fx (:title . "Untitled node") (:template meta-template.customers-title))
+         (fx (:image . "none") (:template meta-template.customers-image))
+         (fx (:dialog . "") (:template meta-template.customers-dialog)))))
 :graph-link-template
-(quote (((meta (:title . "Untitled link") (:template meta-template.customers-title))
-         (meta (:dialog . "") (:template meta-template.customers-dialog)))))
+(quote (((fx (:title . "Untitled link") (:template meta-template.customers-title))
+         (fx (:dialog . "") (:template meta-template.customers-dialog)))))
 :graph
 (setf *graph-nodes*
         (seed.generate::build-directed-graph
-         (((meta (:title . "Introductory sentence")
+         (((fx (:title . "Introductory sentence")
             (:template meta-template.customers-title))
-           (meta (:image . "none") (:template meta-template.customers-image))
-           (meta
+           (fx (:image . "none") (:template meta-template.customers-image))
+           (fx
             (:dialog
              . "You're working the front desk at the Globus Hotel Resort when two people appear at the counter. Guests, most likely.")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Ask who?")
+          (((fx (:title . "Ask who?")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Who are you?\"")
+            (fx (:dialog . "\"Who are you?\"")
              (:template meta-template.customers-dialog)))
            3)
-          (((meta (:title . "Ask why?") (:fx :uicc-field)
+          (((fx (:title . "Ask why?") (:fx :uicc-field)
              (:type :text :pair :named :block))
-            (meta (:dialog . "\"How can I help you?\"")
+            (fx (:dialog . "\"How can I help you?\"")
              (:template meta-template.customers-dialog)))
            1))
-         (((meta (:title . "Why we're here")
+         (((fx (:title . "Why we're here")
             (:template meta-template.customers-title))
-           (meta (:image . "man-relaxed")
+           (fx (:image . "man-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Excuse me, we have an event scheduled here, it's happening in two weeks and we haven't received the confirmation we requested from you.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Didn't know")
+          (((fx (:title . "Didn't know")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"I don't have any information on that, are you sure you have a group reservation?\"")
              (:template meta-template.customers-dialog)))
            0)
-          (((meta (:title . "Who are you")
+          (((fx (:title . "Who are you")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog . "\"Ok, what's the name of the group you're with?\"")
              (:template meta-template.customers-dialog)))
            3))
-         (((meta (:title . "We got a receipt")
+         (((fx (:title . "We got a receipt")
             (:template meta-template.customers-title))
-           (meta (:image . "man-irritated")
+           (fx (:image . "man-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"I know you got our reservation, your website gave us a receipt number. It's 9906947-XB71.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "No special instructions?")
+          (((fx (:title . "No special instructions?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Ok, I see it in the system but there are no special instructions attached that I can see. What can I help you with?\"")
              (:template meta-template.customers-dialog)))
            6))
-         (((meta (:title . "Who we are: Annapurna")
+         (((fx (:title . "Who we are: Annapurna")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"We're organizing the 2025 Global Guru Collective for Annapurna Essential Oils. Annapurna is on a mission to use our 2000 years' Vedic study of pure plant essences to bring humankind closer to samadhi.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Let me look for it")
+          (((fx (:title . "Let me look for it")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Ok, let me see if I can find that...\"")
+            (fx (:dialog . "\"Ok, let me see if I can find that...\"")
              (:template meta-template.customers-dialog)))
            0)
-          (((meta (:title . "Who are you")
+          (((fx (:title . "Who are you")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Annapurna? What's that exactly?\"")
+            (fx (:dialog . "\"Annapurna? What's that exactly?\"")
              (:template meta-template.customers-dialog)))
            4)
-          (((meta (:title . "What's the event")
+          (((fx (:title . "What's the event")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"What's the event you're holding?\"")
+            (fx (:dialog . "\"What's the event you're holding?\"")
              (:template meta-template.customers-dialog)))
            5))
-         (((meta (:title . "Annapurna: Gurus, not sales reps")
+         (((fx (:title . "Annapurna: Gurus, not sales reps")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Annapurna is a business but it's also much more. It represents the highest and most refined path of spiritual evolution for humans. Other companies have employees, distributors, consultants or coaches, but at Annapurna, our products are conveyed to customers by the hands of our Gurus, who learn to impart the wisdom of the four jhanas along with our line of products.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "What's the event")
+          (((fx (:title . "What's the event")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Ok, so what's this event you're holding?\"")
+            (fx (:dialog . "\"Ok, so what's this event you're holding?\"")
              (:template meta-template.customers-dialog)))
            5)
-          (((meta (:title . "Four jhanas?")
+          (((fx (:title . "Four jhanas?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"The four jannas? Is that like a nickname for weed or something?\"")
              (:template meta-template.customers-dialog)))
            19))
-         (((meta (:title . "Event description")
+         (((fx (:title . "Event description")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"It's our Global Guru Conference. This is a weekend chosen each year according to vedic astrology for our Gurus to gather, reaffirm their spiritual paths and learn how to better grow their downline.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "What do you need?")
+          (((fx (:title . "What do you need?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog . "\"Ok, so what do you need for this conference?\"")
              (:template meta-template.customers-dialog)))
            6))
-         (((meta (:title . "Event requirements")
+         (((fx (:title . "Event requirements")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Well, it sounds like you lost the instructions we sent so we have no choice but to give you a quick summary of what we need. There are four main things: the flower petal basins, the aromatherapeutic infusions, the singing bowl ceremonies and... our required accomodation for the business intelligence program.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Petal basins?")
+          (((fx (:title . "Petal basins?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog . "\"What can you tell me about these petal basins?\"")
              (:template meta-template.customers-dialog)))
            7)
-          (((meta (:title . "Aromatherapy?")
+          (((fx (:title . "Aromatherapy?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"What were you saying about an aromatherapy infusion?\"")
              (:template meta-template.customers-dialog)))
            8)
-          (((meta (:title . "Singing bowls")
+          (((fx (:title . "Singing bowls")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"What did you want to do with singing bowls?\"")
+            (fx (:dialog . "\"What did you want to do with singing bowls?\"")
              (:template meta-template.customers-dialog)))
            9)
-          (((meta (:title . "Business intelligence?")
+          (((fx (:title . "Business intelligence?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Business intelligence accommodations? What's that about?\"")
              (:template meta-template.customers-dialog)))
            10))
-         (((meta (:title . "About req: petal basins")
+         (((fx (:title . "About req: petal basins")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"In each of the conference rooms hosting our presentations we require basins containing a blend of zinnia, lotus and passion fruit petals floating in de-ionized water. Aligned with the podium on an east-west axis, this serves to ground the spatial chakras while our speakers are presenting.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "We can do that")
+          (((fx (:title . "We can do that")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Sure, we can source floral arrangements no problem. Would you like that billed per room or in a lump sum?\"")
              (:template meta-template.customers-dialog)))
            14)
-          (((meta (:title . "Not our job")
+          (((fx (:title . "Not our job")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"That sounds like something you should figure out with a florist or your event management company, it's not something we can really help with.\"")
              (:template meta-template.customers-dialog)))
            15))
-         (((meta (:title . "About req: incense schedule")
+         (((fx (:title . "About req: incense schedule")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"We come to all events equipped with industrial censers and a week's supply of our specialty incense blends. We route these censers into the HVAC systems serving the floors where our Gurus will be staying so we can keep the air infused with these scents on a Vedic horary schedule. This promotes ideal energetic balance for the gathering.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "I suppose we can")
+          (((fx (:title . "I suppose we can")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"I suppose we can do that, let me check with our physical plant team about those censers.\"")
              (:template meta-template.customers-dialog)))
            14)
-          (((meta (:title . "Health code?")
+          (((fx (:title . "Health code?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Wait, you want to hook big cans of burning incense into the building HVAC system? Are you sure that doesn't break a health code or a fire code or something?\"")
              (:template meta-template.customers-dialog)))
            15))
-         (((meta (:title . "About req: singing bowls")
+         (((fx (:title . "About req: singing bowls")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Our Gurus will be staying on floors two through eight in Building C. On these floors, at each point where hallways cross we will require your staff to complete 100 revolutions of a mallet in a brass singing bowl every three hours. It'll keep Gurus' brainwaves at an alpha level throughout the event.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Play singing bowls?")
+          (((fx (:title . "Play singing bowls?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"You want the busboys to play singing bowls all day? Are you out of your mind?\"")
              (:template meta-template.customers-dialog)))
            15)
-          (((meta (:title . "Can do for a price")
+          (((fx (:title . "Can do for a price")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"I mean, it's possible... we can't divert our hotel staff to play music but we could find some local performers to do it, what kind of budget are you looking at for this service?\"")
              (:template meta-template.customers-dialog)))
            14))
-         (((meta (:title . "About req: biz intel")
+         (((fx (:title . "About req: biz intel")
             (:template meta-template.customers-title))
-           (meta (:image . "man-relaxed")
+           (fx (:image . "man-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Uh... that's going to involve us working with your IT department. If you could give me their contact information...\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "It has to go through me")
+          (((fx (:title . "It has to go through me")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Our guests don't deal with the IT department directly. All guest requests are routed through guest services, which means us. How can I help you?\"")
              (:template meta-template.customers-dialog)))
            11)
-          (((meta (:title . "IT number, other Qs?")
+          (((fx (:title . "IT number, other Qs?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Here's their number. Did you have any other questions?\"")
              (:template meta-template.customers-dialog)))
            6))
-         (((meta (:title . "More info: biz intel")
+         (((fx (:title . "More info: biz intel")
             (:template meta-template.customers-title))
-           (meta (:image . "man-relaxed")
+           (fx (:image . "man-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Well, you see, the issue is that, you see, as part of our spiritual mission it's essential that we be aware of the needs of our Gurus so we can respond to them appropriately.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Get to the point")
+          (((fx (:title . "Get to the point")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Ok, that makes sense, I guess, but what do you want us to do about it?\"")
              (:template meta-template.customers-dialog)))
            13)
-          (((meta (:title . "What does that mean?")
+          (((fx (:title . "What does that mean?")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Respond to their needs?\"")
+            (fx (:dialog . "\"Respond to their needs?\"")
              (:template meta-template.customers-dialog)))
            12))
-         (((meta (:title . "Yet more: biz intel")
+         (((fx (:title . "Yet more: biz intel")
             (:template meta-template.customers-title))
-           (meta (:image . "man-relaxed")
+           (fx (:image . "man-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Our internal intelligence service has alerted us to a potential buildup of negative energy within Annapurna. They suspect that a group of our midlevel Gurus are planning to defect to Crystalline Natural Essences and take their downlines with them. This would result in severe karmic pollution along with significant financial losses for Annapurna. In order to prevent this we need an idea of what the Gurus are saying to each other.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "What do you mean?")
+          (((fx (:title . "What do you mean?")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"So what are you asking for? What does that entail?\"")
              (:template meta-template.customers-dialog)))
            13))
-         (((meta (:title . "Shoe drops: biz intel")
+         (((fx (:title . "Shoe drops: biz intel")
             (:template meta-template.customers-title))
-           (meta (:image . "man-relaxed")
+           (fx (:image . "man-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"What it boils down to is that we will require that special listening devices be installed in each of the rooms we've reserved. It's important that we be able to monitor Gurus' conversations in real time.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Listening devices")
+          (((fx (:title . "Listening devices")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Listening devices! Are you serious?\"")
+            (fx (:dialog . "\"Listening devices! Are you serious?\"")
              (:template meta-template.customers-dialog)))
            18)
-          (((meta (:title . "Anything to help our guests")
+          (((fx (:title . "Anything to help our guests")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Certainly, anything to help someone booking that many rooms. I'll get it figured out with IT.\"")
              (:template meta-template.customers-dialog)))
            16))
-         (((meta (:title . "Say yes to woo: happy guest")
+         (((fx (:title . "Say yes to woo: happy guest")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Wonderful, wonderful! Did you have any other questions?\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Yes, back to main")
+          (((fx (:title . "Yes, back to main")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"I did...\"")
+            (fx (:dialog . "\"I did...\"")
              (:template meta-template.customers-dialog)))
            6)
-          (((meta (:title . "More about Annapurna")
+          (((fx (:title . "More about Annapurna")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"So what kind of company is Annapurna?\"")
+            (fx (:dialog . "\"So what kind of company is Annapurna?\"")
              (:template meta-template.customers-dialog)))
            4))
-         (((meta (:title . "Say no to woo: annoyed")
+         (((fx (:title . "Say no to woo: annoyed")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-irritated")
+           (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Oh, I see. Really going above and beyond in the hospitality department, aren't you?\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Back to main")
+          (((fx (:title . "Back to main")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"I had other questions...\"")
+            (fx (:dialog . "\"I had other questions...\"")
              (:template meta-template.customers-dialog)))
            6)
-          (((meta (:title . "More about Annapurna")
+          (((fx (:title . "More about Annapurna")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"What kind of business is Annapurna anyway?\"")
+            (fx (:dialog . "\"What kind of business is Annapurna anyway?\"")
              (:template meta-template.customers-dialog)))
            4))
-         (((meta (:title . "Say yes to spying: happy")
+         (((fx (:title . "Say yes to spying: happy")
             (:template meta-template.customers-title))
-           (meta (:image . "man-relaxed")
+           (fx (:image . "man-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Excellent, excellent. Don't forget to get us you bank information, you're due for... compensation.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Other questions")
+          (((fx (:title . "Other questions")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Anyway, I had other questions...\"")
+            (fx (:dialog . "\"Anyway, I had other questions...\"")
              (:template meta-template.customers-dialog)))
            6)
-          (((meta (:title . "About Annapurna")
+          (((fx (:title . "About Annapurna")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Anyway, what kind of company is Annapurna?\"")
+            (fx (:dialog . "\"Anyway, what kind of company is Annapurna?\"")
              (:template meta-template.customers-dialog)))
            4))
-         (((meta (:title . "Say no to spying: angry")
+         (((fx (:title . "Say no to spying: angry")
             (:template meta-template.customers-title))
-           (meta (:image . "man-irritated")
+           (fx (:image . "man-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"I guess you'll find out how far that attitude takes you in your career. Our needs will be met one way or another.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Other questions")
+          (((fx (:title . "Other questions")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog . "\"Thanks for the advice. I had other questions...\"")
              (:template meta-template.customers-dialog)))
            6)
-          (((meta (:title . "What kind of company")
+          (((fx (:title . "What kind of company")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Doing business on your level? What kind of company is Annapurna anyway?\"")
              (:template meta-template.customers-dialog)))
            4))
-         (((meta (:title . "Spying detail")
+         (((fx (:title . "Spying detail")
             (:template meta-template.customers-title))
-           (meta (:image . "man-irritated")
+           (fx (:image . "man-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Look, maybe you just don't understand how business is done on our level. This is a precaution we're taking for the well-being of our Gurus more than anything. Can you help us help them? If you can work with us you may be qualified for a... personal bonus paid directly.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Sign me up!")
+          (((fx (:title . "Sign me up!")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog . "\"A special bonus? Sign me up! Consider it done!\"")
              (:template meta-template.customers-dialog)))
            16)
-          (((meta (:title . "I'll pretend I didn't hear that")
+          (((fx (:title . "I'll pretend I didn't hear that")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"You're offering me...? I'll pretend I didn't hear that.\"")
              (:template meta-template.customers-dialog)))
            17))
-         (((meta (:title . "Recruit 1: four jhanas")
+         (((fx (:title . "Recruit 1: four jhanas")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"The jhanas are four essential meditative practices, the four modes of mindfulness, of doing-in-not-doing. You know something... now that you bring this up I'm starting to sense that you have a natural spiritual affinity.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "I feel that way too")
+          (((fx (:title . "I feel that way too")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"I feel that way too, could just be an acid flashback though.\"")
              (:template meta-template.customers-dialog)))
            20))
-         (((meta (:title . "Recruit 2: natural affinity")
+         (((fx (:title . "Recruit 2: natural affinity")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Yes, I can feel that this meeting was fated. It is for moments like this that we walk the paths of samsara. I sense within you the potential to be an Annapurna Guru.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "No offense but...")
+          (((fx (:title . "No offense but...")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Uh, no offense but I should probably just concentrate on the job I'm doing right now.\"")
              (:template meta-template.customers-dialog)))
            24)
-          (((meta (:title . "What does a Guru do?")
+          (((fx (:title . "What does a Guru do?")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"So what does a Guru do?\"")
+            (fx (:dialog . "\"So what does a Guru do?\"")
              (:template meta-template.customers-dialog)))
            21))
-         (((meta (:title . "Recruit 3: A Guru's role")
+         (((fx (:title . "Recruit 3: A Guru's role")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"As a Guru your hand will help to balance the scales of maya in the physical world, guiding the unawakened on their journey to cast off the scales of dhamma. You can also become a millionaire in as little as three months. You can be a part of this global shift in consciousness but only if you act now.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Not appropriate")
+          (((fx (:title . "Not appropriate")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Uh, I don't think it's appropriate for me to discuss this with you at work.\"")
              (:template meta-template.customers-dialog)))
            24)
-          (((meta (:title . "Act now?")
+          (((fx (:title . "Act now?")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Act now? Why the sense of urgency?\"")
+            (fx (:dialog . "\"Act now? Why the sense of urgency?\"")
              (:template meta-template.customers-dialog)))
            22))
-         (((meta (:title . "Recruit 4: The imperative")
+         (((fx (:title . "Recruit 4: The imperative")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Our upline Gurus have foreseen that in the near future, the souls of humanity will enter a higher vibrational state bringing with it the chance to commune with souls from past cosmic cycles. It is imperative that we use our tools of herbal aromatherapy to raise the consciousness of as many people as possible in the meantime. You have the chance to help us reach this goal.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Pyramid scheme?")
+          (((fx (:title . "Pyramid scheme?")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"Is this like one of those pyramid schemes?\"")
+            (fx (:dialog . "\"Is this like one of those pyramid schemes?\"")
              (:template meta-template.customers-dialog)))
            24)
-          (((meta (:title . "What would it involve")
+          (((fx (:title . "What would it involve")
              (:template meta-template.customers-title))
-            (meta (:dialog . "\"So what's the first step to be a Guru?\"")
+            (fx (:dialog . "\"So what's the first step to be a Guru?\"")
              (:template meta-template.customers-dialog)))
            23))
-         (((meta (:title . "Recruit 5: The Offer")
+         (((fx (:title . "Recruit 5: The Offer")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-relaxed")
+           (fx (:image . "girl-relaxed")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"If you enroll as a Guru now you could work for just 15 minutes a day for the next two months and make an extra quarter million dollars. All you have to do is recruit your friends and family. You can ask the guests here if they'd like to join too! You can buy our business starter package with an essential oil sampler for just $2500.\"")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Can't afford")
+          (((fx (:title . "Can't afford")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Did you say $2500? How am I supposed to afford that?\"")
              (:template meta-template.customers-dialog)))
            24))
-         (((meta (:title . "Recruit no: loser")
+         (((fx (:title . "Recruit no: loser")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-irritated")
+           (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
             (:template meta-template.customers-dialog)))
-          (((meta (:title . "Thanks a lot")
+          (((fx (:title . "Thanks a lot")
              (:template meta-template.customers-title))
-            (meta
+            (fx
              (:dialog
               . "\"Thanks a lot, in any case I had some questions about your event coming up.\"")
              (:template meta-template.customers-dialog)))
            5))
-         (((meta (:title . "Untitled")
+         (((fx (:title . "Untitled")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-irritated")
+           (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
             (:template meta-template.customers-dialog))))
-         (((meta (:title . "Untitled")
+         (((fx (:title . "Untitled")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-irritated")
+           (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
             (:template meta-template.customers-dialog))))
-         (((meta (:title . "Untitled")
+         (((fx (:title . "Untitled")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-irritated")
+           (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
             (:template meta-template.customers-dialog))))
-         (((meta (:title . "Recruit no: loser")
+         (((fx (:title . "Recruit no: loser")
             (:template meta-template.customers-title))
-           (meta (:image . "girl-irritated")
+           (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
-           (meta
+           (fx
             (:dialog
              . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
             (:template meta-template.customers-dialog))))))
@@ -623,120 +623,120 @@
 #|
 (setf *graph-nodes*
         (seed.generate::build-directed-graph
-         (((meta (:title . "First node.")
+         (((fx (:title . "First node.")
             (:fx :uicc-field) (:type :text :pair :named :block))
-           (meta (:dialog . "Knock knock.")
+           (fx (:dialog . "Knock knock.")
             (:fx :uicc-field) (:type :text :pair :named :block)))
-          (((meta (:title . "Link to second node.")
+          (((fx (:title . "Link to second node.")
              (:fx :uicc-field) (:type :text :pair :named :block))
-            (meta (:dialog . "Who's there?")
+            (fx (:dialog . "Who's there?")
              (:fx :uicc-field) (:type :text :pair :named :block)))
            1))
-         (((meta (:title . "Second node.")
+         (((fx (:title . "Second node.")
             (:fx :uicc-field) (:type :text :pair :named :block))
-           (meta (:dialog . "Bob.")
+           (fx (:dialog . "Bob.")
             (:fx :uicc-field) (:type :text :pair :named :block)))
-          (((meta (:title . "Link to third node.")
+          (((fx (:title . "Link to third node.")
              (:fx :uicc-field) (:type :text :pair :named :block))
-            (meta (:dialog . "Bob who?")
+            (fx (:dialog . "Bob who?")
              (:fx :uicc-field) (:type :text :pair :named :block)))
            2))
-         (((meta (:title . "Third node.")
+         (((fx (:title . "Third node.")
             (:fx :uicc-field) (:type :text :pair :named :block))
-           (meta (:dialog . "Bob Ross.")
+           (fx (:dialog . "Bob Ross.")
             (:fx :uicc-field) (:type :text :pair :named :block)))
-          (((meta (:title . "Link to first node.")
+          (((fx (:title . "Link to first node.")
              (:fx :uicc-field) (:type :text :pair :named :block))
-            (meta (:dialog . "I'll show you a happy little tree you son of a-")
+            (fx (:dialog . "I'll show you a happy little tree you son of a-")
              (:fx :uicc-field) (:type :text :pair :named :block)))
            0))))
 |#
 :esgraph-node-template
-(quote (((meta (:title . "Untitled node")
+(quote (((fx (:title . "Untitled node")
                (:fx :uicc-field) (:type :text :pair :named :block))
-         (meta (:code . "")
+         (fx (:code . "")
                (:type :code-area :lang-apl)))))
 :esgraph-link-template
-(quote (((meta (:title . "Untitled link")
+(quote (((fx (:title . "Untitled link")
                (:fx :uicc-field) (:type :text :pair :named :block)))))
 :esgraph-node-indices
 '(0 1 2)
 :esgraph
 (setf *esgraph-nodes*
         (seed.generate::build-directed-graph
-         (((meta (:title . "Untitled node 1")
+         (((fx (:title . "Untitled node 1")
             (:fx :uicc-field) (:type :text :pair :named :block))
-           (meta (:code . "myNS←baseManifest myNS")
+           (fx (:code . "myNS←baseManifest myNS")
             (:type :code-area :lang-apl)))
-          (((meta (:title . "To node 2")
+          (((fx (:title . "To node 2")
              (:fx :uicc-field) (:type :text :pair :named :block)))
            1)
-          (((meta (:title . "To node 2 second")
+          (((fx (:title . "To node 2 second")
              (:fx :uicc-field) (:type :text :pair :named :block)))
            1))
-         (((meta (:title . "Untitled node 2")
+         (((fx (:title . "Untitled node 2")
             (:fx :uicc-field) (:type :text :pair :named :block))
-           (meta (:code . "myNS←reduceRadiiLogical myNS")
+           (fx (:code . "myNS←reduceRadiiLogical myNS")
             (:type :code-area :lang-apl)))
-          (((meta (:title . "To node 3")
+          (((fx (:title . "To node 3")
              (:fx :uicc-field) (:type :text :pair :named :block)))
            2))
-         (((meta (:title . "Untitled node 3")
+         (((fx (:title . "Untitled node 3")
             (:fx :uicc-field) (:type :text :pair :named :block))
-           (meta (:code . "myNS←reduceSlotConductorsWhole myNS")
+           (fx (:code . "myNS←reduceSlotConductorsWhole myNS")
             (:type :code-area :lang-apl)))
-          (((meta (:title . "Back to start")
+          (((fx (:title . "Back to start")
              (:fx :uicc-field) (:type :text :pair :named :block)))
            0))))
 :table
 (setf *input*
-      '(meta (((meta nil (:name . :to-solve) (:title . "? Flow Rate") (:type :trigger))
-               (meta 400.0 (:name . :v-0) (:type :field :numeric))
-               (meta "STB/d" (:name . :u-0) (:type :select :dropdown) (:title . "Unit")
+      '(fx (((fx nil (:name . :to-solve) (:title . "? Flow Rate") (:type :trigger))
+               (fx 400.0 (:name . :v-0) (:type :field :numeric))
+               (fx "STB/d" (:name . :u-0) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "STB/d")))
-              ((meta nil (:name . :to-solve) (:title . "? Well Pressure") (:type :trigger))
-               (meta 500.0 (:name . :v-1) (:type :field :numeric))
-               (meta "psi" (:name . :u-1) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Well Pressure") (:type :trigger))
+               (fx 500.0 (:name . :v-1) (:type :field :numeric))
+               (fx "psi" (:name . :u-1) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "psi")))
-              ((meta nil (:name . :to-solve) (:title . "? Avg. Res. Pres.") (:type :trigger))
-               (meta 1500.0 (:name . :v-2) (:type :field :numeric))
-               (meta "psi" (:name . :u-2) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Avg. Res. Pres.") (:type :trigger))
+               (fx 1500.0 (:name . :v-2) (:type :field :numeric))
+               (fx "psi" (:name . :u-2) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "psi")))
-              ((meta nil (:name . :to-solve) (:title . "? Permeability") (:type :trigger))
-               (meta 50.0 (:name . :v-3) (:type :field :numeric))
-               (meta "mD" (:name . :u-3) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Permeability") (:type :trigger))
+               (fx 50.0 (:name . :v-3) (:type :field :numeric))
+               (fx "mD" (:name . :u-3) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "mD")))
-              ((meta nil (:name . :to-solve) (:title . "? Formation Thickness") (:type :trigger))
-               (meta 25.0 (:name . :v-4) (:type :field :numeric))
-               (meta "ft" (:name . :u-4) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Formation Thickness") (:type :trigger))
+               (fx 25.0 (:name . :v-4) (:type :field :numeric))
+               (fx "ft" (:name . :u-4) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "ft")))
-              ((meta nil (:name . :to-solve) (:title . "? Viscosity") (:type :trigger))
-               (meta 2.8345143463802374 (:name . :v-5) (:type :field :numeric))
-               (meta "cP" (:name . :u-5) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Viscosity") (:type :trigger))
+               (fx 2.8345143463802374 (:name . :v-5) (:type :field :numeric))
+               (fx "cP" (:name . :u-5) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "cP")))
-              ((meta nil (:name . :to-solve) (:title . "? Formation Factor") (:type :trigger))
-               (meta 1.20 (:name . :v-6) (:type :field :numeric))
-               (meta "res-ft^{3}/std-ft^{3}" (:name . :u-6) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Formation Factor") (:type :trigger))
+               (fx 1.20 (:name . :v-6) (:type :field :numeric))
+               (fx "res-ft^{3}/std-ft^{3}" (:name . :u-6) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "res-ft^{3}/std-ft^{3}")))
-              ((meta nil (:name . :to-solve) (:title . "? Well Radius") (:type :trigger))
-               (meta 0.5 (:name . :v-7) (:type :field :numeric))
-               (meta "ft" (:name . :u-7) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Well Radius") (:type :trigger))
+               (fx 0.5 (:name . :v-7) (:type :field :numeric))
+               (fx "ft" (:name . :u-7) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "ft")))
-              ((meta nil (:name . :to-solve) (:title . "? Drainage Radius") (:type :trigger))
-               (meta 1500.0 (:name . :v-8) (:type :field :numeric))
-               (meta "ft" (:name . :u-8) (:type :select :dropdown) (:title . "Unit")
+              ((fx nil (:name . :to-solve) (:title . "? Drainage Radius") (:type :trigger))
+               (fx 1500.0 (:name . :v-8) (:type :field :numeric))
+               (fx "ft" (:name . :u-8) (:type :select :dropdown) (:title . "Unit")
                 (:action . :branch-reload)
                 (:options "ft")))
-              ((meta nil (:name . :to-solve) (:title . "? Skin Factor") (:type :trigger))
-               (meta -1.0 (:name . :v-9) (:type :field :numeric)))
+              ((fx nil (:name . :to-solve) (:title . "? Skin Factor") (:type :trigger))
+               (fx -1.0 (:name . :v-9) (:type :field :numeric)))
               )
         (:type :series :form :tabular
          )))
