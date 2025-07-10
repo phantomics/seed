@@ -480,27 +480,6 @@
 ;;                    data))
 ;;            (then handler))))
 
-;; (enter-js-element *misc-js* :fetch-contact-defs
-;;   (defun fetch-contact (element context input event)
-;;     ;; (chain console (log :cc context))
-;;     (chain (fetch "/contact/"
-;;                   (create method "POST"
-;;                           headers (create "Content-type" "application/json; charset=UTF-8")
-;;                           body (chain -j-s-o-n (stringify (create system (@ context system)
-;;                                                                   branch (@ context branch)
-;;                                                                   input  input)))))
-;;            (then (lambda (response) (chain response (json))))
-;;            (then (lambda (data)
-;;                    (if (@ data oob-reload)
-;;                        (chain data oob-reload
-;;                               (for-each (lambda (item)
-;;                                           ;; (chain console (log :it item))
-;;                                           (chain htmx (trigger (getprop seed-elements item) "reload"))))))
-;;                    data))
-;;            (then (if (= "function" (typeof event))
-;;                      event (lambda (data)
-;;                              (chain htmx (trigger element (@ event next)))))))))
-
 (enter-js-element *misc-js* :fetch-contact-defs
   (defun fetch-contact (element context input event)
     ;; (chain console (log :cc context))

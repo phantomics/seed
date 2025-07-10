@@ -46,7 +46,7 @@
 ;;   (lambda (context input)
 ;;     (cbind input item
 ;;       ("state" :chart)
-;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :@base)
+;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :.base)
 ;;                          (uic-series :type (:ui :controls :extog)))
 ;;                         (list :select :draw :retrace-x :retrace-y)))
 ;;       ("ifmod-foot" (dx ((:each uicc-button :type (:local))
@@ -66,7 +66,7 @@
 ;;     ;; (print (list :in input))
 ;;     (cbind input item
 ;;       ("state" :chart)
-;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :@base)
+;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :.base)
 ;;                          (uic-series :type (:ui :controls :extog)))
 ;;                         (list :select :draw :retrace-x :retrace-y)))
 ;;       ("ifmod-foot" (dx ((:each uicc-button :type (:local))
@@ -162,7 +162,7 @@
       (destructuring-bind (&key state ifmod-head ifmod-foot action entities mode &allow-other-keys) input
         (cond
           (state :chart)
-          (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :@base)
+          (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
                            (uic-series :type (:ui :controls :extog)))
                           (list :select :draw :retrace-x :retrace-y)))
           (ifmod-foot (dx ((:each uicc-button :type (:local))
@@ -434,10 +434,10 @@
         (cond (state (when state (case state
                                    (:graph-overview :graph-breadth)
                                    (:graph-node     :meta-code-form))))
-              (ifmod-head (dx ((:each uicc-button :type (:remote) :call :@base)
+              (ifmod-head (dx ((:each uicc-button :type (:remote) :call :.base)
                                (uic-series :type (:ui :controls)))
                               (list :add-node :add-link)))
-              (ifmod-foot (dx ((:each uicc-button :call :@base)
+              (ifmod-foot (dx ((:each uicc-button :call :.base)
                                (uic-series :type (:ui :controls)))
                               (list :save)))
               (t (funcall interactor context input)))))))
@@ -456,10 +456,10 @@
 ;;                    (case (second (assoc "state" input :test #'string=))
 ;;                      (:graph-overview :graph-breadth)
 ;;                      (:graph-node     :meta-code-form))))
-;;         ("ifmod-head" (dx ((:each uicc-button :type (:remote) :call :@base)
+;;         ("ifmod-head" (dx ((:each uicc-button :type (:remote) :call :.base)
 ;;                            (uic-series :type (:ui :controls)))
 ;;                           (list :add-node :add-link)))
-;;         ("ifmod-foot" (dx ((:each uicc-button :call :@base)
+;;         ("ifmod-foot" (dx ((:each uicc-button :call :.base)
 ;;                            (uic-series :type (:ui :controls)))
 ;;                           (list :save)))
 ;;         (t (funcall interactor context input))))))

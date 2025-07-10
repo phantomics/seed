@@ -43,7 +43,7 @@
                               (list :portal.demo1
                                     (dx ((uicc-select :type :default-blank
                                                       :options (list :demo.sheet :demo.other)
-                                                      :call (:@fetch (:point :@base) (:next :refresh))))
+                                                      :call (:.fetch (:point :.base) (:next :refresh))))
                                         (of-system :point))))
                           
                           (and (of-system :point)
@@ -68,13 +68,13 @@
 
 (defun manifest-template-interface (template-list template-point)
   (loop :for item :in template-list :for ix :from 0
-        :append (cons (dx ((uicc-button :call (:@fetch (:point ix) (:next :refresh))))
+        :append (cons (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
                           item)
                       (and template-point (= ix template-point)
                            (list (dx ((uic-series :layout (:groups :rows (2))
                                                   :type (:series :enum)))
                                      (dx ((uicc-field :name "new system name" :type (:string))) "")
-                                     (dx ((uicc-button :call :@base) "create")))))))
+                                     (dx ((uicc-button :call :.base)) "create")))))))
 
 (branch :portal.demo1 :base
   (adapt-from-json :point)
@@ -101,10 +101,21 @@
                       :header
                       (list "aaa"))
                   (dx ((uic-series :type (:ui :list-table)
-                                   :call (:@fetch (:point :@base) (:next :refresh))))
+                                   :call (:.fetch (:point :@base) (:next :refresh))))
                       (manifest-template-interface *seed-templates* (funcall context :template-point)))
                   (dx ((uic-series :type (:ui :footer)))
                       (list "bbb")))))))
+
+(branch :portal.demo1 :systems
+  (adapt-from-alist :system :branch)
+  (lambda (context input)
+    (if input (let ((epsym (intern input "KEYWORD")))
+                (of-system :point (intern input "KEYWORD"))
+                (instantiate-priority-macro-reader (asdf:load-system epsym)
+                  (load-seed-system epsym)))
+        (-<> (with-meta (of-system :contacts)
+               :type (:form))
+          (encode <>)))))
 
 ;; (branch :demo.sheet :view
 ;;   (adapt-from-json :path :session)
@@ -138,17 +149,6 @@
 ;;                                (dx ((uic-series :type (:ui :footer)))
 ;;                                    (list (grow :demo.sheet (first l)
 ;;                                                context (list :ifmod-foot t)))))))))))
-
-(branch :portal.demo1 :systems
-  (adapt-from-alist :system :branch)
-  (lambda (context input)
-    (if input (let ((epsym (intern input "KEYWORD")))
-                (of-system :point (intern input "KEYWORD"))
-                (instantiate-priority-macro-reader (asdf:load-system epsym)
-                  (load-seed-system epsym)))
-        (-<> (with-meta (of-system :contacts)
-               :type (:form))
-          (encode <>)))))
 
 ;; (seed :portal.demo1
 ;;       (:bind :package package :of-system of-system :to-grow grow)
