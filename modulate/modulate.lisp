@@ -81,15 +81,14 @@
               (destructuring-bind (_ item &rest props) form
                 (let* ((this-name (if cons-items (first item)
                                       (rest (assoc :name props))))
-                       (corresponding (if (not this-name)
-                                          nil (rest (assoc this-name pairs))))
+                       (corresponding (and this-name (getf pairs this-name)))
                        (process (or ;; (match (rest (assoc :type props))
                                     ;;   ((list :field :numeric :integer)
                                     ;;    #'parse-number:parse-number))
                                  #'identity)))
                   
-                  (print (list :iii item props corresponding this-name process
-                               :ci cons-items))
+                  ;; (print (list :iii item props corresponding this-name process
+                  ;;              :ci cons-items))
                   (if corresponding
                       (if cons-items (setf (second form)
                                            (cons (caadr form)
@@ -121,31 +120,31 @@
   ())
 
 (defclass ui-component ()
-  ((%name :accessor      uic-name
-          :initform      nil
-          :initarg       :name
+  ((%name :accessor uic-name
+          :initform nil
+          :initarg  :name
           :documentation "The component's unique name.")
-   (%base :accessor      uic-base
-          :initform      nil
-          :initarg       :base
+   (%base :accessor uic-base
+          :initform nil
+          :initarg  :base
           :documentation "The content within the component, which may determine its appearance and/or function.")
-   (%type :accessor      uic-type
-          :initform      nil
-          :initarg       :type
+   (%type :accessor uic-type
+          :initform nil
+          :initarg  :type
           :documentation "The type taxonomy of the component, which helps determine its properties.")
    (%root :accessor uic-root
           :initform nil
           :initarg  :root
           :documentation "The component to which the component belongs.")
-   (%path :accessor      uic-path
-          :initform      nil
-          :initarg       :path
+   (%path :accessor uic-path
+          :initform nil
+          :initarg  :path
           :documentation "The path connecting the component to its upstream root component.")
    (%join :accessor uic-join
           :initform nil
           :initarg  :join
           :documentation "Specification for a server-side data structure with which the component is associated.")
-   (%cast :accessor uic-call
+   (%call :accessor uic-call
           :initform nil
           :initarg  :call
           :documentation "An effect produced by interaction with the component; this may involve the Seed server or manifest only within the user interface.")
@@ -239,11 +238,22 @@
 
 (defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
-  (labels ((format-params (items)
+  (labels ((format-list (form)
+             (cons 'list (loop :for item :in form
+                               :collect (if (atom item) item (format-list item)))))
+           (format-params (items)
              (loop :for item :in items
                    :collect (if (or (atom item)
                                     (not (keywordp (first item))))
-                                item (list 'quote item))))
+                                item (format-list item))))
+
+           ;; (format-params (items)
+           ;;   (loop :for item :in items
+           ;;         :collect (if (or (atom item)
+           ;;                          (not (keywordp (first item))))
+           ;;                      item (list 'quote item))))
+
+           
            (process-spec (item spec-list)
              (let ((generated))
                (case (caar spec-list)
@@ -310,7 +320,8 @@
   (let* ((pairs (if (uic-join aspect)
                     (list :mode (list :system   (first  (uic-join aspect))
                                       :branch   (second (uic-join aspect))
-                                      :of-local '(manifest-locality)))))
+                                      :of-local '(manifest-locality)
+                                      :domain   '(create)))))
          (base (merge-furnishings base pairs)))
     (merge-furnishings
      base (case (uic-mode aspect)
@@ -343,8 +354,7 @@
                                            (setf (@ mode interaction) "draw"
                                                  (@ mode draw-entity) "retraceY"))
                                          :zoom-actual
-                                         '(lambda (mode)
-                                           )
+                                         '(lambda (mode))
                                          :when-toggled `(lambda (mode)
                                                           (chain console (log 202 mode))))))
             (:meta-code-form (list :mode    (list :form nil)
@@ -360,8 +370,11 @@
                                                                        (from-entries
                                                                         (chain fdata (entries))))))
                                                       (setf (@ obj action) "saveNode")
-                                                      (chain htmx (trigger (@ mode form) "submit"
-                                                                           obj)))))))
+                                                      (fetch-contact
+                                                       $el mode obj
+                                                       (lambda (data)
+                                                         (chain htmx (trigger (@ mode domain main)
+                                                                              "reload")))))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
                                                    (fetch-contact
@@ -409,14 +422,16 @@
 
 (defmethod generate ((medium uim-web) (aspect string))
   (declare (ignore medium))
-  (list :raw aspect))
+  ;; (list :raw aspect)
+  aspect)
 
 (defmethod generate ((medium uim-web) (aspect uic-frame))
   (let ((types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
         (face (lisp->camel-case (uic-name aspect)))
         (system (uicf-access aspect))
-        (last-type-index (1- (length (uic-type aspect)))))
+        ;; (last-type-index (1- (length (uic-type aspect))))
+        )
 
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
@@ -424,6 +439,7 @@
                          :class (furnish-type medium aspect '(:access))
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             (chain mode (of-local "register" "main" $el))
+                                            (setf (@ mode domain main) $el)
                                             (fetch-contact $el mode (create height (@ $el offset-height)
                                                                             width  (@ $el offset-width))
                                                            (lambda (data)))))
@@ -444,16 +460,17 @@
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
         (breadth-default 12) (call (uic-call aspect))
+        (is-list-table (member :list-table (uic-type aspect)))
         (layout (uic-series-layout aspect))
         (x-inits))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
       (flet ((enclose-by-type (types element)
-               (loop :for type :in types
-                     :do (setf element (case type
-                                         (:column `(:div :class "column-inner" ,element))
-                                         (t element))))
+               (dolist (type types)
+                 (setf element (case type (:column `(:div :class "column-inner" ,element))
+                                     (:list-table (list :td element))
+                                     (t element))))
                element))
 
         (loop :for item :in (uic-base aspect)
@@ -470,7 +487,6 @@
         ;;                                       mode (@ methods when-toggled)
         ;;                                       (@ methods when-untoggled))))
         ;;         x-inits))
-
         
         (let* ((items (loop :for ix :from 0
                             ;; if this is a call-form, the form's head symbol is not displayed
@@ -486,21 +502,24 @@
                                          (format class-stream "point "))
                                        (loop :for itype :in (rest (assoc :type map))
                                              :do (format class-stream "~a " (string-downcase itype)))
+                                       ;; (print (list :it item))
                                        (locate medium aspect ix
-                                               `(:div :class ,(get-output-stream-string class-stream)
-                                                      :index ,ix
-                                                      ,@(if (of-root-type aspect :meta-code)
+                                               (append (list (cond (is-list-table :tr)
+                                                                   (t :div))
+                                                             :class (get-output-stream-string class-stream)
+                                                             :index ix)
+                                                       (and (of-root-type aspect :meta-code)
                                                             (list :x-data
                                                                   (psl (create in-series
                                                                                containing-series))))
-                                                      ,@(if (and (of-root-type aspect :meta-code)
+                                                       (and (and (of-root-type aspect :meta-code)
                                                                  (member :sortable (uic-type aspect)))
                                                             (list :x-init
                                                                   (psl (initialize-draggable
                                                                         $el mode in-series))))
-                                                      ,(enclose-by-type
-                                                        types (realize aspect medium item
-                                                                       :sort ix)))))))
+                                                      (list (enclose-by-type
+                                                             types (realize aspect medium item
+                                                                            :sort ix))))))))
                (parent-sortable (and (typep    (uic-root aspect) 'ui-component)
                                      (has-role (uic-root aspect) 'uir-sortable)))
                (header (let ((segments))
@@ -523,16 +542,19 @@
 
           ;; (print (list :ro (uic-role aspect) ltype lprops))
           
-          (append (list (if (or (eq t call) (member :enum types))
-                            ;; the series should be expressed as a form if it is conveying an
-                            ;; enum structure or if its :call property is set to t indicating
-                            ;; that it is a form whose submission causes its rerendering
-                            :form :div)
+          (append (list (cond ((or (eq t call) (member :enum types))
+                               :form)
+                              (is-list-table :table)
+                              (t :div))
+                        ;; the series should be expressed as a form if it is conveying an
+                        ;; enum structure or if its :call property is set to t indicating
+                        ;; that it is a form whose submission causes its rerendering
                         :path "" :class (furnish-type medium aspect
                                                       (append '(:ui :series)
                                                               (case ltype
                                                                 ((:horizontal :vertical)
-                                                                 '(:series :grid-layout)))))
+                                                                 '(:series :grid-layout)))
+                                                              (and is-list-table '(:table))))
                         :style (if (and (not (member ltype '(:horizontal :vertical)))
                                         (not (eql :even (first lprops))))
                                    ;; TODO: this needs more rigorous logic for partitioning according
@@ -546,20 +568,18 @@
                         :x-data (if (of-root-type aspect :meta-code)
                                     (psl (create containing-series $el))))
                   
-                  (if (eq t call)
-                      (list :hx-inherit "*" :hx-post "/render/"))
+                  (and (eq t call)
+                       (list :hx-inherit "*" :hx-post "/render/"))
                   
-                  (if (member :enum types)
-                      (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
-                                             (funcall (chain methods (register-form mode)) $el)))))
+                  (and (member :enum types)
+                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
+                                              (funcall (chain methods (register-form mode)) $el)))))
 
-                  (if (and (member :controls types) (member :extog types))
-                      (list :x-data (psl (create this-toggle null
-                                                 toggle-state (create index null)))
-                            :x-init (psl ;; ($next-tick (lambda ()
-                                                       (setf this-toggle
-                                                             (register-exclusive-toggle-array
-                                                              mode methods toggle-state)))))
+                  (and (and (member :controls types) (member :extog types))
+                       (list :x-data (psl (create this-toggle null
+                                                  toggle-state (create index null)))
+                             :x-init (psl (setf this-toggle (register-exclusive-toggle-array
+                                                             mode methods toggle-state)))))
 
                   ;; header
 
@@ -570,10 +590,8 @@
                         (dolist (item rows)
                           (let ((in-header (and header (zerop item-index) (minusp item))))
                             (push nil envelopes)
-                            (when in-header
-                              (push (first header)
-                                    (first envelopes)))
-                            ;; (print (list :aa item)) 
+                            (when in-header (push (first header)
+                                                  (first envelopes)))
                             (loop :for c :below (abs item)
                                   :do (push (list :div :class (if in-header "following" "column")
                                                   (nth (+ c item-index) items))
@@ -585,7 +603,9 @@
                         (append (reverse envelopes)
                                 (if (< item-index (1- (length items)))
                                     (nthcdr (1+ item-index) items))))
-                      (append header items))))))))
+                      (funcall (cond (is-list-table (lambda (form) (list (cons :tbody form))))
+                                     (t #'identity))
+                               (append header items)))))))))
 
 #|
 
@@ -786,6 +806,22 @@
 
     (get-output-stream-string class-stream)))
 
+(defmethod build-call ((medium uim-web) (aspect ui-component)) ;; TODO: merge this in later
+  (let* ((base (uic-base aspect))
+         (call (uic-call aspect)))
+    (if (listp call)
+        (let ((call-namespace (case (first call)
+                                (:@ :global)
+                                (t nil)))
+              (call (if (not call-namespace)
+                        call (rest call))))
+          (destructuring-bind (method arg) call
+            `(funcall ,(case call-namespace
+                         (:global method)
+                         (t `(@ methods ,method)))
+                      $el mode ,@(and arg (list arg)))))
+        `(funcall (@ methods ,call) $el mode))))
+
 (defmethod furnish-call ((medium uim-web) (aspect ui-component))
   (let ((base (uic-base aspect)))
     (labels ((js-format-plist (items)
@@ -800,26 +836,26 @@
                                                                `(@ $event target value))
                                                               (t base)))
                                                     (t item))))))))
-      (if (not (uic-call aspect))
-          nil (if (atom (uic-call aspect))
-                  nil (destructuring-bind (method &rest args) (uic-call aspect)
-                        (let* ((action (typecase aspect
-                                         (uicc-button :|x-on:click|)
-                                         (uicc-select :|x-on:change|)
-                                         (t :|x-on:click|)))
-                               (to-address (if (eq :@domain (first args)) 'domain 'mode))
-                               (args (mapcar #'js-format-plist
-                                             (if (not (eq :@domain (first args)))
-                                                 args (rest args))))
-                               (method (if (eq :@fetch method)
-                                           'fetch-contact method)))
-                          (list action (ps* (if (eq :@fetch method)
-                                                (list method '$el to-address args)
-                                                (funcall (if (eql 'fetch-contact method)
-                                                             #'identity (lambda (item)
-                                                                          (list 'chain 'methods item)))
-                                                         (append (list method '$el to-address)
-                                                                 args))))))))))))
+      (and (uic-call aspect)
+           (not (atom (uic-call aspect)))
+           (destructuring-bind (method &rest args) (uic-call aspect)
+             (let* ((action (typecase aspect
+                              (uicc-button :|x-on:click|)
+                              (uicc-select :|x-on:change|)
+                              (t :|x-on:click|)))
+                    (to-address (if (eq :@domain (first args)) 'domain 'mode))
+                    (args (mapcar #'js-format-plist
+                                  (if (not (eq :@domain (first args)))
+                                      args (rest args))))
+                    (method (if (eq :@fetch method)
+                                'fetch-contact method)))
+               (list action (ps* (if (eq :@fetch method)
+                                     (list method '$el to-address args)
+                                     (funcall (if (eql 'fetch-contact method)
+                                                  #'identity (lambda (item)
+                                                               (list 'chain 'methods item)))
+                                              (append (list method '$el to-address)
+                                                      args)))))))))))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   "Generation method qualifier manifesting call effects for UI components."
@@ -1017,12 +1053,10 @@
                   (setf network-changed t)))
 
               (when (and action (string= "saveNode" action))
-                (meta-revise (if sub-index (first (nth sub-index
-                                                       (rest (nth index (rest formatted)))))
+                (meta-revise (if sub-index (first (nth sub-index (rest (nth index (rest formatted)))))
                                  (cdar (nth index (rest formatted))))
                              input t)
-                (meta-revise (first (if sub-index
-                                        (nth sub-index (rest (nth index (rest orig-data))))
+                (meta-revise (first (if sub-index (nth sub-index (rest (nth index (rest orig-data))))
                                         (nth index (rest orig-data))))
                              input t)
                 ;; (print (list :aabb formatted orig-data))

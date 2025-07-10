@@ -136,8 +136,7 @@
            0)
           (((fx (:title . "Who are you")
              (:template meta-template.customers-title))
-            (fx
-             (:dialog . "\"Ok, what's the name of the group you're with?\"")
+            (fx (:dialog . "\"Ok, what's the name of the group you're with?\"")
              (:template meta-template.customers-dialog)))
            3))
          (((fx (:title . "We got a receipt")
@@ -208,8 +207,7 @@
             (:template meta-template.customers-dialog)))
           (((fx (:title . "What do you need?")
              (:template meta-template.customers-title))
-            (fx
-             (:dialog . "\"Ok, so what do you need for this conference?\"")
+            (fx (:dialog . "\"Ok, so what do you need for this conference?\"")
              (:template meta-template.customers-dialog)))
            6))
          (((fx (:title . "Event requirements")
@@ -587,24 +585,21 @@
               . "\"Thanks a lot, in any case I had some questions about your event coming up.\"")
              (:template meta-template.customers-dialog)))
            5))
-         (((fx (:title . "Untitled")
-            (:template meta-template.customers-title))
+         (((fx (:title . "Untitled") (:template meta-template.customers-title))
            (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
            (fx
             (:dialog
              . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
             (:template meta-template.customers-dialog))))
-         (((fx (:title . "Untitled")
-            (:template meta-template.customers-title))
+         (((fx (:title . "Untitled") (:template meta-template.customers-title))
            (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
            (fx
             (:dialog
              . "\"Sounds like you're a loser who's just going to keep on losing. The American Dream is for those willing to grab hold of it when opportunity knocks. I can't believe I wasted time talking to you.")
             (:template meta-template.customers-dialog))))
-         (((fx (:title . "Untitled")
-            (:template meta-template.customers-title))
+         (((fx (:title . "Untitled") (:template meta-template.customers-title))
            (fx (:image . "girl-irritated")
             (:template meta-template.customers-image))
            (fx

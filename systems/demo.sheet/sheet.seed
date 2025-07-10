@@ -424,7 +424,8 @@
          :link-template-key :graph-link-template :graph-key :graph
          :node-indices-key :graph-node-indices)))
   (branch :demo.sheet :graph
-    (adapt-from-json :action :index :target :width :height :path :face)
+    (adapt-from-json :action :index :target :width :height :path :face
+                     :title :image :dialog)
     (adapt-from-alist :system :branch :face)
     (lambda (context input)
       (destructuring-bind (&key state ifmod-head ifmod-foot

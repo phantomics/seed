@@ -17,6 +17,7 @@
            #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec)
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->lisp-name)
+  (:shadowing-import-from #:quickproject #:make-project)
   (:shadowing-import-from #:parse-number #:parse-number)
   (:shadowing-import-from #:trivia #:match #:guard)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)

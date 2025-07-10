@@ -142,6 +142,10 @@ body{
     overflow: auto;
 }
 
+.ui.grid-layout .column .list-table{
+    width: 100%;
+}
+
 .ui.grid-layout > .column{
     grid-template-rows: 1fr;
 }

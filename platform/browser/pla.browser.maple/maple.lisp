@@ -189,7 +189,8 @@
        (.container :position "relative" :height "100%") ;;  :display grid)
        (.column-inner
         :padding 0 :overflow auto
-        (.access.body :height "100%" :background "#fff" :overflow auto))))
+        (.access.body :height "100%" :background "#fff" :overflow auto))
+       (.list-table :width "100%")))
 
     `((.ui.grid-layout > .column)  :grid-template-rows 1fr)
 
