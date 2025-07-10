@@ -806,21 +806,53 @@
 
     (get-output-stream-string class-stream)))
 
+(defgeneric build-call (medium component))
+
 (defmethod build-call ((medium uim-web) (aspect ui-component)) ;; TODO: merge this in later
   (let* ((base (uic-base aspect))
          (call (uic-call aspect)))
-    (if (listp call)
-        (let ((call-namespace (case (first call)
-                                (:@ :global)
-                                (t nil)))
-              (call (if (not call-namespace)
-                        call (rest call))))
-          (destructuring-bind (method arg) call
-            `(funcall ,(case call-namespace
-                         (:global method)
-                         (t `(@ methods ,method)))
-                      $el mode ,@(and arg (list arg)))))
-        `(funcall (@ methods ,call) $el mode))))
+    (labels ((js-format-plist (items)
+               (if (not (and items (listp items)))
+                   items (cons 'parenscript:create
+                               (loop :for item :in items
+                                     :collect (if (listp item)
+                                                  (js-format-plist item)
+                                                  (case item
+                                                    (:.base (typecase aspect
+                                                              (uicc-select
+                                                               `(@ $event target value))
+                                                              (t base)))
+                                                    (t item))))))))
+      (if (listp call)
+          (let ((call-namespace (case (first call)
+                                  (:@ :global)
+                                  (t nil)))
+                (call (if (not call-namespace)
+                          call (rest call))))
+            (destructuring-bind (method &rest arg) call
+              (let ((method ))
+                `(funcall ,(case method
+                              (:.fetch 'fetch-contact)
+                              (t (case call-namespace
+                                   (:global method)
+                                   (t `(@ methods ,method)))))
+                          $el mode ,@(and arg (list (js-format-plist arg)))))))
+          `(funcall ,(case method
+                       (:.fetch 'fetch-contact)
+                       (:.base `(@ $event target value))
+                       (t `(@ methods ,call)))
+                    $el mode)))))
+
+;; (defmethod furnish-call ((medium uim-web) (aspect ui-component))
+;;   (let ((base (uic-base aspect)))
+;;     (and (uic-call aspect)
+;;          (not (atom (uic-call aspect)))
+;;          (destructuring-bind (method &rest args) (uic-call aspect)
+;;            (let* ((action (typecase aspect
+;;                             (uicc-button :|x-on:click|)
+;;                             (uicc-select :|x-on:change|)
+;;                             (t :|x-on:click|))))
+;;              (list action (ps* (build-call medium aspect))))))))
 
 (defmethod furnish-call ((medium uim-web) (aspect ui-component))
   (let ((base (uic-base aspect)))

@@ -41,9 +41,6 @@
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
                           (dx ((uic-series :type '(:ui :list)))
                               (list :portal.demo1
-                                    ;; (dx ((uicc-button :call (:@fetch (:point :@base) (:next :refresh))))
-                                    ;;     "demo.sheet")
-                                    
                                     (dx ((uicc-select :type :default-blank
                                                       :options (list :demo.sheet :demo.other)
                                                       :call (:@fetch (:point :@base) (:next :refresh))))
@@ -57,7 +54,7 @@
                           
                           (dx ((uic-series :type '(:ui :list)))
                               (dx ((uicc-field  :name "key")) "")
-                              (dx ((uicc-button :call t)) "enter")))
+                              (dx ((uicc-button)) "enter")))
                       
                       (if (of-system :point)
                           (grow (of-system :point) :view context)
@@ -67,8 +64,7 @@
                       (list (dx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
                                 (list "please input your key"
                                       (dx ((uicc-field  :name "key")) "")
-                                      (dx ((uicc-button :call t))
-                                          "enter")))))))))))
+                                      (dx ((uicc-button)) "enter")))))))))))
 
 (defun manifest-template-interface (template-list template-point)
   (loop :for item :in template-list :for ix :from 0
@@ -78,7 +74,7 @@
                            (list (dx ((uic-series :layout (:groups :rows (2))
                                                   :type (:series :enum)))
                                      (dx ((uicc-field :name "new system name" :type (:string))) "")
-                                     (dx ((uicc-button :call (:abc))) "create")))))))
+                                     (dx ((uicc-button :call :@base) "create")))))))
 
 (branch :portal.demo1 :base
   (adapt-from-json :point)
