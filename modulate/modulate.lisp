@@ -1,4 +1,4 @@
-;;;; seed.modulate.lisp
+n;;;; seed.modulate.lisp
 (in-package #:seed.modulate)
 
 (defmacro psl (form)
@@ -466,13 +466,32 @@
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
-      (flet ((enclose-by-type (types element)
-               (dolist (type types)
-                 (setf element (case type (:column `(:div :class "column-inner" ,element))
-                                     (:list-table (list :td element))
-                                     (t element))))
-               element))
-
+      (flet ((enclose-by-type (types item index)
+               ;; (print (list :el item types (and (typep item 'ui-component)
+               ;;                                  (uic-type item))))
+               (let ((output-unlisted)
+                     (is-interstitial-row (and (typep item 'ui-component)
+                                               (listp (uic-type item))
+                                               (member :table-interstitial (uic-type item)))))
+                 (dolist (type types)
+                   (setf item (case type
+                                (:column `(:div :class "column-inner"
+                                                ,(realize aspect medium item :sort index)))
+                                (:list-table
+                                 ;; NOTE: this depends on list-table not being the first style;
+                                 ;; if it is the first style, it will not yet be rendered as HTML
+                                 (if (and (lisp item) (eq :div (first item)))
+                                     (let ((content-index (loop :for i :in item :for ix :from 0
+                                                                :when (and i (listp i)) :return ix)))
+                                       (setf output-unlisted t)
+                                       (loop :for i :in (nthcdr content-index item)
+                                             :collect (list :td i)))
+                                     (append (list :td)
+                                             (if is-interstitial-row (list :colspan "100%"))
+                                             (list (realize aspect medium item :sort index)))))
+                                (t (realize aspect medium item :sort index)))))
+                 (if output-unlisted item (list item)))))
+        
         (loop :for item :in (uic-base aspect)
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
@@ -517,9 +536,7 @@
                                                             (list :x-init
                                                                   (psl (initialize-draggable
                                                                         $el mode in-series))))
-                                                      (list (enclose-by-type
-                                                             types (realize aspect medium item
-                                                                            :sort ix))))))))
+                                                      (enclose-by-type types item ix))))))
                (parent-sortable (and (typep    (uic-root aspect) 'ui-component)
                                      (has-role (uic-root aspect) 'uir-sortable)))
                (header (let ((segments))
@@ -572,7 +589,8 @@
                        (list :hx-inherit "*" :hx-post "/render/"))
                   
                   (and (member :enum types)
-                       (list :x-init (psl (if (not (= "undefined" (typeof (@ methods register-form))))
+                       (list :x-init (psl (if (and (not (= "undefined" (typeof methods)))
+                                                   (not (= "undefined" (typeof (@ methods register-form)))))
                                               (funcall (chain methods (register-form mode)) $el)))))
 
                   (and (and (member :controls types) (member :extog types))
@@ -639,8 +657,95 @@
                                                (draggable drops)
                                                nil))))))
 
+4 5 0 2
 
+(⍳10){(⍺×⊂10 0)+¨⍵}¨⊂(0 0)(0 600)
+
+(⍳10){(⍺×⊂0 60)+¨⍵}¨⊂(0 0)(100 0)
+
+((⍳10)×⊂10 0){⍵+¨⊂⍺}¨⊂(0 0)(0 600)
+
+((⍳10)×⊂10 0 10 0)+¨⊂0 0 0 600
+
+((⍳10)×⊂0 60 0 60)+¨⊂0 0 100 0
 |#
+
+;; (defun grid-lines (spans)
+;;   (let ((hlines (make-array (list 20 4) :element-type '(unsigned-byte 16)))
+;;         (vlines (make-array (list 20 4) :element-type '(unsigned-byte 16)))
+;;         (hsize 60) (vsize 10) (hstart 60) (vstart 10)
+;;         (lindex 0) (hindex 0) (vindex 0))
+;;     (dotimes (n (1- 10))
+;;       (setf (row-major-aref hlines (+ lindex 0)) hstart
+;;             (row-major-aref hlines (+ lindex 2)) hstart
+;;             (row-major-aref hlines (+ lindex 3)) 100
+;;             (row-major-aref vlines (+ lindex 1)) vstart
+;;             (row-major-aref vlines (+ lindex 3)) vstart
+;;             (row-major-aref vlines (+ lindex 2)) 600)
+;;       (incf hstart hsize)
+;;       (incf vstart vsize)
+;;       (incf lindex 4))
+;;     (setf hindex (setf vindex lindex))
+    
+;;     (dolist (span spans)
+;;       (destructuring-bind (x y xspan yspan) span
+;;         (setf (row-major-aref hlines (+ 3 (ash x 2))) (* x vsize)
+;;               (row-major-aref vlines (+ 2 (ash y 2))) (* x hsize))
+;;         (dotimes (n 4)
+;;           (setf (row-major-aref hlines (+ n hindex))
+;;                 (if (= n 0) (row-major-aref hlines (+ n (ash x 2)))
+;;                     (if (= 1 n) (* (+ x xspan) vsize)
+;;                         (if (= 2 n) (row-major-aref hlines (+ n (ash x 2)))
+;;                             100))))
+;;           (setf (row-major-aref vlines (+ n vindex))
+;;                 (if (= n 0) (* (+ y yspan) hsize)
+;;                     (if (= 1 n) (row-major-aref vlines (+ n (ash y 2)))
+;;                         (if (= 2 n) 600
+;;                             (row-major-aref vlines (+ n (ash y 2))))))))
+;;         (incf hindex 4)
+;;         (incf vindex 4)))
+;;     (list hlines vlines)))
+
+(defun grid-lines (spans)
+  (let ((hlines (make-array (list 20 4) :element-type '(unsigned-byte 16)))
+        (vlines (make-array (list 20 4) :element-type '(unsigned-byte 16)))
+        (hsize 60) (vsize 10) (hstart 60) (vstart 10)
+        (lindex 0) (hindex 0) (vindex 0))
+    (dotimes (n (1- 10))
+      (setf (row-major-aref hlines (+ lindex 0)) hstart
+            (row-major-aref hlines (+ lindex 2)) hstart
+            (row-major-aref hlines (+ lindex 3)) 100
+            (row-major-aref vlines (+ lindex 1)) vstart
+            (row-major-aref vlines (+ lindex 3)) vstart
+            (row-major-aref vlines (+ lindex 2)) 600)
+      (incf hstart hsize)
+      (incf vstart vsize)
+      (incf lindex 4))
+    (setf hindex (setf vindex lindex))
+    
+    (dolist (span spans)
+      (destructuring-bind (x y xspan yspan) span
+        (dotimes (xs xspan)
+          (setf (row-major-aref hlines (+ 3 (ash (+ x xs) 2))) (* x vsize))
+          (dotimes (n 4)
+            (setf (row-major-aref hlines (+ n hindex))
+                  (if (= n 0) (row-major-aref hlines (+ n (ash (+ x xs) 2)))
+                      (if (= 1 n) (* (+ x xspan) vsize)
+                          (if (= 2 n) (row-major-aref hlines (+ n (ash (+ x xs) 2)))
+                              100)))))
+          (incf hindex 4))
+        (dotimes (ys yspan)
+          (setf (row-major-aref vlines (+ 2 (ash (+ y ys) 2))) (* x hsize))
+          (dotimes (n 4)
+            (setf (row-major-aref vlines (+ n vindex))
+                  (if (= n 0) (* (+ y yspan) hsize)
+                      (if (= 1 n) (row-major-aref vlines (+ n (ash (+ y ys) 2)))
+                          (if (= 2 n) 600
+                              (row-major-aref vlines (+ n (ash (+ y ys) 2))))))))
+          (incf vindex 4))))
+    (list hlines vlines)))
+
+;; (seed.modulate::grid-lines '((3 4 2 2)))
 
 (defmethod generate ((medium uim-web) (aspect uic-grid))
   (destructuring-bind (system branch) (uic-base aspect)
@@ -832,8 +937,8 @@
               `(funcall ,(case method
                            (:.fetch 'fetch-contact)
                            (t (case call-namespace
-                                (:global method)
-                                (t `(@ methods ,method)))))
+                                (:global (intern (string method)))
+                                (t `(@ methods ,(intern (string method)))))))
                         $el mode ,@(mapcar #'js-format-plist args))))
           `(funcall ,(case method
                        (:.fetch 'fetch-contact)

@@ -190,7 +190,9 @@
        (.column-inner
         :padding 0 :overflow auto
         (.access.body :height "100%" :background "#fff" :overflow auto))
-       (.list-table :width "100%")))
+       (.list-table :width "100%"
+                    (.columns :margin-top 0
+                              (button :width "100%")))))
 
     `((.ui.grid-layout > .column)  :grid-template-rows 1fr)
 
@@ -243,6 +245,10 @@
 
     ;; meta-code UIFX styles
 
+    `(.ui.series
+      (.columns
+       (button :height 100%)))
+    
     `(.meta-code
       (.columns
        :margin 0)
@@ -480,6 +486,25 @@
 ;;                    data))
 ;;            (then handler))))
 
+;; '(lambda (mode)
+;;   ;; (chain htmx (trigger (@ mode form) "submit"))))))
+;;   (let* ((fdata (new (-form-data (@ mode form))))
+;;          (obj (chain -object
+;;                      (from-entries
+;;                       (chain fdata (entries))))))
+;;     (setf (@ obj action) "saveNode")
+;;     (fetch-contact
+;;      $el mode obj
+;;      (lambda (data)
+;;        (chain htmx (trigger (@ mode domain main)
+;;                             "reload"))))))
+
+(enter-js-element *misc-js* :form-input-def
+  (defun form-input (element context event)
+    (let* ((fdata (new (-form-data (chain element (closest "form")))))
+           (obj (chain -object (from-entries (chain fdata (entries))))))
+      (fetch-contact element context obj event))))
+
 (enter-js-element *misc-js* :fetch-contact-defs
   (defun fetch-contact (element context input event)
     ;; (chain console (log :cc context))
@@ -491,6 +516,7 @@
       (chain (fetch "/contact/" (create method "POST" body data-in))
              (then (lambda (response) (chain response (json))))
              (then (lambda (data)
+                     ;; (chain console (log :data data))
                      (if (@ data oob-reload)
                          (chain data oob-reload
                                 (for-each (lambda (item)
@@ -498,8 +524,9 @@
                                             (chain htmx (trigger (getprop seed-elements item) "reload"))))))
                      data))
              (then (if (= "function" (typeof event))
-                       event (lambda (data)
-                               (chain htmx (trigger element (@ event next))))))))))
+                       event (if (not (= "undefined" (typeof event)))
+                                 (lambda (data)
+                                   (chain htmx (trigger element (@ event next)))))))))))
 
 (enter-js-element *misc-js* :realize-def
   (defun realize (system branch element)

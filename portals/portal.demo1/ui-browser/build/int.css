@@ -146,6 +146,14 @@ body{
     width: 100%;
 }
 
+.ui.grid-layout .column .list-table .columns{
+    margin-top: 0;
+}
+
+.ui.grid-layout .column .list-table .columns button{
+    width: 100%;
+}
+
 .ui.grid-layout > .column{
     grid-template-rows: 1fr;
 }
@@ -248,6 +256,14 @@ form .input.fluid{
 form .ui.selection.dropdown{
     min-height: 3em;
     margin-bottom: 0.32em;
+}
+
+
+
+
+
+.ui.series .columns button{
+    height: 100%;
 }
 
 

@@ -6,7 +6,7 @@
   (:contacts :demo.sheet)
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
-(defvar *seed-templates* '(:template.chart))
+(defvar *seed-templates* '((:template.chart . "../../templates/template.charts/")))
 
 (branch :portal.demo1 :view
   (adapt-from-json :key :point)
@@ -18,6 +18,7 @@
 
       ;; (print (list :po point))
       ;; (print (list :aabb (of-system :config)))
+      ;; (print (list :inp input))
       (if (and (stringp point) (loop :for i :across point :always (digit-char-p i)))
           (when (and context point)
             ;; when a point is selected, assign it
@@ -68,43 +69,55 @@
 
 (defun manifest-template-interface (template-list template-point)
   (loop :for item :in template-list :for ix :from 0
-        :append (cons (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
-                          item)
-                      (and template-point (= ix template-point)
-                           (list (dx ((uic-series :layout (:groups :rows (2))
-                                                  :type (:series :enum)))
-                                     (dx ((uicc-field :name "new system name" :type (:string))) "")
-                                     (dx ((uicc-button :call :.base)) "create")))))))
+        :append (destructuring-bind (tname &rest tpath) item
+                  (declare (ignore tpath))
+                  (cons (dx ((uic-series :type (:series)))
+                            (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
+                                      (first item))
+                                  "hello, this is a test, testing, testing"))
+                        (and template-point (= ix template-point)
+                             (list (dx ((uic-series :layout (:groups :rows (2))
+                                                    :type (:series :enum :table-interstitial :enum)
+                                                    :call t
+                                                    ))
+                                       (dx ((uicc-field :name :system-name :type (:string))) "")
+                                       (dx ((uicc-button :call (:@ :form-input))) ;; (:next :refresh))))
+                                           "create"))))))))
 
 (branch :portal.demo1 :base
-  (adapt-from-json :point)
+  (adapt-from-json :point :system-name)
   (lambda (context input)
     (when (getf input :point)
       (funcall context :template-point (getf input :point)))
     (print (list :iii input (funcall context :template-point)))
-    (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-        (list (dx ((uic-series :layout (:vertical :of 12 1 10 1)
-                               :type   (:column)))
-                  (dx ((uic-series :type (:ui :header)))
-                      :header
-                      (list "aaa"))
-                  "Hello."
-                  (dx ((uic-series :type (:ui :footer)))
-                      (list "bbb")))
-              (dx ((uic-series :layout (:vertical :of 12 1 10 1)
-                               :type   (:column)
-                               :join   (list :portal.demo1 :base)
-                               ;; :mode   (grow :demo.sheet (first l)
-                               ;;               context (list :state (second l)))
-                               ))
-                  (dx ((uic-series :type (:ui :header)))
-                      :header
-                      (list "aaa"))
-                  (dx ((uic-series :type (:ui :list-table)
-                                   :call (:.fetch (:point :@base) (:next :refresh))))
-                      (manifest-template-interface *seed-templates* (funcall context :template-point)))
-                  (dx ((uic-series :type (:ui :footer)))
-                      (list "bbb")))))))
+    (let ((template-point (funcall context :template-point)))
+      (destructuring-bind (&key system-name &allow-other-keys) input
+        (when system-name ;; a new system is being created from a template
+          (destructuring-bind (tname &rest tpath) (nth template-point *seed-templates*)
+            (print (list :create tname))))
+        (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
+            (list (dx ((uic-series :layout (:vertical :of 12 1 10 1)
+                                   :type   (:column)))
+                      (dx ((uic-series :type (:ui :header)))
+                          :header
+                          (list "aaa"))
+                      "Hello."
+                      (dx ((uic-series :type (:ui :footer)))
+                          (list "bbb")))
+                  (dx ((uic-series :layout (:vertical :of 12 1 10 1)
+                                   :type   (:column)
+                                   :join   (list :portal.demo1 :base)
+                                   ;; :mode   (grow :demo.sheet (first l)
+                                   ;;               context (list :state (second l)))
+                                   ))
+                      (dx ((uic-series :type (:ui :header)))
+                          :header
+                          (list "aaa"))
+                      (dx ((uic-series :type (:ui :list-table)
+                                       :call (:.fetch (:point :@base) (:next :refresh))))
+                          (manifest-template-interface *seed-templates* (funcall context :template-point)))
+                      (dx ((uic-series :type (:ui :footer)))
+                          (list "bbb")))))))))
 
 (branch :portal.demo1 :systems
   (adapt-from-alist :system :branch)
