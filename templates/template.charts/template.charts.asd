@@ -2,6 +2,9 @@
 ;; 
 ;;;; (#| TMPL_VAR copyright |#)(#| /TMPL_IF |#)
 
+;;; from template: template.charts
+;;; a template for charts
+
 (asdf:defsystem #:(#| TMPL_VAR name |#)
   :description "Describe (#| TMPL_VAR name |#) here"
   :author "(#| TMPL_VAR author |#)"

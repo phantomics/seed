@@ -25,11 +25,13 @@
             (funcall context :branch-point (read-from-string point)))
 
           (when (and context point)
-            ;; when a system is selected, assign it - case of new selector controls
-            (let ((epsym (intern (string-upcase point) "KEYWORD")))
-              (of-system :point epsym)
-              (instantiate-priority-macro-reader (asdf:load-system epsym)
-                (load-seed-system epsym)))))
+            (if (string= "BASE" (string-upcase point))
+                (of-system :point nil)
+                ;; when a system is selected, assign it - case of new selector controls
+                (let ((epsym (intern (string-upcase point) "KEYWORD")))
+                  (of-system :point epsym)
+                  (instantiate-priority-macro-reader (asdf:load-system epsym)
+                    (load-seed-system epsym))))))
 
       (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
 
@@ -42,8 +44,8 @@
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
                           (dx ((uic-series :type '(:ui :list)))
                               (list :portal.demo1
-                                    (dx ((uicc-select :type :default-blank
-                                                      :options (list :demo.sheet :demo.other)
+                                    (dx ((uicc-select ;; :type :default-blank
+                                                      :options (list :base :demo.sheet :demo.other)
                                                       :call (:.fetch (:point :.base) (:next :refresh))))
                                         (of-system :point))))
                           
@@ -89,7 +91,7 @@
   (lambda (context input)
     (when (getf input :point)
       (funcall context :template-point (getf input :point)))
-    (print (list :iii input (funcall context :template-point)))
+    ;; (print (list :iii input (funcall context :template-point)))
     (let ((template-point (funcall context :template-point)))
       (destructuring-bind (&key system-name &allow-other-keys) input
         (when system-name ;; a new system is being created from a template

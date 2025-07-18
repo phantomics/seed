@@ -851,7 +851,7 @@ n;;;; seed.modulate.lisp
                                     (loop :for item :in (uics-options aspect)
                                           :collect (let* ((item-out (if (not (symbolp item))
                                                                         item (lisp->camel-case item)))
-                                                          (selected (if (equalp item-out field-content)
+                                                          (selected (if (equalp item field-content)
                                                                         `(:selected "selected"))))
                                                      `(:option ,@selected ,item-out)))))))))))
 
