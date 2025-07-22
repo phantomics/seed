@@ -395,6 +395,22 @@
               :do (set-key output value (getf paths key)))
         output))))
 
+(defun get-template-metadata (path)
+  "Read metadata from a Seed system template."
+  (let ((template-name) (description))
+    (with-open-file (instream (concatenate 'string path "/system.asd"))
+      (loop :until template-name
+            :do (let ((this-line (read-line instream)))
+                  ;; it's expected that Seed templates have a commented data block starting with
+                  ;; the text ";;; Seed template: " followed by the name of the template. The 
+                  ;; following lines contain other pieces of metadata including a template description.
+                  (when (and (< 19 (length this-line))
+                             (string= ";;; Seed template: " (subseq this-line 0 19)))
+                    (setf template-name (subseq this-line 19)
+                          this-line     (read-line instream)
+                          description   (subseq this-line 4)))))
+      (values template-name description))))
+
 (defun clone-system (name path template &rest params)
   "Clone a system from one of the Seed installation's collected templates."
   (quickproject:make-project path :template-directory (asdf:system-relative-pathname template "./")

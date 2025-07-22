@@ -150,14 +150,20 @@
       (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
 
     `(.ui.column.portal-summary
+      :padding 0
       :height 100vh
-      :grid-template-rows "[start] 12.5% [middle] 75.0% [end] 12.5%"
+      :grid-template-rows "[start] 12.5% [middle] 65.0% [end] 22.5%"
       (.symbol :font-weight "bold")
       (.navigation
        :margin "1rem 0"
        (.symbol :font-weight "normal")
-       (.divider :margin "0.5rem 0")))
+       (.divider :margin "0.5rem 0"))
+      ;; (.item :padding "0.75rem")
+      )
 
+    `((.ui.column.portal-summary > .item)
+      :padding "0.75rem")
+    
     `((:and (.ui.column.portal-summary > .item)
             (:nth-child 1))
       :grid-row-start 1 :grid-row-end 2)
@@ -192,7 +198,8 @@
         (.access.body :height "100%" :background "#fff" :overflow auto))
        (.list-table :width "100%"
                     (.columns :margin-top 0
-                              (button :width "100%")))))
+                              (button :width "100%"))))
+      (.workspace (.column-inner :background "#fff" :height 100%)))
 
     `((.ui.grid-layout > .column)  :grid-template-rows 1fr)
 
@@ -209,7 +216,7 @@
     `(.ui.grid-layout.workspace.even
       :grid-template-columns "8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%"
       (.ui.series.grid-layout
-       :height 100vh))
+       :height "calc(100vh - 1em)" :margin-top 0.5em))
     
     `((:and (.ui.grid-layout.workspace.even > .column)
             (:nth-child 1))

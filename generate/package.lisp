@@ -13,7 +13,7 @@
            #:htrender
            #:psl #:astr
            #:adapt-from-alist #:adapt-from-json
-           #:system-file-to-string #:from-system-file #:build-templater
+           #:system-file-to-string #:from-system-file #:build-templater #:get-template-metadata
            #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec)
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->lisp-name)

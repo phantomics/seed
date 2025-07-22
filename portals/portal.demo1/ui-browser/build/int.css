@@ -50,8 +50,9 @@ body{
 }
 
 .ui.column.portal-summary{
+    padding: 0;
     height: 100vh;
-    grid-template-rows: [start] 12.5% [middle] 75.0% [end] 12.5%;
+    grid-template-rows: [start] 12.5% [middle] 65.0% [end] 22.5%;
 }
 
 .ui.column.portal-summary .symbol{
@@ -68,6 +69,10 @@ body{
 
 .ui.column.portal-summary .navigation .divider{
     margin: 0.5rem 0;
+}
+
+.ui.column.portal-summary > .item{
+    padding: 0.75rem;
 }
 
 .ui.column.portal-summary > .item:nth-child(1){
@@ -154,6 +159,13 @@ body{
     width: 100%;
 }
 
+
+
+.ui.grid-layout .workspace .column-inner{
+    background: #fff;
+    height: 100%;
+}
+
 .ui.grid-layout > .column{
     grid-template-rows: 1fr;
 }
@@ -176,7 +188,8 @@ body{
 }
 
 .ui.grid-layout.workspace.even .ui.series.grid-layout{
-    height: 100vh;
+    height: calc(100vh - 1em);
+    margin-top: 0.5em;
 }
 
 .ui.grid-layout.workspace.even > .column:nth-child(1){

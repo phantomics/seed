@@ -2,15 +2,18 @@
 ;; 
 ;;;; (#| TMPL_VAR copyright |#)(#| /TMPL_IF |#)
 
-;;; from template: template.charts
+;;; Seed template: template.charts
 ;;; a template for charts
 
 (asdf:defsystem #:(#| TMPL_VAR name |#)
   :description "Describe (#| TMPL_VAR name |#) here"
   :author "(#| TMPL_VAR author |#)"
-  :license  "(#| TMPL_VAR license |#)"
+  :license "(#| TMPL_VAR license |#)"
   :version "0.0.1"
-  :serial t(#| TMPL_IF depends-on |#)
-  :depends-on (#| TMPL_VAR dependencies-string |#)(#| /TMPL_IF |#)
+  :serial t
+  :depends-on ("april" "app.chart")
   :components ((:file "package")
-               (:file "(#| TMPL_VAR name |#)")))
+               (:file "setup")
+               (:file "lib")
+               (:file "sheet")))
+

@@ -12,6 +12,7 @@
                "arrow-macros"
                "cl-who" ;; "trivia"
                "parenscript" "paren6" "lass"
+               "quickproject"
                ;; "seed.admit"
                "seed.admit"
                "seed.generate"

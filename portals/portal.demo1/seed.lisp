@@ -6,7 +6,7 @@
   (:contacts :demo.sheet)
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
-(defvar *seed-templates* '((:template.chart . "../../templates/template.charts/")))
+(defvar *seed-templates* '((:template.chart . "../templates/template.charts/")))
 
 (branch :portal.demo1 :view
   (adapt-from-json :key :point)
@@ -73,18 +73,18 @@
   (loop :for item :in template-list :for ix :from 0
         :append (destructuring-bind (tname &rest tpath) item
                   (declare (ignore tpath))
-                  (cons (dx ((uic-series :type (:series)))
-                            (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
-                                      (first item))
-                                  "hello, this is a test, testing, testing"))
-                        (and template-point (= ix template-point)
-                             (list (dx ((uic-series :layout (:groups :rows (2))
-                                                    :type (:series :enum :table-interstitial :enum)
-                                                    :call t
-                                                    ))
-                                       (dx ((uicc-field :name :system-name :type (:string))) "")
-                                       (dx ((uicc-button :call (:@ :form-input))) ;; (:next :refresh))))
-                                           "create"))))))))
+                  (multiple-value-bind (tname tdescription) (get-template-metadata tpath)
+                    (cons (dx ((uic-series :type (:series)))
+                              (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
+                                        (first item))
+                                    tdescription))
+                          (and template-point (= ix template-point)
+                               (list (dx ((uic-series :layout (:groups :rows (2))
+                                                      :type (:series :enum :table-interstitial :enum)
+                                                      :call t))
+                                         (dx ((uicc-field :name :system-name :type (:string))) "")
+                                         (dx ((uicc-button :call (:@ :form-input))) ;; (:next :refresh))))
+                                             "create")))))))))
 
 (branch :portal.demo1 :base
   (adapt-from-json :point :system-name)
@@ -96,7 +96,13 @@
       (destructuring-bind (&key system-name &allow-other-keys) input
         (when system-name ;; a new system is being created from a template
           (destructuring-bind (tname &rest tpath) (nth template-point *seed-templates*)
-            (print (list :create tname))))
+            ;; (print (list :create system-name))
+            (make-project (asdf:system-relative-pathname
+                           :portal.demo1 (format nil "../../systems/~a" (string-downcase system-name)))
+                          ;; "/tmp/abc/"
+                          :template-directory (asdf:system-relative-pathname
+                                               :portal.demo1 (concatenate 'string "../" tpath))
+                          :name (string-downcase system-name))))
         (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
             (list (dx ((uic-series :layout (:vertical :of 12 1 10 1)
                                    :type   (:column)))
