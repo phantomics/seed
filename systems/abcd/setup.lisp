@@ -1,6 +1,6 @@
 ;;; setup.lisp
 
-(in-package #:(#| TMPL_VAR name |#))
+(in-package #:abcd)
 
 (april-create-workspace sheet-space)
 

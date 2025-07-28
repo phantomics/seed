@@ -3,7 +3,7 @@
 (in-package #:portal.demo1)
 
 (seed :portal.demo1
-  (:contacts :demo.sheet)
+  (:contacts :demo.sheet :abcd)
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
 (defvar *seed-templates* '((:template.chart . "../templates/template.charts/")))
@@ -44,8 +44,7 @@
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
                           (dx ((uic-series :type '(:ui :list)))
                               (list :portal.demo1
-                                    (dx ((uicc-select ;; :type :default-blank
-                                                      :options (list :base :demo.sheet :demo.other)
+                                    (dx ((uicc-select :options (list :base :demo.sheet :abcd)
                                                       :call (:.fetch (:point :.base) (:next :refresh))))
                                         (of-system :point))))
                           
@@ -72,7 +71,6 @@
 (defun manifest-template-interface (template-list template-point)
   (loop :for item :in template-list :for ix :from 0
         :append (destructuring-bind (tname &rest tpath) item
-                  (declare (ignore tpath))
                   (multiple-value-bind (tname tdescription) (get-template-metadata tpath)
                     (cons (dx ((uic-series :type (:series)))
                               (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
@@ -83,7 +81,7 @@
                                                       :type (:series :enum :table-interstitial :enum)
                                                       :call t))
                                          (dx ((uicc-field :name :system-name :type (:string))) "")
-                                         (dx ((uicc-button :call (:@ :form-input))) ;; (:next :refresh))))
+                                         (dx ((uicc-button :call (:@ :form-input)))
                                              "create")))))))))
 
 (branch :portal.demo1 :base

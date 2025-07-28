@@ -313,7 +313,9 @@
 
 (defun from-system-file (system file key &key as-string)
   "Read a form from a file in the manner of a plist (but not requiring a strict key, value structure)."
-  (with-open-file (stream (asdf:system-relative-pathname system (format nil "./~a" file))
+  (with-open-file (stream (if (eq :absolute (first (pathname-directory (pathname file))))
+                              (pathname file)
+                              (asdf:system-relative-pathname system (format nil "./~a" file)))
 			  :direction :input)
     (let ((form-start) (form-length))
       (loop :while (not form-start) :for item := (read stream) :while item
@@ -333,7 +335,9 @@
   "Replace a form from a file in the manner of a plist (but not requiring a strict key, value structure)."
   (let ((form-start) (form-end) (before-bytes) (after-bytes)
         (file-path (format nil "./~a" file)))
-    (with-open-file (stream (asdf:system-relative-pathname system file-path)
+    (with-open-file (stream (if (eq :absolute (first (pathname-directory (pathname file))))
+                                (pathname file)
+                                (asdf:system-relative-pathname system file-path))
 			    :direction :input)
       (loop :while (not form-start) :for item := (read stream) :while item
             :when  (and (symbolp item) (eq key item))

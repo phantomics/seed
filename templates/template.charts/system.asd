@@ -14,6 +14,5 @@
   :depends-on ("april" "app.chart")
   :components ((:file "package")
                (:file "setup")
-               (:file "lib")
                (:file "sheet")))
 
