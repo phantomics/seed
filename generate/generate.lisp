@@ -281,7 +281,9 @@
 ;; SECTION: basic system interaction tools
 
 (defun system-file-to-string (system file)
-  (with-open-file (stream (asdf:system-relative-pathname system (format nil "./~a" file)))
+  (with-open-file (stream (if (eq :absolute (first (pathname-directory (pathname file))))
+                              (pathname file)
+                              (asdf:system-relative-pathname system (format nil "./~a" file))))
     (let ((contents (make-string (file-length stream))))
       (read-sequence contents stream)
       contents)))
