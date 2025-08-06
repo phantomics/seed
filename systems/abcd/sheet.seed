@@ -1,4 +1,8 @@
+(in-package #:portal.demo1)
+
 (seed :abcd (:join-by join))
+
+(print (list :cccxxx (package-name *package*)))
 
 (branch :abcd :summary
   (let ((layout '((:nav :navigator) nil
@@ -52,37 +56,36 @@
                                                    name)
                                                description))))))))
 
-(branch :abcd :nav
-  (adapt-from-json :point)
-  (lambda (context input)
-    (if context
-        (progn (when (getf input :point)
-                 (funcall context :chart-point (getf input :point)))
-               (let ((template-point (funcall context :template-point)))
-                 (destructuring-bind (&key system-name &allow-other-keys) input
-                   ;; (print (list :ccc input))
-                   (render (funcall context :medium)
-                           (dx ((uic-series :type (:ui :list-table)
-                                            :call (:.fetch (:point :@base) (:next :refresh))))
-                               (manifest-file-listing (asdf:system-relative-pathname
-                                                       :abcd "./analyses/"))))))))))
-
-(let ((chart-paths)
-      ;; (chart-entities (from-system-file :abcd "sheet.lisp" :chart-entities))
-      (chart-entities)
+(let ((chart-paths) (chart-entities) (entity-data)
       (line-templater (build-templater (from-system-file :abcd "sheet.lisp"
                                                          :chart-entity-template-line)
-                                       :type :x-start :y-start :x-end :y-end))
-      (entity-data))
+                                       :type :x-start :y-start :x-end :y-end)))
+
+  (branch :abcd :nav
+    (adapt-from-json :point)
+    (lambda (context input)
+      (if context
+          (progn (when (getf input :point)
+                   (funcall context :chart-point (getf input :point))
+                   (setf chart-entities nil))
+                 (let ((template-point (funcall context :template-point)))
+                   (destructuring-bind (&key system-name &allow-other-keys) input
+                     ;; (print (list :ccc input))
+                     (render (funcall context :medium)
+                             (dx ((uic-series :type (:ui :list-table)
+                                              :call (:.fetch (:point :@base) (:next :refresh))))
+                                 (manifest-file-listing (asdf:system-relative-pathname
+                                                         :abcd "./analyses/"))))))))))
   
   (branch :abcd :chart
     (adapt-from-json :entities :action :mode ;; next line: entities properties
                                :name :type :in-flux :points :points-in-flux :ratios)
     (lambda (context input)
-      ;; (print (list :in input))
+      (print (list :eeee input))
       (unless chart-paths
         (setf chart-paths (uiop:subdirectories (asdf:system-relative-pathname :abcd "./analyses/"))))
       (destructuring-bind (&key state ifmod-head ifmod-foot action entities mode &allow-other-keys) input
+        (print (list :inn input action))
         (cond (state :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
               (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
                                (uic-series :type (:ui :controls :extog)))
@@ -106,18 +109,24 @@
                          ;; (print (list :ent entity-data))
                          (if index (setf (nth index entity-data) item)
                              (progn (push item entity-data)
-                                    (push (funcall line-templater :x-start x-start :y-start y-start
-                                                                  :x-end x-end :y-end y-end :type type)
+                                    (push (funcall line-templater :x-start x-start :x-end x-end
+                                                                  :y-start y-start :y-end y-end :type type)
                                           collected)))))))
-                 ;; (setf (second chart-entities)
-                 ;;       (append (second chart-entities) (reverse collected)))
+                 (setf (second chart-entities)
+                       (append (second chart-entities) (reverse collected)))
+                 ;; (print (list :ddd entity-data chart-entities))
                  entity-data))
               (action
-               (case (intern (string-upcase (rest item)) "KEYWORD")
-                 (:save (let ((output))
-                          (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
-                          (setf (from-system-file :abcd "sheet.lisp" :chart-entities :as-string t)
-                                output)))))
+               (let ((chart-entities (funcall context :chart-point (getf input :point)))
+                     (chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
+                 (print (list :ce chart-entities (package-name *package*)))
+                 (case (intern (string-upcase (rest item)) "KEYWORD")
+                   (:save (let ((output))
+                            (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
+                            ;; (print (list :out putpu))
+                            (setf (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
+                                                    :chart-entities :as-string t)
+                                  output))))))
               (t (case (intern (string-upcase mode) "KEYWORD")
                    (:chart-data
                     (let ((chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
@@ -129,12 +138,12 @@
   (branch :abcd :chentity
     (adapt-from-json :path :action :mode)
     (lambda (context input)
-      (destructuring-bind (&key state ifmod-head ifmod-foot path sort &allow-other-keys) input
+      (destructuring-bind (&key state ifmod-head ifmod-foot path sort action &allow-other-keys) input
         (cond (state :meta-code-form)
-              (ifmod-head (dx ((:each uicc-button)
+              (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
                                (uic-series :type (:ui :controls)))
                               (list :save)))
-              (ifmod-foot (dx ((:each uicc-button)
+              (ifmod-foot (dx ((:each uicc-button :type (:local)  :call (:.fetch (:action :.base)))
                                (uic-series :type (:ui :controls)))
                               (list :save)))
               (path (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" path))))
@@ -150,6 +159,20 @@
                                             (rplacd (nthcdr (1- move-to) elist)
                                                     (cons moved (nthcdr move-to elist)))))))
                                   (print :complete)))))
+              (action
+               (print (list :ac action (funcall context :chart-point)
+                            chart-paths ))
+               (let ((chart-entities chart-entities)
+                     (chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
+                 (print (list :ce chart-entities))
+                 (case (intern (string-upcase action) "KEYWORD")
+                   (:save (let ((output))
+                            ;; (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
+                            (setf output chart-entities)
+                            ;; (print (list :out output))
+                            (setf (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
+                                                    :chart-entities)
+                                  chart-entities)))))) 
               (t (unless chart-entities
                    ;; (setf entities (fourth (from-system-file :abcd
                    ;;                                          "sheet.lisp" :chart-entities)))
@@ -160,6 +183,7 @@
                  ;; (print (list :ccc context))
                  (when context
                    ;; (print (list :con (funcall context :medium)))
+                   ;; (print (list :nnn chart-entities))
                    (render (funcall context :medium)
                            (dx ((uic-frame :type (:meta-code)))
                                (seed.modulate::express chart-entities))))))))))

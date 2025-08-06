@@ -7,6 +7,13 @@
 
 (defvar *chart-styles* nil)
 
+:analysis-invocation
+(defun load-analyses (&optional index)
+  (loop :for dir :in (uiop:subdirectories (asdf:system-relative-pathname :abcd "./analyses/"))
+        :do (load (pathname (format nil "~a/chart.lisp" dir)))))
+
+(load-analyses)
+
 :chart-styles
 (progn (proclaim '(special *base-line-style*))
        (setf (symbol-value '*base-line-style*)

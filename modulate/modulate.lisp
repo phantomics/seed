@@ -475,12 +475,13 @@ n;;;; seed.modulate.lisp
                                                (member :table-interstitial (uic-type item)))))
                  (dolist (type types)
                    (setf item (case type
-                                (:column `(:div :class "column-inner"
+                                (:column
+                                 `(:div :class "column-inner"
                                                 ,(realize aspect medium item :sort index)))
                                 (:list-table
                                  ;; NOTE: this depends on list-table not being the first style;
                                  ;; if it is the first style, it will not yet be rendered as HTML
-                                 (if (and (lisp item) (eq :div (first item)))
+                                 (if (and (listp item) (eq :div (first item)))
                                      (let ((content-index (loop :for i :in item :for ix :from 0
                                                                 :when (and i (listp i)) :return ix)))
                                        (setf output-unlisted t)
@@ -490,6 +491,7 @@ n;;;; seed.modulate.lisp
                                              (if is-interstitial-row (list :colspan "100%"))
                                              (list (realize aspect medium item :sort index)))))
                                 (t (realize aspect medium item :sort index)))))
+                 (unless types (setf item (realize aspect medium item :sort index)))
                  (if output-unlisted item (list item)))))
         
         (loop :for item :in (uic-base aspect)
@@ -506,7 +508,7 @@ n;;;; seed.modulate.lisp
         ;;                                       mode (@ methods when-toggled)
         ;;                                       (@ methods when-untoggled))))
         ;;         x-inits))
-        
+
         (let* ((items (loop :for ix :from 0
                             ;; if this is a call-form, the form's head symbol is not displayed
                             ;; with the others; in most cases it is either not shown or displayed
@@ -938,7 +940,8 @@ n;;;; seed.modulate.lisp
                            (:.fetch 'fetch-contact)
                            (t (case call-namespace
                                 (:global (intern (string method)))
-                                (t `(@ methods ,(intern (string method)))))))
+                                (t (:.base `(@ methods (@ $event target value)))
+                                 `(@ methods ,(intern (string method)))))))
                         $el mode ,@(mapcar #'js-format-plist args))))
           `(funcall ,(case method
                        (:.fetch 'fetch-contact)

@@ -2,11 +2,11 @@
 
 (in-package #:portal.demo1)
 
-(seed :portal.demo1
-  (:contacts :demo.sheet :abcd)
-  (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
+;; (seed :portal.demo1
+;;   ;; (:contacts :demo.sheet :abcd)
+;;   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
-(defvar *seed-templates* '((:template.chart . "../templates/template.charts/")))
+(defvar *seed-templates* '((:template.chart . "../../templates/template.charts/")))
 
 (branch :portal.demo1 :view
   (adapt-from-json :key :point)
@@ -37,6 +37,9 @@
 
         (funcall context :medium medium)
 
+        (setf (from-system-file :portal.demo1 "/tmp/hello.txt" :aaa)
+              '(fx 8 1 8))
+        
         (render medium
                 (authorize (funcall context :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
@@ -97,7 +100,6 @@
             ;; (print (list :create system-name))
             (make-project (asdf:system-relative-pathname
                            :portal.demo1 (format nil "../../systems/~a" (string-downcase system-name)))
-                          ;; "/tmp/abc/"
                           :template-directory (asdf:system-relative-pathname
                                                :portal.demo1 (concatenate 'string "../" tpath))
                           :name (string-downcase system-name))))
@@ -135,6 +137,29 @@
         (-<> (with-meta (of-system :contacts)
                :type (:form))
           (encode <>)))))
+
+;; (emote::write-palette-image (emote::linear-pal-transform
+;;                              #(61 116 182)
+;;                              10 ;; :ldeltas (april "24×2○○0.12×⍳4")
+;;                              :lfactors (april "⎕←1+0.8×2○○0.08×⍳10"))
+;;                             "/tmp/palOut.png")
+
+;; (emote::write-palette-image (emote::linear-pal-transform
+;;                              #(61 116 182)
+;;                              8 ;; :ldeltas (april "24×2○○0.12×⍳4")
+;;                              :lfactors (april "⎕←1+1.4×0.5×2○○0.1×1+⍳8"))
+;;                             "/tmp/palOut.png")
+
+;; (emote::write-palette-image (emote::linear-pal-transform
+;;                              #(92 99 132)
+;;                              8 ;; :ldeltas (april "24×2○○0.12×⍳4")
+;;                              :lfactors (april "⎕←1+2×0.5×2○○0.1×0+⍳8"))
+;;                             "/tmp/palOut.png" 100)
+
+;; (emote::write-palette-image (emote::linear-pal-transform
+;;                              #(92 99 132)
+;;                              10 :lfactors (april "⎕←1+3×0.26×1○○0.1×4+⍳10"))
+;;                             "/tmp/palOut.png" 100)
 
 ;; (branch :demo.sheet :view
 ;;   (adapt-from-json :path :session)
