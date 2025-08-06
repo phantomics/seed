@@ -2,11 +2,11 @@
 
 (in-package #:portal.demo1)
 
-;; (seed :portal.demo1
-;;   ;; (:contacts :demo.sheet :abcd)
-;;   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
+(seed :portal.demo1
+  (:contacts :demo.sheet :abcd)
+  (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
-(defvar *seed-templates* '((:template.chart . "../../templates/template.charts/")))
+(defvar *seed-templates* '((:template.chart . "../templates/template.charts/")))
 
 (branch :portal.demo1 :view
   (adapt-from-json :key :point)
@@ -37,8 +37,10 @@
 
         (funcall context :medium medium)
 
-        (setf (from-system-file :portal.demo1 "/tmp/hello.txt" :aaa)
-              '(fx 8 1 8))
+        (print (list :cccc (package-name *package*)))
+
+        ;; (setf (from-system-file :portal.demo1 "/tmp/hello.txt" :aaa)
+        ;;       '(fx 8 1 8))
         
         (render medium
                 (authorize (funcall context :user)
