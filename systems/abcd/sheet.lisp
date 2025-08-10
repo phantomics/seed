@@ -22,6 +22,7 @@
 
 :chart-entity-template-line
 (fx (span (fx :type    (:fx :uicc-select) (:type :select) (:options "line" "retraceX" "retraceY"))
+          ;; (fx :type    (:fx :uicc-button) (list "X"))
           (fx :x-start (:fx :uicc-field)  (:type :numeric :integer))
           (fx :y-start (:fx :uicc-field)  (:type :numeric :float))
           (fx :x-end   (:fx :uicc-field)  (:type :numeric :integer))

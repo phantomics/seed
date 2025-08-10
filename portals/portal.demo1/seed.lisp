@@ -16,8 +16,6 @@
       (when (and key (string= "demo" (string-downcase key)))
         (funcall context :user :hello))
 
-      ;; (print (list :po point))
-      ;; (print (list :aabb (of-system :config)))
       ;; (print (list :inp input))
       (if (and (stringp point) (loop :for i :across point :always (digit-char-p i)))
           (when (and context point)
@@ -37,11 +35,8 @@
 
         (funcall context :medium medium)
 
-        (print (list :cccc (package-name *package*)))
+        ;; (print (list :cccc (package-name *package*)))
 
-        ;; (setf (from-system-file :portal.demo1 "/tmp/hello.txt" :aaa)
-        ;;       '(fx 8 1 8))
-        
         (render medium
                 (authorize (funcall context :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)

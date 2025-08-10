@@ -5,6 +5,10 @@ n;;;; seed.modulate.lisp
   "A macro for denoting inline Parenscript code."
   `(subseq (ps-inline ,form) 11))
 
+(defmacro psl* (form)
+  "A macro for denoting inline Parenscript code."
+  `(subseq (ps-inline* ,form) 11))
+
 (defmacro fx (form)
   (first form))
 
@@ -234,26 +238,41 @@ n;;;; seed.modulate.lisp
 (defclass uir-sortable (ui-role)
   ((%range :accessor uirsrt-range
            :initform nil
-           :initarg  :range)))
+           :initarg  :range))
+  (:documentation "A role for a series whose elements may be manually sorted."))
+
+(defclass uir-reducable (ui-role)
+  ()
+  (:documentation "A role for a series whose elements may be manually removed."))
+
+(defclass uir-extoggle ()
+  ()
+  (:documentation "A role for a series of toggles of which only one may be on at a time."))
 
 (defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
   (labels ((format-list (form)
              (cons 'list (loop :for item :in form
                                :collect (if (atom item) item (format-list item)))))
+           (format-roles (form)
+             (loop :for r :in form :collect (if (atom r)
+                                                (make-instance (intern (string r)
+                                                                       (package-name *package*)))
+                                                (apply #'make-instance (intern (string (first r))
+                                                                               (package-name *package*))
+                                                       (rest r)))))
            (format-params (items)
-             (loop :for item :in items
+             ;; (print (loop :for (ikey ival) :on items :by #'cddr
+             ;;       :append (list ikey (case ikey
+             ;;                            (:role (cons 'list (format-roles ival)))
+             ;;                            (t (format-list ival))))))
+             (print (loop :for item :in items
                    :collect (if (or (atom item)
                                     (not (keywordp (first item))))
                                 item (format-list item))))
 
-           ;; (format-params (items)
-           ;;   (loop :for item :in items
-           ;;         :collect (if (or (atom item)
-           ;;                          (not (keywordp (first item))))
-           ;;                      item (list 'quote item))))
+             )
 
-           
            (process-spec (item spec-list)
              (let ((generated))
                (case (caar spec-list)
@@ -265,6 +284,7 @@ n;;;; seed.modulate.lisp
                                                  (make-instance ',class :base ,sub-item ,@params))
                                                ,item)))))
                  (t (destructuring-bind (class &rest params) (first spec-list)
+                      (print (list :prr params))
                       (setf generated `(make-instance ',class :base ,item ,@(format-params params))))))
                (if (not (rest spec-list))
                    generated (process-spec generated (rest spec-list))))))
@@ -498,6 +518,28 @@ n;;;; seed.modulate.lisp
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
 
+        ;; (and (member :enum types)
+        ;;      (list :x-init (psl (if (and (not (= "undefined" (typeof methods)))
+        ;;                                  (not (= "undefined" (typeof (@ methods register-form)))))
+        ;;                             (funcall (chain methods (register-form mode)) $el)))))
+
+        ;; (and (and (member :controls types) (member :extog types))
+        ;;      (list :x-data (psl (create this-toggle null
+        ;;                                 toggle-state (create index null)))
+        ;;            :x-init (psl (setf this-toggle (register-exclusive-toggle-array
+        ;;                                            mode methods toggle-state)))))
+        
+        (when (member :enum types)
+          (push (psl (if (and (not (= "undefined" (typeof methods)))
+                              (not (= "undefined" (typeof (@ methods register-form)))))
+                         (funcall (chain methods (register-form mode)) $el)))
+                x-inits))
+
+        (when (and (member :controls types) ;; (member :extog types)
+                   (has-role aspect 'uir-extoggle))
+          (push (psl (setf this-toggle (register-exclusive-toggle-array mode methods toggle-state)))
+                x-inits))
+        
         ;; (when (member :enum types)
         ;;   (push (psl (if (not (= "undefined" (typeof (@ methods register-form))))
         ;;                  (funcall (chain methods (register-form mode)) $el)))
@@ -509,6 +551,8 @@ n;;;; seed.modulate.lisp
         ;;                                       (@ methods when-untoggled))))
         ;;         x-inits))
 
+        (print (list :xx (uic-role aspect)))
+        
         (let* ((items (loop :for ix :from 0
                             ;; if this is a call-form, the form's head symbol is not displayed
                             ;; with the others; in most cases it is either not shown or displayed
@@ -589,17 +633,13 @@ n;;;; seed.modulate.lisp
                   
                   (and (eq t call)
                        (list :hx-inherit "*" :hx-post "/render/"))
-                  
-                  (and (member :enum types)
-                       (list :x-init (psl (if (and (not (= "undefined" (typeof methods)))
-                                                   (not (= "undefined" (typeof (@ methods register-form)))))
-                                              (funcall (chain methods (register-form mode)) $el)))))
 
-                  (and (and (member :controls types) (member :extog types))
+                  (and x-inits (list :x-init (apply #'concatenate 'string x-inits)))
+                  
+                  (and (and (member :controls types) ;; (member :extog types)
+                            (has-role aspect 'uir-extoggle))
                        (list :x-data (psl (create this-toggle null
-                                                  toggle-state (create index null)))
-                             :x-init (psl (setf this-toggle (register-exclusive-toggle-array
-                                                             mode methods toggle-state)))))
+                                                  toggle-state (create index null)))))
 
                   ;; header
 
@@ -1043,7 +1083,10 @@ n;;;; seed.modulate.lisp
                                ;; (chain console (log :dd data config $el))
                                (setf (getprop (@ window seed-elements) (lisp branch))
                                      (setf (@ mode chart)
-                                           (new (chain window (-dygraph $el data config)))))))))))))
+                                           (new (chain window (-dygraph $el data config)))))
+                               
+                               ;; perform the initial entity commit to draw existing lines on the chart
+                               (commit-entities mode (lambda () (chain mode chart (draw-graph_))))))))))))
 
 (defun meta-combine (form template)
   (let ((to-append))
@@ -1081,10 +1124,10 @@ n;;;; seed.modulate.lisp
                                      :role (loop :for r :in (rest (assoc :role (cddr form)))
                                                  :collect (if (atom r)
                                                               (make-instance
-                                                               (intern (string r) "PORTAL.DEMO1"))
+                                                               (intern (string r) (package-name *package*)))
                                                               (apply #'make-instance
                                                                      (intern (string (first r))
-                                                                             "PORTAL.DEMO1")
+                                                                             (package-name *package*))
                                                                      (rest r))))))
                         (out))
                    ;; (when roles (setf portal.demo1::iioo out))

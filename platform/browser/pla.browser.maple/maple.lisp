@@ -44,15 +44,18 @@
                      (http-contact-service-start
                       :package-name ,pkg-name :port ,port
                       :interactor-fetch (lambda (,params ,session-api)
-                                          (let* ((,input (second (assoc "input" ,params :test #'string=))))
+                                          (let ((*package* (find-package ,pkg-name))
+                                                (,input (second (assoc "input" ,params :test #'string=))))
                                             (multiple-value-bind (,system-name ,branch-name)
                                                 (decompose-path (rest (assoc "path" ,params :test #'string=)))
-                                              ;; (print (list :par ,params ,session-api ,in-string))
+                                              ;; (print (list :par ;; ,params ,session-api ,in-string
+                                              ;;              ,pkg-name (package-name *package*)))
                                               (json-convert-to (,to-grow ,system-name ,branch-name ,session-api
                                                                          (stream->string ,input))))))
                       :renderer-fetch (lambda (,params ,session-api)
                                         ;; (print (list :par2 ,params ,session-api))
-                                        (let ((,system-name (get-name "system" ,params))
+                                        (let ((*package* (find-package ,pkg-name))
+                                              (,system-name (get-name "system" ,params))
                                               (,branch-name (get-name "branch" ,params)))
                                           (,to-grow ,system-name ,branch-name ,session-api ,params))))
                    (setf (symbol-function ',to-stop)    ,stopper
@@ -880,12 +883,12 @@
 
 (enter-js-element *misc-js* :commit-entities
   (defun commit-entities (mode callback)
-    (fetch-contact null mode (create entities (@ mode entities-in-flux))
+    (fetch-contact null mode (create entities (if (= 0 (length (@ mode entities-in-flux)))
+                                                  (list 0) (@ mode entities-in-flux)))
                    (lambda (data)
-                     (chain console (log :en data (@ mode entities-in-flux) (@ mode linked-branch-id)))
-                     (setf (@ mode entities) data
-                           ;; (@ mode entities-in-flux) (list)
-                           )
+                     ;; (chain console (log :en data (@ mode entities-in-flux) (@ mode linked-branch-id)))
+                     (setf (@ mode entities) data)
+                     ;; (@ mode entities-in-flux) (list)
                      (chain htmx (trigger (+ "#" (@ mode linked-branch-id)) "reload"))
                      (if callback (funcall callback))))))
 
