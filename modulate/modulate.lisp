@@ -254,6 +254,12 @@ n;;;; seed.modulate.lisp
   (labels ((format-list (form)
              (cons 'list (loop :for item :in form
                                :collect (if (atom item) item (format-list item)))))
+           (format-list2 (form)
+             (if (or (atom form) ;; (not (keywordp (first form)))
+                     (eql 'list (first form))
+                     )
+                 form (cons 'list (loop :for item :in form
+                                        :collect (if (atom item) item (format-list2 item))))))
            (format-roles (form)
              (loop :for r :in form :collect (if (atom r)
                                                 (make-instance (intern (string r)
@@ -263,13 +269,17 @@ n;;;; seed.modulate.lisp
                                                        (rest r)))))
            (format-params (items)
              ;; (print (loop :for (ikey ival) :on items :by #'cddr
-             ;;       :append (list ikey (case ikey
-             ;;                            (:role (cons 'list (format-roles ival)))
-             ;;                            (t (format-list ival))))))
+             ;;              :append (list ikey (case ikey
+             ;;                                   (:role (cons 'list (format-roles ival)))
+             ;;                                   (t (format-list2 ival))))))
              (print (loop :for item :in items
-                   :collect (if (or (atom item)
-                                    (not (keywordp (first item))))
-                                item (format-list item))))
+                          :collect (if (or (atom item)
+                                           (not (keywordp (first item))))
+                                       item (format-list item))))
+             (print (loop :for (ikey ival) :on items :by #'cddr
+                          :append (list ikey (case ikey
+                                                (:role (cons 'list (format-roles ival)))
+                                                (t (format-list2 ival))))))
 
              )
 
