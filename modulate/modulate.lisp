@@ -255,8 +255,8 @@ n;;;; seed.modulate.lisp
              (cons 'list (loop :for item :in form
                                :collect (if (atom item) item (format-list item)))))
            (format-list2 (form)
-             (if (or (atom form) ;; (not (keywordp (first form)))
-                     (eql 'list (first form))
+             (if (or (atom form) (not (keywordp (first form)))
+                     ;; (eql 'list (first form))
                      )
                  form (cons 'list (loop :for item :in form
                                         :collect (if (atom item) item (format-list2 item))))))

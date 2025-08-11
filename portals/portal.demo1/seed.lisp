@@ -77,7 +77,7 @@
                                         (first item))
                                     tdescription))
                           (and template-point (= ix template-point)
-                               (list (dx ((uic-series :layout (:groups :rows (2))
+                               (list (dx ((uic-series :layout (:groups :rows '(2))
                                                       :type (:series :enum :table-interstitial :enum)
                                                       :call t))
                                          (dx ((uicc-field :name :system-name :type (:string))) "")
