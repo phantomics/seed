@@ -47,7 +47,7 @@
 ;;     (cbind input item
 ;;       ("state" :chart)
 ;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :.base)
-;;                          (uic-series :type (:ui :controls :extog)))
+;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :select :draw :retrace-x :retrace-y)))
 ;;       ("ifmod-foot" (dx ((:each uicc-button :type (:local))
 ;;                          (uic-series :type (:ui :controls)))
@@ -67,7 +67,7 @@
 ;;     (cbind input item
 ;;       ("state" :chart)
 ;;       ("ifmod-head" (dx ((:each uicc-button :type (:local)) ; :call :.base)
-;;                          (uic-series :type (:ui :controls :extog)))
+;;                          (uic-series :type (:ui :controls)))
 ;;                         (list :select :draw :retrace-x :retrace-y)))
 ;;       ("ifmod-foot" (dx ((:each uicc-button :type (:local))
 ;;                          (uic-series :type (:ui :controls)))
@@ -163,7 +163,8 @@
         (cond
           (state :chart)
           (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
-                           (uic-series :type (:ui :controls :extog)))
+                           (uic-series :type (:ui :controls)
+                                       :role (role-cast extoggle)))
                           (list :select :draw :retrace-x :retrace-y)))
           (ifmod-foot (dx ((:each uicc-button :type (:local))
                            (uic-series :type (:ui :controls)))

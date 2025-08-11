@@ -28,4 +28,4 @@
           (fx :x-end   (:fx :uicc-field)  (:type :numeric :integer))
           (fx :y-end   (:fx :uicc-field)  (:type :numeric :float)))
     (:fx :uic-series :layout (:groups :rows (-1 4)))
-    (:role (uir-call-form :options (list 'line 'retrace))))
+    (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))

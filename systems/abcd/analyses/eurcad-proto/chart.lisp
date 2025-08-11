@@ -37,4 +37,4 @@
    (:fx :uic-series :layout (:groups :rows (-1 4)))
    (:role (uir-call-form :options (list 'line 'retrace)))))
  (:fx :uic-series :layout (:groups :rows (-2))) (:type :called :removable)
- (:role uir-call-form (uir-sortable :range 2)))
+ (:role uir-call-form uir-reducable (uir-sortable :range 2)))

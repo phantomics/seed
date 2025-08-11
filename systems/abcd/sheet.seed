@@ -55,7 +55,6 @@
                                                description))))))))
 
 (defun point-from-template (form &optional index)
-  (print (list :ffo form index))
   (let ((x-start (second (third  (second form))))
         (y-start (second (fourth (second form))))
         (x-end   (second (fifth  (second form))))
@@ -108,8 +107,8 @@
         
         (cond (state :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
               (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
-                               (uic-series :type (:ui :controls :extog)
-                                           :role (:uir-extoggle)))
+                               (uic-series :type (:ui :controls)
+                                           :role (role-cast extoggle)))
                               (list :select :draw :retrace-x :retrace-y)))
               (ifmod-foot (dx ((:each uicc-button :type (:local))
                                (uic-series :type (:ui :controls)))

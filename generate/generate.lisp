@@ -57,7 +57,6 @@
                           ,@(and (or expand-regardless (and branch (not (fboundp branch))))
                                  `((symbol-function ',defbranch)
                                    (lambda (,system ,key &optional ,input)
-                                     (print (list :pk (package-name *package*)))
                                      (if (member ,system ,branches)
                                          (if ,input (setf (getf (getf ,branches ,system) ,key) ,input)
                                              (getf (getf ,branches ,system) ,key))

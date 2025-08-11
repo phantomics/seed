@@ -251,37 +251,19 @@ n;;;; seed.modulate.lisp
 
 (defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
-  (labels ((format-list (form)
-             (cons 'list (loop :for item :in form
-                               :collect (if (atom item) item (format-list item)))))
+  (labels (;; (format-list (form)
+           ;;   (cons 'list (loop :for item :in form
+           ;;                     :collect (if (atom item) item (format-list item)))))
            (format-list2 (form)
-             (if (or (atom form) (not (keywordp (first form)))
-                     ;; (eql 'list (first form))
-                     )
+             (if (or (atom form) (not (keywordp (first form))))
                  form (cons 'list (loop :for item :in form
                                         :collect (if (atom item) item (format-list2 item))))))
-           (format-roles (form)
-             (loop :for r :in form :collect (if (atom r)
-                                                (make-instance (intern (string r)
-                                                                       (package-name *package*)))
-                                                (apply #'make-instance (intern (string (first r))
-                                                                               (package-name *package*))
-                                                       (rest r)))))
            (format-params (items)
-             ;; (print (loop :for (ikey ival) :on items :by #'cddr
-             ;;              :append (list ikey (case ikey
-             ;;                                   (:role (cons 'list (format-roles ival)))
-             ;;                                   (t (format-list2 ival))))))
-             (print (loop :for item :in items
-                          :collect (if (or (atom item)
-                                           (not (keywordp (first item))))
-                                       item (format-list item))))
-             (print (loop :for (ikey ival) :on items :by #'cddr
-                          :append (list ikey (case ikey
-                                                (:role (cons 'list (format-roles ival)))
-                                                (t (format-list2 ival))))))
-
-             )
+             ;; (print (loop :for item :in items
+             ;;              :collect (if (or (atom item)
+             ;;                               (not (keywordp (first item))))
+             ;;                           item (format-list item))))
+             (loop :for (ikey ival) :on items :by #'cddr :append (list ikey (format-list2 ival))))
 
            (process-spec (item spec-list)
              (let ((generated))
@@ -294,7 +276,7 @@ n;;;; seed.modulate.lisp
                                                  (make-instance ',class :base ,sub-item ,@params))
                                                ,item)))))
                  (t (destructuring-bind (class &rest params) (first spec-list)
-                      (print (list :prr params))
+                      ;; (print (list :prr params))
                       (setf generated `(make-instance ',class :base ,item ,@(format-params params))))))
                (if (not (rest spec-list))
                    generated (process-spec generated (rest spec-list))))))
@@ -313,6 +295,13 @@ n;;;; seed.modulate.lisp
 ;;                                          (append (list ,@values)
 ;;                                                  (rest (uic-type ,item-sym)))))))))
 ;;        ,item-sym)))
+
+(defmacro role-cast (&rest roles)
+  (cons 'list (loop :for role :in roles
+                    :collect (let ((symbol (intern (format nil "UIR-~a" (if (symbolp role)
+                                                                            role (first role)))
+                                                   (package-name *package*))))
+                               `(make-instance ',symbol ,@(and (listp role) (rest role)))))))
 
 (defgeneric render (medium component))
 
@@ -549,6 +538,32 @@ n;;;; seed.modulate.lisp
                    (has-role aspect 'uir-extoggle))
           (push (psl (setf this-toggle (register-exclusive-toggle-array mode methods toggle-state)))
                 x-inits))
+
+        (when (and (typep    aspect 'ui-component)
+                   (has-role aspect 'uir-sortable))
+          ;; (print (list :ty types :r (uic-type (uic-root aspect))))
+          (push (psl (let ((handle-container) (handle))
+                       ;; (chain console (log :aa $el))
+                       (loop :for n :in (@ $el child-nodes)
+                             :do (when (= (@ n class-name) "field has-addons")
+                                   (chain console (log :bbb n))
+                                   (setf handle-container
+                                         (chain n (query-selector ".control.drag-handle")))
+                                   (break)))
+                       ;; (chain console (log 77 (@ $el child-nodes) handle-container))
+                       (when handle-container
+                         (loop :for n :in (@ handle-container child-nodes)
+                               :do (when (= (@ n class-name) "control drag-handle")
+                                     (setf handle n)
+                                     (break))))
+                       
+                       (when (/= "undefined" (typeof in-series))
+                         (let ((drops (create element $el drag-handle handle
+                                              on-drag-start (mcode-handler-on-drag in-series mode))))
+                           ;; (chain console (log :dd drops))
+                           (draggable drops)
+                           nil))))
+                x-inits))
         
         ;; (when (member :enum types)
         ;;   (push (psl (if (not (= "undefined" (typeof (@ methods register-form))))
@@ -561,7 +576,9 @@ n;;;; seed.modulate.lisp
         ;;                                       (@ methods when-untoggled))))
         ;;         x-inits))
 
-        (print (list :xx (uic-role aspect)))
+        ;; (print (list :xx (uic-role aspect)))
+
+        ;; (print (list :xi x-inits))
         
         (let* ((items (loop :for ix :from 0
                             ;; if this is a call-form, the form's head symbol is not displayed
@@ -603,6 +620,13 @@ n;;;; seed.modulate.lisp
                            (push `(:p :class "control is-expanded"
                                       (:a :class "button is-static" ,(first (uic-base aspect))))
                                  segments))
+                         ;; place the X button to remove a list item if its
+                         ;; parent list has the reducable role
+                         (when (and (uic-root aspect)
+                                    (has-role (uic-root aspect) 'uir-reducable))
+                           (push `(:p :class "control to-remove"
+                                      (:a :class "button is-static" "X"))
+                                 segments))
                          (if segments (list (append (list :div :class "series-heading field has-addons")
                                                     (reverse segments)))))))
           
@@ -612,8 +636,6 @@ n;;;; seed.modulate.lisp
           (loop :for type :in types :for ix :from 0
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
-
-          ;; (print (list :ro (uic-role aspect) ltype lprops))
           
           (append (list (cond ((or (eq t call) (member :enum types))
                                :form)
@@ -837,7 +859,8 @@ n;;;; seed.modulate.lisp
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
       `(:button :name ,(or (string name) "") ,@(furnish-call medium aspect)
-                ,@(and (member :controls root-types) (member :extog root-types)
+                ,@(and (member :controls root-types)
+                       (has-role (uic-root aspect) 'uir-extoggle)
                        (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
                                                          (lisp (uic-sort aspect))))
                              :|x-bind:class|
