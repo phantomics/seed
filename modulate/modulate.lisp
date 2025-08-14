@@ -542,27 +542,41 @@ n;;;; seed.modulate.lisp
         (when (and (typep    aspect 'ui-component)
                    (has-role aspect 'uir-sortable))
           ;; (print (list :ty types :r (uic-type (uic-root aspect))))
-          (push (psl (let ((handle-container) (handle))
-                       ;; (chain console (log :aa $el))
-                       (loop :for n :in (@ $el child-nodes)
-                             :do (when (= (@ n class-name) "field has-addons")
-                                   (chain console (log :bbb n))
-                                   (setf handle-container
-                                         (chain n (query-selector ".control.drag-handle")))
-                                   (break)))
-                       ;; (chain console (log 77 (@ $el child-nodes) handle-container))
-                       (when handle-container
-                         (loop :for n :in (@ handle-container child-nodes)
-                               :do (when (= (@ n class-name) "control drag-handle")
-                                     (setf handle n)
-                                     (break))))
-                       
-                       (when (/= "undefined" (typeof in-series))
-                         (let ((drops (create element $el drag-handle handle
-                                              on-drag-start (mcode-handler-on-drag in-series mode))))
-                           ;; (chain console (log :dd drops))
-                           (draggable drops)
-                           nil))))
+          (push (psl (let ((handle-container) (handle) (nlen) (item))
+                       (setf nlen (@ $el child-nodes length))
+                       (chain console (log :aa ;; $el
+                                           (@ $el child-nodes) (@ $el child-nodes length)))
+                       ;; (set-timeout
+                       ;;  (lambda ()
+                       (dolist (n (@ $el child-nodes))
+                         ;; (chain console (log :cc n (@ n class-name) (@ n class-list)
+                         ;;                     (and (@ n class-list)
+                         ;;                          (chain n class-list (contains "item")))))
+                         (when (and (/= "undefined" (typeof (@ n class-list)))
+                                    (chain n class-list (contains "item")))
+                           (setf item n)
+                           (chain console (log :bbb n (chain n (get-attribute "index"))
+                                               (chain n (query-selector ".control.drag-handle"))))
+                           (setf handle-container (chain n (query-selector ".control.drag-handle")))
+                           
+                           (when handle-container
+                             (dolist (h (@ handle-container child-nodes))
+                               (when ;; (= (@ h class-name) "control drag-handle")
+                                   (and (/= "undefined" (typeof (@ h class-list)))
+                                        (chain h class-list (contains "drag-handle")))
+                                 (setf handle h)
+                                 (break)))
+                           
+                             (let ((drops (create element item drag-handle handle
+                                                  on-drag-start (mcode-handler-on-drag $el mode))))
+                               (chain console (log :dd item drops (@ item class-list)
+                                                   (typeof (@ item class-list))
+                                                   (/= "undefined" (typeof (@ item class-list)))))
+                               (draggable drops)
+                               nil))))
+
+                       ))
+                       ;;  1000)))
                 x-inits))
         
         ;; (when (member :enum types)
@@ -578,7 +592,7 @@ n;;;; seed.modulate.lisp
 
         ;; (print (list :xx (uic-role aspect)))
 
-        ;; (print (list :xi x-inits))
+        (print (list :xi x-inits))
         
         (let* ((items (loop :for ix :from 0
                             ;; if this is a call-form, the form's head symbol is not displayed
