@@ -26,7 +26,8 @@
 
         (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
             (loop :for l :in (nthcdr start-point summary) :while l
-                  :collect (dx ((uic-series :layout (:vertical :of 12 1 10 1)
+                  :collect (dx ((uic-series ;; :layout (:vertical :of 12 1 10 1)
+                                            :layout (:vertical :of 3 1 1 1)
                                             :join   (list :abcd (first l))
                                             :type   (:column)
                                             :mode   (grow :abcd (first l)
@@ -157,9 +158,30 @@
                                   :abcd :chart)))))))))
 
   (branch :abcd :chentity
-    (adapt-from-json :path :action :mode)
+    (adapt-from-json :path :action :mode :sort :remove)
     (lambda (context input)
-      (destructuring-bind (&key state ifmod-head ifmod-foot path sort action &allow-other-keys) input
+      (destructuring-bind (&key state path sort remove &allow-other-keys) input
+        (symbol-macrolet ((elist (cdddr (second chart-entities))))
+          (if path (cond (sort (destructuring-bind (index move-to) sort
+                                 (let ((moved (nth index elist)))
+                                   ;; (print (list :en index move-to elist :mm moved))
+                                   (if (zerop index) (pop elist) ; (setf elist (rest elist))
+                                       (rplacd (nthcdr (1- index) elist)
+                                               (rest (nthcdr index elist))))
+                                   ;; (print (list :en2 index move-to elist :mov moved))
+                                   (if (zerop move-to) (setf elist (cons moved elist))
+                                       (rplacd (nthcdr (1- move-to) elist)
+                                               (cons moved (nthcdr move-to elist))))))
+                               (print :complete))
+                         (remove (print (list :rem remove))
+                                 (if (zerop remove) (pop elist)
+                                     (rplacd (nthcdr (1- remove) elist)
+                                             (rest (nthcdr remove elist))))
+                                 (print (list :ce2 chart-entities))
+                                 (values :complete t)))
+              input))))
+    (lambda (context input)
+      (destructuring-bind (&key state ifmod-head ifmod-foot path sort remove action &allow-other-keys) input
         (cond (state :meta-code-form)
               (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
                                (uic-series :type (:ui :controls)))
@@ -167,19 +189,6 @@
               (ifmod-foot (dx ((:each uicc-button :type (:local)  :call (:.fetch (:action :.base)))
                                (uic-series :type (:ui :controls)))
                               (list :save)))
-              (path (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" path))))
-                      (cond (sort (destructuring-bind (index move-to) sort
-                                    (symbol-macrolet ((elist (second chart-entities)))
-                                      (let ((moved (nth index elist)))
-                                        ;; (print (list :en index move-to elist :mm moved))
-                                        (if (zerop index) (setf elist (rest elist))
-                                            (rplacd (nthcdr (1- index) elist)
-                                                    (rest (nthcdr index elist))))
-                                        ;; (print (list :en2 index move-to elist :mov moved))
-                                        (if (zerop move-to) (setf elist (cons moved elist))
-                                            (rplacd (nthcdr (1- move-to) elist)
-                                                    (cons moved (nthcdr move-to elist)))))))
-                                  (print :complete)))))
               (action
                ;; (print (list :ac action (funcall context :chart-point)
                ;;              chart-paths ))

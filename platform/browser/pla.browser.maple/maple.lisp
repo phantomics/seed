@@ -124,11 +124,28 @@
                     (:script :src "./build/ext.js")
                     (:script :src "./build/int.js"))))))
 
+(defun render-html-palette (palette)
+  (let ((output) (index 0))
+    (loop :while (< index (array-total-size palette))
+          :do (push (format nil "#~2,'0X~2,'0X~2,'0X" (row-major-aref palette index)
+                            (row-major-aref palette (+ 1 index)) (row-major-aref palette (+ 2 index)))
+                    output)
+              (incf index 3))
+    (reverse output)))
+
 (defun build-styles (stream)
+  (destructuring-bind (color-margin-sh0 color-margin-sh1 color-margin-sh2
+                       color-margin-sh3 color-margin-sh4 color-margin-sh5
+                       color-margin-sh6 color-margin-sh7 color-margin-sh8 color-margin-sh9
+                       color-focal-sh0 color-focal-sh1)
+      (append (render-html-palette #2A((18 28 56) (29 38 66) (45 54 84)
+                                       (67 75 106) (92 99 132) (118 125 159)
+                                       (142 148 184) (161 168 204) (174 181 217) (179 185 222)))
+              (list "#eac8a6" "#fbf5de"))
   (format
    stream
    (lass:compile-and-write
-    `(body :background "#f2f2f2")
+    `(body :background ,color-margin-sh6)
 
     `(|#root| :width "100%")
 
@@ -147,10 +164,14 @@
     ;; `(.container :background "#fff")
     
     `(.sidebar
-      :background "#d5d5d5" :height 100vh
       (.heading :font-size "160%" :font-weight "bold"
                 :padding 8px :margin-bottom 6px)
       (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
+    
+    `((:and (.sidebar > .series > .item) (:nth-child odd))
+      :background ,color-margin-sh3 :border-color ,color-margin-sh4)
+    `((:and (.sidebar > .series > .item) (:nth-child even))
+      :background ,color-margin-sh1 :border-color ,color-margin-sh2)
 
     `(.ui.column.portal-summary
       :padding 0
@@ -165,7 +186,7 @@
       )
 
     `((.ui.column.portal-summary > .item)
-      :padding "0.75rem")
+      :padding "0.75rem" :border-width "0 4px 0 0" :border-style solid)
     
     `((:and (.ui.column.portal-summary > .item)
             (:nth-child 1))
@@ -194,11 +215,12 @@
     `(.ui.grid-layout
       :display "grid" :height "100%"
       (.column
-       :display grid :overflow auto
+       :display grid :overflow auto :grid-template-rows min-content auto min-content
        (.container :position "relative" :height "100%") ;;  :display grid)
        (.column-inner
         :padding 0 :overflow auto
-        (.access.body :height "100%" :background "#fff" :overflow auto))
+        (.access.body :height "100%" :background ,color-focal-sh1 :overflow auto
+                      :border-width "0 2px" :border-style solid :border-color ,color-focal-sh0))
        (.list-table :width "100%"
                     (.columns :margin-top 0
                               (button :width "100%"))))
@@ -218,8 +240,7 @@
 
     `(.ui.grid-layout.workspace.even
       :grid-template-columns "8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%"
-      (.ui.series.grid-layout
-       :height "calc(100vh - 1em)" :margin-top 0.5em))
+      (.ui.series.grid-layout :height 100vh))
     
     `((:and (.ui.grid-layout.workspace.even > .column)
             (:nth-child 1))
@@ -230,23 +251,24 @@
       :grid-column-start 7 :grid-column-end 13)
 
     `(.ui.grid-layout.workspace
-      (.column :padding 0 10px))
+      (.column :padding 0 6px))
     
     `((:or .ui.header .ui.footer)
-      :width "100%" :height "100%" :padding 8px :margin 0 :background "#eee"
-      :display grid :grid-template-rows 100%)
+      :width "100%" :height "100%" :padding 8px :margin 0 :background ,color-focal-sh1
+      :border-width 0 2px :border-style solid :border-color ,color-focal-sh0
+                          :display grid :grid-template-rows 100%
+      (.controls :grid-column-end 3 (.item :display inline)))
 
     `(.ui.header
-      :border-bottom "2px solid #ccc"
       :grid-template-columns "20% 80%"
       (h2.branch-name :margin 0 :grid-column-start 1)
       (.controls :text-align right))
-    
-    `(.ui.footer :bottom 0 :border-top "2px solid #ccc"
-      (.controls :text-align left))
 
-    `((:or .ui.header .ui.footer)
-      (.controls :grid-column-end 3 (.item :display inline)))
+    `((:and .ui.header :after)
+      :content ".")
+    
+    `(.ui.footer :bottom 0
+      (.controls :text-align left))
 
     `(.form.text (.cm-editor :height 100%))
 
@@ -360,7 +382,7 @@
                             :font-size 22px :padding "16px 64px"
                             (li :cursor pointer))))
     
-    )))
+    ))))
 
 (defun build-script-element (&key stream imports constructors)
   (loop :for import :in imports

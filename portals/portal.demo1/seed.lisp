@@ -101,7 +101,7 @@
                                                :portal.demo1 (concatenate 'string "../" tpath))
                           :name (string-downcase system-name))))
         (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-            (list (dx ((uic-series :layout (:vertical :of 12 1 10 1)
+            (list (dx ((uic-series :layout (:vertical :of 3 1 1 1)
                                    :type   (:column)))
                       (dx ((uic-series :type (:ui :header)))
                           :header
@@ -109,7 +109,7 @@
                       "Hello."
                       (dx ((uic-series :type (:ui :footer)))
                           (list "bbb")))
-                  (dx ((uic-series :layout (:vertical :of 12 1 10 1)
+                  (dx ((uic-series :layout (:vertical :of 3 1 1 1)
                                    :type   (:column)
                                    :join   (list :portal.demo1 :base)
                                    ;; :mode   (grow :demo.sheet (first l)

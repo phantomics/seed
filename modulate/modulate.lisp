@@ -448,9 +448,7 @@ n;;;; seed.modulate.lisp
   (let ((types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
         (face (lisp->camel-case (uic-name aspect)))
-        (system (uicf-access aspect))
-        ;; (last-type-index (1- (length (uic-type aspect))))
-        )
+        (system (uicf-access aspect)))
 
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
@@ -494,8 +492,7 @@ n;;;; seed.modulate.lisp
                                                (member :table-interstitial (uic-type item)))))
                  (dolist (type types)
                    (setf item (case type
-                                (:column
-                                 `(:div :class "column-inner"
+                                (:column `(:div :class "column-inner"
                                                 ,(realize aspect medium item :sort index)))
                                 (:list-table
                                  ;; NOTE: this depends on list-table not being the first style;
@@ -516,17 +513,6 @@ n;;;; seed.modulate.lisp
         (loop :for item :in (uic-base aspect)
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
-
-        ;; (and (member :enum types)
-        ;;      (list :x-init (psl (if (and (not (= "undefined" (typeof methods)))
-        ;;                                  (not (= "undefined" (typeof (@ methods register-form)))))
-        ;;                             (funcall (chain methods (register-form mode)) $el)))))
-
-        ;; (and (and (member :controls types) (member :extog types))
-        ;;      (list :x-data (psl (create this-toggle null
-        ;;                                 toggle-state (create index null)))
-        ;;            :x-init (psl (setf this-toggle (register-exclusive-toggle-array
-        ;;                                            mode methods toggle-state)))))
         
         (when (member :enum types)
           (push (psl (if (and (not (= "undefined" (typeof methods)))
@@ -534,7 +520,7 @@ n;;;; seed.modulate.lisp
                          (funcall (chain methods (register-form mode)) $el)))
                 x-inits))
 
-        (when (and (member :controls types) ;; (member :extog types)
+        (when (and (member :controls types)
                    (has-role aspect 'uir-extoggle))
           (push (psl (setf this-toggle (register-exclusive-toggle-array mode methods toggle-state)))
                 x-inits))
@@ -542,12 +528,8 @@ n;;;; seed.modulate.lisp
         (when (and (typep    aspect 'ui-component)
                    (has-role aspect 'uir-sortable))
           ;; (print (list :ty types :r (uic-type (uic-root aspect))))
-          (push (psl (let ((handle-container) (handle) (nlen) (item))
-                       (setf nlen (@ $el child-nodes length))
-                       (chain console (log :aa ;; $el
-                                           (@ $el child-nodes) (@ $el child-nodes length)))
-                       ;; (set-timeout
-                       ;;  (lambda ()
+          (push (psl (let ((handle-container) (handle) (item))
+                       ;; (chain console (log :aa (@ $el child-nodes) (@ $el child-nodes length)))
                        (dolist (n (@ $el child-nodes))
                          ;; (chain console (log :cc n (@ n class-name) (@ n class-list)
                          ;;                     (and (@ n class-list)
@@ -555,15 +537,14 @@ n;;;; seed.modulate.lisp
                          (when (and (/= "undefined" (typeof (@ n class-list)))
                                     (chain n class-list (contains "item")))
                            (setf item n)
-                           (chain console (log :bbb n (chain n (get-attribute "index"))
-                                               (chain n (query-selector ".control.drag-handle"))))
+                           ;; (chain console (log :bbb n (chain n (get-attribute "index"))
+                           ;;                     (chain n (query-selector ".control.drag-handle"))))
                            (setf handle-container (chain n (query-selector ".control.drag-handle")))
                            
                            (when handle-container
                              (dolist (h (@ handle-container child-nodes))
-                               (when ;; (= (@ h class-name) "control drag-handle")
-                                   (and (/= "undefined" (typeof (@ h class-list)))
-                                        (chain h class-list (contains "drag-handle")))
+                               (when (and (/= "undefined" (typeof (@ h class-list)))
+                                          (chain h class-list (contains "drag-handle")))
                                  (setf handle h)
                                  (break)))
                            
@@ -572,28 +553,30 @@ n;;;; seed.modulate.lisp
                                (chain console (log :dd item drops (@ item class-list)
                                                    (typeof (@ item class-list))
                                                    (/= "undefined" (typeof (@ item class-list)))))
-                               (draggable drops)
-                               nil))))
-
-                       ))
-                       ;;  1000)))
+                               (draggable drops)))))))
                 x-inits))
-        
-        ;; (when (member :enum types)
-        ;;   (push (psl (if (not (= "undefined" (typeof (@ methods register-form))))
-        ;;                  (funcall (chain methods (register-form mode)) $el)))
-        ;;         x-inits))
 
-        ;; (when (and (member :controls types) (member :extog types))
-        ;;   (push (psl (create register-toggle (register-exclusive-toggle-array
-        ;;                                       mode (@ methods when-toggled)
-        ;;                                       (@ methods when-untoggled))))
-        ;;         x-inits))
+        (when (and (typep    aspect 'ui-component)
+                   (has-role aspect 'uir-reducable))
+          ;; (print (list :ty types :r (uic-type (uic-root aspect))))
+          (push (psl (let* ((remover) (item) (meta-path (chain $el (get-attribute "meta-path")))
+                            (interactor (lambda (element index)
+                                          (fetch-contact element mode (create path meta-path remove index))
+                                          (lambda () (chain htmx (trigger element "reload"))))))
+                       (dolist (n (@ $el child-nodes))
+                         ;; (chain console (log :nnn n))
+                         (when (and (/= "undefined" (typeof (@ n class-list)))
+                                    (chain n class-list (contains "item")))
+                           ;; (chain console (log :bbb n (chain n (get-attribute "index"))
+                           ;;                     (chain n (query-selector ".control.drag-handle"))))
+                           (setf item    n
+                                 remover (chain n (query-selector ".control.to-remove")))
+                           
+                           (when remover
+                             (chain remover (add-event-listener
+                                             "click" (lambda () (funcall interactor remover 0)))))))))
+                x-inits))
 
-        ;; (print (list :xx (uic-role aspect)))
-
-        (print (list :xi x-inits))
-        
         (let* ((items (loop :for ix :from 0
                             ;; if this is a call-form, the form's head symbol is not displayed
                             ;; with the others; in most cases it is either not shown or displayed
@@ -664,8 +647,10 @@ n;;;; seed.modulate.lisp
                                                                 ((:horizontal :vertical)
                                                                  '(:series :grid-layout)))
                                                               (and is-list-table '(:table))))
-                        :style (if (and (not (member ltype '(:horizontal :vertical)))
-                                        (not (eql :even (first lprops))))
+                        :style (if (and ;; (not (member ltype '(:horizontal :vertical)))
+                                        ;; (not (eql :even (first lprops)))
+                                        t
+                                        )
                                    ;; TODO: this needs more rigorous logic for partitioning according
                                    ;; to params and numbers in lprops, currently it only supports
                                    ;; the :even (number) case
@@ -680,9 +665,11 @@ n;;;; seed.modulate.lisp
                   (and (eq t call)
                        (list :hx-inherit "*" :hx-post "/render/"))
 
-                  (and x-inits (list :x-init (apply #'concatenate 'string x-inits)))
+                  (and x-inits (list :x-init (apply #'concatenate 'string (mapcar (lambda (str)
+                                                                                    (format nil "~a;~%" str))
+                                                                                  x-inits))))
                   
-                  (and (and (member :controls types) ;; (member :extog types)
+                  (and (and (member :controls types)
                             (has-role aspect 'uir-extoggle))
                        (list :x-data (psl (create this-toggle null
                                                   toggle-state (create index null)))))
@@ -712,6 +699,18 @@ n;;;; seed.modulate.lisp
                       (funcall (cond (is-list-table (lambda (form) (list (cons :tbody form))))
                                      (t #'identity))
                                (append header items)))))))))
+
+
+;; (and (member :enum types)
+;;      (list :x-init (psl (if (and (not (= "undefined" (typeof methods)))
+;;                                  (not (= "undefined" (typeof (@ methods register-form)))))
+;;                             (funcall (chain methods (register-form mode)) $el)))))
+
+;; (and (and (member :controls types) (member :extog types))
+;;      (list :x-data (psl (create this-toggle null
+;;                                 toggle-state (create index null)))
+;;            :x-init (psl (setf this-toggle (register-exclusive-toggle-array
+;;                                            mode methods toggle-state)))))
 
 #|
 

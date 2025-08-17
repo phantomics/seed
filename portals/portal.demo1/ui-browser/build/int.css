@@ -1,5 +1,5 @@
 body{
-    background: #f2f2f2;
+    background: #8E94B8;
 }
 
 #root{
@@ -31,10 +31,7 @@ body{
     margin: 0 auto;
 }
 
-.sidebar{
-    background: #d5d5d5;
-    height: 100vh;
-}
+
 
 .sidebar .heading{
     font-size: 160%;
@@ -47,6 +44,16 @@ body{
     font-size: 120%;
     font-weight: bold;
     padding: 3px 12px;
+}
+
+.sidebar > .series > .item:nth-child(odd){
+    background: #434B6A;
+    border-color: #5C6384;
+}
+
+.sidebar > .series > .item:nth-child(even){
+    background: #1D2642;
+    border-color: #2D3654;
 }
 
 .ui.column.portal-summary{
@@ -73,6 +80,8 @@ body{
 
 .ui.column.portal-summary > .item{
     padding: 0.75rem;
+    border-width: 0 4px 0 0;
+    border-style: solid;
 }
 
 .ui.column.portal-summary > .item:nth-child(1){
@@ -129,6 +138,7 @@ body{
 .ui.grid-layout .column{
     display: grid;
     overflow: auto;
+    grid-template-rows: min-content auto min-content;
 }
 
 .ui.grid-layout .column .container{
@@ -143,8 +153,11 @@ body{
 
 .ui.grid-layout .column .column-inner .access.body{
     height: 100%;
-    background: #fff;
+    background: #fbf5de;
     overflow: auto;
+    border-width: 0 2px;
+    border-style: solid;
+    border-color: #eac8a6;
 }
 
 .ui.grid-layout .column .list-table{
@@ -188,8 +201,7 @@ body{
 }
 
 .ui.grid-layout.workspace.even .ui.series.grid-layout{
-    height: calc(100vh - 1em);
-    margin-top: 0.5em;
+    height: 100vh;
 }
 
 .ui.grid-layout.workspace.even > .column:nth-child(1){
@@ -205,7 +217,7 @@ body{
 
 
 .ui.grid-layout.workspace .column{
-    padding: 0 10px;
+    padding: 0 6px;
 }
 
 .ui.header,
@@ -214,13 +226,25 @@ body{
     height: 100%;
     padding: 8px;
     margin: 0;
-    background: #eee;
+    background: #fbf5de;
+    border-width: 0 2px;
+    border-style: solid;
+    border-color: #eac8a6;
     display: grid;
     grid-template-rows: 100%;
 }
 
+.ui.header .controls,
+.ui.footer .controls{
+    grid-column-end: 3;
+}
+
+.ui.header .controls .item,
+.ui.footer .controls .item{
+    display: inline;
+}
+
 .ui.header{
-    border-bottom: 2px solid #ccc;
     grid-template-columns: 20% 80%;
 }
 
@@ -233,25 +257,16 @@ body{
     text-align: right;
 }
 
+.ui.header:after{
+    content: ".";
+}
+
 .ui.footer{
     bottom: 0;
-    border-top: 2px solid #ccc;
 }
 
 .ui.footer .controls{
     text-align: left;
-}
-
-
-
-.ui.header .controls,
-.ui.footer .controls{
-    grid-column-end: 3;
-}
-
-.ui.header .controls .item,
-.ui.footer .controls .item{
-    display: inline;
 }
 
 
