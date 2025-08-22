@@ -26,7 +26,7 @@
 
         (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
             (loop :for l :in (nthcdr start-point summary) :while l
-                  :collect (dx ((uic-series :layout (:vertical :of 12 1 10 1)
+                  :collect (dx ((uic-series :layout (:vertical :of 3 1 1 1)
                                             :join   (list :demo.sheet (first l))
                                             :type   (:column)
                                             :mode   (grow :demo.sheet (first l)
@@ -164,7 +164,7 @@
           (state :chart)
           (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
                            (uic-series :type (:ui :controls)
-                                       :role (role-cast extoggle)))
+                                       :role (role-cast toggle)))
                           (list :select :draw :retrace-x :retrace-y)))
           (ifmod-foot (dx ((:each uicc-button :type (:local))
                            (uic-series :type (:ui :controls)))

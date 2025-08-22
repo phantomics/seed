@@ -11,7 +11,9 @@
         (:alpine "https://unpkg.com/alpinejs@3.14.8/dist/cdn.js"
                  "alpine.js")
         (:mousetrap "https://craig.global.ssl.fastly.net/js/mousetrap/mousetrap.min.js")
-        (:dygraph "https://dygraphs.com/2.2.1/dist/dygraph.min.js")))
+        (:dygraph "https://dygraphs.com/2.2.1/dist/dygraph.min.js")
+        (:bulma "https://app.unpkg.com/bulma@1.0.4/files/css/bulma.min.css")
+        (:bulma-theme-yeti "https://jenil.github.io/bulmaswatch/yeti/bulmaswatch.min.css")))
 
 (defun stream->string (stream &key (initial-size 1024))
   (do* ((buffer (make-array initial-size :adjustable t :fill-pointer t :element-type '(unsigned-byte 8)))
@@ -145,7 +147,7 @@
   (format
    stream
    (lass:compile-and-write
-    `(body :background ,color-margin-sh6)
+    `(body :background ,color-margin-sh4)
 
     `(|#root| :width "100%")
 
@@ -169,9 +171,9 @@
       (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
     
     `((:and (.sidebar > .series > .item) (:nth-child odd))
-      :background ,color-margin-sh3 :border-color ,color-margin-sh4)
+      :background ,color-margin-sh6 :border-color ,color-margin-sh5)
     `((:and (.sidebar > .series > .item) (:nth-child even))
-      :background ,color-margin-sh1 :border-color ,color-margin-sh2)
+      :background ,color-margin-sh8 :border-color ,color-margin-sh7)
 
     `(.ui.column.portal-summary
       :padding 0
@@ -224,7 +226,27 @@
        (.list-table :width "100%"
                     (.columns :margin-top 0
                               (button :width "100%"))))
-      (.workspace (.column-inner :background "#fff" :height 100%)))
+      (.workspace (.column-inner :background ,color-focal-sh1 :height 100% :overflow hidden)
+                  ;; ((:and .item (:nth-child 1))
+                  ;;  ((:and .column-inner :after)
+                  ;;   :content "" :display block :width 100% :background red :height 2px))
+                  (".column-inner:has(>.ui.header):after"
+                   :content "" :display block :width 100% :background "#dc3c22" :height 2px
+                   :border-width 0 2px :border-color "#c80000" :border-style solid
+                   :position relative :bottom 2px)
+                  (".column-inner:has(>.ui.footer):before"
+                   :content "" :display block :width 100% :background "#dc3c22" :height 2px
+                   :border-width 0 2px :border-color "#a20000" :border-style solid)
+                  )
+
+      ;; ((:and (.workspace .grid-layout.column > .item) (:nth-child 0))
+      ;;  :background green)
+      
+      ;; ((:and (.workspace .grid-layout.column > .item) (:nth-child 0))
+      ;;  ((:and .column-inner :after)
+      ;;   :content "" :display block :width 100% :background red :height 2px)
+      ;;  )
+      )
 
     `((.ui.grid-layout > .column)  :grid-template-rows 1fr)
 
@@ -264,8 +286,8 @@
       (h2.branch-name :margin 0 :grid-column-start 1)
       (.controls :text-align right))
 
-    `((:and .ui.header :after)
-      :content ".")
+    ;; `((:and (.grid-layout.column .item .column-inner) (:nth-child 0) :after)
+    ;;   :content "" :display block :width 100% :background red)
     
     `(.ui.footer :bottom 0
       (.controls :text-align left))

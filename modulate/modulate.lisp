@@ -245,7 +245,7 @@ n;;;; seed.modulate.lisp
   ()
   (:documentation "A role for a series whose elements may be manually removed."))
 
-(defclass uir-extoggle ()
+(defclass uir-toggle ()
   ()
   (:documentation "A role for a series of toggles of which only one may be on at a time."))
 
@@ -521,7 +521,7 @@ n;;;; seed.modulate.lisp
                 x-inits))
 
         (when (and (member :controls types)
-                   (has-role aspect 'uir-extoggle))
+                   (has-role aspect 'uir-toggle))
           (push (psl (setf this-toggle (register-exclusive-toggle-array mode methods toggle-state)))
                 x-inits))
 
@@ -670,7 +670,7 @@ n;;;; seed.modulate.lisp
                                                                                   x-inits))))
                   
                   (and (and (member :controls types)
-                            (has-role aspect 'uir-extoggle))
+                            (has-role aspect 'uir-toggle))
                        (list :x-data (psl (create this-toggle null
                                                   toggle-state (create index null)))))
 
@@ -873,7 +873,7 @@ n;;;; seed.modulate.lisp
         (if name (list name name) (uic-base aspect))
       `(:button :name ,(or (string name) "") ,@(furnish-call medium aspect)
                 ,@(and (member :controls root-types)
-                       (has-role (uic-root aspect) 'uir-extoggle)
+                       (has-role (uic-root aspect) 'uir-toggle)
                        (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
                                                          (lisp (uic-sort aspect))))
                              :|x-bind:class|

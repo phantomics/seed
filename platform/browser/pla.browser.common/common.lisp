@@ -19,6 +19,14 @@
               (princ #\Newline out-stream)))
     :complete)
 
+(defmacro gen-provision (name &body forms)
+  (proclaim (list 'special name))
+  `(setf (symbol-function ',name)
+         (lambda (&rest keys)
+           ,(cons 'progn (loop :for form :in forms :collect (destructuring-bind (key &rest action) form
+                                                              `(when (or (not keys) (member ,key keys))
+                                                                 ,@action)))))))
+
 (defun retrieve-flat-source (symbol package sources path)
   (if (listp symbol)
       (loop :for item :in symbol :collect (retrieve-flat-source item package sources path))

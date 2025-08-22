@@ -1,5 +1,5 @@
 body{
-    background: #8E94B8;
+    background: #5C6384;
 }
 
 #root{
@@ -47,13 +47,13 @@ body{
 }
 
 .sidebar > .series > .item:nth-child(odd){
-    background: #434B6A;
-    border-color: #5C6384;
+    background: #8E94B8;
+    border-color: #767D9F;
 }
 
 .sidebar > .series > .item:nth-child(even){
-    background: #1D2642;
-    border-color: #2D3654;
+    background: #AEB5D9;
+    border-color: #A1A8CC;
 }
 
 .ui.column.portal-summary{
@@ -175,8 +175,33 @@ body{
 
 
 .ui.grid-layout .workspace .column-inner{
-    background: #fff;
+    background: #fbf5de;
     height: 100%;
+    overflow: hidden;
+}
+
+.ui.grid-layout .workspace .column-inner:has(>.ui.header):after{
+    content: "";
+    display: block;
+    width: 100%;
+    background: #dc3c22;
+    height: 2px;
+    border-width: 0 2px;
+    border-color: #c80000;
+    border-style: solid;
+    position: relative;
+    bottom: 2px;
+}
+
+.ui.grid-layout .workspace .column-inner:has(>.ui.footer):before{
+    content: "";
+    display: block;
+    width: 100%;
+    background: #dc3c22;
+    height: 2px;
+    border-width: 0 2px;
+    border-color: #a20000;
+    border-style: solid;
 }
 
 .ui.grid-layout > .column{
@@ -255,10 +280,6 @@ body{
 
 .ui.header .controls{
     text-align: right;
-}
-
-.ui.header:after{
-    content: ".";
 }
 
 .ui.footer{

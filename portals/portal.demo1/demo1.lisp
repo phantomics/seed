@@ -2,14 +2,6 @@
 
 (in-package #:portal.demo1)
 
-;; (defvar *contact-interfaces* nil)
-
-;; (defun of-contacts (key)
-;;   (getf *contact-interfaces* key))
-
-;; (defun add-contact (key value)
-;;   (setf (getf *contact-interfaces* key) value))
-
 ;; implement start/restart/stop functionality for the portal using the
 ;; (grow) function assigned in seed.lisp
 
@@ -18,8 +10,40 @@
 ;; build the needed browser-side files unless they already exist, in which
 ;; case the expressions below can be used as a control panel to rebuild said files
 
+(gen-provision portal-browser-faculties
+  (:index    (write-to-file stream *package* "./ui-browser/index.html"
+               (build-static-page stream :portal.demo1)))
+  (:int-css  (write-to-file stream *package* "./ui-browser/build/int.css"
+               (build-styles stream)))
+  (:cmirror  (write-to-file stream *package* "./ui-browser/npm-interfaces/codemirror/cm-app.js"
+               (build-script-cmirror stream)))
+  (:pmirror  (write-to-file stream *package* "./ui-browser/npm-interfaces/prosemirror/pm-app.js"
+               (build-script-pmirror stream)))
+  (:prag-dnd (write-to-file stream *package* "./ui-browser/npm-interfaces/pragmatic-dnd/pdnd.js"
+               (build-script-pdnd stream)))
+  (:int-js   (write-to-file stream *package* "./ui-browser/build/int.js"
+               (build-script-misc stream)))
+  (:ext-js   (let ((js-paths (retrieve-flat-source '(:htmx :alpine :mousetrap :dygraph)
+                                                     *package* pla.browser.maple:*flat-sources*
+                                                     "./ui-browser/static/")))
+                 (write-to-file stream *package* "./ui-browser/build/ext.js"
+                   (apply #'concat-files stream *package*
+                          (append js-paths
+                                  (list "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
+                                        "./ui-browser/npm-interfaces/pragmatic-dnd/build/iface.bundle.js"
+                                        "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"
+                                        "./ui-browser/npm-interfaces/prosemirror/build/iface.bundle.js"))))))
+  (:css-base (let ((css-paths (retrieve-flat-source
+                               '(:bulma); :bulma-theme-yeti)
+                               *package* pla.browser.maple:*flat-sources* "./ui-browser/static/")))
+               (write-to-file stream *package* "./ui-browser/build/ext.css"
+                 (apply #'concat-files stream *package* css-paths)))))
+
+
 (unless (probe-file (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
                                                    "./ui-browser/index.html"))
+
+  (provision-browser-faculties)
 
   (write-to-file stream *package* "./ui-browser/index.html"
     (build-static-page stream :portal.demo1))
@@ -39,31 +63,27 @@
   (write-to-file stream *package* "./ui-browser/build/int.js"
     (build-script-misc stream))
 
-  (let ((flat-paths (retrieve-flat-source '(:htmx :alpine :mousetrap :dygraph)
+  (let ((js-paths (retrieve-flat-source '(:htmx :alpine :mousetrap :dygraph)
                                           *package* pla.browser.maple:*flat-sources*
                                           "./ui-browser/static/")))
     
     (write-to-file stream *package* "./ui-browser/build/ext.js"
       (apply #'concat-files stream *package*
-             (append flat-paths
-                     (list "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
-                           "./ui-browser/npm-interfaces/pragmatic-dnd/build/iface.bundle.js"
-                           "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"
-                           "./ui-browser/npm-interfaces/prosemirror/build/iface.bundle.js"))
-      ;; (format stream "window.Dygraph = Dygraph;~%")
-      )))
+             (append js-paths (list "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
+                                    "./ui-browser/npm-interfaces/pragmatic-dnd/build/iface.bundle.js"
+                                    "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"
+                                    "./ui-browser/npm-interfaces/prosemirror/build/iface.bundle.js")))))
 
-  (write-to-file stream *package* "./ui-browser/build/ext.css"
-    (concat-files stream *package* "./ui-browser/node_modules/bulma/css/bulma.css"))
+  (let ((css-paths (retrieve-flat-source '(:bulma :bulma-theme-yeti)
+                                         *package* pla.browser.maple:*flat-sources* "./ui-browser/static/")))
+
+    (write-to-file stream *package* "./ui-browser/build/ext.css"
+      (concat-files stream *package* css-paths)))
+
+  ;; (write-to-file stream *package* "./ui-browser/build/ext.css"
+  ;;   (concat-files stream *package* "./ui-browser/node_modules/bulma/css/bulma.css"))
 
   (format t "Browser files generated successfully for portal ~a.~%" *package*))
-
-;; (defun build-all ()
-;;   (build-static-page :portal.demo1 "ui-browser")
-;;   (build-script-cmirror)
-;;   (build-script-misc "ui-browser"))
-
-;; (build-all)
 
 #|
 
