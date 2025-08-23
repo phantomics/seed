@@ -53,7 +53,10 @@
 (defclass style-line (style)
   ((%stroke :accessor stline-stroke
             :initform nil
-            :initarg  :stroke)))
+            :initarg  :stroke)
+   (%extend :accessor stline-extend
+            :initform nil
+            :initarg  :extend)))
 
 (defmacro chart-view (name data &body entities)
   `(make-instance 'chart :name ,name :data ,data
@@ -90,7 +93,7 @@
                     ))
         )))
 
-(defmacro span (style xfrom yfrom xto yto)
+(defmacro span (style format xfrom yfrom xto yto)
   `(make-instance 'enspan-retrace :points (list ,xfrom ,yfrom ,xto ,yto)
                                   :style ,style))
 

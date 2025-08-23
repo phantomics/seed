@@ -33,9 +33,9 @@
                                         "./ui-browser/npm-interfaces/pragmatic-dnd/build/iface.bundle.js"
                                         "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"
                                         "./ui-browser/npm-interfaces/prosemirror/build/iface.bundle.js"))))))
-  (:css-base (let ((css-paths (retrieve-flat-source
-                               '(:bulma); :bulma-theme-yeti)
-                               *package* pla.browser.maple:*flat-sources* "./ui-browser/static/")))
+  (:css-base (let ((css-paths (retrieve-flat-source '(:bulma :bulma-theme-yeti)
+                                                    *package* pla.browser.maple:*flat-sources*
+                                                    "./ui-browser/static/")))
                (write-to-file stream *package* "./ui-browser/build/ext.css"
                  (apply #'concat-files stream *package* css-paths)))))
 
@@ -45,40 +45,40 @@
 
   (provision-browser-faculties)
 
-  (write-to-file stream *package* "./ui-browser/index.html"
-    (build-static-page stream :portal.demo1))
+  ;; (write-to-file stream *package* "./ui-browser/index.html"
+  ;;   (build-static-page stream :portal.demo1))
 
-  (write-to-file stream *package* "./ui-browser/build/int.css"
-    (build-styles stream))
+  ;; (write-to-file stream *package* "./ui-browser/build/int.css"
+  ;;   (build-styles stream))
 
-  (write-to-file stream *package* "./ui-browser/npm-interfaces/codemirror/cm-app.js"
-    (build-script-cmirror stream))
+  ;; (write-to-file stream *package* "./ui-browser/npm-interfaces/codemirror/cm-app.js"
+  ;;   (build-script-cmirror stream))
 
-  (write-to-file stream *package* "./ui-browser/npm-interfaces/prosemirror/pm-app.js"
-    (build-script-pmirror stream))
+  ;; (write-to-file stream *package* "./ui-browser/npm-interfaces/prosemirror/pm-app.js"
+  ;;   (build-script-pmirror stream))
 
-  (write-to-file stream *package* "./ui-browser/npm-interfaces/pragmatic-dnd/pdnd.js"
-    (build-script-pdnd stream))
+  ;; (write-to-file stream *package* "./ui-browser/npm-interfaces/pragmatic-dnd/pdnd.js"
+  ;;   (build-script-pdnd stream))
 
-  (write-to-file stream *package* "./ui-browser/build/int.js"
-    (build-script-misc stream))
+  ;; (write-to-file stream *package* "./ui-browser/build/int.js"
+  ;;   (build-script-misc stream))
 
-  (let ((js-paths (retrieve-flat-source '(:htmx :alpine :mousetrap :dygraph)
-                                          *package* pla.browser.maple:*flat-sources*
-                                          "./ui-browser/static/")))
+  ;; (let ((js-paths (retrieve-flat-source '(:htmx :alpine :mousetrap :dygraph)
+  ;;                                         *package* pla.browser.maple:*flat-sources*
+  ;;                                         "./ui-browser/static/")))
     
-    (write-to-file stream *package* "./ui-browser/build/ext.js"
-      (apply #'concat-files stream *package*
-             (append js-paths (list "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
-                                    "./ui-browser/npm-interfaces/pragmatic-dnd/build/iface.bundle.js"
-                                    "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"
-                                    "./ui-browser/npm-interfaces/prosemirror/build/iface.bundle.js")))))
+  ;;   (write-to-file stream *package* "./ui-browser/build/ext.js"
+  ;;     (apply #'concat-files stream *package*
+  ;;            (append js-paths (list "./ui-browser/node_modules/canvas-datagrid/dist/canvas-datagrid.js"
+  ;;                                   "./ui-browser/npm-interfaces/pragmatic-dnd/build/iface.bundle.js"
+  ;;                                   "./ui-browser/npm-interfaces/codemirror/build/iface.bundle.js"
+  ;;                                   "./ui-browser/npm-interfaces/prosemirror/build/iface.bundle.js")))))
 
-  (let ((css-paths (retrieve-flat-source '(:bulma :bulma-theme-yeti)
-                                         *package* pla.browser.maple:*flat-sources* "./ui-browser/static/")))
+  ;; (let ((css-paths (retrieve-flat-source '(:bulma :bulma-theme-yeti)
+  ;;                                        *package* pla.browser.maple:*flat-sources* "./ui-browser/static/")))
 
-    (write-to-file stream *package* "./ui-browser/build/ext.css"
-      (concat-files stream *package* css-paths)))
+  ;;   (write-to-file stream *package* "./ui-browser/build/ext.css"
+  ;;     (concat-files stream *package* css-paths)))
 
   ;; (write-to-file stream *package* "./ui-browser/build/ext.css"
   ;;   (concat-files stream *package* "./ui-browser/node_modules/bulma/css/bulma.css"))

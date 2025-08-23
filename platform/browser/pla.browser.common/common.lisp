@@ -3,16 +3,17 @@
 (in-package #:pla.browser.common)
 
 (defmacro write-to-file (stream package path &body clauses)
-  `(with-open-file (,stream (asdf:system-relative-pathname (intern (package-name ,package) "KEYWORD")
-                                                           ,path)
+  `(with-open-file (,stream (print (asdf:system-relative-pathname (intern (package-name ,package) "KEYWORD")
+                                                           ,path))
 			    :direction :output :if-exists :supersede :if-does-not-exist :create)
      ,@clauses))
 
 (defun concat-files (out-stream package &rest in-paths)
+  (print (list :out out-stream in-paths))
   (loop :for path :in in-paths
-        :do (with-open-file (input (asdf:system-relative-pathname
-                                    (intern (string (package-name package)) "KEYWORD")
-                                    path)
+        :do (with-open-file (input (asdf:system-relative-pathname (intern (string (package-name package))
+                                                                          "KEYWORD")
+                                                                  path)
                                    :direction :input)
               (loop :for char := (read-char input nil :eof) :until (eq :eof char)
                     :do (write-char char out-stream))

@@ -12,9 +12,9 @@
                  "alpine.js")
         (:mousetrap "https://craig.global.ssl.fastly.net/js/mousetrap/mousetrap.min.js")
         (:dygraph "https://dygraphs.com/2.2.1/dist/dygraph.min.js")
-        (:bulma "https://app.unpkg.com/bulma@1.0.4/files/css/bulma.min.css")
+        (:bulma "https://unpkg.com/bulma@1.0.4/css/bulma.min.css")
         (:bulma-theme-yeti "https://jenil.github.io/bulmaswatch/yeti/bulmaswatch.min.css")))
-
+ 
 (defun stream->string (stream &key (initial-size 1024))
   (do* ((buffer (make-array initial-size :adjustable t :fill-pointer t :element-type '(unsigned-byte 8)))
         (buffer-size initial-size)
@@ -149,6 +149,12 @@
    (lass:compile-and-write
     `(body :background ,color-margin-sh4)
 
+    `(.list :background transparent)
+
+    `(.button :border-width 0 0 2px 0)
+
+    `(.input :border-width 2px 0)
+    
     `(|#root| :width "100%")
 
     `(|:root|
@@ -162,8 +168,6 @@
       (.heading :text-align center)
       (form :text-align center
             (.input :margin "0 auto")))
-    
-    ;; `(.container :background "#fff")
     
     `(.sidebar
       (.heading :font-size "160%" :font-weight "bold"
@@ -279,7 +283,9 @@
       :width "100%" :height "100%" :padding 8px :margin 0 :background ,color-focal-sh1
       :border-width 0 2px :border-style solid :border-color ,color-focal-sh0
                           :display grid :grid-template-rows 100%
-      (.controls :grid-column-end 3 (.item :display inline)))
+      (.controls :grid-column-end 3 (.item :display inline))
+      (.button :background transparent :border-color ,color-focal-sh0)
+      ((.item > .symbol) :font-size 1.4em :font-weight ))
 
     `(.ui.header
       :grid-template-columns "20% 80%"
@@ -289,8 +295,10 @@
     ;; `((:and (.grid-layout.column .item .column-inner) (:nth-child 0) :after)
     ;;   :content "" :display block :width 100% :background red)
     
-    `(.ui.footer :bottom 0
-      (.controls :text-align left))
+    `(.ui.footer
+      :bottom 0
+      (.controls :text-align left)
+      (.button :border-width 2px 0 0 0))
 
     `(.form.text (.cm-editor :height 100%))
 
@@ -305,17 +313,18 @@
     
     `(.meta-code
       (.columns
-       :margin 0)
+       :margin 0 0 0.25rem 0)
       (.ui.series
        (.series-heading
+        :margin 0
         (.control
          :font-family "PragmataPro, iosevka, Mono"))
        (.following :padding-left 0.5rem)
        :padding 0.5rem)
 
-      (.item ;; comment to make even
-       ((:or .input .textarea .select)
-        :margin-bottom 0.5rem))
+      ;; (.item ;; comment to make even
+      ;;  ((:or .input .textarea .select)
+      ;;   :margin-bottom 0.5rem))
 
       ;; (.item :padding-bottom 0.5rem)
       

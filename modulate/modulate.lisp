@@ -1,4 +1,4 @@
-n;;;; seed.modulate.lisp
+;;;; seed.modulate.lisp
 (in-package #:seed.modulate)
 
 (defmacro psl (form)
@@ -228,7 +228,8 @@ n;;;; seed.modulate.lisp
 
 
 (defun has-role (component role-sym)
-  (member role-sym (uic-role component) :test (lambda (r c) (typep c r))))
+  (let ((pos (position role-sym (uic-role component) :test (lambda (r c) (typep c r)))))
+    (and pos (nth pos (uic-role component)))))
 
 (defclass uir-call-form (ui-role)
   ((%options :accessor uircf-options
@@ -246,7 +247,9 @@ n;;;; seed.modulate.lisp
   (:documentation "A role for a series whose elements may be manually removed."))
 
 (defclass uir-toggle ()
-  ()
+  ((%symap :accessor uirt-symap
+           :initform nil
+           :initarg  :symap))
   (:documentation "A role for a series of toggles of which only one may be on at a time."))
 
 (defmacro dx (specs &rest form)
@@ -597,10 +600,10 @@ n;;;; seed.modulate.lisp
                                                                    (t :div))
                                                              :class (get-output-stream-string class-stream)
                                                              :index ix)
-                                                       (and (of-root-type aspect :meta-code)
-                                                            (list :x-data
-                                                                  (psl (create in-series
-                                                                               containing-series))))
+                                                       ;; (and (of-root-type aspect :meta-code)
+                                                       ;;      (list :x-data
+                                                       ;;            (psl (create in-series
+                                                       ;;                         containing-series))))
                                                        (and (and (of-root-type aspect :meta-code)
                                                                  (member :sortable (uic-type aspect)))
                                                             (list :x-init
@@ -871,7 +874,10 @@ n;;;; seed.modulate.lisp
                               (uic-type (uic-root aspect)))))
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
-      `(:button :name ,(or (string name) "") ,@(furnish-call medium aspect)
+      ;; (print (list :bs base (and (listp base) (second base))
+      ;;              (and (has-role aspect 'uir-toggle)
+      ;;                   (uirt-symap (has-role aspect 'uir-toggle)))))
+      `(:button :name ,(string (or name "")) ,@(furnish-call medium aspect)
                 ,@(and (member :controls root-types)
                        (has-role (uic-root aspect) 'uir-toggle)
                        (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
@@ -881,8 +887,16 @@ n;;;; seed.modulate.lisp
                           ;;                           "is-focused"))
                              (format nil "toggleState.index === ~a ? 'is-focused' : ''"
                                      (uic-sort aspect))))
+                ,@(and (has-role aspect 'uir-toggle)
+                       (list :|x-on-click| (psl (chain console (log "aaa")))))
                 :class ,(furnish-type medium aspect '(:ui :button))
-                ,(realize aspect medium name)))))
+                ,(if (and (has-role aspect 'uir-toggle) (listp base)
+                          (eql 'nth (first base))) ;;  (integerp (second base)))
+                     (progn
+                       ;; (print (length (second (uirt-symap (has-role aspect 'uir-toggle)))))
+                       (string (nth (second base) (or (second (uirt-symap (has-role aspect 'uir-toggle)))
+                                                      (third (third base))))))
+                     (realize aspect medium name))))))
                             
 (defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
@@ -1029,7 +1043,7 @@ n;;;; seed.modulate.lisp
                                 (t (:.base `(@ methods (@ $event target value)))
                                  `(@ methods ,(intern (string method)))))))
                         $el mode ,@(mapcar #'js-format-plist args))))
-          `(funcall ,(case method
+          `(funcall ,(case call ;; method
                        (:.fetch 'fetch-contact)
                        (:.base `(@ $event target value))
                        (t `(@ methods ,call)))
@@ -1370,7 +1384,7 @@ n;;;; seed.modulate.lisp
                                       (graph-data2 (rest graph-data)))
 
                       (if node-index ;; links are being sorted
-                          (when (= node-index pos-parent)
+                          (when (and pos-parent (= node-index pos-parent))
                             (let ((orig-link (nth index (rest (nth node-index graph-data2))))
                                   (orig-flink (nth index (rest (nth node-index (rest orig-data))))))
 

@@ -2,6 +2,18 @@ body{
     background: #5C6384;
 }
 
+.list{
+    background: transparent;
+}
+
+.button{
+    border-width: 0 0 2px 0;
+}
+
+.input{
+    border-width: 2px 0;
+}
+
 #root{
     width: 100%;
 }
@@ -269,6 +281,18 @@ body{
     display: inline;
 }
 
+.ui.header .button,
+.ui.footer .button{
+    background: transparent;
+    border-color: #eac8a6;
+}
+
+.ui.header .item > .symbol,
+.ui.footer .item > .symbol{
+    font-size: 1.4em;
+    font-weight: ;
+}
+
 .ui.header{
     grid-template-columns: 20% 80%;
 }
@@ -288,6 +312,10 @@ body{
 
 .ui.footer .controls{
     text-align: left;
+}
+
+.ui.footer .button{
+    border-width: 2px 0 0 0;
 }
 
 
@@ -318,14 +346,16 @@ form .ui.selection.dropdown{
 
 
 .meta-code .columns{
-    margin: 0;
+    margin: 0 0 0.25rem 0;
 }
 
 .meta-code .ui.series{
     padding: 0.5rem;
 }
 
-
+.meta-code .ui.series .series-heading{
+    margin: 0;
+}
 
 .meta-code .ui.series .series-heading .control{
     font-family: PragmataPro, iosevka, Mono;
@@ -333,14 +363,6 @@ form .ui.selection.dropdown{
 
 .meta-code .ui.series .following{
     padding-left: 0.5rem;
-}
-
-
-
-.meta-code .item .input,
-.meta-code .item .textarea,
-.meta-code .item .select{
-    margin-bottom: 0.5rem;
 }
 
 .meta-code .drop-marker{

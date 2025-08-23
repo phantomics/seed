@@ -56,17 +56,17 @@
                                                description))))))))
 
 (defun point-from-template (form &optional index)
-  (let ((x-start (second (third  (second form))))
-        (y-start (second (fourth (second form))))
-        (x-end   (second (fifth  (second form))))
-        (y-end   (second (sixth  (second form)))))
+  (let ((x-start (second (nth 4 (second form))))
+        (y-start (second (nth 5 (second form))))
+        (x-end   (second (nth 6 (second form))))
+        (y-end   (second (nth 7 (second form)))))
     (list :type "line" :points (list (list x-start y-start) (list x-end y-end))
           :name (format nil "obj-~a" (or index 0)) :points-in-flux nil :in-flux :true :ratios nil)))
 
 (let ((chart-paths) (chart-entities) (entity-data)
       (line-templater (build-templater (from-system-file :abcd "sheet.lisp"
                                                          :chart-entity-template-line)
-                                       :type :x-start :y-start :x-end :y-end)))
+                                       :type :format :x-start :y-start :x-end :y-end)))
   
   (defun init-chart-entities (context)
     (when (and context (funcall context :chart-point))
@@ -131,8 +131,9 @@
                            ;; (print (list :ent entity-data))
                            (if index (setf (nth index entity-data) item)
                                (progn (push item entity-data)
-                                      (push (funcall line-templater :x-start x-start :x-end x-end
-                                                                    :y-start y-start :y-end y-end :type type)
+                                      (push (funcall line-templater
+                                                     :x-start x-start :x-end x-end :format format
+                                                     :y-start y-start :y-end y-end :type type)
                                             collected))))))))
                  (setf (second chart-entities)
                        (append (second chart-entities) (reverse collected)))
@@ -177,7 +178,6 @@
                                  (if (zerop remove) (pop elist)
                                      (rplacd (nthcdr (1- remove) elist)
                                              (rest (nthcdr remove elist))))
-                                 (print (list :ce2 chart-entities))
                                  (values :complete t)))
               input))))
     (lambda (context input)
