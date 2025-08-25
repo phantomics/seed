@@ -298,14 +298,6 @@
 
 ;; SECTION: basic system interaction tools
 
-(defun system-file-to-string (system file)
-  (with-open-file (stream (if (eq :absolute (first (pathname-directory (pathname file))))
-                              (pathname file)
-                              (asdf:system-relative-pathname system (format nil "./~a" file))))
-    (let ((contents (make-string (file-length stream))))
-      (read-sequence contents stream)
-      contents)))
-
 (defun adapt-from-alist (&rest properties)
   (lambda (state input)
     (declare (ignore state))
@@ -330,6 +322,22 @@
           input (jonathan:parse input :as :plist :normalize-all t :keyword-normalizer
                                 (lambda (in) (and (member in strings :test #'string=)
                                                   (string-upcase (camel-case->lisp-name in)))))))))
+
+(defun syspath (system path)
+  (asdf:system-relative-pathname system (format nil "./~a" path)))
+
+(defun file-to-string (path)
+  (with-open-file (stream path) (let ((contents (make-string (file-length stream))))
+                                  (read-sequence contents stream)
+                                  contents)))
+
+(defun system-file-to-string (system file)
+  (with-open-file (stream (if (eq :absolute (first (pathname-directory (pathname file))))
+                              (pathname file)
+                              (asdf:system-relative-pathname system (format nil "./~a" file))))
+    (let ((contents (make-string (file-length stream))))
+      (read-sequence contents stream)
+      contents)))
 
 (defun from-system-file (system file key &key as-string)
   "Read a form from a file in the manner of a plist (but not requiring a strict key, value structure)."

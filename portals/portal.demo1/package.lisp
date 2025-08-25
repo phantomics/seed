@@ -6,6 +6,7 @@
   (:shadowing-import-from #:seed.sublimate #:meta-template #:instantiate-priority-macro-reader)
   (:shadowing-import-from #:seed.generate #:seed #:branch
                           #:interface-format-form #:load-seed-system
+                          #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
                           #:from-system-file #:build-templater #:get-template-metadata
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)

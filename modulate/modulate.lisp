@@ -513,9 +513,14 @@
                  (unless types (setf item (realize aspect medium item :sort index)))
                  (if output-unlisted item (list item)))))
         
-        (loop :for item :in (uic-base aspect)
+        (loop :for item :in (uic-base aspect) ;; :do (print (list :it item (uic-base aspect)))
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
+
+        ;; (when (and (listp (uic-base aspect))
+        ;;            (symbolp (first (uic-base aspect)))
+        ;;            (string= "CHART-VIEW" (string (first (uic-base aspect)))))
+        ;;   (print (list :iio (uic-base aspect) (mapcar #'uic-base (nthcdr 3 (uic-base aspect))))))
         
         (when (member :enum types)
           (push (psl (if (and (not (= "undefined" (typeof methods)))
@@ -553,9 +558,9 @@
                            
                              (let ((drops (create element item drag-handle handle
                                                   on-drag-start (mcode-handler-on-drag $el mode))))
-                               (chain console (log :dd item drops (@ item class-list)
-                                                   (typeof (@ item class-list))
-                                                   (/= "undefined" (typeof (@ item class-list)))))
+                               ;; (chain console (log :dd item drops (@ item class-list)
+                               ;;                     (typeof (@ item class-list))
+                               ;;                     (/= "undefined" (typeof (@ item class-list)))))
                                (draggable drops)))))))
                 x-inits))
 
@@ -564,8 +569,9 @@
           ;; (print (list :ty types :r (uic-type (uic-root aspect))))
           (push (psl (let* ((remover) (item) (meta-path (chain $el (get-attribute "meta-path")))
                             (interactor (lambda (element index)
-                                          (fetch-contact element mode (create path meta-path remove index))
-                                          (lambda () (chain htmx (trigger element "reload"))))))
+                                          (fetch-contact element mode (create path meta-path remove index)
+                                                         (lambda () (chain console (log "ee" element $el))
+                                                           (chain htmx (trigger $el "reload")))))))
                        (dolist (n (@ $el child-nodes))
                          ;; (chain console (log :nnn n))
                          (when (and (/= "undefined" (typeof (@ n class-list)))
@@ -574,7 +580,6 @@
                            ;;                     (chain n (query-selector ".control.drag-handle"))))
                            (setf item    n
                                  remover (chain n (query-selector ".control.to-remove")))
-                           
                            (when remover
                              (chain remover (add-event-listener
                                              "click" (lambda () (funcall interactor remover 0)))))))))
@@ -629,7 +634,11 @@
                                  segments))
                          (if segments (list (append (list :div :class "series-heading field has-addons")
                                                     (reverse segments)))))))
-          
+
+          ;; (when (and (listp (uic-base aspect))
+          ;;            (symbolp (first (uic-base aspect)))
+          ;;            (string= "CHART-VIEW" (string (first (uic-base aspect)))))
+
           ;; (print (list :it items (of-root-type aspect :meta-code)
           ;;              (uic-type aspect)))
           
@@ -684,6 +693,7 @@
                             (rows (getf lprops :rows)))
 
                         (dolist (item rows)
+                          ;; (print (list :tt item))
                           (let ((in-header (and header (zerop item-index) (minusp item))))
                             (push nil envelopes)
                             (when in-header (push (first header)
@@ -694,15 +704,14 @@
                                             (first envelopes)))
                             (setf (first envelopes) (append (list :div :class "columns")
                                                             (reverse (first envelopes))))
-                            (incf item-index (max 1 item))))
+                            (incf item-index (max 1 (abs item)))))
                         
                         (append (reverse envelopes)
-                                (if (< item-index (1- (length items)))
-                                    (nthcdr (1+ item-index) items))))
+                                (if (< item-index (- (length items) 0))
+                                    (nthcdr item-index items))))
                       (funcall (cond (is-list-table (lambda (form) (list (cons :tbody form))))
                                      (t #'identity))
                                (append header items)))))))))
-
 
 ;; (and (member :enum types)
 ;;      (list :x-init (psl (if (and (not (= "undefined" (typeof methods)))
@@ -877,6 +886,8 @@
       ;; (print (list :bs base (and (listp base) (second base))
       ;;              (and (has-role aspect 'uir-toggle)
       ;;                   (uirt-symap (has-role aspect 'uir-toggle)))))
+      ;; (when (has-role aspect 'uir-toggle)
+      ;;   (setf portal.demo1::aaa aspect))
       `(:button :name ,(string (or name "")) ,@(furnish-call medium aspect)
                 ,@(and (member :controls root-types)
                        (has-role (uic-root aspect) 'uir-toggle)
@@ -887,8 +898,12 @@
                           ;;                           "is-focused"))
                              (format nil "toggleState.index === ~a ? 'is-focused' : ''"
                                      (uic-sort aspect))))
-                ,@(and (has-role aspect 'uir-toggle)
-                       (list :|x-on-click| (psl (chain console (log "aaa")))))
+                ;; ,@(and (has-role aspect 'uir-toggle)
+                ;;        (list :|x-on:click|
+                ;;              (psl (fetch-contact element mode (create path meta-path
+                ;;                                                       toggle (lisp (uic-sort aspect)))
+                ;;                                  (lambda () (chain console (log "ee" element $el))
+                ;;                                    (chain htmx (trigger $el "reload")))))))
                 :class ,(furnish-type medium aspect '(:ui :button))
                 ,(if (and (has-role aspect 'uir-toggle) (listp base)
                           (eql 'nth (first base))) ;;  (integerp (second base)))

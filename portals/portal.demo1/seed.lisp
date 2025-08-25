@@ -104,11 +104,10 @@
             (list (dx ((uic-series :layout (:vertical :of 3 1 1 1)
                                    :type   (:column)))
                       (dx ((uic-series :type (:ui :header)))
-                          :header
-                          (list "aaa"))
-                      "Hello."
-                      (dx ((uic-series :type (:ui :footer)))
-                          (list "bbb")))
+                          :welcome
+                          (list "welcome"))
+                      "Welcome to the Seed demo portal."
+                      (dx ((uic-series :type (:ui :footer)))))
                   (dx ((uic-series :layout (:vertical :of 3 1 1 1)
                                    :type   (:column)
                                    :join   (list :portal.demo1 :base)
@@ -116,13 +115,15 @@
                                    ;;               context (list :state (second l)))
                                    ))
                       (dx ((uic-series :type (:ui :header)))
-                          :header
+                          :templates
                           (list "aaa"))
                       (dx ((uic-series :type (:ui :list-table)
                                        :call (:.fetch (:point :@base) (:next :refresh))))
                           (manifest-template-interface *seed-templates* (funcall context :template-point)))
                       (dx ((uic-series :type (:ui :footer)))
-                          (list "bbb")))))))))
+                          ;; (list "bbb")
+                          )
+                      )))))))
 
 (branch :portal.demo1 :systems
   (adapt-from-alist :system :branch)
@@ -135,7 +136,7 @@
                :type (:form))
           (encode <>)))))
 
-;; (emote::write-palette-image (emote::linear-pal-transform
+;; (emote::write-palette-image (emote::linear-pal-transform (april:april-c "⌽[1]" *)
 ;;                              #(61 116 182)
 ;;                              10 ;; :ldeltas (april "24×2○○0.12×⍳4")
 ;;                              :lfactors (april "⎕←1+0.8×2○○0.08×⍳10"))
@@ -154,8 +155,13 @@
 ;;                             "/tmp/palOut.png" 100)
 
 ;; (emote::write-palette-image (emote::linear-pal-transform
-;;                              #(92 99 132)
-;;                              10 :lfactors (april "⎕←1+3×0.26×1○○0.1×4+⍳10"))
+;;                              #(#xc3 #xc7 #xd2)
+;;                              10 :lfactors (april:april "⎕←1+3×0.26×1○○0.1×4+⍳10"))
+;;                             "/tmp/palOut.png" 100)
+
+;; (emote::write-palette-image (emote::linear-pal-transform
+;;                              #(#x72 #x76 #x8a)
+;;                              10 :lfactors (april:april "⎕←1+3×0.26×1○○0.1×4+⍳10"))
 ;;                             "/tmp/palOut.png" 100)
 
 ;; (branch :demo.sheet :view

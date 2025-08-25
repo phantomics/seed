@@ -12,7 +12,8 @@
            #:form-span #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender
            #:psl #:astr
-           #:adapt-from-alist #:adapt-from-json 
+           #:adapt-from-alist #:adapt-from-json
+           #:syspath #:file-to-string
            #:system-file-to-string #:from-system-file #:build-templater #:get-template-metadata
            #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec)

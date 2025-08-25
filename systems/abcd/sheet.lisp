@@ -22,7 +22,8 @@
 
 :chart-entity-template-line
 (fx (span (fx :type    (:fx :uicc-select) (:type :select) (:options "line" "retraceX" "retraceY"))
-          (fx :format  (:fx :uicc-button) (:type) (:role (uir-toggle :options (list 'a 'b))))
+          (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button)
+              (:type) (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :|─∘─∘─|))))
           (fx :x-start (:fx :uicc-field)  (:type :numeric :integer))
           (fx :y-start (:fx :uicc-field)  (:type :numeric :float))
           (fx :x-end   (:fx :uicc-field)  (:type :numeric :integer))

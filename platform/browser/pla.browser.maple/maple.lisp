@@ -139,281 +139,312 @@
   (destructuring-bind (color-margin-sh0 color-margin-sh1 color-margin-sh2
                        color-margin-sh3 color-margin-sh4 color-margin-sh5
                        color-margin-sh6 color-margin-sh7 color-margin-sh8 color-margin-sh9
-                       color-focal-sh0 color-focal-sh1)
-      (append (render-html-palette #2A((18 28 56) (29 38 66) (45 54 84)
-                                       (67 75 106) (92 99 132) (118 125 159)
-                                       (142 148 184) (161 168 204) (174 181 217) (179 185 222)))
-              (list "#eac8a6" "#fbf5de"))
-  (format
-   stream
-   (lass:compile-and-write
-    `(body :background ,color-margin-sh4)
+                       color-focal-fg0 color-focal-fg1 color-focal-fg3
+                       color-focal-fg35 color-focal-fg45 color-focal-fg5
+                       color-focal-sh0 color-focal-sh1
+                       color-focal-bg0 color-focal-bg1)
+      (append (render-html-palette #2A((28 33 49) (40 44 61) (59 63 81) (84 88 107)
+                                       (114 118 138) (145 149 170) (174 178 199)
+                                       (197 201 224) (213 217 239) (218 222 245)))
+              ;; (render-html-palette #2A((18 28 56) (29 38 66) (45 54 84)
+              ;;                          (67 75 106) (92 99 132) (118 125 159)
+              ;;                          (142 148 184) (161 168 204) (174 181 217) (179 185 222)))
+              (list "#002b36" "#073642" "#727f7f" "#93a1a1" "#c8cdcd" "#d6dbdb")
+              (list "#eac8a6" "#fbf5de")
+              (list "#eee8d5" "#fdf6e6"))
+    ;; ash-blue: c3c7d2
+    (format
+     stream
+     (lass:compile-and-write
+      `(body :background ,color-margin-sh2)
 
-    `(.list :background transparent)
+      `(.list :background transparent)
 
-    `(.button :border-width 0 0 2px 0)
+      `(.button :border-width 0 0 2px 0)
 
-    `(.input :border-width 2px 0)
-    
-    `(|#root| :width "100%")
+      `(.input :border-width 2px 0)
 
-    `(|:root|
-      :--bulma-control-height 2em    ;; comment to even 
-      :--bulma-control-line-height 1 ;;
-      :--bulma-control-padding-horizontal "calc(0.4em - 1px)"
-      :--bulma-control-padding-vertical "calc(0.25em - 1px)")
-    
-    `((|#main| > .stack)
-      :margin "0 auto;" :width 24rem :height "100%"
-      (.heading :text-align center)
-      (form :text-align center
-            (.input :margin "0 auto")))
-    
-    `(.sidebar
-      (.heading :font-size "160%" :font-weight "bold"
-                :padding 8px :margin-bottom 6px)
-      (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
-    
-    `((:and (.sidebar > .series > .item) (:nth-child odd))
-      :background ,color-margin-sh6 :border-color ,color-margin-sh5)
-    `((:and (.sidebar > .series > .item) (:nth-child even))
-      :background ,color-margin-sh8 :border-color ,color-margin-sh7)
+      `(.select (select :border-width 2px 0))
 
-    `(.ui.column.portal-summary
-      :padding 0
-      :height 100vh
-      :grid-template-rows "[start] 12.5% [middle] 65.0% [end] 22.5%"
-      (.symbol :font-weight "bold")
-      (.navigation
-       :margin "1rem 0"
-       (.symbol :font-weight "normal")
-       (.divider :margin "0.5rem 0"))
-      ;; (.item :padding "0.75rem")
-      )
+      `(.workspace
+        (.input :color ,color-focal-fg1 :background-color ,color-focal-bg1 :border-color ,color-focal-fg5)
+        (.button :color ,color-focal-fg0 :background ,color-focal-fg5 :border-color ,color-focal-fg35)
 
-    `((.ui.column.portal-summary > .item)
-      :padding "0.75rem" :border-width "0 4px 0 0" :border-style solid)
-    
-    `((:and (.ui.column.portal-summary > .item)
-            (:nth-child 1))
-      :grid-row-start 1 :grid-row-end 2)
+        ((:and (.has-addons .control) (:nth-child even))
+         (.button
+          :background ,color-focal-fg45 :border-color ,color-focal-fg3))
 
-    `((:and (.ui.column.portal-summary > .item)
-            (:nth-child 2))
-      :grid-row-start 2 :grid-row-end 3)
-
-    `((:and (.ui.column.portal-summary > .item)
-            (:nth-child 3))
-      :grid-row-start 3 :grid-row-end 4)
-
-    `(.ui.series.placard
-      (label :display none)
-      (.item :margin-bottom 1rem)
-      (.button :width 100%)
-      (.column :padding-top 60%)
-      :background "#e6e6e6"
-      :height 100%
-      :text-align center
-      :margin "0 36%")
-    
-    `(.ui.grid :height "100%" (.group :height "100%"))
-
-    `(.ui.grid-layout
-      :display "grid" :height "100%"
-      (.column
-       :display grid :overflow auto :grid-template-rows min-content auto min-content
-       (.container :position "relative" :height "100%") ;;  :display grid)
-       (.column-inner
-        :padding 0 :overflow auto
-        (.access.body :height "100%" :background ,color-focal-sh1 :overflow auto
-                      :border-width "0 2px" :border-style solid :border-color ,color-focal-sh0))
-       (.list-table :width "100%"
-                    (.columns :margin-top 0
-                              (button :width "100%"))))
-      (.workspace (.column-inner :background ,color-focal-sh1 :height 100% :overflow hidden)
-                  ;; ((:and .item (:nth-child 1))
-                  ;;  ((:and .column-inner :after)
-                  ;;   :content "" :display block :width 100% :background red :height 2px))
-                  (".column-inner:has(>.ui.header):after"
-                   :content "" :display block :width 100% :background "#dc3c22" :height 2px
-                   :border-width 0 2px :border-color "#c80000" :border-style solid
-                   :position relative :bottom 2px)
-                  (".column-inner:has(>.ui.footer):before"
-                   :content "" :display block :width 100% :background "#dc3c22" :height 2px
-                   :border-width 0 2px :border-color "#a20000" :border-style solid)
-                  )
-
-      ;; ((:and (.workspace .grid-layout.column > .item) (:nth-child 0))
-      ;;  :background green)
+        ((.access.body > .meta-code)
+         :height 100% :background-color ,color-focal-bg0))
       
-      ;; ((:and (.workspace .grid-layout.column > .item) (:nth-child 0))
-      ;;  ((:and .column-inner :after)
-      ;;   :content "" :display block :width 100% :background red :height 2px)
-      ;;  )
-      )
+      `(|#root| :width "100%")
 
-    `((.ui.grid-layout > .column)  :grid-template-rows 1fr)
-
-    `(.ui.grid-layout.main
-      :grid-template-rows "100%"
-      :grid-template-columns "[start] 12% [start-end] 88%")
-
-    `((.ui.grid-layout.main > sidebar)
-      :grid-column-start 1)
-
-    `((.ui.grid-layout.main > main)
-      :grid-column-start 2)
-
-    `(.ui.grid-layout.workspace.even
-      :grid-template-columns "8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%"
-      (.ui.series.grid-layout :height 100vh))
-    
-    `((:and (.ui.grid-layout.workspace.even > .column)
-            (:nth-child 1))
-      :grid-column-start 1 :grid-column-end 7)
-    
-    `((:and (.ui.grid-layout.workspace.even > .column)
-            (:nth-child 2))
-      :grid-column-start 7 :grid-column-end 13)
-
-    `(.ui.grid-layout.workspace
-      (.column :padding 0 6px))
-    
-    `((:or .ui.header .ui.footer)
-      :width "100%" :height "100%" :padding 8px :margin 0 :background ,color-focal-sh1
-      :border-width 0 2px :border-style solid :border-color ,color-focal-sh0
-                          :display grid :grid-template-rows 100%
-      (.controls :grid-column-end 3 (.item :display inline))
-      (.button :background transparent :border-color ,color-focal-sh0)
-      ((.item > .symbol) :font-size 1.4em :font-weight ))
-
-    `(.ui.header
-      :grid-template-columns "20% 80%"
-      (h2.branch-name :margin 0 :grid-column-start 1)
-      (.controls :text-align right))
-
-    ;; `((:and (.grid-layout.column .item .column-inner) (:nth-child 0) :after)
-    ;;   :content "" :display block :width 100% :background red)
-    
-    `(.ui.footer
-      :bottom 0
-      (.controls :text-align left)
-      (.button :border-width 2px 0 0 0))
-
-    `(.form.text (.cm-editor :height 100%))
-
-    `(form (.input.fluid :margin-bottom 0.32em)
-           (.ui.selection.dropdown :min-height 3em :margin-bottom 0.32em))
-
-    ;; meta-code UIFX styles
-
-    `(.ui.series
-      (.columns
-       (button :height 100%)))
-    
-    `(.meta-code
-      (.columns
-       :margin 0 0 0.25rem 0)
-      (.ui.series
-       (.series-heading
-        :margin 0
-        (.control
-         :font-family "PragmataPro, iosevka, Mono"))
-       (.following :padding-left 0.5rem)
-       :padding 0.5rem)
-
-      ;; (.item ;; comment to make even
-      ;;  ((:or .input .textarea .select)
-      ;;   :margin-bottom 0.5rem))
-
-      ;; (.item :padding-bottom 0.5rem)
+      `(|:root|
+        :--bulma-control-height 2em    ;; comment to even 
+        :--bulma-control-line-height 1 ;;
+        :--bulma-control-padding-horizontal "calc(0.4em - 1px)"
+        :--bulma-control-padding-vertical "calc(0.25em - 1px)")
       
-      (.drop-marker ;; put this inside a deeper context
-       ;; line-thickness: 2px;
-       ;; terminal-size: 8px;
-       ;; terminal-radius: 4px;
-       ;; negative-terminal-size: -8px;
-       ;; offset-terminal: -3px;
-       :background-color black
-       :height 2px))
+      `((|#main| > .stack)
+        :margin "0 auto;" :width 24rem :height "100%"
+        (.heading :text-align center)
+        (form :text-align center
+              (.input :margin "0 auto")))
+      
+      `(.sidebar
+        (.heading :font-size "160%" :font-weight "bold"
+                  :padding 8px :margin-bottom 6px)
+        (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
+      
+      `((:and (.sidebar > .series > .item) (:nth-child odd))
+        :color ,color-margin-sh8
+        :background ,color-margin-sh5 :border-color ,color-margin-sh4)
+      `((:and (.sidebar > .series > .item) (:nth-child even))
+        :color ,color-margin-sh1
+        :background ,color-margin-sh7 :border-color ,color-margin-sh6)
 
-    ;; chart view styles
+      `(.ui.column.portal-summary
+        :padding 0
+        :height 100vh
+        :grid-template-rows "[start] 12.5% [middle] 65.0% [end] 22.5%"
+        (.symbol :font-weight "bold")
+        (.navigation
+         :margin "1rem 0"
+         (.symbol :font-weight "normal")
+         (.divider :margin "0.5rem 0"))
+        ;; (.item :padding "0.75rem")
+        )
 
-    `(.chart-holder
-      (.dygraph-legend :background "#fff" :padding 0.2rem)
-      :height "calc(100% - 2rem)")
-    
-    ;; d3 graph view styles
-    
-    `((:or .d3view-graph-foldout .svg-visualizer)
-      :width 100%
-      (.handle (.main :fill "#fff")
-               (.center :fill "#ccc")
-               (.arrow :fill none :stroke "#999" :stroke-width 2)
-               (.outer-arrow :fill none :stroke "#bbb" :stroke-width 4))
-      (.link :fill none :stroke "#bbb" :stroke-width 1.5)
-      (.node-group
-       (.title-frame :cursor "pointer"
-                     (rect :opacity 0 :fill "#efefef" :stroke "#ccc" :stroke-width 0)
-                     (.description :pointer-events none)
-                     (.handle :opacity 0 (.outer-arrow :opacity 0))
-                     ((:and .handle :hover)
-                      (.outer-arrow :opacity 1))                       
-                     (.linker :opacity 0
-                              (.main :fill "#fff")
-                              (.center :fill "#ccc")
-                              (.arrow :fill "#999")
-                              (.outer-arrow :opacity 0 :fill none :stroke "#bbb" :stroke-width 4)))
-       (.expand-control :cursor "pointer"
-                        (.button-backing :fill "#fff")
-                        (.button-circle  :fill "#bbb")
-                        (rect :fill "#fff"))
-       (.circle-glyph :cursor "pointer"
-                      (.outer-circle :fill "#ccc")
-                      (.inner-circle :fill "#fff")
-                      (.icon :font-weight "bold"
-                             :font-family "PragmataPro, iosevka, Mono"
-                             :font-size 22px)))
-      (.node-group.selected
-       (.title-frame (rect :opacity 1 :stroke-width 1)))
-      ((:and .node-group :hover)
-       (.title-frame (rect :opacity 1))
-       (.handle :opacity 1)
-       (.linker :opacity 1))
-      (.drag-indicator :opacity 0 :fill "#000")
-      (.mouse-transparent :pointer-events none))
+      `((.ui.column.portal-summary > .item)
+        :padding "0.75rem" :border-width "0 4px 0 0" :border-style solid)
+      
+      `((:and (.ui.column.portal-summary > .item)
+              (:nth-child 1))
+        :grid-row-start 1 :grid-row-end 2)
 
-    `(.svg-visualizer.for-node.drag
-      ((:and .node-group :|not(.dragging)| :hover)
-       (.handle :opacity 0)
-       (.title-frame (rect :opacity 0))
-       ;; title frame doesn't show in drag-over mode
-       (.drag-indicator.for-node :opacity 0.2)))
+      `((:and (.ui.column.portal-summary > .item)
+              (:nth-child 2))
+        :grid-row-start 2 :grid-row-end 3)
 
-    `(.svg-visualizer.for-link.drag
-      ((:and .node-group.link-group :|not(.dragging)| :hover)
-       (.handle :opacity 0)
-       (.title-frame (rect :opacity 0))
-       ;; title frame doesn't show in drag-over mode
-       (.drag-indicator :opacity 0.2)))
+      `((:and (.ui.column.portal-summary > .item)
+              (:nth-child 3))
+        :grid-row-start 3 :grid-row-end 4)
 
-    `(.scenario-frame
-      :height "100%" ;; :display grid :grid-template-columns "100%"
-      :background "#fff" :color "#333" :font-family serif :font-weight bold
-      :line-height 2.6em
-      ;; :grid-template-rows "[dialog-start] 60% [dialog-end] 40% [response-end]"
-      :text-shadow "1px 1px 0 #fff"
-      (.setting :position absolute :margin 1em :z-index 10000  :bottom 0 :left 0 :width "90%"
-                :background "rgba(220,220,220,0.7)" :border "4px solid #ccc" :border-radius 1em
-                :box-shadow "3px 3px 1px rgba(20,20,20,0.4)"
-                (.dialog :bottom 0 :z-index 6000
-                         :font-size 32px :padding 12px)
-                (.responses ;; :grid-row-start "dialog-end" :grid-row-end "response-end"
-                            :z-index 5000
-                            :font-size 22px :padding "16px 64px"
-                            (li :cursor pointer))))
-    
-    ))))
+      `(.ui.series.placard
+        (label :display none)
+        (.item :margin-bottom 1rem)
+        (.button :width 100%)
+        (.column :padding-top 60%)
+        :background "#e6e6e6"
+        :height 100%
+        :text-align center
+        :margin "0 36%")
+      
+      `(.ui.grid :height "100%" (.group :height "100%"))
+
+      `(.ui.grid-layout
+        :display "grid" :height "100%"
+        (.column
+         :display grid :overflow auto :grid-template-rows min-content auto min-content
+         (.container :position "relative" :height "100%") ;;  :display grid)
+         (.column-inner
+          :padding 0 :overflow auto
+          (.access.body
+           (.table.list-table
+            ((:and tr (:nth-child even)) :background ,color-focal-bg0)
+            ((:and tr (:nth-child odd))  :background ,color-focal-bg1))
+           :height "100%" :background ,color-focal-sh1 :overflow auto
+           :border-width "0 2px" :border-style solid :border-color ,color-focal-sh0)
+          (".access.body:has(>.table.list-table)"
+           :background ,(format nil "repeating-linear-gradient(135deg, ~a, ~a 4px, ~a 4px, ~a 8px)"
+                                color-focal-bg0 color-focal-bg0 color-focal-bg1 color-focal-bg1)))
+         (.list-table :width "100%"
+                      (.columns :margin-top 0
+                                (button :width "100%"))))
+        (.workspace (.column-inner :background ,color-focal-sh1 :height 100% :overflow hidden)
+                    ;; ((:and .item (:nth-child 1))
+                    ;;  ((:and .column-inner :after)
+                    ;;   :content "" :display block :width 100% :background red :height 2px))
+                    (".column-inner:has(>.ui.header):after"
+                     :content "" :display block :width 100% :background "#dc3c22" :height 2px
+                     :border-width 0 2px :border-color "#c80000" :border-style solid
+                     :position relative :bottom 2px)
+                    (".column-inner:has(>.ui.footer):before"
+                     :content "" :display block :width 100% :background "#dc3c22" :height 2px
+                     :border-width 0 2px :border-color "#a20000" :border-style solid)
+                    )
+
+        ;; ((:and (.workspace .grid-layout.column > .item) (:nth-child 0))
+        ;;  :background green)
+        
+        ;; ((:and (.workspace .grid-layout.column > .item) (:nth-child 0))
+        ;;  ((:and .column-inner :after)
+        ;;   :content "" :display block :width 100% :background red :height 2px)
+        ;;  )
+        )
+
+      `((.ui.grid-layout > .column)  :grid-template-rows 1fr)
+
+      `(.ui.grid-layout.main
+        :grid-template-rows "100%"
+        :grid-template-columns "[start] 12% [start-end] 88%")
+
+      `((.ui.grid-layout.main > sidebar)
+        :grid-column-start 1)
+
+      `((.ui.grid-layout.main > main)
+        :grid-column-start 2)
+
+      `(.ui.grid-layout.workspace.even
+        :grid-template-columns "8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333% 8.333%"
+        (.ui.series.grid-layout :height 100vh))
+      
+      `((:and (.ui.grid-layout.workspace.even > .column)
+              (:nth-child 1))
+        :grid-column-start 1 :grid-column-end 7)
+      
+      `((:and (.ui.grid-layout.workspace.even > .column)
+              (:nth-child 2))
+        :grid-column-start 7 :grid-column-end 13)
+
+      `(.ui.grid-layout.workspace
+        (.column :padding 0 6px))
+      
+      `((:or .ui.header .ui.footer)
+        :width "100%" :height "100%" :padding 8px :margin 0 :background ,color-focal-sh1
+        :border-width 0 2px :border-style solid :border-color ,color-focal-sh0
+        :display grid :grid-template-rows 100%
+        (.controls :grid-column-end 3 (.item :display inline))
+        (.button :background transparent :border-color ,color-focal-sh0)
+        ((.item > .symbol) :font-size 1.4em :font-weight ))
+
+      `(.ui.header
+        :grid-template-columns "20% 80%"
+        (h2.branch-name :margin 0 :grid-column-start 1)
+        (.controls :text-align right))
+
+      ;; `((:and (.grid-layout.column .item .column-inner) (:nth-child 0) :after)
+      ;;   :content "" :display block :width 100% :background red)
+      
+      `(.ui.footer
+        :bottom 0
+        (.controls :text-align left)
+        (.button :border-width 2px 0 0 0))
+
+      `(.form.text (.cm-editor :height 100%))
+
+      `(form (.input.fluid :margin-bottom 0.32em)
+             (.ui.selection.dropdown :min-height 3em :margin-bottom 0.32em))
+
+      ;; meta-code UIFX styles
+
+      `(.ui.series
+        (.columns
+         (button :height 100%)))
+      
+      `(.meta-code
+        (.columns
+         :margin 0 0 0.25rem 0)
+        (.ui.series
+         (.series-heading
+          :margin 0
+          (.control
+           :font-family "PragmataPro, iosevka, Mono"))
+         (.following :padding-left 0.5rem)
+         :padding 0.5rem)
+
+        ;; (.item ;; comment to make even
+        ;;  ((:or .input .textarea .select)
+        ;;   :margin-bottom 0.5rem))
+
+        ;; (.item :padding-bottom 0.5rem)
+        
+        (.drop-marker ;; put this inside a deeper context
+         ;; line-thickness: 2px;
+         ;; terminal-size: 8px;
+         ;; terminal-radius: 4px;
+         ;; negative-terminal-size: -8px;
+         ;; offset-terminal: -3px;
+         :background-color black
+         :height 2px))
+
+      ;; chart view styles
+
+      `(.chart-holder
+        (.dygraph-legend :background "#fff" :padding 0.2rem)
+        :height "calc(100% - 2rem)")
+      
+      ;; d3 graph view styles
+      
+      `((:or .d3view-graph-foldout .svg-visualizer)
+        :width 100%
+        (.handle (.main :fill "#fff")
+                 (.center :fill "#ccc")
+                 (.arrow :fill none :stroke "#999" :stroke-width 2)
+                 (.outer-arrow :fill none :stroke "#bbb" :stroke-width 4))
+        (.link :fill none :stroke "#bbb" :stroke-width 1.5)
+        (.node-group
+         (.title-frame :cursor "pointer"
+                       (rect :opacity 0 :fill "#efefef" :stroke "#ccc" :stroke-width 0)
+                       (.description :pointer-events none)
+                       (.handle :opacity 0 (.outer-arrow :opacity 0))
+                       ((:and .handle :hover)
+                        (.outer-arrow :opacity 1))                       
+                       (.linker :opacity 0
+                                (.main :fill "#fff")
+                                (.center :fill "#ccc")
+                                (.arrow :fill "#999")
+                                (.outer-arrow :opacity 0 :fill none :stroke "#bbb" :stroke-width 4)))
+         (.expand-control :cursor "pointer"
+                          (.button-backing :fill "#fff")
+                          (.button-circle  :fill "#bbb")
+                          (rect :fill "#fff"))
+         (.circle-glyph :cursor "pointer"
+                        (.outer-circle :fill "#ccc")
+                        (.inner-circle :fill "#fff")
+                        (.icon :font-weight "bold"
+                               :font-family "PragmataPro, iosevka, Mono"
+                               :font-size 22px)))
+        (.node-group.selected
+         (.title-frame (rect :opacity 1 :stroke-width 1)))
+        ((:and .node-group :hover)
+         (.title-frame (rect :opacity 1))
+         (.handle :opacity 1)
+         (.linker :opacity 1))
+        (.drag-indicator :opacity 0 :fill "#000")
+        (.mouse-transparent :pointer-events none))
+
+      `(.svg-visualizer.for-node.drag
+        ((:and .node-group :|not(.dragging)| :hover)
+         (.handle :opacity 0)
+         (.title-frame (rect :opacity 0))
+         ;; title frame doesn't show in drag-over mode
+         (.drag-indicator.for-node :opacity 0.2)))
+
+      `(.svg-visualizer.for-link.drag
+        ((:and .node-group.link-group :|not(.dragging)| :hover)
+         (.handle :opacity 0)
+         (.title-frame (rect :opacity 0))
+         ;; title frame doesn't show in drag-over mode
+         (.drag-indicator :opacity 0.2)))
+
+      `(.scenario-frame
+        :height "100%" ;; :display grid :grid-template-columns "100%"
+        :background "#fff" :color "#333" :font-family serif :font-weight bold
+        :line-height 2.6em
+        ;; :grid-template-rows "[dialog-start] 60% [dialog-end] 40% [response-end]"
+        :text-shadow "1px 1px 0 #fff"
+        (.setting :position absolute :margin 1em :z-index 10000  :bottom 0 :left 0 :width "90%"
+                  :background "rgba(220,220,220,0.7)" :border "4px solid #ccc" :border-radius 1em
+                  :box-shadow "3px 3px 1px rgba(20,20,20,0.4)"
+                  (.dialog :bottom 0 :z-index 6000
+                           :font-size 32px :padding 12px)
+                  (.responses ;; :grid-row-start "dialog-end" :grid-row-end "response-end"
+                   :z-index 5000
+                   :font-size 22px :padding "16px 64px"
+                   (li :cursor pointer))))
+      
+      ))))
 
 (defun build-script-element (&key stream imports constructors)
   (loop :for import :in imports

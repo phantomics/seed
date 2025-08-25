@@ -1,5 +1,5 @@
 body{
-    background: #5C6384;
+    background: #3B3F51;
 }
 
 .list{
@@ -12,6 +12,38 @@ body{
 
 .input{
     border-width: 2px 0;
+}
+
+
+
+.select select{
+    border-width: 2px 0;
+}
+
+
+
+.workspace .input{
+    color: #073642;
+    background-color: #fdf6e6;
+    border-color: #d6dbdb;
+}
+
+.workspace .button{
+    color: #002b36;
+    background: #d6dbdb;
+    border-color: #93a1a1;
+}
+
+
+
+.workspace .has-addons .control:nth-child(even) .button{
+    background: #c8cdcd;
+    border-color: #727f7f;
+}
+
+.workspace .access.body > .meta-code{
+    height: 100%;
+    background-color: #eee8d5;
 }
 
 #root{
@@ -59,13 +91,15 @@ body{
 }
 
 .sidebar > .series > .item:nth-child(odd){
-    background: #8E94B8;
-    border-color: #767D9F;
+    color: #D5D9EF;
+    background: #9195AA;
+    border-color: #72768A;
 }
 
 .sidebar > .series > .item:nth-child(even){
-    background: #AEB5D9;
-    border-color: #A1A8CC;
+    color: #282C3D;
+    background: #C5C9E0;
+    border-color: #AEB2C7;
 }
 
 .ui.column.portal-summary{
@@ -170,6 +204,20 @@ body{
     border-width: 0 2px;
     border-style: solid;
     border-color: #eac8a6;
+}
+
+
+
+.ui.grid-layout .column .column-inner .access.body .table.list-table tr:nth-child(even){
+    background: #eee8d5;
+}
+
+.ui.grid-layout .column .column-inner .access.body .table.list-table tr:nth-child(odd){
+    background: #fdf6e6;
+}
+
+.ui.grid-layout .column .column-inner .access.body:has(>.table.list-table){
+    background: repeating-linear-gradient(135deg, #eee8d5, #eee8d5 4px, #fdf6e6 4px, #fdf6e6 8px);
 }
 
 .ui.grid-layout .column .list-table{
