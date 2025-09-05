@@ -3,8 +3,7 @@
 (branch :demo.sheet :summary
   (let ((layout '(;; (:build :branch-build) nil
                   (:main :code-view) (:cells :cells-view) nil
-                  (:graph :graph-overview) (:graph :graph-node) nil
-                  (:chart :chart-candle)  (:chentity :entities-view))))
+                  (:graph :graph-overview) (:graph :graph-node))))
     (lambda (context input)
       (declare (ignore context input))
       layout)))
@@ -147,96 +146,6 @@
 ;;            (render (funcall context :medium)
 ;;                    (dx ((uic-frame :type (:meta-code)))
 ;;                        (seed.modulate::express chart-entities))))))))
-
-(let ((chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
-      (line-templater (build-templater (from-system-file :demo.sheet "sheet.lisp"
-                                                         :chart-entity-template-line)
-                                       :type :x-start :y-start :x-end :y-end))
-      (entity-data))
-  
-  (branch :demo.sheet :chart
-    (adapt-from-json :entities :action :mode ;; next line: entities properties
-                               :name :type :in-flux :points :points-in-flux :ratios)
-    (lambda (context input)
-      ;; (print (list :in input))
-      (destructuring-bind (&key state ifmod-head ifmod-foot action entities mode &allow-other-keys) input
-        (cond
-          (state :chart)
-          (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
-                           (uic-series :type (:ui :controls)
-                                       :role (role-cast toggle)))
-                          (list :select :draw :retrace-x :retrace-y)))
-          (ifmod-foot (dx ((:each uicc-button :type (:local))
-                           (uic-series :type (:ui :controls)))
-                          (list :save :zoom-actual)))
-          (entities
-           (let ((collected))
-             (dolist (espec entities)
-               (destructuring-bind (&key name type in-flux points points-in-flux ratios) espec
-                 (destructuring-bind (x-start y-start x-end y-end) (reduce #'append points)
-                   ;; (print (list :in2 entities name type points))
-                   (let ((index)
-                         (item (list :points points :name name :type type :points-in-flux nil
-                                     :in-flux :true :ratios ratios)))
-                     (loop :for ent :in entity-data :for i :from 0
-                           :do (if (string= name (getf ent :name))
-                                   (setf index i)
-                                   (setf (getf ent :in-flux) :false)))
-                     ;; (print (list :ent entity-data))
-                     (if index (setf (nth index entity-data) item)
-                         (progn (push item entity-data)
-                                (push (funcall line-templater :x-start x-start :y-start y-start
-                                                              :x-end x-end :y-end y-end :type type)
-                                      collected)))))))
-             (setf (second chart-entities)
-                   (append (second chart-entities) (reverse collected)))
-             entity-data))
-          (action
-           (case (intern (string-upcase (rest item)) "KEYWORD")
-             (:save (let ((output))
-                      (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
-                      (setf (from-system-file :demo.sheet "sheet.lisp" :chart-entities :as-string t)
-                            output)))))
-          (t (case (intern (string-upcase mode) "KEYWORD")
-               (:chart-data (system-file-to-string :demo.sheet "price.csv"))
-               (t (render (funcall context :medium)
-                          (dx ((uich-candle :type (:green-red)))
-                              :demo.sheet :chart)))))))))
-
-  (branch :demo.sheet :chentity
-    (adapt-from-json :path :action :mode)
-    (lambda (context input)
-      (destructuring-bind (&key state ifmod-head ifmod-foot path sort &allow-other-keys) input
-        (cond (state :meta-code-form)
-              (ifmod-head (dx ((:each uicc-button)
-                               (uic-series :type (:ui :controls)))
-                              (list :save)))
-              (ifmod-foot (dx ((:each uicc-button)
-                               (uic-series :type (:ui :controls)))
-                              (list :save)))
-              (path (let ((path (mapcar #'read-from-string (cl-ppcre:split "[ ]" path))))
-                      (cond (sort (destructuring-bind (index move-to) sort
-                                    (symbol-macrolet ((elist (second chart-entities)))
-                                      (let ((moved (nth index elist)))
-                                        ;; (print (list :en index move-to elist :mm moved))
-                                        (if (zerop index) (setf elist (rest elist))
-                                            (rplacd (nthcdr (1- index) elist)
-                                                    (rest (nthcdr index elist))))
-                                        ;; (print (list :en2 index move-to elist :mov moved))
-                                        (if (zerop move-to) (setf elist (cons moved elist))
-                                            (rplacd (nthcdr (1- move-to) elist)
-                                                    (cons moved (nthcdr move-to elist)))))))
-                                  (print :complete)))))
-              (t (unless chart-entities
-                   ;; (setf entities (fourth (from-system-file :demo.sheet "sheet.lisp" :chart-entities)))
-                   (setf chart-entities (from-system-file :demo.sheet "sheet.lisp" :chart-entities))
-                   )
-                 ;; (print (list :ccc context))
-                 (when context
-                   ;; (print (list :con (funcall context :medium)))
-                   (render (funcall context :medium)
-                           (dx ((uic-frame :type (:meta-code)))
-                               (seed.modulate::express chart-entities))))))))))
 
 (branch :demo.sheet :main
   (adapt-from-json :text)

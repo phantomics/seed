@@ -1,6 +1,6 @@
 ;;;; package.lisp
 
-(defpackage #:seed.admit
+(defpackage #:seed.access
   (:export #:read-keys #:authorize)
   (:use #:cl)
   (:shadowing-import-from #:hermetic #:setup #:login)

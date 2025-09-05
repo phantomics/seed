@@ -1,6 +1,6 @@
-;;;; seed.admit.lisp
+;;;; seed.access.lisp
 
-(in-package #:seed.admit)
+(in-package #:seed.access)
 
 ;; (login (list :|username| username :|password| password)
 ;;        (redirect-to "/")
