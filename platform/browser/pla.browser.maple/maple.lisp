@@ -164,11 +164,12 @@
 
       `(.input :border-width 2px 0)
 
-      `(.select (select :border-width 2px 0))
+      `(.select (select :border-width 0 0 2px 0))
 
       `(.workspace
         (.input :color ,color-focal-fg1 :background-color ,color-focal-bg1 :border-color ,color-focal-fg5)
         (.button :color ,color-focal-fg0 :background ,color-focal-fg5 :border-color ,color-focal-fg35)
+        (.select :background "#d6dbdb" :border-color "#93a1a1")
 
         ((:and (.has-addons .control) (:nth-child even))
          (.button

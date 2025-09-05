@@ -41,15 +41,38 @@
 
 ;; (defvar *seed-templates* '((:template.chart . "../templates/template.charts/")))
 
-(defun manifest-file-listing (path)
-  (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
-        :append (let ((props (from-system-file :abcd (format nil "~a/chart.lisp" dir)
-                                               :properties)))
-                  (destructuring-bind (&key name description) (rest props)
-                    (and props (list (dx ((uic-series :type (:series)))
-                                         (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
-                                                   name)
-                                               description))))))))
+(defun manifest-file-listing (path is-creating)
+  (append (list (dx ((uic-series :layout (:groups :rows '(2))
+                                 :type (:series :enum :table-interstitial :enum)
+                                 :call t))
+                    (dx ((uicc-field :name :system-name :type (:string))) "")
+                    (dx ((uicc-button :call (:@ :form-input)))
+                        "create")))
+          (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
+                :append (let ((props (from-system-file :abcd (format nil "~a/chart.lisp" dir)
+                                                       :properties)))
+                          (destructuring-bind (&key name description) (rest props)
+                            (and props (list (dx ((uic-series :type (:series)))
+                                                 (list (dx ((uicc-button :call (:.fetch (:point ix)
+                                                                                        (:next :refresh))))
+                                                           name)
+                                                       description)))))))))
+
+(defun manifest-template-interface (template-list template-point)
+  (loop :for item :in template-list :for ix :from 0
+        :append (destructuring-bind (tname &rest tpath) item
+                  (multiple-value-bind (tname tdescription) (get-template-metadata tpath)
+                    (cons (dx ((uic-series :type (:series)))
+                              (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
+                                        (first item))
+                                    tdescription))
+                          (and template-point (= ix template-point)
+                               (list (dx ((uic-series :layout (:groups :rows '(2))
+                                                      :type (:series :enum :table-interstitial :enum)
+                                                      :call t))
+                                         (dx ((uicc-field :name :system-name :type (:string))) "")
+                                         (dx ((uicc-button :call (:@ :form-input)))
+                                             "create")))))))))
 
 (defun point-from-template (form &optional index)
   (let ((x-start (second (nth 3 (second form))))
@@ -67,7 +90,7 @@
             (ifmod-foot (values nil t))
             (t "This is a financial chart analysis tool.")))))
 
-(let ((chart-paths) (chart-entities) (entity-data)
+(let ((chart-paths) (chart-entities) (entity-data) (creating-item)
       (line-templater (build-templater (from-system-file :abcd "sheet.lisp"
                                                          :chart-entity-template-line)
                                        :type :format :x-start :y-start :x-end :y-end)))
@@ -78,7 +101,7 @@
         (let ((chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
           (setf chart-entities (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
                                                  :chart-entities))))))
-    
+
   (branch :abcd :nav
     (adapt-from-json :point :action)
     (lambda (context input)

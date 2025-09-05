@@ -17,7 +17,7 @@ body{
 
 
 .select select{
-    border-width: 2px 0;
+    border-width: 0 0 2px 0;
 }
 
 
@@ -30,6 +30,11 @@ body{
 
 .workspace .button{
     color: #002b36;
+    background: #d6dbdb;
+    border-color: #93a1a1;
+}
+
+.workspace .select{
     background: #d6dbdb;
     border-color: #93a1a1;
 }
