@@ -45,12 +45,22 @@
 (defun get-cookie (key)
   (rest (assoc key (lack.request:request-cookies ningle:*request*) :test #'equal)))
 
+;; (defun of-session (session-id store)
+;;   (let ((session-store (gethash session-id store)))
+;;     (lambda (key &optional value)
+;;       (if value (setf (getf session-store key) value
+;;                       (gethash session-id store) session-store)
+;;           (getf session-store key)))))
+
 (defun of-session (session-id store)
   (let ((session-store (gethash session-id store)))
-    (lambda (key &optional value)
-      (if value (setf (getf session-store key) value
-                      (gethash session-id store) session-store)
-          (getf session-store key)))))
+    (lambda (sys-key item-key &optional value)
+      (setf sys-key (or sys-key :-root-))
+      (if value (progn (if (getf session-store sys-key)
+                           (setf (getf (getf session-store sys-key) item-key) value)
+                           (setf (getf session-store sys-key) (list item-key value)))
+                       (setf (gethash session-id store) session-store))
+          (getf (getf session-store sys-key) item-key)))))
 
 (defun http-contact-service-start (&key interactor-fetch renderer-fetch (port 8080)
                                      (package-name (intern (package-name *package*) "KEYWORD")))

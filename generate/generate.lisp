@@ -427,7 +427,7 @@
 (defun get-template-metadata (path)
   "Read metadata from a Seed system template."
   (let ((template-name) (description))
-    (with-open-file (instream (concatenate 'string path "/system.asd"))
+    (with-open-file (instream (concatenate 'string (enough-namestring path) "/system.asd"))
       (loop :until template-name
             :do (let ((this-line (read-line instream)))
                   ;; it's expected that Seed templates have a commented data block starting with

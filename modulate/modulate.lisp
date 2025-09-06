@@ -1266,7 +1266,7 @@
         (link-template (second (from-system-file package file-name link-template-key)))
         (indices-form (from-system-file package file-name node-indices-key)))
     
-    (lambda (context input)
+    (lambda (medium input)
       (unless graph-base
         (setf graph-base  (from-system-file package file-name graph-key)
               orig-data   (third graph-base)
@@ -1553,7 +1553,7 @@
                 ;; (print (list :ew el-width formatted))
                 ;; the output-stream is created in the seed package - best elsewhere?
                 (if (and face (string= "graphNode" face))
-                    (render (funcall context :medium)
+                    (render medium
                             (dx ((uic-frame :type (:meta-code)))
                                 (express
                                  (funcall (lambda (items)

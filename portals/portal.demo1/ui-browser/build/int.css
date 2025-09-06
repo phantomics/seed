@@ -181,16 +181,21 @@ body{
     height: 100%;
 }
 
+.ui.series.column{
+    display: grid;
+    grid-template-rows: min-content auto min-content;
+}
+
 .ui.grid-layout{
     display: grid;
     height: 100%;
 }
 
-.ui.grid-layout .column{
-    display: grid;
+.ui.grid-layout .ui.column > .item:nth-child(2){
     overflow: auto;
-    grid-template-rows: min-content auto min-content;
 }
+
+
 
 .ui.grid-layout .column .container{
     position: relative;

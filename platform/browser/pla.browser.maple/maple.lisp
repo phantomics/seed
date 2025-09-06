@@ -243,10 +243,16 @@
       
       `(.ui.grid :height "100%" (.group :height "100%"))
 
+      `(.ui.series.column
+        :display grid :grid-template-rows min-content auto min-content)
+      
       `(.ui.grid-layout
         :display "grid" :height "100%"
+        ((:and (.ui.column > .item) (:nth-child 2))
+         :overflow auto)
         (.column
-         :display grid :overflow auto :grid-template-rows min-content auto min-content
+         ;; :display grid ;; :overflow auto
+         ;; :grid-template-rows min-content auto min-content
          (.container :position "relative" :height "100%") ;;  :display grid)
          (.column-inner
           :padding 0 :overflow auto

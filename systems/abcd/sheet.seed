@@ -13,7 +13,7 @@
       ;; (print (list :bp package (funcall context :branch-point)))
       (let ((context (first session))
             (summary (grow :abcd :summary))
-            (branch-point (or (funcall context :branch-point) 0))
+            (branch-point (or (funcall context *portal* :branch-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 
@@ -41,7 +41,7 @@
 
 ;; (defvar *seed-templates* '((:template.chart . "../templates/template.charts/")))
 
-(defun manifest-file-listing (path is-creating)
+(defun manifest-file-listing (path &optional is-creating)
   (append (list (dx ((uic-series :layout (:groups :rows '(2))
                                  :type (:series :enum :table-interstitial :enum)
                                  :call t))
@@ -96,9 +96,9 @@
                                        :type :format :x-start :y-start :x-end :y-end)))
   
   (defun init-chart-entities (context)
-    (when (and context (funcall context :chart-point))
+    (when (and context (funcall context :abcd :chart-point))
       (unless chart-entities
-        (let ((chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
+        (let ((chart-path (namestring (nth (funcall context :abcd :chart-point) chart-paths))))
           (setf chart-entities (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
                                                  :chart-entities))))))
 
@@ -114,12 +114,12 @@
               (action (case (intern (string-upcase action) "KEYWORD")
                         (:create (print (list :aa action)))))
               (context (when (getf input :point)
-                         (funcall context :chart-point (getf input :point))
+                         (funcall context :abcd :chart-point (getf input :point))
                          (setf chart-entities nil))
-                       (let ((template-point (funcall context :template-point)))
+                       (let ((template-point (funcall context :abcd :template-point)))
                          (destructuring-bind (&key system-name &allow-other-keys) input
                            ;; (print (list :ccc input))
-                           (render (funcall context :medium)
+                           (render (funcall context nil :medium)
                                    (dx ((uic-series :type (:ui :list-table)
                                                     :call (:.fetch (:point :@base) (:next :refresh))))
                                        (manifest-file-listing (asdf:system-relative-pathname
@@ -177,8 +177,8 @@
                  (print (list :lld entity-data))
                  entity-data))
               (action
-               (let ((chart-entities (funcall context :chart-point (getf input :point)))
-                     (chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
+               (let ((chart-entities (funcall context :abcd :chart-point (getf input :point)))
+                     (chart-path (namestring (nth (funcall context :abcd :chart-point) chart-paths))))
                  ;; (print (list :ce chart-entities (package-name *package*)))
                  (case (intern (string-upcase (rest input)) "KEYWORD")
                    (:save (let ((output))
@@ -190,12 +190,12 @@
               (t (case (intern (string-upcase mode) "KEYWORD")
                    (:chart-data
                     ;; (if (and context (funcall context :chart-point))
-                    (let ((chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
+                    (let ((chart-path (namestring (nth (funcall context :abcd :chart-point) chart-paths))))
                       ;; (system-file-to-string :abcd data-path)
                       (file-to-string (second (third (second (from-system-file
                                                               :abcd (format nil "~a/chart.lisp" chart-path)
                                                               :chart-entities)))))))
-                   (t (render (funcall context :medium)
+                   (t (render (funcall context nil :medium)
                               (dx ((uich-candle :type (:green-red)))
                                   :abcd :chart)))))))))
 
@@ -233,7 +233,7 @@
                ;; (print (list :ac action (funcall context :chart-point)
                ;;              chart-paths ))
                (let ((chart-entities chart-entities)
-                     (chart-path (namestring (nth (funcall context :chart-point) chart-paths))))
+                     (chart-path (namestring (nth (funcall context :abcd :chart-point) chart-paths))))
                  ;; (print (list :ce chart-entities))
                  (case (intern (string-upcase action) "KEYWORD")
                    (:save (let ((output))
@@ -248,7 +248,7 @@
                  (when context
                    ;; (print (list :con (funcall context :medium)))
                    ;; (print (list :nnn chart-entities))
-                   (render (funcall context :medium)
+                   (render (funcall context nil :medium)
                            (dx ((uic-frame :type (:meta-code)))
                                (seed.modulate::express chart-entities))))))))))
 

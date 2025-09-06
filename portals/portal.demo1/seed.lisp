@@ -6,7 +6,11 @@
   (:contacts :demo.sheet :abcd)
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
 
-(defvar *seed-templates* '((:template.chart . "../templates/template.charts/")))
+(defvar *seed-templates* (list (cons :template.chart
+                                     (asdf:system-relative-pathname :portal.demo1
+                                                                    "../../templates/template.charts/"))))
+
+(defvar *portal* :portal.demo1)
 
 (branch :portal.demo1 :view
   (adapt-from-json :key :point)
@@ -14,13 +18,13 @@
   (lambda (context input)
     (destructuring-bind (&key key point &allow-other-keys) input
       (when (and key (string= "demo" (string-downcase key)))
-        (funcall context :user :hello))
+        (funcall context nil :user :hello))
 
       ;; (print (list :inp input))
       (if (and (stringp point) (loop :for i :across point :always (digit-char-p i)))
           (when (and context point)
             ;; when a point is selected, assign it
-            (funcall context :branch-point (read-from-string point)))
+            (funcall context :portal.demo1 :branch-point (read-from-string point)))
 
           (when (and context point)
             (if (string= "BASE" (string-upcase point))
@@ -33,12 +37,12 @@
 
       (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
 
-        (funcall context :medium medium)
+        (funcall context nil :medium medium)
 
         ;; (print (list :cccc (package-name *package*)))
 
         (render medium
-                (authorize (funcall context :user)
+                (authorize (funcall context nil :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                                    :maps '(((:type :sidebar)) ((:type :main)))))
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
@@ -51,7 +55,7 @@
                           (and (of-system :point)
                                (dx ((:each uic-anchor :type '(:branch))
                                     (uic-series :type  '(:ui :navigation)
-                                                :point (funcall context :branch-point)))
+                                                :point (funcall context :portal.demo1 :branch-point)))
                                    (mapcar #'second (grow (of-system :point) :summary))))
                           
                           (dx ((uic-series :type '(:ui :list)))
@@ -88,11 +92,12 @@
   (adapt-from-json :point :system-name)
   (lambda (context input)
     (when (getf input :point)
-      (funcall context :template-point (getf input :point)))
+      (funcall context :portal.demo1 :template-point (getf input :point)))
     ;; (print (list :iii input (funcall context :template-point)))
-    (let ((template-point (funcall context :template-point)))
+    (let ((template-point (funcall context :portal.demo1 :template-point)))
       (destructuring-bind (&key system-name &allow-other-keys) input
         (when system-name ;; a new system is being created from a template
+          (print (list :tl template-point (package-name *package*)))
           (destructuring-bind (tname &rest tpath) (nth template-point *seed-templates*)
             ;; (print (list :create system-name))
             (make-project (asdf:system-relative-pathname
@@ -119,7 +124,8 @@
                           (list "aaa"))
                       (dx ((uic-series :type (:ui :list-table)
                                        :call (:.fetch (:point :@base) (:next :refresh))))
-                          (manifest-template-interface *seed-templates* (funcall context :template-point)))
+                          (manifest-template-interface *seed-templates* (funcall context :portal.demo1
+                                                                                 :template-point)))
                       (dx ((uic-series :type (:ui :footer)))
                           ;; (list "bbb")
                           )

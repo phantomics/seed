@@ -1,8 +1,7 @@
 (seed :demo.sheet (:join-by join))
 
 (branch :demo.sheet :summary
-  (let ((layout '(;; (:build :branch-build) nil
-                  (:main :code-view) (:cells :cells-view) nil
+  (let ((layout '((:main :code-view) (:cells :cells-view) nil
                   (:graph :graph-overview) (:graph :graph-node))))
     (lambda (context input)
       (declare (ignore context input))
@@ -15,7 +14,7 @@
       ;; (print (list :bp package (funcall context :branch-point)))
       (let ((context (first session))
             (summary (grow :demo.sheet :summary))
-            (branch-point (or (funcall context :branch-point) 0))
+            (branch-point (or (funcall context *portal* :branch-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 
@@ -171,7 +170,7 @@
                          (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
                                                                   :main :as-string t)
                                                 :unwrap t :syntax :progn))))
-                   (render (funcall context :medium)
+                   (render (funcall context nil :medium)
                            (dx ((uicc-field :type (:code)))
                                :demo.sheet :main))))))))
   
@@ -207,7 +206,7 @@
                                                           (setf-value
                                                            (from-system-file
                                                             :demo.sheet "sheet.lisp" :cells)))))))))
-            (t (render (funcall context :medium)
+            (t (render (funcall context nil :medium)
                        (dx ((uic-grid :type (:code)))
                            :demo.sheet :cells)))))))
 
@@ -350,7 +349,7 @@
               (ifmod-foot (dx ((:each uicc-button :call :.base)
                                (uic-series :type (:ui :controls)))
                               (list :save)))
-              (t (funcall interactor context input)))))))
+              (t (funcall interactor (funcall context nil :medium) input)))))))
 
 ;; (let ((interactor
 ;;         (spec-graph-interface
