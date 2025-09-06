@@ -210,7 +210,7 @@
         :grid-template-rows "[start] 12.5% [middle] 65.0% [end] 22.5%"
         (.symbol :font-weight "bold")
         (.navigation
-         :margin "1rem 0"
+         ;; :margin "1rem 0"
          (.symbol :font-weight "normal")
          (.divider :margin "0.5rem 0"))
         ;; (.item :padding "0.75rem")

@@ -15,18 +15,18 @@
 (branch :portal.demo1 :view
   (adapt-from-json :key :point)
   (adapt-from-alist :system :branch :key :point)
-  (lambda (context input)
+  (lambda (state input)
     (destructuring-bind (&key key point &allow-other-keys) input
       (when (and key (string= "demo" (string-downcase key)))
-        (funcall context nil :user :hello))
+        (funcall state nil :user :hello))
 
       ;; (print (list :inp input))
       (if (and (stringp point) (loop :for i :across point :always (digit-char-p i)))
-          (when (and context point)
+          (when (and state point)
             ;; when a point is selected, assign it
-            (funcall context :portal.demo1 :branch-point (read-from-string point)))
+            (funcall state :portal.demo1 :branch-point (read-from-string point)))
 
-          (when (and context point)
+          (when (and state point)
             (if (string= "BASE" (string-upcase point))
                 (of-system :point nil)
                 ;; when a system is selected, assign it - case of new selector controls
@@ -37,12 +37,12 @@
 
       (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
 
-        (funcall context nil :medium medium)
+        (funcall state nil :medium medium)
 
         ;; (print (list :cccc (package-name *package*)))
 
         (render medium
-                (authorize (funcall context nil :user)
+                (authorize (funcall state nil :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                                    :maps '(((:type :sidebar)) ((:type :main)))))
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
@@ -55,24 +55,32 @@
                           (and (of-system :point)
                                (dx ((:each uic-anchor :type '(:branch))
                                     (uic-series :type  '(:ui :navigation)
-                                                :point (funcall context :portal.demo1 :branch-point)))
+                                                :point (funcall state :portal.demo1 :branch-point)
+                                                ;; :call  (:.fetch (:action :.base))
+                                                ;; :call (:.fetch (:point :@base) (:next :refresh))
+                                                ))
                                    (mapcar #'second (grow (of-system :point) :summary))))
                           
                           (dx ((uic-series :type '(:ui :list)))
-                              (dx ((uicc-field  :name "key")) "")
-                              (dx ((uicc-button)) "enter")))
+                              (list (dx ((uicc-field :name "key"
+                                                     :role (role-cast (actuatable :label "⍐"))))
+                                        ""))
+                              ;; (dx ((uicc-button)) "enter")
+                              ))
+
+                       ;; :role (role-cast (actuatable :label "Enter"))
                       
                       (if (of-system :point)
-                          (grow (of-system :point) :view context)
-                          (grow :portal.demo1 :base context)))
+                          (grow (of-system :point) :view state)
+                          (grow :portal.demo1 :base state)))
 
                   (dx ((uic-series :type (:ui :main :placard)))
                       (list (dx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
                                 (list "please input your key"
-                                      (dx ((uicc-field  :name "key")) "")
+                                      (dx ((uicc-field :name "key")) "")
                                       (dx ((uicc-button)) "enter")))))))))))
 
-(defun manifest-template-interface (template-list template-point)
+(manifest defun-template-interface (template-list template-point)
   (loop :for item :in template-list :for ix :from 0
         :append (destructuring-bind (tname &rest tpath) item
                   (multiple-value-bind (tname tdescription) (get-template-metadata tpath)
@@ -90,11 +98,11 @@
 
 (branch :portal.demo1 :base
   (adapt-from-json :point :system-name)
-  (lambda (context input)
+  (lambda (state input)
     (when (getf input :point)
-      (funcall context :portal.demo1 :template-point (getf input :point)))
-    ;; (print (list :iii input (funcall context :template-point)))
-    (let ((template-point (funcall context :portal.demo1 :template-point)))
+      (funcall state :portal.demo1 :template-point (getf input :point)))
+    ;; (print (list :iii input (funcall state :template-point)))
+    (let ((template-point (funcall state :portal.demo1 :template-point)))
       (destructuring-bind (&key system-name &allow-other-keys) input
         (when system-name ;; a new system is being created from a template
           (print (list :tl template-point (package-name *package*)))
@@ -117,14 +125,14 @@
                                    :type   (:column)
                                    :join   (list :portal.demo1 :base)
                                    ;; :mode   (grow :demo.sheet (first l)
-                                   ;;               context (list :state (second l)))
+                                   ;;               state (list :state (second l)))
                                    ))
                       (dx ((uic-series :type (:ui :header)))
                           :templates
                           (list "aaa"))
                       (dx ((uic-series :type (:ui :list-table)
                                        :call (:.fetch (:point :@base) (:next :refresh))))
-                          (manifest-template-interface *seed-templates* (funcall context :portal.demo1
+                          (manifest-template-interface *seed-templates* (funcall state :portal.demo1
                                                                                  :template-point)))
                       (dx ((uic-series :type (:ui :footer)))
                           ;; (list "bbb")
@@ -133,7 +141,7 @@
 
 (branch :portal.demo1 :systems
   (adapt-from-alist :system :branch)
-  (lambda (context input)
+  (lambda (state input)
     (if input (let ((epsym (intern input "KEYWORD")))
                 (of-system :point (intern input "KEYWORD"))
                 (instantiate-priority-macro-reader (asdf:load-system epsym)

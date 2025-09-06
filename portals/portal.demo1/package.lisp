@@ -14,7 +14,8 @@
   (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
-                          #:role-cast #:uir-call-form #:uir-sortable #:uir-reducable #:uir-toggle)
+                          #:role-cast #:uir-call-form
+                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
   (:shadowing-import-from #:seed.access #:authorize)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file

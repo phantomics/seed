@@ -58,21 +58,21 @@
                                                            name)
                                                        description)))))))))
 
-(defun manifest-template-interface (template-list template-point)
-  (loop :for item :in template-list :for ix :from 0
-        :append (destructuring-bind (tname &rest tpath) item
-                  (multiple-value-bind (tname tdescription) (get-template-metadata tpath)
-                    (cons (dx ((uic-series :type (:series)))
-                              (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
-                                        (first item))
-                                    tdescription))
-                          (and template-point (= ix template-point)
-                               (list (dx ((uic-series :layout (:groups :rows '(2))
-                                                      :type (:series :enum :table-interstitial :enum)
-                                                      :call t))
-                                         (dx ((uicc-field :name :system-name :type (:string))) "")
-                                         (dx ((uicc-button :call (:@ :form-input)))
-                                             "create")))))))))
+;; (defun manifest-template-interface (template-list template-point)
+;;   (loop :for item :in template-list :for ix :from 0
+;;         :append (destructuring-bind (tname &rest tpath) item
+;;                   (multiple-value-bind (tname tdescription) (get-template-metadata tpath)
+;;                     (cons (dx ((uic-series :type (:series)))
+;;                               (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
+;;                                         (first item))
+;;                                     tdescription))
+;;                           (and template-point (= ix template-point)
+;;                                (list (dx ((uic-series :layout (:groups :rows '(2))
+;;                                                       :type (:series :enum :table-interstitial :enum)
+;;                                                       :call t))
+;;                                          (dx ((uicc-field :name :system-name :type (:string))) "")
+;;                                          (dx ((uicc-button :call (:@ :form-input)))
+;;                                              "create")))))))))
 
 (defun point-from-template (form &optional index)
   (let ((x-start (second (nth 3 (second form))))

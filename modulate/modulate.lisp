@@ -236,6 +236,12 @@
              :initform nil
              :initarg  :options)))
 
+(defclass uir-actuatable (ui-role)
+  ((%label :accessor uirac-label
+           :initform nil
+           :initarg  :label))
+  (:documentation "A role for an element that may be discretely activated."))
+
 (defclass uir-sortable (ui-role)
   ((%range :accessor uirsrt-range
            :initform nil
@@ -250,7 +256,7 @@
   ((%symap :accessor uirt-symap
            :initform nil
            :initarg  :symap))
-  (:documentation "A role for a series of toggles of which only one may be on at a time."))
+  (:documentation "A role for an element or series of elements that may be toggled."))
 
 (defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
@@ -915,7 +921,14 @@
                             
 (defmethod generate ((medium uim-web) (aspect uicc-field))
   ;; (print (list :ee medium (uic-type aspect)))
-  (flet ((wrap-label (label base) `(:div (:label (:span ,label)) ,base)))
+  (flet ((wrap-label (label base)
+           `(:div (:label (:span ,label))
+                  ,(let ((actu-role (has-role aspect 'uir-actuatable)))
+                     (if (not actu-role)
+                         base (list :div :class "series-heading field has-addons"
+                                    (list :p :class "control" base)
+                                    (list :p :class "control"
+                                          (list :a :class "button is-static" (uirac-label actu-role)))))))))
     (let ((base (uic-base aspect)))
       (destructuring-bind (field-name &rest field-content)
           (if (listp base) base (cons (uic-name aspect) base))
