@@ -106,7 +106,7 @@
     (adapt-from-json :point :action)
     (lambda (context input)
       (destructuring-bind (&key state action ifmod-head &allow-other-keys) input
-        (print (list :imm ifmod-head))
+        ;; (print (list :imm ifmod-head))
         (cond (state (values nil))
               (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
                                (uic-series :type (:ui :controls)))
@@ -121,7 +121,8 @@
                            ;; (print (list :ccc input))
                            (render (funcall context nil :medium)
                                    (dx ((uic-series :type (:ui :list-table)
-                                                    :call (:.fetch (:point :@base) (:next :refresh))))
+                                                    ;; :call (:.fetch (:point :@base) (:next :refresh))
+                                                    ))
                                        (manifest-file-listing (asdf:system-relative-pathname
                                                                :abcd "./analyses/")))))))))))
   
@@ -143,7 +144,7 @@
         (cond (state :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
               (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
                                (uic-series :type (:ui :controls)
-                                           :role (role-cast toggle)))
+                                           :role (toggle)))
                               (list :select :draw :retrace-x :retrace-y)))
               (ifmod-foot (dx ((:each uicc-button :type (:local))
                                (uic-series :type (:ui :controls)))
@@ -154,7 +155,7 @@
                  (when (listp (first entities))
                    (dolist (espec entities)
                      (destructuring-bind (&key name type in-flux points points-in-flux ratios) espec
-                       (print (list :es espec points))
+                       ;; (print (list :es espec points))
                        (destructuring-bind (x-start y-start x-end y-end) (reduce #'append points)
                          ;; (print (list :in2 entities name type points))
                          (let ((index)
@@ -174,7 +175,7 @@
                  ;; (print (list :ce chart-entities))
                  (setf (second chart-entities)
                        (append (second chart-entities) (reverse collected)))
-                 (print (list :lld entity-data))
+                 ;; (print (list :lld entity-data))
                  entity-data))
               (action
                (let ((chart-entities (funcall context :abcd :chart-point (getf input :point)))

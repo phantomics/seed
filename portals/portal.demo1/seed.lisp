@@ -53,9 +53,12 @@
                                         (of-system :point))))
                           
                           (and (of-system :point)
-                               (dx ((:each uic-anchor :type '(:branch))
-                                    (uic-series :type  '(:ui :navigation)
+                               (dx ((:each uic-anchor :type '(:branch)
+                                     ;; :call (:.fetch (:point :@base) (:next :refresh))
+                                           )
+                                    (uic-series :type  '(:ui :partitioned :navigation)
                                                 :point (funcall state :portal.demo1 :branch-point)
+                                                :role ((call :to :branch))
                                                 ;; :call  (:.fetch (:action :.base))
                                                 ;; :call (:.fetch (:point :@base) (:next :refresh))
                                                 ))
@@ -63,13 +66,11 @@
                           
                           (dx ((uic-series :type '(:ui :list)))
                               (list (dx ((uicc-field :name "key"
-                                                     :role (role-cast (actuatable :label "⍐"))))
+                                                     :role ((actuatable :label "⍐"))))
                                         ""))
                               ;; (dx ((uicc-button)) "enter")
                               ))
 
-                       ;; :role (role-cast (actuatable :label "Enter"))
-                      
                       (if (of-system :point)
                           (grow (of-system :point) :view state)
                           (grow :portal.demo1 :base state)))
@@ -80,7 +81,7 @@
                                       (dx ((uicc-field :name "key")) "")
                                       (dx ((uicc-button)) "enter")))))))))))
 
-(manifest defun-template-interface (template-list template-point)
+(defun manifest-template-interface (template-list template-point)
   (loop :for item :in template-list :for ix :from 0
         :append (destructuring-bind (tname &rest tpath) item
                   (multiple-value-bind (tname tdescription) (get-template-metadata tpath)

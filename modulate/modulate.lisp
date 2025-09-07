@@ -231,6 +231,16 @@
   (let ((pos (position role-sym (uic-role component) :test (lambda (r c) (typep c r)))))
     (and pos (nth pos (uic-role component)))))
 
+(defclass uir-call (ui-role)
+  ((%to :accessor uicall-to
+        :initform nil
+        :initarg  :to)
+   (%args :accessor uicall-args
+          :initform nil
+          :initarg  :args)))
+
+(defclass uir-call-global (uir-call) ())
+
 (defclass uir-call-form (ui-role)
   ((%options :accessor uircf-options
              :initform nil
@@ -258,21 +268,31 @@
            :initarg  :symap))
   (:documentation "A role for an element or series of elements that may be toggled."))
 
+(defmacro role-cast (&rest roles)
+  (cons 'list (loop :for role :in roles
+                    :collect (let ((symbol (intern (format nil "UIR-~a" (if (symbolp role)
+                                                                            role (first role)))
+                                                   (package-name *package*))))
+                               `(make-instance ',symbol ,@(and (listp role) (rest role)))))))
+
 (defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
   (labels (;; (format-list (form)
            ;;   (cons 'list (loop :for item :in form
            ;;                     :collect (if (atom item) item (format-list item)))))
-           (format-list2 (form)
+           (format-list (form)
              (if (or (atom form) (not (keywordp (first form))))
                  form (cons 'list (loop :for item :in form
-                                        :collect (if (atom item) item (format-list2 item))))))
+                                        :collect (if (atom item) item (format-list item))))))
            (format-params (items)
              ;; (print (loop :for item :in items
              ;;              :collect (if (or (atom item)
              ;;                               (not (keywordp (first item))))
              ;;                           item (format-list item))))
-             (loop :for (ikey ival) :on items :by #'cddr :append (list ikey (format-list2 ival))))
+             (loop :for (ikey ival) :on items :by #'cddr
+                   :append (case ikey
+                             (:role (list :role (macroexpand (cons 'role-cast (format-list ival)))))
+                             (t (list ikey (format-list ival))))))
 
            (process-spec (item spec-list)
              (let ((generated))
@@ -293,24 +313,6 @@
       `(let ((,evaluated-form ,(if (not (second form))
                                    (first form) (cons 'list form))))
          ,(process-spec evaluated-form specs)))))
-
-;; (defmacro dx-assign (params &body item)
-;;   (let ((item-sym (gensym)))
-;;     `(let ((,item-sym ,item))
-;;        ,(loop :for p :in params
-;;               :append (destructuring-bind (key &rest values) p
-;;                         (case key
-;;                           (:type `((setf (rest (uic-type ,item-sym))
-;;                                          (append (list ,@values)
-;;                                                  (rest (uic-type ,item-sym)))))))))
-;;        ,item-sym)))
-
-(defmacro role-cast (&rest roles)
-  (cons 'list (loop :for role :in roles
-                    :collect (let ((symbol (intern (format nil "UIR-~a" (if (symbolp role)
-                                                                            role (first role)))
-                                                   (package-name *package*))))
-                               `(make-instance ',symbol ,@(and (listp role) (rest role)))))))
 
 (defgeneric render (medium component))
 
@@ -488,7 +490,7 @@
         (breadth-default 12) (call (uic-call aspect))
         (is-list-table (member :list-table (uic-type aspect)))
         (layout (uic-series-layout aspect))
-        (x-inits))
+        (x-inits) (items))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -591,37 +593,44 @@
                                              "click" (lambda () (funcall interactor remover 0)))))))))
                 x-inits))
 
-        (let* ((items (loop :for ix :from 0
-                            ;; if this is a call-form, the form's head symbol is not displayed
-                            ;; with the others; in most cases it is either not shown or displayed
-                            ;; in a special manner as in a series header
-                            :for item :in (funcall (if (has-role aspect 'uir-call-form)
-                                                       #'rest #'identity)
-                                                   (uic-base aspect))
-                            :collect (let ((map (nth ix (uic-series-maps aspect))))
-                                       (format class-stream "item ")
-                                       (when (and (uic-series-point aspect)
-                                                  (= ix (uic-series-point aspect)))
-                                         (format class-stream "point "))
-                                       (loop :for itype :in (rest (assoc :type map))
-                                             :do (format class-stream "~a " (string-downcase itype)))
-                                       ;; (print (list :it item))
-                                       (locate medium aspect ix
-                                               (append (list (cond (is-list-table :tr)
-                                                                   (t :div))
-                                                             :class (get-output-stream-string class-stream)
-                                                             :index ix)
-                                                       ;; (and (of-root-type aspect :meta-code)
-                                                       ;;      (list :x-data
-                                                       ;;            (psl (create in-series
-                                                       ;;                         containing-series))))
-                                                       (and (and (of-root-type aspect :meta-code)
-                                                                 (member :sortable (uic-type aspect)))
-                                                            (list :x-init
-                                                                  (psl (initialize-draggable
-                                                                        $el mode in-series))))
-                                                      (enclose-by-type types item ix))))))
-               (parent-sortable (and (typep    (uic-root aspect) 'ui-component)
+        (loop :for ix :from 0 :for item :in (funcall (if (has-role aspect 'uir-call-form) #'rest #'identity)
+                                                     (uic-base aspect))
+              ;; if this is a call-form, the form's head symbol is not displayed
+              ;; with the others; in most cases it is either not shown or displayed
+              ;; in a special manner as in a series header
+              :when (or item (member :partitioned (uic-type aspect)))
+              :do (let ((map (nth ix (uic-series-maps aspect))))
+                    (format class-stream "item ")
+                    (when (and (uic-series-point aspect)
+                               (= ix (uic-series-point aspect)))
+                      (format class-stream "point "))
+                    (loop :for itype :in (rest (assoc :type map))
+                          :do (format class-stream "~a " (string-downcase itype)))
+                    (print (list :it item))
+                    (push (if (and (not item) (member :partitioned (uic-type aspect)))
+                              '(:hr :class "divider")
+                              (locate medium aspect ix
+                                      (append (list (cond (is-list-table :tr)
+                                                          (t :div))
+                                                    :class (get-output-stream-string class-stream)
+                                                    :index ix)
+                                              (and (has-role aspect 'uir-call)
+                                                   (list :call "hello"))
+                                              ;; (and (of-root-type aspect :meta-code)
+                                              ;;      (list :x-data
+                                              ;;            (psl (create in-series
+                                              ;;                         containing-series))))
+                                              (and (and (of-root-type aspect :meta-code)
+                                                        (member :sortable (uic-type aspect)))
+                                                   (list :x-init
+                                                         (psl (initialize-draggable
+                                                               $el mode in-series))))
+                                              (enclose-by-type types item ix))))
+                          items)))
+
+        (setf items (reverse items))
+
+        (let* ((parent-sortable (and (typep    (uic-root aspect) 'ui-component)
                                      (has-role (uic-root aspect) 'uir-sortable)))
                (header (let ((segments))
                          (when (and parent-sortable (of-root-type aspect :meta-code))
@@ -641,6 +650,9 @@
                          (if segments (list (append (list :div :class "series-heading field has-addons")
                                                     (reverse segments)))))))
 
+          (when (member :partitioned (uic-type aspect))
+            (print (list :im items)))
+          
           ;; (when (and (listp (uic-base aspect))
           ;;            (symbolp (first (uic-base aspect)))
           ;;            (string= "CHART-VIEW" (string (first (uic-base aspect)))))
@@ -873,12 +885,12 @@
 
 (defmethod generate ((medium uim-web) (aspect uic-anchor))
   (let ((base (uic-base aspect)))
+    ;; (print (list :ba base))
     (case (first (uic-type aspect))
-      (:branch (if base `(:h4 (:a :|hx-on:click|
-                                  ,(psl (chain htmx (trigger this "navigate"
-                                                             (create point (lisp (uic-sort aspect))))))
-                                  ,(generate medium base)))
-                   '(:hr :class "divider")))
+      (:branch `(:h4 (:a :|hx-on:click|
+                         ,(psl (chain htmx (trigger this "navigate"
+                                                    (create point (lisp (uic-sort aspect))))))
+                         ,(generate medium base))))
       (t (generate medium base)))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-button))
@@ -1129,7 +1141,7 @@
          (call (uic-call aspect))
          (base (uic-base aspect))
          (furnishing (furnish medium aspect)))
-    ;; (print (list :ava aspect furnishing (uic-call aspect)))
+    (when call (print (list :ava aspect furnishing call)))
     ;; (if pairs (list :x-data (ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
 
