@@ -17,23 +17,30 @@
   (adapt-from-alist :system :branch :key :point)
   (lambda (state input)
     (destructuring-bind (&key key point &allow-other-keys) input
+      ;; (print (list :in input point))
       (when (and key (string= "demo" (string-downcase key)))
         (funcall state nil :user :hello))
 
       ;; (print (list :inp input))
-      (if (and (stringp point) (loop :for i :across point :always (digit-char-p i)))
-          (when (and state point)
-            ;; when a point is selected, assign it
-            (funcall state :portal.demo1 :branch-point (read-from-string point)))
+      (when (stringp point)
+        (if (loop :for i :across point :always (digit-char-p i))
+            (when (and state point)
+              ;; when a point is selected, assign it
+              (funcall state :portal.demo1 :branch-point (read-from-string point)))
 
-          (when (and state point)
-            (if (string= "BASE" (string-upcase point))
-                (of-system :point nil)
-                ;; when a system is selected, assign it - case of new selector controls
-                (let ((epsym (intern (string-upcase point) "KEYWORD")))
-                  (of-system :point epsym)
-                  (instantiate-priority-macro-reader (asdf:load-system epsym)
-                    (load-seed-system epsym))))))
+            (when (and state point)
+              (if (string= "BASE" (string-upcase point))
+                  (of-system :point nil)
+                  ;; when a system is selected, assign it - case of new selector controls
+                  (let ((epsym (intern (string-upcase point) "KEYWORD")))
+                    (of-system :point epsym)
+                    (instantiate-priority-macro-reader (asdf:load-system epsym)
+                      (load-seed-system epsym)))))))
+
+      (when (integerp point)
+        (funcall state :portal.demo1 :branch-point point))
+
+      ;; (print (list :opo point))
 
       (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
 
@@ -53,12 +60,10 @@
                                         (of-system :point))))
                           
                           (and (of-system :point)
-                               (dx ((:each uic-anchor :type '(:branch)
-                                     ;; :call (:.fetch (:point :@base) (:next :refresh))
-                                           )
+                               (dx (;; (:each uic-anchor :type '(:branch))
                                     (uic-series :type  '(:ui :partitioned :navigation)
                                                 :point (funcall state :portal.demo1 :branch-point)
-                                                :role ((call :to :branch))
+                                                :role ((call-c :a (list :point :@index)))
                                                 ;; :call  (:.fetch (:action :.base))
                                                 ;; :call (:.fetch (:point :@base) (:next :refresh))
                                                 ))

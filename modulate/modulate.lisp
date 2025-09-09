@@ -226,20 +226,34 @@
           :initarg  :name))
   (:documentation "The ui-role class describes roles for ui components, which define their relationships with their subcomponents and neighboring components."))
 
+(defparameter *role-aliases*
+  '((uir-call-c uir-call-contact)
+    (uir-call-b uir-call-base)))
 
 (defun has-role (component role-sym)
   (let ((pos (position role-sym (uic-role component) :test (lambda (r c) (typep c r)))))
     (and pos (nth pos (uic-role component)))))
 
 (defclass uir-call (ui-role)
-  ((%to :accessor uicall-to
-        :initform nil
-        :initarg  :to)
+  ((%name :accessor uicall-name
+          :initform nil
+          :initarg  :n)
    (%args :accessor uicall-args
           :initform nil
-          :initarg  :args)))
+          :initarg  :a))
+  (:documentation "A role for an element that can be interacted with to call a function."))
 
-(defclass uir-call-global (uir-call) ())
+(defclass uir-call-contact (uir-call) ())
+
+;; (define-symbol-macro uir-call-c uir-call-contact)
+
+;; (defclass uir-call-generate (uir-call) ())
+
+;; (define-symbol-macro uir-call-g uir-call-generate)
+
+(defclass uir-call-base (uir-call) ())
+
+(define-symbol-macro uir-call-b uir-call-base)
 
 (defclass uir-call-form (ui-role)
   ((%options :accessor uircf-options
@@ -273,14 +287,13 @@
                     :collect (let ((symbol (intern (format nil "UIR-~a" (if (symbolp role)
                                                                             role (first role)))
                                                    (package-name *package*))))
+                               (loop :for alias :in *role-aliases* :when (eql symbol (first alias))
+                                     :do (setf symbol (second alias)))
                                `(make-instance ',symbol ,@(and (listp role) (rest role)))))))
 
 (defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
-  (labels (;; (format-list (form)
-           ;;   (cons 'list (loop :for item :in form
-           ;;                     :collect (if (atom item) item (format-list item)))))
-           (format-list (form)
+  (labels ((format-list (form)
              (if (or (atom form) (not (keywordp (first form))))
                  form (cons 'list (loop :for item :in form
                                         :collect (if (atom item) item (format-list item))))))
@@ -290,10 +303,9 @@
              ;;                               (not (keywordp (first item))))
              ;;                           item (format-list item))))
              (loop :for (ikey ival) :on items :by #'cddr
-                   :append (case ikey
-                             (:role (list :role (macroexpand (cons 'role-cast (format-list ival)))))
-                             (t (list ikey (format-list ival))))))
-
+                   :append (list ikey (case ikey
+                                        (:role (macroexpand (cons 'role-cast (format-list ival))))
+                                        (t (format-list ival))))))
            (process-spec (item spec-list)
              (let ((generated))
                (case (caar spec-list)
@@ -606,7 +618,7 @@
                       (format class-stream "point "))
                     (loop :for itype :in (rest (assoc :type map))
                           :do (format class-stream "~a " (string-downcase itype)))
-                    (print (list :it item))
+                    ;; (print (list :it item))
                     (push (if (and (not item) (member :partitioned (uic-type aspect)))
                               '(:hr :class "divider")
                               (locate medium aspect ix
@@ -614,8 +626,19 @@
                                                           (t :div))
                                                     :class (get-output-stream-string class-stream)
                                                     :index ix)
-                                              (and (has-role aspect 'uir-call)
-                                                   (list :call "hello"))
+                                              (let* ((call-role (has-role aspect 'uir-call))
+                                                     (call-args (and call-role
+                                                                     (mapcar (lambda (arg)
+                                                                               (case arg
+                                                                                 (:@index ix)
+                                                                                 (t arg)))
+                                                                             (uicall-args call-role)))))
+                                                (typecase call-role
+                                                  (uir-call-contact
+                                                   (list :|x-on:click|
+                                                         (psl (fetch-contact $el mode
+                                                                             (lisp (cons 'create
+                                                                                         call-args))))))))
                                               ;; (and (of-root-type aspect :meta-code)
                                               ;;      (list :x-data
                                               ;;            (psl (create in-series
@@ -650,9 +673,6 @@
                          (if segments (list (append (list :div :class "series-heading field has-addons")
                                                     (reverse segments)))))))
 
-          (when (member :partitioned (uic-type aspect))
-            (print (list :im items)))
-          
           ;; (when (and (listp (uic-base aspect))
           ;;            (symbolp (first (uic-base aspect)))
           ;;            (string= "CHART-VIEW" (string (first (uic-base aspect)))))
@@ -1141,7 +1161,7 @@
          (call (uic-call aspect))
          (base (uic-base aspect))
          (furnishing (furnish medium aspect)))
-    (when call (print (list :ava aspect furnishing call)))
+    ;; (when call (print (list :ava aspect furnishing call)))
     ;; (if pairs (list :x-data (ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
 

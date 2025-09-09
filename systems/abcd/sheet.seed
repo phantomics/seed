@@ -97,10 +97,10 @@
   
   (defun init-chart-entities (context)
     (when (and context (funcall context :abcd :chart-point))
-      (unless chart-entities
+      (unless (funcall context :abcd :chart-entities)
         (let ((chart-path (namestring (nth (funcall context :abcd :chart-point) chart-paths))))
-          (setf chart-entities (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
-                                                 :chart-entities))))))
+          (funcall context :abcd :chart-entities
+                   (from-system-file :abcd (format nil "~a/chart.lisp" chart-path) :chart-entities))))))
 
   (branch :abcd :nav
     (adapt-from-json :point :action)
@@ -115,7 +115,7 @@
                         (:create (print (list :aa action)))))
               (context (when (getf input :point)
                          (funcall context :abcd :chart-point (getf input :point))
-                         (setf chart-entities nil))
+                         (funcall context :abcd :chart-point nil))
                        (let ((template-point (funcall context :abcd :template-point)))
                          (destructuring-bind (&key system-name &allow-other-keys) input
                            ;; (print (list :ccc input))
@@ -134,12 +134,17 @@
         (setf chart-paths (uiop:subdirectories (asdf:system-relative-pathname :abcd "./analyses/"))))
 
       (init-chart-entities context)
+
+      (unless (or (not context) (funcall context :abcd :chart-point))
+        (funcall context :abcd :chart-point 0))
       
       (destructuring-bind (&key state ifmod-head ifmod-foot action entities mode &allow-other-keys) input
 
-        (unless entity-data ;; load data for existing entities from file
-          (setf entity-data (loop :for chent :in (cdddr (second chart-entities)) :for ix :from 0
-                                  :collect (point-from-template chent ix))))
+        (unless (or entity-data (not context)) ;; load data for existing entities from file
+          (setf entity-data (loop :for chent :in (cdddr (second (funcall context :abcd :chart-entities)))
+                                  :for ix :from 0 :collect (point-from-template chent ix))))
+
+        ;; (print (list :ac action entities))
         
         (cond (state :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
               (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
@@ -151,7 +156,7 @@
                               (list :save :zoom-actual)))
               (entities
                (let ((collected))
-                 ;; (print (list :ent entities))
+                 (print (list :ent entities))
                  (when (listp (first entities))
                    (dolist (espec entities)
                      (destructuring-bind (&key name type in-flux points points-in-flux ratios) espec
@@ -165,7 +170,7 @@
                                  :do (if (string= name (getf ent :name))
                                          (setf index i)
                                          (setf (getf ent :in-flux) :false)))
-                           ;; (print (list :ent entity-data))
+                           (print (list :ent index entity-data))
                            (if index (setf (nth index entity-data) item)
                                (progn (push item entity-data)
                                       (push (funcall line-templater
@@ -173,8 +178,9 @@
                                                      :y-start y-start :y-end y-end :type type)
                                             collected))))))))
                  ;; (print (list :ce chart-entities))
-                 (setf (second chart-entities)
-                       (append (second chart-entities) (reverse collected)))
+                 (setf (second (funcall context :abcd :chart-entities))
+                       (append (second (funcall context :abcd :chart-entities))
+                               (reverse collected)))
                  ;; (print (list :lld entity-data))
                  entity-data))
               (action
@@ -190,6 +196,7 @@
                                   output))))))
               (t (case (intern (string-upcase mode) "KEYWORD")
                    (:chart-data
+                    (print (list :cc (funcall context :abcd :chart-point)))
                     ;; (if (and context (funcall context :chart-point))
                     (let ((chart-path (namestring (nth (funcall context :abcd :chart-point) chart-paths))))
                       ;; (system-file-to-string :abcd data-path)
@@ -204,23 +211,24 @@
     (adapt-from-json :path :action :mode :sort :remove)
     (lambda (context input)
       (destructuring-bind (&key state path sort remove &allow-other-keys) input
-        (symbol-macrolet ((elist (cdddr (second chart-entities))))
-          (if path (cond (sort (destructuring-bind (index move-to) sort
-                                 (let ((moved (nth index elist)))
-                                   ;; (print (list :en index move-to elist :mm moved))
-                                   (if (zerop index) (pop elist)
-                                       (rplacd (nthcdr (1- index) elist)
-                                               (rest (nthcdr index elist))))
-                                   ;; (print (list :en2 index move-to elist :mov moved))
-                                   (if (zerop move-to) (setf elist (cons moved elist))
-                                       (rplacd (nthcdr (1- move-to) elist)
-                                               (cons moved (nthcdr move-to elist))))))
-                               (print :complete))
-                         (remove (if (zerop remove) (pop elist)
-                                     (rplacd (nthcdr (1- remove) elist)
-                                             (rest (nthcdr remove elist))))
-                                 (values :complete t)))
-              input))))
+        (when context
+          (symbol-macrolet ((elist (cdddr (second (funcall context :abcd :chart-entities)))))
+            (if path (cond (sort (destructuring-bind (index move-to) sort
+                                   (let ((moved (nth index elist)))
+                                     ;; (print (list :en index move-to elist :mm moved))
+                                     (if (zerop index) (pop elist)
+                                         (rplacd (nthcdr (1- index) elist)
+                                                 (rest (nthcdr index elist))))
+                                     ;; (print (list :en2 index move-to elist :mov moved))
+                                     (if (zerop move-to) (setf elist (cons moved elist))
+                                         (rplacd (nthcdr (1- move-to) elist)
+                                                 (cons moved (nthcdr move-to elist))))))
+                                 (print :complete))
+                           (remove (if (zerop remove) (pop elist)
+                                       (rplacd (nthcdr (1- remove) elist)
+                                               (rest (nthcdr remove elist))))
+                                   (values :complete t)))
+                input)))))
     (lambda (context input)
       (destructuring-bind (&key state ifmod-head ifmod-foot path sort remove action &allow-other-keys) input
         (cond (state :meta-code-form)
@@ -233,7 +241,7 @@
               (action
                ;; (print (list :ac action (funcall context :chart-point)
                ;;              chart-paths ))
-               (let ((chart-entities chart-entities)
+               (let ((chart-entities (and context (funcall context :abcd :chart-entities)))
                      (chart-path (namestring (nth (funcall context :abcd :chart-point) chart-paths))))
                  ;; (print (list :ce chart-entities))
                  (case (intern (string-upcase action) "KEYWORD")
@@ -251,5 +259,5 @@
                    ;; (print (list :nnn chart-entities))
                    (render (funcall context nil :medium)
                            (dx ((uic-frame :type (:meta-code)))
-                               (seed.modulate::express chart-entities))))))))))
+                               (seed.modulate::express (funcall context :abcd :chart-entities)))))))))))
 
