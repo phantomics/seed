@@ -10,6 +10,34 @@
     (let ((files (uiop:directory-files directory-path)))
       (loop :for f :in files :when (check-name f) :do (load f)))))
 
+(defun load-system-directory2 (directory-path &optional callback)
+  (let ((package-out))
+    (loop :for f :in (uiop:directory-files directory-path) :until package-out
+          :when (and (string= "SEED" (string-upcase (pathname-name f)))
+                     (string= "LISP" (string-upcase (pathname-type f))))
+            :do (with-open-file (stream f :direction :input)
+                  (setf package-out (eval (read stream nil)))
+                  (load f)))
+    (and (funcall callback package-out))))
+
+;; (defun load-branch-spec (file-path)
+;;   (let ((package))
+;;     (with-open-file (stream file-path :direction :input)
+;;       (loop :for expr := (read stream nil) :while (and expr (not package))
+;;             :do (let ((evaluated (eval expr)))
+;;                   (when (typep evaluated 'package)
+;;                     (setf package evaluated))))
+
+;;       (dotimes (n 3) (eval (read stream nil)))
+
+;;       (import (intern "BRANCH" (package-name *package*))
+;;               (package-name package))
+
+;;       (dolist (sym (symbol-value (intern "*CONTACT-INTERFACE*" (package-name *package*))))
+;;         (import sym (package-name package)))
+
+;;       (loop :for expr := (read stream nil) :while expr :do (eval expr)))))
+
 (defun chain-fns (fns)
   (if (rest fns)
       (let ((context (gensym)) (input (gensym)))
@@ -34,9 +62,12 @@
          (contacts  (rest (assoc :contacts props)))
          (config    (rest (assoc :config props)))
          (join-by   (rest (assoc :join-by props)))
+         (linking   (rest (assoc :linking props)))
          (pname     (string name))
          (grow      (and access (intern (string (getf access :to-grow))   pname)))
          (branch    (and access (intern (string (getf access :to-branch)) pname)))
+         (attach    (and access (intern (string (getf access :to-attach)) pname)))
+         (systems   (and access (intern (string (getf access :systems))   pname)))
          (join      (and access (intern (string (getf access :to-join))   pname)))
          (of-system (and access (intern (string (getf access :of-system)) pname)))
          (defbranch (and access (intern (string (gensym "DEFBRANCH"))     pname)))
@@ -50,8 +81,7 @@
                              (lambda (form env)
                                (destructuring-bind (,system ,key &rest ,input) (rest form)
                                  ;; (list ',defbranch ,system ,key (chain-fns ,input))
-                                 (list ',defbranch ,system ,key (channel-fns ,input))
-                                 ))))))
+                                 (list ',defbranch ,system ,key (channel-fns ,input))))))))
             ,@(loop :for joiner :in join-by :collect (list joiner name))
             ;; (print (list :cyx ',defbranch ,(package-name *package*) (package-name *package*)))
             ,@(when access
@@ -59,7 +89,8 @@
                                              ,@(and contacts `(:contacts ,(cons 'list contacts)))
                                              ,@(and config   `(:config   ,(cons 'list config)))))
                         (,branches (list ,name nil)))
-                    ,@(and access `((proclaim '(special ,grow ,of-system ,defbranch))))
+                    ,@(and access `((proclaim '(special ,grow ,@(and join (list join))
+                                                ,of-system ,defbranch))))
                     (setf ,@(and (or expand-regardless (and of-system (not (fboundp of-system))))
                                  `((symbol-function ',of-system)
                                    (lambda (&rest ,values) ;; (,key &optional ,input)
@@ -84,10 +115,22 @@
                                      (unless ,key
                                        (error "Warning: attempt to grow system ~a without a specified branch."
                                               ,system))
-                                     (funcall (getf (getf ,branches ,system) ,key) ,session ,input)))))
+                                     (funcall (getf (getf ,branches ,system) ,key) ,session ,input))))
+                          ,@(and (or expand-regardless (and attach (not (fboundp attach))))
+                                 `((symbol-function ',attach)
+                                   (lambda (,system ,input)
+                                     (setf (getf ,branches ,system) ,input))))
+                          ,@(and (or expand-regardless (and systems (not (fboundp systems))))
+                                 `((symbol-function ',systems)
+                                   (lambda () ,branches))))
                     ,@(loop :for contact-sym :in contacts
                             :collect `(load-system-directory (asdf:system-relative-pathname
-                                                              ,contact-sym "./")))))))))
+                                                              ,contact-sym "./")))
+                    ,@(loop :for contact-sym :in contacts
+                            :collect `(load-system-directory2
+                                       (asdf:system-relative-pathname ,contact-sym "./")
+                                       ,@(and attach `(#',attach))))
+                    ))))))
 
 (defun in-system-context (spec system-name)
   (append (list (first spec) (second spec))

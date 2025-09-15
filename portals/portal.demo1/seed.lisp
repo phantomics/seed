@@ -4,7 +4,7 @@
 
 (seed :portal.demo1
   (:contacts :demo.sheet :abcd)
-  (:access :to-join join :to-grow grow :to-branch branch :of-system of-system))
+  (:access :to-join join :to-grow grow :to-branch branch :of-system of-system :to-attach attach))
 
 (defvar *seed-templates* (list (cons :template.chart
                                      (asdf:system-relative-pathname :portal.demo1
