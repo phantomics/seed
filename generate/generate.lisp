@@ -84,7 +84,7 @@
                    `((eval-when (:compile-toplevel :load-toplevel :execute)
                        (setf (macro-function ',branch)
                              (lambda (form env)
-                               (destructuring-bind (,system ,key &rest ,input) (rest form)
+                               (destructuring-bind (,key &rest ,input) (rest form)
                                  ;; (list ',defbranch ,system ,key (chain-fns ,input))
                                  (list ',defbranch ,key (channel-fns ,input))))))))
             ,@(loop :for joiner :in join-by :collect (list joiner name))
@@ -99,7 +99,7 @@
                     (eval-when (:compile-toplevel :load-toplevel :execute)
                       (setf ,@(and of-system (or expand-regardless (not (fboundp of-system)))
                                    `((symbol-function ',of-system)
-                                     (lambda (&rest ,values) ;; (,key &optional ,input)
+                                     (lambda (,key &optional ,input) ;; (&rest ,values)
                                        (destructuring-bind (,key &optional ,input) ,values
                                          (if (rest ,values) (setf (getf ,portal-state ,key) ,input)
                                              (getf ,portal-state ,key))))))
