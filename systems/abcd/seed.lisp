@@ -23,13 +23,13 @@
   (:linking . :abcd)
   (:access :systems systems :to-grow grow :to-branch branch :of-system of-system))
 
-(branch :abcd :summary
+(branch :summary
   (lambda (context input)
     (declare (ignore context input))
     '((:create :create) (:nav :analyses) nil
       (:chart :chart-candle) (:chentity :entities-view))))
 
-(branch :abcd :view
+(branch :view
   (adapt-from-json :path :session)
   (lambda (context input)
     (destructuring-bind (&key session &allow-other-keys) input
@@ -105,7 +105,7 @@
     (list :type "line" :points (list (list x-start y-start) (list x-end y-end))
           :name (format nil "obj-~a" (or index 0)) :points-in-flux nil :in-flux :true :ratios nil)))
 
-(branch :abcd :create
+(branch :create
   (adapt-from-json :point)
   (lambda (context input)
     (destructuring-bind (&key state ifmod-head ifmod-foot &allow-other-keys) input
@@ -125,7 +125,7 @@
         (funcall context :abcd :chart-entities
                  (from-system-file :abcd (format nil "~a/chart.lisp" chart-path) :chart-entities))))))
 
-(branch :abcd :nav
+(branch :nav
   (adapt-from-json :point :action)
   (lambda (context input)
     (destructuring-bind (&key state action ifmod-head &allow-other-keys) input
@@ -149,7 +149,7 @@
                                      (manifest-file-listing (asdf:system-relative-pathname
                                                              :abcd "./analyses/")))))))))))
 
-(branch :abcd :chart
+(branch :chart
   (adapt-from-json :entities :action :mode ;; next line: entities properties
                              :name :type :in-flux :points :points-in-flux :ratios)
   (lambda (context input)
@@ -242,7 +242,7 @@
                             (dx ((uich-candle :type (:green-red)))
                                 :abcd :chart)))))))))
 
-(branch :abcd :chentity
+(branch :chentity
   (adapt-from-json :path :action :mode :sort :remove)
   (lambda (context input)
     (destructuring-bind (&key state path sort remove &allow-other-keys) input

@@ -3,8 +3,10 @@
 (in-package #:portal.demo1)
 
 (seed :portal.demo1
-  (:contacts :demo.sheet :abcd)
-  (:access :to-join join :to-grow grow :to-branch branch :of-system of-system :to-attach attach))
+  ;; (:contacts :demo.sheet :abcd)
+  (:contacts :abcd)
+  (:access :to-join join :to-grow grow :to-branch branch :of-system of-system :to-attach attach
+           :systems systems))
 
 (defvar *seed-templates* (list (cons :template.chart
                                      (asdf:system-relative-pathname :portal.demo1
@@ -12,7 +14,7 @@
 
 (defvar *portal* :portal.demo1)
 
-(branch :portal.demo1 :view
+(branch :view
   (adapt-from-json :key :point)
   (adapt-from-alist :system :branch :key :point)
   (lambda (state input)
@@ -102,7 +104,7 @@
                                          (dx ((uicc-button :call (:@ :form-input)))
                                              "create")))))))))
 
-(branch :portal.demo1 :base
+(branch :base
   (adapt-from-json :point :system-name)
   (lambda (state input)
     (when (getf input :point)
@@ -145,7 +147,7 @@
                           )
                       )))))))
 
-(branch :portal.demo1 :systems
+(branch :systems
   (adapt-from-alist :system :branch)
   (lambda (state input)
     (if input (let ((epsym (intern input "KEYWORD")))
