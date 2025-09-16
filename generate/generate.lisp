@@ -11,7 +11,7 @@
       (loop :for f :in files :when (check-name f) :do (load f)))))
 
 (defun load-system-directory2 (directory-path &optional callback)
-  (let ((package-out) (package-systems))
+  (let ((package-out))
     (loop :for f :in (uiop:directory-files directory-path) :until package-out
           :when (and (string= "SEED" (string-upcase (pathname-name f)))
                      (string= "LISP" (string-upcase (pathname-type f))))
@@ -20,10 +20,7 @@
                   (load f)))
     (when package-out (multiple-value-bind (systems root-name)
                           (funcall (symbol-function (intern "SYSTEMS" (package-name package-out))))
-                        (print (list :zy systems root-name))
-                        (setf package-systems (getf systems root-name))))
-    (print (list :sy package-systems))
-    (and (funcall callback package-systems))))
+                        (and (funcall callback (getf systems root-name) root-name))))))
 
 ;; (defun load-branch-spec (file-path)
 ;;   (let ((package))
@@ -79,8 +76,7 @@
          (expand-regardless (member :expand-regardless config))
          (branches (gensym "BR")) (system (gensym "SY")) (key (gensym "KY")) (values (gensym "VL"))
          (session (gensym "SS")) (input (gensym "IN")) (portal-state (gensym "PR")))
-    `(progn ;; ,@(and branch `((declaim '(special ,branch))))
-            ,@(and (or expand-regardless (and branch (not (fboundp branch))))
+    `(progn ,@(and (or expand-regardless (and branch (not (fboundp branch))))
                    `((eval-when (:compile-toplevel :load-toplevel :execute)
                        (setf (macro-function ',branch)
                              (lambda (form env)
@@ -88,6 +84,7 @@
                                  ;; (list ',defbranch ,system ,key (chain-fns ,input))
                                  (list ',defbranch ,key (channel-fns ,input))))))))
             ,@(loop :for joiner :in join-by :collect (list joiner name))
+            ;; ,@(and branch `((declaim '(special ,branch))))
             ;; (print (list :cyx ',defbranch ,(package-name *package*) (package-name *package*)))
             ,@(when access
                 `((let ((,portal-state (list :point nil :template-point nil
@@ -99,20 +96,19 @@
                     (eval-when (:compile-toplevel :load-toplevel :execute)
                       (setf ,@(and of-system (or expand-regardless (not (fboundp of-system)))
                                    `((symbol-function ',of-system)
-                                     (lambda (,key &optional ,input) ;; (&rest ,values)
-                                       (destructuring-bind (,key &optional ,input) ,values
-                                         (if (rest ,values) (setf (getf ,portal-state ,key) ,input)
-                                             (getf ,portal-state ,key))))))
+                                     (lambda (,key &optional ,input)
+                                       (if ,input (setf (getf ,portal-state ,key) ,input)
+                                           (getf ,portal-state ,key)))))
                             ,@(and branch (or expand-regardless (not (fboundp branch)))
                                    `((symbol-function ',defbranch)
                                      (lambda (,key &optional ,input)
                                        (let ((,system ,(or linking name)))
-                                         (print (list :ssk ,system ,key ,input))
+                                         ;; (print (list :ssa ',props ,linking ,system ,key ,input))
                                          (if (member ,system ,branches)
                                              (if ,input (setf (getf (getf ,branches ,system) ,key) ,input)
                                                  (getf (getf ,branches ,system) ,key))
                                              (error "Attempting to add a branch to an undefined system."))))))
-                            ,@(and (or expand-regardless (and join (not (fboundp join))))
+                            ,@(and join (or expand-regardless (not (fboundp join)))
                                    `((symbol-function ',join)
                                      (lambda (,system)
                                        ;; (print (list :sy ,system))
@@ -137,8 +133,8 @@
                     ,@(loop :for contact-sym :in contacts
                             :collect `(load-system-directory2 (asdf:system-relative-pathname
                                                                ,contact-sym "./")
-                                                              (lambda (,input)
-                                                                (setf (getf ,branches ,name) ,input))))
+                                                              (lambda (,input ,key)
+                                                                (setf (getf ,branches ,key) ,input))))
                     ))))))
 
 (defun in-system-context (spec system-name)

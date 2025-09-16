@@ -1,6 +1,6 @@
 (defpackage #:seed.branch.abcd
   (:use #:cl)
-  (:shadowing-import-from #:seed.generate #:seed #:branch
+  (:shadowing-import-from #:seed.generate #:seed ;; #:branch
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
@@ -19,9 +19,9 @@
 
 (in-package :seed.branch.abcd)
 
-(seed :seed.branch.abcd ;; (:join-by join)
-  (:linking . :abcd)
-  (:access :systems systems :to-grow grow :to-branch branch :of-system of-system))
+(seed :seed.branch.abcd
+  (:linking . :abcd) ;; (:join-by join)
+  (:access :systems systems :to-grow grow :to-branch branch :of-system of-system :to-join join))
 
 (branch :summary
   (lambda (context input)
@@ -36,7 +36,7 @@
       ;; (print (list :bp package (funcall context :branch-point)))
       (let ((context (first session))
             (summary (grow :abcd :summary))
-            (branch-point (or (funcall context *portal* :branch-point) 0))
+            (branch-point (or (funcall context :portal.demo1 :branch-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 
