@@ -55,13 +55,13 @@
                                (dx ((uic-series :type (:ui :header)))
                                    (second l)
                                    (grow nil (first l)
-                                         context (list :ifmod-head t)))
+                                         context (list :uimod :header-controls)))
                                (dx ((uic-frame :name (second l) :type (:body)
                                                :access :abcd))
                                    (first l))
                                (dx ((uic-series :type (:ui :footer)))
                                    (list (grow nil (first l)
-                                               context (list :ifmod-foot t)))))))))))
+                                               context (list :uimod :footer-controls)))))))))))
 
 (defun manifest-file-listing (path &optional is-creating)
   (append (list (dx ((uic-series :layout (:groups :rows '(2))
@@ -107,9 +107,12 @@
 (branch :create
   (adapt-from-json :point)
   (lambda (state input)
-    (destructuring-bind (&key ifmod-head ifmod-foot &allow-other-keys) input
-      (cond (ifmod-head (values nil t))
-            (ifmod-foot (values nil t))
+    (destructuring-bind (&key uimod &allow-other-keys) input
+      (cond ;; (ifmod-head (values nil t))
+            ;; (ifmod-foot (values nil t))
+            (uimod (case uimod (:header-controls (values nil t))
+                         (:footer-controls (values nil t))))
+            
             (t "This is a financial chart analysis tool.")))))
 
 ;; (let ((line-templater (build-templater (from-system-file :abcd "sheet.lisp"
@@ -129,12 +132,12 @@
 (branch :nav
   (adapt-from-json :point :action)
   (lambda (state input)
-    (destructuring-bind (&key identity action ifmod-head &allow-other-keys) input
-      ;; (print (list :imm ifmod-head))
+    (destructuring-bind (&key identity action uimod &allow-other-keys) input
       (cond (identity (values nil))
-            (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
-                             (uic-series :type (:ui :controls)))
-                            (list :create)))
+            (uimod (case uimod (:header-controls
+                                (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
+                                     (uic-series :type (:ui :controls)))
+                                    (list :create)))))
             (action (case (intern (string-upcase action) "KEYWORD")
                       (:create (print (list :aa action)))))
             (state (when (getf input :point)
@@ -162,23 +165,22 @@
     (unless (or (not state) (of-state :- :chart-point))
       (of-state :- :chart-point 0))
     
-    (destructuring-bind (&key identity ifmod-head ifmod-foot action entities mode &allow-other-keys) input
+    (destructuring-bind (&key identity uimod action entities mode &allow-other-keys) input
 
       (unless (or (not state) (of-state :- :entity-data)) ;; load existing entity data from file
-        (of-state :- :entity-data
-                 (loop :for chent :in (cdddr (second (of-state :- :chart-entities)))
-                       :for ix :from 0 :collect (point-from-template chent ix))))
+        (of-state :- :entity-data (loop :for chent :in (cdddr (second (of-state :- :chart-entities)))
+                                        :for ix :from 0 :collect (point-from-template chent ix))))
 
       ;; (print (list :ac action entities))
       
       (cond (identity :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
-            (ifmod-head (dx ((:each uicc-button :type (:local)) ; :call :.base)
-                             (uic-series :type (:ui :controls)
-                                         :role (toggle)))
-                            (list :select :draw :retrace-x :retrace-y)))
-            (ifmod-foot (dx ((:each uicc-button :type (:local))
-                             (uic-series :type (:ui :controls)))
-                            (list :save :zoom-actual)))
+            (uimod (case uimod (:header-controls (dx ((:each uicc-button :type (:local)) ; :call :.base)
+                                                      (uic-series :type (:ui :controls)
+                                                                  :role (toggle)))
+                                                     (list :select :draw :retrace-x :retrace-y)))
+                         (:footer-controls (dx ((:each uicc-button :type (:local))
+                                                (uic-series :type (:ui :controls)))
+                                               (list :save :zoom-actual)))))
             (entities
              (let ((collected))
                ;; (print (list :ent entities))
@@ -274,14 +276,22 @@
                                    (values :complete t)))
                 input))))))
   (lambda (state input)
-    (destructuring-bind (&key identity ifmod-head ifmod-foot path sort remove action &allow-other-keys) input
+    (destructuring-bind (&key identity uimod path sort remove action &allow-other-keys) input
       (cond (identity :meta-code-form)
-            (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
-                             (uic-series :type (:ui :controls)))
-                            (list :save)))
-            (ifmod-foot (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
-                             (uic-series :type (:ui :controls)))
-                            (list :save)))
+            (uimod (case uimod (:header-controls (dx ((:each uicc-button :type (:local)
+                                                       :call (:.fetch (:action :.base)))
+                                                      (uic-series :type (:ui :controls)))
+                                                     (list :save)))
+                         (:footer-controls (dx ((:each uicc-button :type (:local)
+                                                 :call (:.fetch (:action :.base)))
+                                                (uic-series :type (:ui :controls)))
+                                               (list :save)))))
+            ;; (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
+            ;;                  (uic-series :type (:ui :controls)))
+            ;;                 (list :save)))
+            ;; (ifmod-foot (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
+            ;;                  (uic-series :type (:ui :controls)))
+            ;;                 (list :save)))
             (action
              (let ((chart-entities (and state (of-state :- :chart-entities)))
                    (chart-path (namestring (nth (of-state :- :chart-point)

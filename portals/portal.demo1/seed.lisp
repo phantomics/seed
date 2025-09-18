@@ -3,8 +3,8 @@
 (in-package #:portal.demo1)
 
 (seed :portal.demo1
-  ;; (:contacts :demo.sheet :abcd)
-  (:contacts :abcd)
+  (:contacts :demo.sheet :abcd)
+  ;; (:contacts :abcd)
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system :to-attach attach
            :systems systems :staccess (state . of-state)))
 
