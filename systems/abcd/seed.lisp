@@ -21,7 +21,8 @@
 
 (seed :seed.branch.abcd
   (:linking . :abcd)
-  (:access :systems systems :to-grow grow :to-branch branch :of-system of-system :to-join join))
+  (:access :systems systems :staccess (state . of-state)
+           :to-grow grow :to-branch branch :of-system of-system :to-join join))
 
 (branch :summary
   (lambda (state input)
@@ -36,7 +37,7 @@
       ;; (print (list :bp package (funcall context :branch-point)))
       (let ((context (first session))
             (summary (grow nil :summary))
-            (branch-point (or (funcall state :portal.demo1 :branch-point) 0))
+            (branch-point (or (of-state :portal.demo1 :branch-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 
@@ -116,14 +117,14 @@
 ;;                                        :type :format :x-start :y-start :x-end :y-end)))
 
 (defun init-chart-entities (state)
-  (when (and state (funcall state :abcd :chart-point))
-    (unless (funcall state :abcd :chart-entities)
-      (let ((chart-path (namestring (nth (funcall state :abcd :chart-point)
-                                         (funcall state :abcd :chart-paths)))))
-        ;; (print (list :st (nth (funcall state :abcd :chart-point)
-        ;;                       (funcall state :abcd :chart-paths))))
-        (funcall state :abcd :chart-entities
-                 (from-system-file :abcd (format nil "~a/chart.lisp" chart-path) :chart-entities))))))
+  (when (and state (of-state :abcd :chart-point))
+    (unless (of-state :- :chart-entities)
+      (let ((chart-path (namestring (nth (of-state :- :chart-point)
+                                         (of-state :- :chart-paths)))))
+        ;; (print (list :st (nth (of-state :- :chart-point)
+        ;;                       (of-state :- :chart-paths))))
+        (of-state :- :chart-entities
+                  (from-system-file :abcd (format nil "~a/chart.lisp" chart-path) :chart-entities))))))
 
 (branch :nav
   (adapt-from-json :point :action)
@@ -137,12 +138,12 @@
             (action (case (intern (string-upcase action) "KEYWORD")
                       (:create (print (list :aa action)))))
             (state (when (getf input :point)
-                       (funcall state :abcd :chart-point (getf input :point))
-                       (funcall state :abcd :chart-point nil))
-                     (let ((template-point (funcall state :abcd :template-point)))
+                       (of-state :- :chart-point (getf input :point))
+                       (of-state :- :chart-point nil))
+                     (let ((template-point (of-state :- :template-point)))
                        (destructuring-bind (&key system-name &allow-other-keys) input
                          ;; (print (list :ccc input))
-                         (render (funcall state nil :medium)
+                         (render (of-state nil :medium)
                                  (dx ((uic-series :type (:ui :list-table)
                                                   ;; :call (:.fetch (:point :@base) (:next :refresh))
                                                   ))
@@ -153,20 +154,19 @@
   (adapt-from-json :entities :action :mode ;; next line: entities properties
                              :name :type :in-flux :points :points-in-flux :ratios)
   (lambda (state input)
-    (unless (or (not state) (funcall state :abcd :chart-paths)) ;; load list of analyses
-      (funcall state :abcd :chart-paths
-               (uiop:subdirectories (asdf:system-relative-pathname :abcd "./analyses/"))))
+    (unless (or (not state) (of-state :- :chart-paths)) ;; load list of analyses
+      (of-state :- :chart-paths (uiop:subdirectories (asdf:system-relative-pathname :abcd "./analyses/"))))
 
     (init-chart-entities state)
 
-    (unless (or (not state) (funcall state :abcd :chart-point))
-      (funcall state :abcd :chart-point 0))
+    (unless (or (not state) (of-state :- :chart-point))
+      (of-state :- :chart-point 0))
     
     (destructuring-bind (&key identity ifmod-head ifmod-foot action entities mode &allow-other-keys) input
 
-      (unless (or (not state) (funcall state :abcd :entity-data)) ;; load existing entity data from file
-        (funcall state :abcd :entity-data
-                 (loop :for chent :in (cdddr (second (funcall state :abcd :chart-entities)))
+      (unless (or (not state) (of-state :- :entity-data)) ;; load existing entity data from file
+        (of-state :- :entity-data
+                 (loop :for chent :in (cdddr (second (of-state :- :chart-entities)))
                        :for ix :from 0 :collect (point-from-template chent ix))))
 
       ;; (print (list :ac action entities))
@@ -182,8 +182,8 @@
             (entities
              (let ((collected))
                ;; (print (list :ent entities))
-               (unless (funcall state :abcd :line-templater)
-                 (funcall state :abcd :line-templater
+               (unless (of-state :- :line-templater)
+                 (of-state :- :line-templater
                           (build-templater (from-system-file :abcd "sheet.lisp"
                                                              :chart-entity-template-line)
                                            :type :format :x-start :y-start :x-end :y-end)))
@@ -197,32 +197,32 @@
                        (let ((index)
                              (item (list :points points :name name :type type :points-in-flux nil
                                          :in-flux :true :ratios ratios)))
-                         (loop :for i :from 0 :for ent :in (funcall state :abcd :entity-data)
+                         (loop :for i :from 0 :for ent :in (of-state :- :entity-data)
                                :do (if (string= name (getf ent :name))
                                        (setf index i)
                                        (setf (getf ent :in-flux) :false)))
-                         ;; (print (list :ent index (funcall state :abcd :entity-data)))
-                         (let ((edata (funcall state :abcd :entity-data)))
+                         ;; (print (list :ent index (of-state :- :entity-data)))
+                         (let ((edata (of-state :- :entity-data)))
                            (if index (setf (nth index edata) item)
                                (progn (push item edata)
-                                      (push (funcall (funcall state :abcd :line-templater)
+                                      (push (funcall (of-state :- :line-templater)
                                                      :x-start x-start :x-end x-end ;; :format format
                                                      :y-start y-start :y-end y-end :type type)
                                             collected)))
-                           (funcall state :abcd :entity-data edata)))))))
+                           (of-state :- :entity-data edata)))))))
                ;; (print (list :ce chart-entities))
-               (let ((entities (funcall state :abcd :chart-entities)))
-                 (setf (second entities) (append (second (funcall state :abcd :chart-entities))
+               (let ((entities (of-state :- :chart-entities)))
+                 (setf (second entities) (append (second (of-state :- :chart-entities))
                                                  (reverse collected)))
-                 (funcall state :abcd :chart-entities entities)
-                 (funcall state :abcd :entity-data))))
+                 (of-state :- :chart-entities entities)
+                 (of-state :- :entity-data))))
             (action
-             (let ((chart-entities (funcall state :abcd :chart-point (getf input :point)))
-                   (chart-path (namestring (nth (funcall state :abcd :chart-point)
-                                                (funcall state :abcd :chart-paths)))))
+             (let ((chart-entities (of-state :- :chart-point (getf input :point)))
+                   (chart-path (namestring (nth (of-state :- :chart-point)
+                                                (of-state :- :chart-paths)))))
                
-               ;; (print (list :st2 (nth (funcall state :abcd :chart-point)
-               ;;                       (funcall state :abcd :chart-paths))))
+               ;; (print (list :st2 (nth (of-state :- :chart-point)
+               ;;                       (of-state :- :chart-paths))))
                ;; (print (list :ce chart-entities (package-name *package*)))
                (case (intern (string-upcase (rest input)) "KEYWORD")
                  (:save (let ((output))
@@ -233,13 +233,13 @@
                                 output))))))
             (t (case (intern (string-upcase mode) "KEYWORD")
                  (:chart-data
-                  ;; (print (list :cc (funcall state :abcd :chart-point)))
+                  ;; (print (list :cc (of-state :- :chart-point)))
                   ;; (if (and state (funcall state :chart-point))
-                  (let ((chart-path (namestring (nth (funcall state :abcd :chart-point)
-                                                     (funcall state :abcd :chart-paths)))))
+                  (let ((chart-path (namestring (nth (of-state :- :chart-point)
+                                                     (of-state :- :chart-paths)))))
                
-                    ;; (print (list :st3 (nth (funcall state :abcd :chart-point)
-                    ;;                        (funcall state :abcd :chart-paths))))
+                    ;; (print (list :st3 (nth (of-state :- :chart-point)
+                    ;;                        (of-state :- :chart-paths))))
                     ;; (system-file-to-string :abcd data-path)
                     (file-to-string (second (third (second (from-system-file
                                                             :abcd (format nil "~a/chart.lisp" chart-path)
@@ -253,7 +253,7 @@
   (lambda (state input)
     (destructuring-bind (&key path sort remove &allow-other-keys) input
       (when state
-        (let ((entities (funcall state :abcd :chart-entities)))
+        (let ((entities (of-state :- :chart-entities)))
           (symbol-macrolet ((elist (cdddr (second entities))))
             (if path (cond (sort (destructuring-bind (index move-to) sort
                                    (let ((moved (nth index elist)))
@@ -265,12 +265,12 @@
                                      (if (zerop move-to) (setf elist (cons moved elist))
                                          (rplacd (nthcdr (1- move-to) elist)
                                                  (cons moved (nthcdr move-to elist))))))
-                                 (funcall state :abcd :chart-entities entities)
+                                 (of-state :- :chart-entities entities)
                                  (print :complete))
                            (remove (if (zerop remove) (pop elist)
                                        (rplacd (nthcdr (1- remove) elist)
                                                (rest (nthcdr remove elist))))
-                                   (funcall state :abcd :chart-entities entities)
+                                   (of-state :- :chart-entities entities)
                                    (values :complete t)))
                 input))))))
   (lambda (state input)
@@ -283,9 +283,9 @@
                              (uic-series :type (:ui :controls)))
                             (list :save)))
             (action
-             (let ((chart-entities (and state (funcall state :abcd :chart-entities)))
-                   (chart-path (namestring (nth (funcall state :abcd :chart-point)
-                                                (funcall state :abcd :chart-paths)))))
+             (let ((chart-entities (and state (of-state :- :chart-entities)))
+                   (chart-path (namestring (nth (of-state :- :chart-point)
+                                                (of-state :- :chart-paths)))))
                ;; (print (list :ce chart-entities))
                (case (intern (string-upcase action) "KEYWORD")
                  (:save (let ((output))
@@ -293,7 +293,7 @@
                           (setf output chart-entities
                                 (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
                                                   :chart-entities)
-                                (funcall state :abcd :chart-entities)))))))
+                                (of-state :- :chart-entities)))))))
             (t (init-chart-entities state)
                ;; (print (list :ccc state))
                (when state
@@ -301,5 +301,5 @@
                  ;; (print (list :nnn chart-entities))
                  (render (funcall state nil :medium)
                          (dx ((uic-frame :type (:meta-code)))
-                             (seed.modulate::express (funcall state :abcd :chart-entities))))))))))
+                             (seed.modulate::express (of-state :- :chart-entities))))))))))
 

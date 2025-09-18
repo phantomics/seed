@@ -6,7 +6,7 @@
   ;; (:contacts :demo.sheet :abcd)
   (:contacts :abcd)
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system :to-attach attach
-           :systems systems))
+           :systems systems :staccess (state . of-state)))
 
 (defvar *seed-templates* (list (cons :template.chart (asdf:system-relative-pathname
                                                       :portal.demo1 "../../templates/template.charts/"))))
@@ -20,14 +20,14 @@
     (destructuring-bind (&key key point &allow-other-keys) input
       ;; (print (list :in input point))
       (when (and key (string= "demo" (string-downcase key)))
-        (funcall state nil :user :hello))
+        (of-state nil :user :hello))
 
       ;; (print (list :inp input))
       (when (stringp point)
         (if (loop :for i :across point :always (digit-char-p i))
             (when (and state point)
               ;; when a point is selected, assign it
-              (funcall state :portal.demo1 :branch-point (read-from-string point)))
+              (of-state :- :branch-point (read-from-string point)))
 
             (when (and state point)
               (if (string= "BASE" (string-upcase point))
@@ -39,17 +39,17 @@
                       (load-seed-system epsym)))))))
 
       (when (integerp point)
-        (funcall state :portal.demo1 :branch-point point))
+        (of-state :- :branch-point point))
 
       ;; (print (list :opo point))
 
       (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
 
-        (funcall state nil :medium medium)
+        (of-state nil :medium medium)
 
         ;; (print (list :cccc (package-name *package*)))
         (render medium
-                (authorize (funcall state nil :user)
+                (authorize (of-state nil :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                                    :maps '(((:type :sidebar)) ((:type :main)))))
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
@@ -62,7 +62,7 @@
                           (and (of-system :point)
                                (dx (;; (:each uic-anchor :type '(:branch))
                                     (uic-series :type  '(:ui :partitioned :navigation)
-                                                :point (funcall state :portal.demo1 :branch-point)
+                                                :point (of-state :- :branch-point)
                                                 :role ((call-c :a (list :point :@index)))
                                                 ;; :call  (:.fetch (:action :.base))
                                                 ;; :call (:.fetch (:point :@base) (:next :refresh))
@@ -106,9 +106,9 @@
   (adapt-from-json :point :system-name)
   (lambda (state input)
     (when (getf input :point)
-      (funcall state :portal.demo1 :template-point (getf input :point)))
-    ;; (print (list :iii input (funcall state :template-point)))
-    (let ((template-point (funcall state :portal.demo1 :template-point)))
+      (of-state :- :template-point (getf input :point)))
+    ;; (print (list :iii input (of-state :template-point)))
+    (let ((template-point (of-state :- :template-point)))
       (destructuring-bind (&key system-name &allow-other-keys) input
         (when system-name ;; a new system is being created from a template
           (print (list :tl template-point (package-name *package*)))
@@ -138,8 +138,7 @@
                           (list "aaa"))
                       (dx ((uic-series :type (:ui :list-table)
                                        :call (:.fetch (:point :@base) (:next :refresh))))
-                          (manifest-template-interface *seed-templates* (funcall state :portal.demo1
-                                                                                 :template-point)))
+                          (manifest-template-interface *seed-templates* (of-state :- :template-point)))
                       (dx ((uic-series :type (:ui :footer)))
                           ;; (list "bbb")
                           )
