@@ -22,24 +22,6 @@
                           (funcall (symbol-function (intern "SYSTEMS" (package-name package-out))))
                         (and (funcall callback (getf systems root-name) root-name))))))
 
-;; (defun load-branch-spec (file-path)
-;;   (let ((package))
-;;     (with-open-file (stream file-path :direction :input)
-;;       (loop :for expr := (read stream nil) :while (and expr (not package))
-;;             :do (let ((evaluated (eval expr)))
-;;                   (when (typep evaluated 'package)
-;;                     (setf package evaluated))))
-
-;;       (dotimes (n 3) (eval (read stream nil)))
-
-;;       (import (intern "BRANCH" (package-name *package*))
-;;               (package-name package))
-
-;;       (dolist (sym (symbol-value (intern "*CONTACT-INTERFACE*" (package-name *package*))))
-;;         (import sym (package-name package)))
-
-;;       (loop :for expr := (read stream nil) :while expr :do (eval expr)))))
-
 (defun chain-fns (fns)
   (if (rest fns)
       (let ((context (gensym)) (input (gensym)))
@@ -73,6 +55,7 @@
          (join      (and access (intern (string (getf access :to-join))   pname)))
          (of-system (and access (intern (string (getf access :of-system)) pname)))
          (defbranch (and access (intern (string (gensym "DEFBRANCH"))     pname)))
+         (grow%     (and access (intern (string (gensym "GROW%"))         pname)))
          (expand-regardless (member :expand-regardless config))
          (branches (gensym "BR")) (system (gensym "SY")) (key (gensym "KY")) (values (gensym "VL"))
          (session (gensym "SS")) (input (gensym "IN")) (portal-state (gensym "PR")))
@@ -119,7 +102,8 @@
                                        (unless ,key
                                          (error "Warning: attempt to grow system ~a without a specified branch."
                                                 ,system))
-                                       (funcall (getf (getf ,branches ,system) ,key) ,session ,input))))
+                                       (funcall (getf (getf ,branches (or ,system ,(or linking name))) ,key)
+                                                ,session ,input))))
                             ,@(and attach (or expand-regardless (not (fboundp attach)))
                                    `((symbol-function ',attach)
                                      (lambda (,input)

@@ -8,9 +8,8 @@
   (:access :to-join join :to-grow grow :to-branch branch :of-system of-system :to-attach attach
            :systems systems))
 
-(defvar *seed-templates* (list (cons :template.chart
-                                     (asdf:system-relative-pathname :portal.demo1
-                                                                    "../../templates/template.charts/"))))
+(defvar *seed-templates* (list (cons :template.chart (asdf:system-relative-pathname
+                                                      :portal.demo1 "../../templates/template.charts/"))))
 
 (defvar *portal* :portal.demo1)
 
@@ -49,7 +48,6 @@
         (funcall state nil :medium medium)
 
         ;; (print (list :cccc (package-name *package*)))
-
         (render medium
                 (authorize (funcall state nil :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
@@ -57,7 +55,7 @@
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
                           (dx ((uic-series :type '(:ui :list)))
                               (list :portal.demo1
-                                    (dx ((uicc-select :options (list :base :demo.sheet :abcd)
+                                    (dx ((uicc-select :options (cons :base (of-system :contacts))
                                                       :call (:.fetch (:point :.base) (:next :refresh))))
                                         (of-system :point))))
                           
@@ -80,7 +78,7 @@
 
                       (if (of-system :point)
                           (grow (of-system :point) :view state)
-                          (grow :portal.demo1 :base state)))
+                          (grow nil :base state)))
 
                   (dx ((uic-series :type (:ui :main :placard)))
                       (list (dx ((uic-series :type (:ui :column :short) :call t)) ;; should this be :cast?
