@@ -51,7 +51,8 @@
         (render medium
                 (authorize (of-state nil :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
-                                   :maps '(((:type :sidebar)) ((:type :main)))))
+                                   :maps '(((:type :sidebar)) ((:type :main)))
+                                   ))
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
                           (dx ((uic-series :type '(:ui :list)))
                               (list :portal.demo1
