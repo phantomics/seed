@@ -24,6 +24,26 @@
   (:access :systems systems :staccess (state . of-state)
            :to-grow grow :to-branch branch :of-system of-system :to-join join))
 
+(defparameter *system* :abcd)
+
+(defun buttonize (item index)
+  (declare (ignore index))
+  ;; (print (list :index index))
+  (make-instance 'uicc-button :base item :type '(:local)))
+
+(defun buttonize-calling (item index)
+  (declare (ignore index))
+  ;; (print (list :index index))
+  (make-instance 'uicc-button :base item :type '(:local) :call '(:.fetch (:action :.base))))
+
+;; (case index
+;;   (0 (push :sidebar (seed.modulate::uic-type item)))
+;;   (1 (push :main    (seed.modulate::uic-type item))))
+;; (print (list :ox (seed.modulate::uic-type item)))
+;; item)
+
+;; (:each uicc-button :type (:local))
+
 (branch :summary
   (lambda (state input)
     (declare (ignore state input))
@@ -71,7 +91,7 @@
                     (dx ((uicc-button :call (:@ :form-input)))
                         "create")))
           (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
-                :append (let ((props (from-system-file :abcd (format nil "~a/chart.lisp" dir)
+                :append (let ((props (from-system-file *system* (format nil "~a/chart.lisp" dir)
                                                        :properties)))
                           (destructuring-bind (&key name description) (rest props)
                             (and props (list (dx ((uic-series :type (:series)))
@@ -114,7 +134,7 @@
             ;; (ifmod-foot (values nil t))
             (t "This is a financial chart analysis tool.")))))
 
-;; (let ((line-templater (build-templater (from-system-file :abcd "sheet.lisp"
+;; (let ((line-templater (build-templater (from-system-file *system* "sheet.lisp"
 ;;                                                          :chart-entity-template-line)
 ;;                                        :type :format :x-start :y-start :x-end :y-end)))
 
@@ -125,7 +145,7 @@
                                          (of-state :- :chart-paths)))))
         ;; (print (list :st (nth (of-state :- :chart-point)
         ;;                       (of-state :- :chart-paths))))
-        (of-state :- :chart-entities (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
+        (of-state :- :chart-entities (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities))))))
 
 (branch :nav
@@ -134,8 +154,8 @@
     (destructuring-bind (&key identity action uimod &allow-other-keys) input
       (cond (identity (values nil))
             ((eq uimod :header-controls)
-             (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
-                  (uic-series :type (:ui :controls)))
+             (dx (;; (:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
+                  (uic-series :type (:ui :controls) :map #'buttonize-calling))
                  (list :create)))
             (action (case (intern (string-upcase action) "KEYWORD")
                       (:create (print (list :aa action)))))
@@ -150,14 +170,14 @@
                                                   ;; :call (:.fetch (:point :@base) (:next :refresh))
                                                   ))
                                      (manifest-file-listing (asdf:system-relative-pathname
-                                                             :abcd "./analyses/")))))))))))
+                                                             *system* "./analyses/")))))))))))
 
 (branch :chart
   (adapt-from-json :entities :action :mode ;; next line: entities properties
                              :name :type :in-flux :points :points-in-flux :ratios)
   (lambda (state input)
     (unless (or (not state) (of-state :- :chart-paths)) ;; load list of analyses
-      (of-state :- :chart-paths (uiop:subdirectories (asdf:system-relative-pathname :abcd "./analyses/"))))
+      (of-state :- :chart-paths (uiop:subdirectories (asdf:system-relative-pathname *system* "./analyses/"))))
 
     (init-chart-entities state)
 
@@ -173,19 +193,17 @@
       ;; (print (list :ac action entities))
       
       (cond (identity :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
-            ((eq uimod :header-controls) (dx ((:each uicc-button :type (:local)) ; :call :.base)
-                                                      (uic-series :type (:ui :controls)
-                                                                  :role (toggle)))
-                                                     (list :select :draw :retrace-x :retrace-y)))
-            ((eq uimod :footer-controls) (dx ((:each uicc-button :type (:local))
-                                              (uic-series :type (:ui :controls)))
+            ((eq uimod :header-controls) (dx ((uic-series :type (:ui :controls)
+                                                          :map #'buttonize :role (toggle)))
+                                             (list :select :draw :retrace-x :retrace-y)))
+            ((eq uimod :footer-controls) (dx ((uic-series :type (:ui :controls) :map #'buttonize))
                                              (list :save :zoom-actual)))
             (entities
              (let ((collected))
                ;; (print (list :ent entities))
                (unless (of-state :- :line-templater)
                  (of-state :- :line-templater
-                          (build-templater (from-system-file :abcd "sheet.lisp"
+                          (build-templater (from-system-file *system* "sheet.lisp"
                                                              :chart-entity-template-line)
                                            :type :format :x-start :y-start :x-end :y-end)))
                
@@ -228,7 +246,7 @@
                (case (intern (string-upcase (rest input)) "KEYWORD")
                  (:save (let ((output))
                           (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
-                          (setf (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
+                          (setf (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                   :chart-entities :as-string t)
                                 output))))))
             (t (case (intern (string-upcase mode) "KEYWORD")
@@ -240,9 +258,9 @@
                
                     ;; (print (list :st3 (nth (of-state :- :chart-point)
                     ;;                        (of-state :- :chart-paths))))
-                    ;; (system-file-to-string :abcd data-path)
+                    ;; (system-file-to-string *system* data-path)
                     (file-to-string (second (third (second (from-system-file
-                                                            :abcd (format nil "~a/chart.lisp" chart-path)
+                                                            *system* (format nil "~a/chart.lisp" chart-path)
                                                             :chart-entities)))))))
                  (t (render (funcall state nil :medium)
                             (dx ((uich-candle :type (:green-red)))
@@ -252,38 +270,34 @@
   (adapt-from-json :path :sort :remove :action :mode)
   (lambda (state input)
     (destructuring-bind (&key path sort remove &allow-other-keys) input
-      (when state
-        (let ((entities (of-state :- :chart-entities)))
-          (symbol-macrolet ((elist (cdddr (second entities))))
-            (if path (cond (sort (destructuring-bind (index move-to) sort
-                                   (let ((moved (nth index elist)))
-                                     ;; (print (list :en index move-to elist :mm moved))
-                                     (if (zerop index) (pop elist)
-                                         (rplacd (nthcdr (1- index) elist)
-                                                 (rest (nthcdr index elist))))
-                                     ;; (print (list :en2 index move-to elist :mov moved))
-                                     (if (zerop move-to) (setf elist (cons moved elist))
-                                         (rplacd (nthcdr (1- move-to) elist)
-                                                 (cons moved (nthcdr move-to elist))))))
-                                 (of-state :- :chart-entities entities)
-                                 (print :complete))
-                           (remove (if (zerop remove) (pop elist)
-                                       (rplacd (nthcdr (1- remove) elist)
-                                               (rest (nthcdr remove elist))))
-                                   (of-state :- :chart-entities entities)
-                                   (values :complete t)))
-                input))))))
+      (or (and state (let ((entities (of-state :- :chart-entities)))
+                       (symbol-macrolet ((elist (cdddr (second entities))))
+                         (and path (cond (sort (destructuring-bind (index move-to) sort
+                                                 (let ((moved (nth index elist)))
+                                                   ;; (print (list :en index move-to elist :mm moved))
+                                                   (if (zerop index) (pop elist)
+                                                       (rplacd (nthcdr (1- index) elist)
+                                                               (rest (nthcdr index elist))))
+                                                   ;; (print (list :en2 index move-to elist :mov moved))
+                                                   (if (zerop move-to) (setf elist (cons moved elist))
+                                                       (rplacd (nthcdr (1- move-to) elist)
+                                                               (cons moved (nthcdr move-to elist))))))
+                                               (of-state :- :chart-entities entities)
+                                               (print :complete))
+                                         (remove (if (zerop remove) (pop elist)
+                                                     (rplacd (nthcdr (1- remove) elist)
+                                                             (rest (nthcdr remove elist))))
+                                                 (of-state :- :chart-entities entities)
+                                                 (values :complete t)))))))
+          input)))
   (lambda (state input)
     (destructuring-bind (&key identity uimod action &allow-other-keys) input
-      (print (list :uu uimod))
       (cond (identity :meta-code-form)
-            ((eq uimod :header-controls) (dx ((:each uicc-button :type (:local)
-                                               :call (:.fetch (:action :.base)))
-                                              (uic-series :type (:ui :controls)))
+            ((eq uimod :header-controls) (dx ((uic-series :type (:ui :controls)
+                                                          :map #'buttonize-calling))
                                              (list :save)))
-            ((eq uimod :footer-controls) (dx ((:each uicc-button :type (:local)
-                                               :call (:.fetch (:action :.base)))
-                                              (uic-series :type (:ui :controls)))
+            ((eq uimod :footer-controls) (dx ((uic-series :type (:ui :controls)
+                                                          :map #'buttonize-calling))
                                              (list :save)))
             ;; (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
             ;;                  (uic-series :type (:ui :controls)))
@@ -298,7 +312,7 @@
                         (:save (let ((output))
                                  ;; (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
                                  (setf output (and state (of-state :- :chart-entities))
-                                       (from-system-file :abcd (format nil "~a/chart.lisp" chart-path)
+                                       (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                          :chart-entities)
                                        (of-state :- :chart-entities))
                                  output)))))

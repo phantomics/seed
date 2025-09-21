@@ -197,10 +197,10 @@
                   :padding 8px :margin-bottom 6px)
         (.form :font-size "120%" :font-weight "bold" :padding 3px 12px))
       
-      `((:and (.sidebar > .series > .item) (:nth-child odd))
+      `((:and (.sidebar.series > .item) (:nth-child odd))
         :color ,color-margin-sh8
         :background ,color-margin-sh5 :border-color ,color-margin-sh4)
-      `((:and (.sidebar > .series > .item) (:nth-child even))
+      `((:and (.sidebar.series > .item) (:nth-child even))
         :color ,color-margin-sh1
         :background ,color-margin-sh7 :border-color ,color-margin-sh6)
 

@@ -175,9 +175,9 @@
             :initarg  :access)))
 
 (defclass uic-series (ui-component)
-  ((%maps   :accessor uic-series-maps
+  ((%map    :accessor uic-series-map
             :initform nil
-            :initarg  :maps)
+            :initarg  :map)
    (%point  :accessor uic-series-point
             :initform nil
             :initarg  :point)
@@ -309,22 +309,24 @@
            (process-spec (item spec-list)
              (let ((generated))
                (case (caar spec-list)
-                 (:each
-                  (destructuring-bind (class &rest params) (cdar spec-list)
-                    (let* ((sub-item (gensym))
-                           (params (format-params params)))
-                      (setf generated `(mapcar (lambda (,sub-item)
-                                                 (make-instance ',class :base ,sub-item ,@params))
-                                               ,item)))))
+                 ;; (:each
+                 ;;  (destructuring-bind (class &rest params) (cdar spec-list)
+                 ;;    (let* ((sub-item (gensym))
+                 ;;           (params (format-params params)))
+                 ;;      (setf generated `(mapcar (lambda (,sub-item)
+                 ;;                                 (make-instance ',class :base ,sub-item ,@params))
+                 ;;                               ,item)))))
                  (t (destructuring-bind (class &rest params) (first spec-list)
                       ;; (print (list :prr params))
                       (setf generated `(make-instance ',class :base ,item ,@(format-params params))))))
-               (if (not (rest spec-list))
-                   generated (process-spec generated (rest spec-list))))))
+               ;; (if (not (rest spec-list))
+               ;;     generated (process-spec generated (rest spec-list)))
+               generated
+               )))
     (let ((evaluated-form (gensym)))
       `(let ((,evaluated-form ,(if (not (second form))
                                    (first form) (cons 'list form))))
-         ,(process-spec evaluated-form specs)))))
+         ,(process-spec evaluated-form (list (first specs)))))))
 
 (defgeneric render (medium component))
 
@@ -494,6 +496,15 @@
                           (list :class (furnish-type medium aspect '(:access))
                                 (realize aspect medium (uic-base aspect))))))))
 
+(defmethod generate :before (medium (aspect uic-series))
+  "If a series has a :map slot filled, the function there should be mapped over the items in the series."
+  (declare (ignore medium))
+  (when (uic-series-map aspect)
+    (setf (uic-base aspect) (loop :for ix :from 0 :for item :in (uic-base aspect)
+                                  :collect (funcall (uic-series-map aspect) item ix))
+          (uic-series-map aspect) nil)))
+
+
 (defmethod generate ((medium uim-web) (aspect uic-series))
   (let ((last-type-index (1- (length (uic-type aspect))))
         (class-stream (make-string-output-stream))
@@ -611,7 +622,7 @@
               ;; with the others; in most cases it is either not shown or displayed
               ;; in a special manner as in a series header
               :when (or item (member :partitioned (uic-type aspect)))
-              :do (let ((map (nth ix (uic-series-maps aspect))))
+              :do (let ((map nil)) ;; (nth ix (uic-series-maps aspect))))
                     (format class-stream "item ")
                     (when (and (uic-series-point aspect)
                                (= ix (uic-series-point aspect)))

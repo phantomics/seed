@@ -51,7 +51,14 @@
         (render medium
                 (authorize (of-state nil :user)
                   (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
-                                   :maps '(((:type :sidebar)) ((:type :main)))
+                                   ;; :maps '(((:type :sidebar)) ((:type :main)))
+                                   :map (lambda (item index)
+                                          ;; (print (list :index index))
+                                          (case index
+                                            (0 (push :sidebar (seed.modulate::uic-type item)))
+                                            (1 (push :main    (seed.modulate::uic-type item))))
+                                          ;; (print (list :ox (seed.modulate::uic-type item)))
+                                          item)
                                    ))
                       (dx ((uic-series :type '(:ui :column  :portal-summary)))
                           (dx ((uic-series :type '(:ui :list)))

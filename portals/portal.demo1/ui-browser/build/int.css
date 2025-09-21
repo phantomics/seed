@@ -95,13 +95,13 @@ body{
     padding: 3px 12px;
 }
 
-.sidebar > .series > .item:nth-child(odd){
+.sidebar.series > .item:nth-child(odd){
     color: #D5D9EF;
     background: #9195AA;
     border-color: #72768A;
 }
 
-.sidebar > .series > .item:nth-child(even){
+.sidebar.series > .item:nth-child(even){
     color: #282C3D;
     background: #C5C9E0;
     border-color: #AEB2C7;

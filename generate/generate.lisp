@@ -29,15 +29,19 @@
            (-<> ,input ,@(loop :for item :in fns :collect `(funcall ,item ,context <>)))))
       (first fns)))
 
-(defun channel-fns (fns)
-  (let ((state (gensym)) (data (gensym)) (final (gensym)) (output (gensym)) (final-out (gensym)))
+(defun channel-fns (syname brname fns)
+  (let ((state (gensym (string-upcase syname))) (data (gensym (string-upcase brname)))
+        (final (gensym)) (output (gensym)) (final-out (gensym)))
     (if (rest fns)
         `(lambda (,state ,data)
            (let ((,final))
-             ,@(loop :for fn :in fns
+             ,@(loop :for fn :in fns :for fix :from (1- (length fns)) :downto 0
                      :collect `(multiple-value-bind (,output ,final-out)
                                    (if ,final (values ,data ,final) (funcall ,fn ,state ,data))
-                                 (setf ,data ,output ,final ,final-out)))
+                                 (setf ,data  ,output
+                                       ;; ,data  ,(if (zerop fix)
+                                       ;;             output (list 'or output data))
+                                       ,final ,final-out)))
              ,data))
         (first fns))))
 
@@ -66,7 +70,7 @@
                              (lambda (form env)
                                (destructuring-bind (,key &rest ,input) (rest form)
                                  ;; (list ',defbranch ,system ,key (chain-fns ,input))
-                                 (list ',defbranch ,key (channel-fns ,input))))
+                                 (list ',defbranch ,key (channel-fns ,(or linking name) ,key ,input))))
                              ,@(and staccess (destructuring-bind (st-sym &rest of-sym) staccess
                                                (and (or expand-regardless (not (fboundp of-sym)))
                                                     `((macro-function ',of-sym)

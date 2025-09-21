@@ -24,6 +24,23 @@
   (:access :systems systems :staccess (state . of-state)
            :to-grow grow :to-branch branch :of-system of-system :to-join join))
 
+;;  (:each uicc-button :type (:remote) :call :.base)
+
+(defun buttonize (item index)
+  (declare (ignore index))
+  ;; (print (list :index index))
+  (make-instance 'uicc-button :base item :type '(:local)))
+
+(defun buttonize-calling (item index)
+  (declare (ignore index))
+  ;; (print (list :index index))
+  (make-instance 'uicc-button :base item :call ':.base))
+
+(defun buttonize-calling-remote (item index)
+  (declare (ignore index))
+  ;; (print (list :index index))
+  (make-instance 'uicc-button :base item :type '(:remote) :call ':.base))
+
 (branch :summary
   (let ((layout '((:main :code-view) (:cells :cells-view) nil
                   (:graph :graph-overview) (:graph :graph-node))))
@@ -52,7 +69,7 @@
                                             :join   (list :demo.sheet (first l))
                                             :type   (:column)
                                             :mode   (grow :demo.sheet (first l)
-                                                          context (list :state (second l)))))
+                                                          context (list :identity (second l)))))
                                (dx ((uic-series :type (:ui :header)))
                                    (second l)
                                    (grow :demo.sheet (first l)
@@ -67,13 +84,13 @@
 (branch :main
   (adapt-from-json :text)
   (lambda (state input)
-    (destructuring-bind (&key state uimod text &allow-other-keys) input
-      (cond (state)
-            (uimod (case uimod (:header-controls (dx ((:each uicc-button)
-                                                      (uic-series :type (:ui :controls)))
+    (destructuring-bind (&key identity uimod text &allow-other-keys) input
+      (cond (identity)
+            (uimod (case uimod (:header-controls (dx (;; (:each uicc-button)
+                                                      (uic-series :map #'buttonize :type (:ui :controls)))
                                                      (list :save :abc)))
-                         (:footer-controls (dx ((:each uicc-button)
-                                                (uic-series :type (:ui :controls)))
+                         (:footer-controls (dx (;; (:each uicc-button)
+                                                (uic-series :map #'buttonize :type (:ui :controls)))
                                                (list :save)))))
             ;; (ifmod-foot (dx ((:each uicc-button)
             ;;                  (uic-series :type (:ui :controls)))
@@ -98,13 +115,13 @@
 (branch :cells
   (adapt-from-json :cells)
   (lambda (state input)
-    (destructuring-bind (&key state uimod cells &allow-other-keys) input
-      (cond (state)
-            (uimod (case uimod (:header-controls (dx ((:each uicc-button)
-                                                      (uic-series :type (:ui :controls)))
+    (destructuring-bind (&key identity uimod cells &allow-other-keys) input
+      (cond (identity)
+            (uimod (case uimod (:header-controls (dx (;; (:each uicc-button)
+                                                      (uic-series :map #'buttonize :type (:ui :controls)))
                                                      (list :save :abc)))
-                         (:footer-controls (dx ((:each uicc-button)
-                                                (uic-series :type (:ui :controls)))
+                         (:footer-controls (dx (;; (:each uicc-button)
+                                                (uic-series :map #'buttonize :type (:ui :controls)))
                                                (list :save)))))
             ;; (ifmod-head (dx ((:each uicc-button)
             ;;                  (uic-series :type (:ui :controls)))
@@ -148,17 +165,18 @@
                      :title :image :dialog)
     (adapt-from-alist :system :branch :face)
     (lambda (state input)
-      (destructuring-bind (&key state uimod ;; ifmod-head ifmod-foot
+      (destructuring-bind (&key identity uimod ;; ifmod-head ifmod-foot
                              action index target width height path face &allow-other-keys)
           input
-        (cond (state (when state (case state
-                                   (:graph-overview :graph-breadth)
-                                   (:graph-node     :meta-code-form))))
-              (uimod (case uimod (:header-controls (dx ((:each uicc-button :type (:remote) :call :.base)
-                                                        (uic-series :type (:ui :controls)))
+        (cond (identity (case identity
+                          (:graph-overview :graph-breadth)
+                          (:graph-node     :meta-code-form)))
+              (uimod (case uimod (:header-controls (dx (;; (:each uicc-button :type (:remote) :call :.base)
+                                                        (uic-series :type (:ui :controls)
+                                                                    :map #'buttonize-calling-remote))
                                                        (list :add-node :add-link)))
-                           (:footer-controls (dx ((:each uicc-button :call :.base)
-                                                  (uic-series :type (:ui :controls)))
+                           (:footer-controls (dx (;; (:each uicc-button :call :.base)
+                                                  (uic-series :map #'buttonize-calling :type (:ui :controls)))
                                                  (list :save)))))
               ;; (ifmod-head (dx ((:each uicc-button :type (:remote) :call :.base)
               ;;                  (uic-series :type (:ui :controls)))
