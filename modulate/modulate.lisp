@@ -308,17 +308,17 @@
                                         (t (format-list ival))))))
            (process-spec (item spec-list)
              (let ((generated))
-               (case (caar spec-list)
-                 ;; (:each
-                 ;;  (destructuring-bind (class &rest params) (cdar spec-list)
-                 ;;    (let* ((sub-item (gensym))
-                 ;;           (params (format-params params)))
-                 ;;      (setf generated `(mapcar (lambda (,sub-item)
-                 ;;                                 (make-instance ',class :base ,sub-item ,@params))
-                 ;;                               ,item)))))
-                 (t (destructuring-bind (class &rest params) (first spec-list)
-                      ;; (print (list :prr params))
-                      (setf generated `(make-instance ',class :base ,item ,@(format-params params))))))
+               ;; (case (caar spec-list)
+               ;; (:each
+               ;;  (destructuring-bind (class &rest params) (cdar spec-list)
+               ;;    (let* ((sub-item (gensym))
+               ;;           (params (format-params params)))
+               ;;      (setf generated `(mapcar (lambda (,sub-item)
+               ;;                                 (make-instance ',class :base ,sub-item ,@params))
+               ;;                               ,item)))))
+               (destructuring-bind (class &rest params) spec-list ;; (first spec-list)
+                 ;; (print (list :prr params))
+                 (setf generated `(make-instance ',class :base ,item ,@(format-params params))))
                ;; (if (not (rest spec-list))
                ;;     generated (process-spec generated (rest spec-list)))
                generated
@@ -326,7 +326,8 @@
     (let ((evaluated-form (gensym)))
       `(let ((,evaluated-form ,(if (not (second form))
                                    (first form) (cons 'list form))))
-         ,(process-spec evaluated-form (list (first specs)))))))
+         ,(process-spec evaluated-form ;; (list (first specs))
+                        specs)))))
 
 (defgeneric render (medium component))
 
@@ -1610,7 +1611,7 @@
                 ;; the output-stream is created in the seed package - best elsewhere?
                 (if (and face (string= "graphNode" face))
                     (render medium
-                            (dx ((uic-frame :type (:meta-code)))
+                            (dx (uic-frame :type (:meta-code))
                                 (express
                                  (funcall (lambda (items)
                                             `(fx ,items (:type :enum) (:fx :uic-series)))
