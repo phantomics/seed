@@ -23,8 +23,7 @@
 
 (seed :seed.branch.abcd
   (:linking . :abcd)
-  (:access :systems systems :staccess (state . of-state)
-           :to-grow grow :to-branch branch3 :of-system of-system :to-join join))
+  (:access :systems systems :to-grow grow :of-system of-system :staccess (state . of-state)))
 
 (defun buttonize (item index)
   (declare (ignore index))
@@ -198,7 +197,6 @@
                                :do (if (string= name (getf ent :name))
                                        (setf index i)
                                        (setf (getf ent :in-flux) :false)))
-                         ;; (print (list :ent index (of-state :- :entity-data)))
                          (let ((edata (of-state :- :entity-data)))
                            (if index (setf (nth index edata) item)
                                (progn (push item edata)
@@ -207,7 +205,6 @@
                                                      :y-start y-start :y-end y-end :type type)
                                             collected)))
                            (of-state :- :entity-data edata)))))))
-               ;; (print (list :ce chart-entities))
                (let ((entities (of-state :- :chart-entities)))
                  (setf (second entities) (append (second (of-state :- :chart-entities))
                                                  (reverse collected)))
@@ -277,12 +274,6 @@
             ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls)
                                                          :map #'buttonize-calling)
                                              (list :save)))
-            ;; (ifmod-head (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
-            ;;                  (uic-series :type (:ui :controls)))
-            ;;                 (list :save)))
-            ;; (ifmod-foot (dx ((:each uicc-button :type (:local) :call (:.fetch (:action :.base)))
-            ;;                  (uic-series :type (:ui :controls)))
-            ;;                 (list :save)))
             (action (let ((chart-path (namestring (nth (of-state :- :chart-point)
                                                        (of-state :- :chart-paths)))))
                       ;; (print (list :ce chart-entities))

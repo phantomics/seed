@@ -23,24 +23,18 @@
 
 (seed :seed.branch.demo.sheet
   (:linking . :demo.sheet)
-  (:access :systems systems :staccess (state . of-state)
-           :to-grow grow :to-branch branch3 :of-system of-system :to-join join))
-
-;;  (:each uicc-button :type (:remote) :call :.base)
+  (:access :systems systems :to-grow grow :of-system of-system :staccess (state . of-state)))
 
 (defun buttonize (item index)
   (declare (ignore index))
-  ;; (print (list :index index))
   (make-instance 'uicc-button :base item :type '(:local)))
 
 (defun buttonize-calling (item index)
   (declare (ignore index))
-  ;; (print (list :index index))
   (make-instance 'uicc-button :base item :call ':.base))
 
 (defun buttonize-calling-remote (item index)
   (declare (ignore index))
-  ;; (print (list :index index))
   (make-instance 'uicc-button :base item :type '(:remote) :call ':.base))
 
 (branch :summary
@@ -92,9 +86,6 @@
                                                      (list :save :abc)))
                          (:footer-controls (dx (uic-series :map #'buttonize :type (:ui :controls))
                                                (list :save)))))
-            ;; (ifmod-foot (dx ((:each uicc-button)
-            ;;                  (uic-series :type (:ui :controls)))
-            ;;                 (list :save)))
             (t (if text
                    (if (zerop (first text))
                        (list :text (text-wrap (from-system-file :demo.sheet "sheet.lisp"
@@ -121,12 +112,6 @@
                                                      (list :save :abc)))
                          (:footer-controls (dx (uic-series :map #'buttonize :type (:ui :controls))
                                                (list :save)))))
-            ;; (ifmod-head (dx ((:each uicc-button)
-            ;;                  (uic-series :type (:ui :controls)))
-            ;;                 (list :save :abc)))
-            ;; (ifmod-foot (dx ((:each uicc-button)
-            ;;                  (uic-series :type (:ui :controls)))
-            ;;                 (list :save)))
             (cells (let ((display-baseline))
                      (if (not (zerop (first cells)))
                          (if (symbolp (first input))
@@ -160,26 +145,19 @@
          :node-indices-key :graph-node-indices)))
   (branch :graph
     (adapt-from-json :action :index :target :width :height :path :face
-                     :title :image :dialog)
+                             :title :image :dialog)
     (adapt-from-alist :system :branch :face)
     (lambda (state input)
-      (destructuring-bind (&key identity uimod ;; ifmod-head ifmod-foot
-                             action index target width height path face &allow-other-keys)
+      (destructuring-bind (&key identity uimod action index target width height path face &allow-other-keys)
           input
         (cond (identity (case identity
                           (:graph-overview :graph-breadth)
                           (:graph-node     :meta-code-form)))
-              (uimod (case uimod (:header-controls (dx (uic-series :type (:ui :controls)
-                                                                   :map #'buttonize-calling-remote)
-                                                       (list :add-node :add-link)))
-                           (:footer-controls (dx (uic-series :map #'buttonize-calling :type (:ui :controls))
-                                                 (list :save)))))
-              ;; (ifmod-head (dx ((:each uicc-button :type (:remote) :call :.base)
-              ;;                  (uic-series :type (:ui :controls)))
-              ;;                 (list :add-node :add-link)))
-              ;; (ifmod-foot (dx ((:each uicc-button :call :.base)
-              ;;                  (uic-series :type (:ui :controls)))
-              ;;                 (list :save)))
+              ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)
+                                                           :map #'buttonize-calling-remote)
+                                               (list :add-node :add-link)))
+              ((eq uimod :footer-controls) (dx (uic-series :map #'buttonize-calling :type (:ui :controls))
+                                               (list :save)))
               (t (funcall interactor (funcall state nil :medium) input)))))))
 
 (branch :play
@@ -205,8 +183,6 @@
                (imsym (intern (string-upcase image) "KEYWORD"))
                (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
                                   (second node))))
-          ;; (print (list :dia dialog node responses
-          ;;              :image image))
           (spinneret:interpret-html-tree
            `(:div :class "scenario-frame"
                   ,@(unless (eq imsym :none)
