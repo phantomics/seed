@@ -4,7 +4,7 @@
   (:use #:cl #:pla.browser.common #:arrow-macros)
   (:shadowing-import-from #:seed.contact.http #:http-contact-service-start)
   (:shadowing-import-from #:seed.sublimate #:meta-template #:instantiate-priority-macro-reader)
-  (:shadowing-import-from #:seed.generate #:seed ;; #:branch
+  (:shadowing-import-from #:seed.generate #:seed #:branch
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json

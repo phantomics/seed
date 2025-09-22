@@ -1,6 +1,6 @@
 (defpackage #:seed.branch.demo.sheet
   (:use #:cl)
-  (:shadowing-import-from #:seed.generate #:seed
+  (:shadowing-import-from #:seed.generate #:seed #:branch
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
@@ -19,10 +19,12 @@
 
 (in-package :seed.branch.demo.sheet)
 
+(defparameter *system* :demo.sheet)
+
 (seed :seed.branch.demo.sheet
   (:linking . :demo.sheet)
   (:access :systems systems :staccess (state . of-state)
-           :to-grow grow :to-branch branch :of-system of-system :to-join join))
+           :to-grow grow :to-branch branch3 :of-system of-system :to-join join))
 
 ;;  (:each uicc-button :type (:remote) :call :.base)
 

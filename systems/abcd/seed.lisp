@@ -1,6 +1,6 @@
 (defpackage #:seed.branch.abcd
   (:use #:cl)
-  (:shadowing-import-from #:seed.generate #:seed
+  (:shadowing-import-from #:seed.generate #:seed #:branch
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
@@ -19,30 +19,20 @@
 
 (in-package :seed.branch.abcd)
 
+(defparameter *system* :abcd)
+
 (seed :seed.branch.abcd
   (:linking . :abcd)
   (:access :systems systems :staccess (state . of-state)
-           :to-grow grow :to-branch branch :of-system of-system :to-join join))
-
-(defparameter *system* :abcd)
+           :to-grow grow :to-branch branch3 :of-system of-system :to-join join))
 
 (defun buttonize (item index)
   (declare (ignore index))
-  ;; (print (list :index index))
   (make-instance 'uicc-button :base item :type '(:local)))
 
 (defun buttonize-calling (item index)
   (declare (ignore index))
-  ;; (print (list :index index))
   (make-instance 'uicc-button :base item :type '(:local) :call '(:.fetch (:action :.base))))
-
-;; (case index
-;;   (0 (push :sidebar (seed.modulate::uic-type item)))
-;;   (1 (push :main    (seed.modulate::uic-type item))))
-;; (print (list :ox (seed.modulate::uic-type item)))
-;; item)
-
-;; (:each uicc-button :type (:local))
 
 (branch :summary
   (lambda (state input)
@@ -128,23 +118,14 @@
   (adapt-from-json :point)
   (lambda (state input)
     (destructuring-bind (&key uimod &allow-other-keys) input
-      (cond (uimod (case uimod (:header-controls (values nil t))
-                         (:footer-controls (values nil t))))
-            ;; (ifmod-head (values nil t))
-            ;; (ifmod-foot (values nil t))
+      (cond (uimod (values nil t))
             (t "This is a financial chart analysis tool.")))))
 
-;; (let ((line-templater (build-templater (from-system-file *system* "sheet.lisp"
-;;                                                          :chart-entity-template-line)
-;;                                        :type :format :x-start :y-start :x-end :y-end)))
-
 (defun init-chart-entities (state)
-  (when (and state (of-state :abcd :chart-point))
+  (when (and state (of-state :- :chart-point))
     (unless (of-state :- :chart-entities)
       (let ((chart-path (namestring (nth (of-state :- :chart-point)
                                          (of-state :- :chart-paths)))))
-        ;; (print (list :st (nth (of-state :- :chart-point)
-        ;;                       (of-state :- :chart-paths))))
         (of-state :- :chart-entities (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities))))))
 
