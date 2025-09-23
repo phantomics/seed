@@ -7,7 +7,7 @@
         #:parenscript #:paren6 #:seed.sublimate
         )
   (:export #:system #:seed #:branch #:in-system-context #:interact #:with-meta
-           #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web #:of-system
+           #:portal-contacts #:portal-endpoint #:manifest-portal-contact-web
            #:abind #:cbind #:interface-spec #:fx #:uic #:uic-set #:encode #:load-seed-system
            #:form-span #:form-as-vectors #:interface-format-form #:render-html-interface
            #:htrender

@@ -43,10 +43,9 @@
   (adapt-from-json :path :session)
   (lambda (state input)
     (destructuring-bind (&key session &allow-other-keys) input
-      ;; (print (list :bp package (funcall context :branch-point)))
       (let ((context (first session))
             (summary (grow nil :summary))
-            (branch-point (or (of-state :portal.demo1 :branch-point) 0))
+            (branch-point (or (of-state :portal.demo1 :view-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 
@@ -139,8 +138,8 @@
             (action (case (intern (string-upcase action) "KEYWORD")
                       (:create (print (list :aa action)))))
             (state (when (getf input :point)
-                       (of-state :- :chart-point (getf input :point))
-                       (of-state :- :chart-point nil))
+                     (of-state :- :chart-point (getf input :point))
+                     (of-state :- :chart-point nil))
                      (let ((template-point (of-state :- :template-point)))
                        (destructuring-bind (&key system-name &allow-other-keys) input
                          ;; (print (list :ccc input))
@@ -230,10 +229,6 @@
                   ;; (if (and state (funcall state :chart-point))
                   (let ((chart-path (namestring (nth (of-state :- :chart-point)
                                                      (of-state :- :chart-paths)))))
-               
-                    ;; (print (list :st3 (nth (of-state :- :chart-point)
-                    ;;                        (of-state :- :chart-paths))))
-                    ;; (system-file-to-string *system* data-path)
                     (file-to-string (second (third (second (from-system-file
                                                             *system* (format nil "~a/chart.lisp" chart-path)
                                                             :chart-entities)))))))

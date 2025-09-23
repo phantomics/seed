@@ -24,8 +24,8 @@
   (:int-js   (write-to-file stream *package* "./ui-browser/build/int.js"
                (build-script-misc stream)))
   (:ext-js   (let ((js-paths (retrieve-flat-source '(:htmx :alpine :mousetrap :dygraph)
-                                                     *package* pla.browser.maple:*flat-sources*
-                                                     "./ui-browser/static/")))
+                                                   *package* pla.browser.maple:*flat-sources*
+                                                   "./ui-browser/static/")))
                  (write-to-file stream *package* "./ui-browser/build/ext.js"
                    (apply #'concat-files stream *package*
                           (append js-paths
@@ -40,10 +40,12 @@
                  (apply #'concat-files stream *package* css-paths)))))
 
 
+;; (portal-browser-faculties :int-css)
+
 (unless (probe-file (asdf:system-relative-pathname (intern (package-name *package*) "KEYWORD")
                                                    "./ui-browser/index.html"))
 
-  (provision-browser-faculties)
+  (portal-browser-faculties)
 
   ;; (write-to-file stream *package* "./ui-browser/index.html"
   ;;   (build-static-page stream :portal.demo1))

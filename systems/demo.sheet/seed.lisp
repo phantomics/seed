@@ -48,10 +48,10 @@
   (adapt-from-json :path :session)
   (lambda (state input)
     (destructuring-bind (&key session &allow-other-keys) input
-      ;; (print (list :bp package (funcall state :branch-point)))
+      ;; (print (list :bp package (funcall state :view-point)))
       (let ((context (first session))
             (summary (grow :demo.sheet :summary))
-            (branch-point (or (of-state :portal.demo1 :branch-point) 0))
+            (branch-point (or (of-state :portal.demo1 :view-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 

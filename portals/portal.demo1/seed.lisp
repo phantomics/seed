@@ -4,8 +4,10 @@
 
 (seed :portal.demo1
   (:contacts :demo.sheet :abcd)
-  (:access :to-grow grow :of-system of-system :to-attach attach
-           :systems systems :staccess (state . of-state)))
+  (:access :to-grow grow :of-system of-system :systems systems
+           :ctaccess (*contacts* . make-contacts) :staccess (state . of-state)))
+
+(defvar *contacts* (list :demo.sheet :abcd))
 
 (defvar *seed-templates* (list (cons :template.chart (asdf:system-relative-pathname
                                                       :portal.demo1 "../../templates/template.charts/"))))
@@ -17,28 +19,27 @@
   (adapt-from-alist :system :branch :key :point)
   (lambda (state input)
     (destructuring-bind (&key key point &allow-other-keys) input
-      ;; (print (list :in input point))
+      (print (list :po point))
       (when (and key (string= "demo" (string-downcase key)))
         (of-state nil :user :hello))
 
-      ;; (print (list :inp input))
       (when (stringp point)
         (if (loop :for i :across point :always (digit-char-p i))
             (when (and state point)
               ;; when a point is selected, assign it
-              (of-state :- :branch-point (read-from-string point)))
+              (of-state :- :view-point (read-from-string point)))
 
             (when (and state point)
               (if (string= "BASE" (string-upcase point))
-                  (of-system :point nil)
+                  (of-state :-root- :system-point nil)
                   ;; when a system is selected, assign it - case of new selector controls
                   (let ((epsym (intern (string-upcase point) "KEYWORD")))
-                    (of-system :point epsym)
+                    (of-state :-root- :system-point epsym)
                     (instantiate-priority-macro-reader (asdf:load-system epsym)
                       (load-seed-system epsym)))))))
 
       (when (integerp point)
-        (of-state :- :branch-point point))
+        (of-state :- :view-point point))
 
       ;; (print (list :opo point))
 
@@ -47,50 +48,40 @@
         (of-state nil :medium medium)
 
         ;; (print (list :cccc (package-name *package*)))
-        (render medium
-                (authorize (of-state nil :user)
-                  (dx (uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
-                                  ;; :maps '(((:type :sidebar)) ((:type :main)))
-                                  :map (lambda (item index)
-                                         ;; (print (list :index index))
-                                         (case index
-                                           (0 (push :sidebar (seed.modulate::uic-type item)))
-                                           (1 (push :main    (seed.modulate::uic-type item))))
-                                         ;; (print (list :ox (seed.modulate::uic-type item)))
-                                         item)
-                                  )
-                      (dx (uic-series :type '(:ui :column  :portal-summary))
-                          (dx (uic-series :type '(:ui :list))
-                              (list :portal.demo1
-                                    (dx (uicc-select :options (cons :base (of-system :contacts))
-                                                     :call (:.fetch (:point :.base) (:next :refresh)))
-                                        (of-system :point))))
-                          
-                          (and (of-system :point)
-                               (dx (uic-series :type  '(:ui :partitioned :navigation)
-                                               :point (of-state :- :branch-point)
-                                               :role ((call-c :a (list :point :@index)))
-                                               ;; :call  (:.fetch (:action :.base))
-                                               ;; :call (:.fetch (:point :@base) (:next :refresh))
-                                               )
-                                   (mapcar #'second (grow (of-system :point) :summary))))
-                          
-                          (dx (uic-series :type '(:ui :list))
-                              (list (dx (uicc-field :name "key"
-                                                    :role ((actuatable :label "⍐")))
-                                        ""))
-                              ;; (dx ((uicc-button)) "enter")
-                              ))
+        (render medium (authorize (of-state nil :user)
+                         (dx (uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
+                                         :map (lambda (item index)
+                                                (case index
+                                                  (0 (push :sidebar (seed.modulate::uic-type item)))
+                                                  (1 (push :main    (seed.modulate::uic-type item))))
+                                                item))
+                             (dx (uic-series :type '(:ui :column  :portal-summary))
+                                 (dx (uic-series :type '(:ui :list))
+                                     (list :portal.demo1
+                                           (dx (uicc-select :options (cons :base *contacts*)
+                                                            :call (:.fetch (:point :.base) (:next :refresh)))
+                                               (of-state :-root- :system-point))))
+                                 
+                                 (and (of-state :-root- :system-point)
+                                      (dx (uic-series :type  '(:ui :partitioned :navigation)
+                                                      :point (of-state :- :view-point)
+                                                      :role  ((call-c :a (list :point :@index))))
+                                          (mapcar #'second (grow (of-state :-root- :system-point)
+                                                                 :summary))))
+                                 
+                                 (dx (uic-series :type '(:ui :list))
+                                     (list (dx (uicc-field :name "key"
+                                                           :role ((actuatable :label "⍐")))
+                                               ""))))
+                             (if (of-state :-root- :system-point)
+                                 (grow (of-state :-root- :system-point) :view state)
+                                 (grow nil :base state)))
 
-                      (if (of-system :point)
-                          (grow (of-system :point) :view state)
-                          (grow nil :base state)))
-
-                  (dx (uic-series :type (:ui :main :placard))
-                      (list (dx (uic-series :type (:ui :column :short) :call t) ;; should this be :cast?
-                                (list "please input your key"
-                                      (dx (uicc-field :name "key") "")
-                                      (dx (uicc-button) "enter")))))))))))
+                         (dx (uic-series :type (:ui :main :placard))
+                             (list (dx (uic-series :type (:ui :column :short) :call t) ;; should this be :cast?
+                                       (list "please input your key"
+                                             (dx (uicc-field :name "key") "")
+                                             (dx (uicc-button) "enter")))))))))))
 
 (defun manifest-template-interface (template-list template-point)
   (loop :for item :in template-list :for ix :from 0
@@ -147,17 +138,16 @@
                           (manifest-template-interface *seed-templates* (of-state :- :template-point)))
                       (dx (uic-series :type (:ui :footer))
                           ;; (list "bbb")
-                          )
-                      )))))))
+                          ))))))))
 
 (branch :systems
   (adapt-from-alist :system :branch)
   (lambda (state input)
     (if input (let ((epsym (intern input "KEYWORD")))
-                (of-system :point (intern input "KEYWORD"))
+                (of-state :-root- :system-point (intern input "KEYWORD"))
                 (instantiate-priority-macro-reader (asdf:load-system epsym)
                   (load-seed-system epsym)))
-        (-<> (with-meta (of-system :contacts)
+        (-<> (with-meta *contacts*
                :type (:form))
           (encode <>)))))
 
@@ -189,92 +179,3 @@
 ;;                              10 :lfactors (april:april "⎕←1+3×0.26×1○○0.1×4+⍳10"))
 ;;                             "/tmp/palOut.png" 100)
 
-;; (branch :demo.sheet :view
-;;   (adapt-from-json :path :session)
-;;   (lambda (context input)
-;;     (destructuring-bind (&key session &allow-other-keys) input
-;;       ;; (print (list :bp package (funcall context :branch-point)))
-;;       (let ((context (first session))
-;;             (summary (grow :demo.sheet :summary))
-;;             (branch-point (or (funcall context :branch-point) 0))
-;;             (start-point 0) (interval-found) (search-complete))
-        
-;;         (loop :for s :in summary :for sx :from 0 :until search-complete 
-;;               :do (unless s (if interval-found (setf search-complete t)
-;;                                 (setf start-point (1+ sx))))
-;;                   (when (= sx branch-point) (setf interval-found t)))
-
-;;         (dx ((uic-series :layout (:horizontal :even) :type (:workspace :even)))
-;;             (loop :for l :in (nthcdr start-point summary) :while l
-;;                   :collect (dx ((uic-series :layout (:vertical :of 12 1 10 1)
-;;                                             :join   (list :demo.sheet (first l))
-;;                                             :type   (:column)
-;;                                             :mode   (grow :demo.sheet (first l)
-;;                                                           context (list :state (second l)))))
-;;                                (dx ((uic-series :type (:ui :header)))
-;;                                    (second l)
-;;                                    (grow :demo.sheet (first l)
-;;                                          context (list :ifmod-head t)))
-;;                                (dx ((uic-frame :name (second l) :type (:body)
-;;                                                :access :demo.sheet))
-;;                                    (first l))
-;;                                (dx ((uic-series :type (:ui :footer)))
-;;                                    (list (grow :demo.sheet (first l)
-;;                                                context (list :ifmod-foot t)))))))))))
-
-;; (seed :portal.demo1
-;;       (:bind :package package :of-system of-system :to-grow grow)
-;;       (:contacts :demo.sheet) ;; :demo-image)
-;;       (:contactor . #'of-contacts)
-;;       (:branches
-;;        :view
-;;        (lambda (context input)
-;;          (let ((key-input (rest (assoc :key input :test #'eq))))
-;;            (when (and key-input (string= "demo" (string-downcase key-input)))
-;;              (funcall context :user :hello)))
-
-;;          (when (and context (assoc :point input))
-;;            ;; when a point is selected, assign it
-;;            (funcall context :branch-point (read-from-string (rest (assoc :point input)))))
-
-;;          (when (and context (assoc "point" input :test #'string=))
-;;            ;; when a system is selected, assign it - case of new selector controls
-;;            (let ((epsym (intern (string-upcase (rest (assoc "point" input :test #'string=)))
-;;                                 "KEYWORD")))
-;;              (of-system :point epsym)
-;;              (instantiate-priority-macro-reader (asdf:load-system epsym)
-;;                (load-seed-system epsym))))
-
-;;          (let ((medium (make-instance 'uim-web :portal (intern (package-name package) "KEYWORD"))))
-
-;;            (funcall context :medium medium)
-
-;;            (render
-;;             medium
-;;             (authorize (funcall context :user)
-;;               (dx ((uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
-;;                                :maps '(((:type :sidebar)) ((:type :main)))))
-;;                   (dx ((uic-series :type '(:ui :column  :portal-summary)))
-;;                       :portal.demo1
-;;                       '(:h3 :|x-on:click| "fetchContact2(context, $el, { point: 'demo.sheet' })"
-;;                         "demo.sheet")
-;;                       (if (of-system :point)
-;;                           (dx ((:each uic-anchor :type '(:branch))
-;;                                (uic-series :type '(:ui :navigation)
-;;                                            :point (funcall context :branch-point)))
-;;                               (mapcar #'second (grow (of-system :point) :summary)))))
-                  
-;;                   (if (not (of-system :point))
-;;                       "" (grow (of-system :point) :view context)))
-
-;;               (dx ((uic-series :type (:ui :column) :cast t))
-;;                   (list (dx ((uicc-field :key "key")) "")))))))
-;;        :systems
-;;        (lambda (context input)
-;;          (if input (let ((epsym (intern input "KEYWORD")))
-;;                      (of-system :point (intern input "KEYWORD"))
-;;                      (instantiate-priority-macro-reader (asdf:load-system epsym)
-;;                        (load-seed-system epsym)))
-;;              (-<> (with-meta (of-system :contacts)
-;;                     :type (:form))
-;;                (encode <>))))))

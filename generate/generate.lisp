@@ -4,13 +4,7 @@
 
 ;; SECTION: base macros for Seed systems
 
-(defun load-system-directory (directory-path)
-  (flet ((check-name (file)
-           (string= "SEED" (string-upcase (first (last (cl-ppcre:split "[.]" (namestring file))))))))
-    (let ((files (uiop:directory-files directory-path)))
-      (loop :for f :in files :when (check-name f) :do (load f)))))
-
-(defun load-system-directory2 (directory-path &optional callback)
+(defun load-system-directory (directory-path &optional callback)
   (let ((package-out))
     (loop :for f :in (uiop:directory-files directory-path) :until package-out
           :when (and (string= "SEED" (string-upcase (pathname-name f)))
@@ -49,14 +43,13 @@
   (let* ((access    (rest (assoc :access props)))
          (contacts  (rest (assoc :contacts props)))
          (config    (rest (assoc :config  props)))
-         (join-by   (rest (assoc :join-by props)))
          (linking   (rest (assoc :linking props)))
-         (pname     (string name))
          (grow      (and access (getf access :to-grow)))
-         (attach    (and access (getf access :to-attach)))
          (systems   (and access (getf access :systems)))
+         (ctaccess  (and access (getf access :ctaccess)))
          (staccess  (and access (getf access :staccess)))
          (of-system (and access (getf access :of-system)))
+         (pname     (string name))
          (defbranch (and access (intern "DEFBRANCH" pname)))
          (grow%     (and access (intern (string (gensym "GROW%")) pname)))
          (expand-regardless (member :expand-regardless config))
@@ -72,7 +65,6 @@
                                                  (when (eq :- (first ,params))
                                                    (setf (first ,params) ,(or linking name)))
                                                  (cons 'funcall (cons ',st-sym ,params))))))))))
-            ,@(loop :for joiner :in join-by :collect (list joiner name))
             ,@(when access
                 `((let ((,portal-state (list :point nil :template-point nil
                                              ,@(and contacts `(:contacts ,(cons 'list contacts)))
@@ -101,18 +93,25 @@
                                                 ,system))
                                        (funcall (getf (getf ,branches (or ,system ,(or linking name))) ,key)
                                                 ,session ,input))))
-                            ,@(and attach (or expand-regardless (not (fboundp attach)))
-                                   `((symbol-function ',attach)
-                                     (lambda (,input)
-                                       (setf (getf ,branches ,name) ,input))))
                             ,@(and systems (or expand-regardless (not (fboundp systems)))
                                    `((symbol-function ',systems)
-                                     (lambda () (values ,branches ,(or linking name)))))))
+                                     (lambda () (values ,branches ,(or linking name)))))
+                            ,@(and ctaccess
+                                   (destructuring-bind (ct-sym &rest of-sym) ctaccess
+                                     (and (or expand-regardless (not (fboundp of-sym)))
+                                          `((symbol-function ',of-sym)
+                                            (lambda () 
+                                              (loop :for contact-sym :in ,ct-sym
+                                                    :collect `(load-system-directory
+                                                               (asdf:system-relative-pathname ,contact-sym "./")
+                                                               (lambda (,input ,key) (setf (getf ,branches ,key)
+                                                                                           ,input)))))))))
+                            ))
                     ,@(loop :for contact-sym :in contacts
-                            :collect `(load-system-directory2 (asdf:system-relative-pathname
-                                                               ,contact-sym "./")
-                                                              (lambda (,input ,key)
-                                                                (setf (getf ,branches ,key) ,input))))))))))
+                            :collect `(load-system-directory
+                                       (asdf:system-relative-pathname ,contact-sym "./")
+                                       (lambda (,input ,key) (setf (getf ,branches ,key) ,input))))
+                    ))))))
 
 (defmacro branch (key &body input)
   (list (intern "DEFBRANCH" (package-name *package*))
@@ -133,26 +132,9 @@
 (defun with-meta (item &rest props)
   `(fx ,item ,@props))
 
-(defun of-system (system &rest keys)
-  (let ((found (getf system (first keys))))
-    (if (not (rest keys))
-        found (apply #'of-system found (rest keys)))))
-
 (defun build-key-path (value keys)
   (if (rest keys) (list (first keys) (build-key-path value (rest keys)))
       (list (first keys) value)))
-
-(defun (setf of-system) (new-value system &rest keys)
-  "Set a system property according to a series of keys."
-  (if (rest keys)
-      (let ((found (getf system (first keys))))
-        (if (member (cadr keys) found)
-            (setf (apply #'of-system found (rest keys)) new-value
-                  (getf system (first keys))            found)
-            (setf (getf system (first keys))
-                  (append (build-key-path new-value (rest keys))
-                          found))))
-      (setf (getf system (first keys)) new-value)))
 
 (defmacro abind (type keys alist &rest body)
   (let ((alist-sym (gensym)))
