@@ -139,8 +139,10 @@
   (destructuring-bind (color-margin-sh0 color-margin-sh1 color-margin-sh2
                        color-margin-sh3 color-margin-sh4 color-margin-sh5
                        color-margin-sh6 color-margin-sh7 color-margin-sh8 color-margin-sh9
+                       
                        color-focal-fg0 color-focal-fg1 color-focal-fg3
                        color-focal-fg35 color-focal-fg45 color-focal-fg5
+                       
                        color-focal-sh0 color-focal-sh1
                        color-focal-bg0 color-focal-bg1)
       (append (render-html-palette #2A((28 33 49) (40 44 61) (59 63 81) (84 88 107)
@@ -160,7 +162,8 @@
 
       `(.list :background transparent)
 
-      `(.button :border-width 0 0 2px 0)
+      `(.button :border-width 0 0 2px 0
+                :padding "calc(.15em - 1px) calc(.75em - 1px);")
 
       `(.input :border-width 2px 0)
 
@@ -181,10 +184,10 @@
       `(|#root| :width "100%")
 
       `(|:root|
-        :--bulma-control-height 2em    ;; comment to even 
-        :--bulma-control-line-height 1 ;;
+        :--bulma-control-height 1.4em    ;; comment to even 
+        :--bulma-control-line-height 1
         :--bulma-control-padding-horizontal "calc(0.4em - 1px)"
-        :--bulma-control-padding-vertical "calc(0.25em - 1px)")
+        :--bulma-control-padding-vertical "calc(0.15em - 1px)")
       
       `((|#main| > .stack)
         :margin "0 auto;" :width 24rem :height "100%"
@@ -258,10 +261,11 @@
           :padding 0 :overflow auto
           (.access.body
            (.table.list-table
+            (td :border-width 0 0 1px 0 :border-color ,color-focal-fg5)
             ((:and tr (:nth-child even)) :background ,color-focal-bg0)
             ((:and tr (:nth-child odd))  :background ,color-focal-bg1))
            :height "100%" :background ,color-focal-sh1 :overflow auto
-           :border-width "0 2px" :border-style solid :border-color ,color-focal-sh0)
+           :border-width "0 2px" :border-style solid :border-color ,color-focal-fg35)
           (".access.body:has(>.table.list-table)"
            :background ,(format nil "repeating-linear-gradient(135deg, ~a, ~a 4px, ~a 4px, ~a 8px)"
                                 color-focal-bg0 color-focal-bg0 color-focal-bg1 color-focal-bg1)))
@@ -319,7 +323,7 @@
       
       `((:or .ui.header .ui.footer)
         :width "100%" :height "100%" :padding 8px :margin 0 :background ,color-focal-sh1
-        :border-width 0 2px :border-style solid :border-color ,color-focal-sh0
+        :border-width 0 2px :border-style solid :border-color ,color-focal-fg35
         :display grid :grid-template-rows 100%
         (.controls :grid-column-end 3 (.item :display inline))
         (.button :background transparent :border-color ,color-focal-sh0)
@@ -358,7 +362,7 @@
           (.control
            :font-family "PragmataPro, iosevka, Mono"))
          (.following :padding-left 0.5rem)
-         :padding 0.5rem)
+         :padding 0.25rem 0.5rem)
 
         ;; (.item ;; comment to make even
         ;;  ((:or .input .textarea .select)
@@ -472,7 +476,7 @@
 (defun build-script-pdnd (stream)
   (build-script-element
    :stream stream
-   :imports `(((draggable drop-target-for-elements monitor-for-elements)
+   :imports '(((draggable drop-target-for-elements monitor-for-elements)
                "@atlaskit/pragmatic-drag-and-drop/element/adapter")
               ((combine)
                "@atlaskit/pragmatic-drag-and-drop/combine")
@@ -617,11 +621,9 @@
       (chain (fetch "/contact/" (create method "POST" body data-in))
              (then (lambda (response) (chain response (json))))
              (then (lambda (data)
-                     ;; (chain console (log :data data))
                      (if (@ data oob-reload)
                          (chain data oob-reload
                                 (for-each (lambda (item)
-                                            ;; (chain console (log :it item))
                                             (chain htmx (trigger (getprop seed-elements item) "reload"))))))
                      data))
              (then (if (= "function" (typeof event))
@@ -719,6 +721,53 @@
           (draggable drops)
           nil)))))
 
+(enter-js-element *misc-js* :mcode-drop-target
+  (defun mcode-drop-target (element mode dragging n)
+    (create element n
+            get-data (lambda (data)
+                       (attach-closest-edge (create)
+                                            (create element n
+                                                    input (@ data input)
+                                                    allowed-edges (list "top" "bottom"))))
+            on-drag-enter (lambda (event)
+                            (unless (chain event self element (is-equal-node (@ event source element)))
+                              ;; don't register drag events on the same item
+                              (let ((closest-edge (extract-closest-edge (@ event self data))))
+                                (if (not closest-edge)
+                                    (return)
+                                    (let ((indicator (get-drop-indicator closest-edge "8px")))
+                                      (chain n (insert-adjacent-element "afterend" indicator)))))))
+            on-drag-leave (lambda (event)
+                            ;; (log :inx event)
+                            (unless (chain event self element (is-equal-node (@ event source element)))
+                              (when (and (@ n next-element-sibling)
+                                         ;; (chain n next-element-sibling class-list
+                                         ;;        (contains "drop-marker"))
+                                         )
+                                (chain n next-element-sibling (remove)))))
+            on-drop (lambda (event)
+                      (let ((closest-edge (extract-closest-edge (@ event self data))))
+                        (when (@ n next-element-sibling)
+                          (chain n next-element-sibling (remove)))
+
+                        ;; (chain console (log :drix element closest-edge event item-index
+                        ;;                     :iid item-index
+                        ;;                     ;; (@ event self element attributes index)
+                        ;;                     n (chain n (get-attribute "index") "XX")
+                        ;;                     :pe (@ n parent-element)
+                        ;;                     (@ n parent-element parent-element)))
+
+                        (fetch-contact element mode
+                                       (create path (chain element ;; parent-element
+                                                           (get-attribute "meta-path"))
+                                               sort (list (parse-int (chain dragging source element
+                                                                            ;; parent-element
+                                                                            (get-attribute "index")))
+                                                          (+ (parse-int (chain n (get-attribute "index")))
+                                                             (case closest-edge ("bottom" 0)
+                                                                   ("top" 0)))))
+                         (lambda () (chain htmx (trigger element "reload")))))))))
+
 (enter-js-element *misc-js* :mcode-handler-on-drag
   (defun mcode-handler-on-drag (element mode)
     (lambda (dragging)
@@ -726,64 +775,14 @@
       ;; (chain console (log :mm mode dragging (chain dragging source element parent-element
       ;;                                              (get-attribute "index"))))
       ;; (chain console (log :drag-start element (@ element child-nodes length) (@ element child-nodes)))
-      (chain -array
-             (from (@ element child-nodes))
+      (chain -array (from (@ element child-nodes))
              (filter (lambda (item) (instanceof item -h-t-m-l-element)))
              (map (lambda (n item-index)
-                    (when (/= 3 (@ n node-type))
-                      (drop-target-for-elements
-                       (create element n
-                               get-data (lambda (data)
-                                          ;; (chain console (log :dd data))
-                                          (attach-closest-edge
-                                           (create)
-                                           (create element n
-                                                   input (@ data input)
-                                                   allowed-edges (list "top" "bottom"))))
-                               on-drag-enter (lambda (event)
-                                               ;; (chain console (log :in event))
-                                               (let ((closest-edge
-                                                       (extract-closest-edge (@ event self data))))
-                                                 (if (not closest-edge)
-                                                     (return)
-                                                     (let ((indicator (get-drop-indicator
-                                                                       closest-edge "8px")))
-                                                       ;; (chain console (log :nn indicator))
-                                                       (chain n (insert-adjacent-element
-                                                                 "afterend" indicator))))))
-                               on-drag-leave (lambda (event)
-                                               (when (@ n next-element-sibling)
-                                                 (chain n next-element-sibling (remove))))
-                               on-drop (lambda (event)
-                                         ;;(chain n next-element-sibling? (remove))
-                                         (let ((closest-edge
-                                                 (extract-closest-edge (@ event self data))))
-                                           (when (@ n next-element-sibling)
-                                             (chain n next-element-sibling (remove)))
-
-                                           ;; (chain console (log :drix element closest-edge event item-index
-                                           ;;                     :iid item-index
-                                           ;;                     ;; (@ event self element attributes index)
-                                           ;;                     n (chain n (get-attribute "index") "XX")
-                                           ;;                     :pe (@ n parent-element)
-                                           ;;                     (@ n parent-element parent-element)))
-
-                                           (fetch-contact
-                                            element mode
-                                            (create path (chain element ;; parent-element
-                                                                (get-attribute "meta-path"))
-                                                    sort (list (parse-int
-                                                                (chain dragging source element
-                                                                       ;; parent-element
-                                                                       (get-attribute "index")))
-                                                               (+ (parse-int (chain n (get-attribute
-                                                                                       "index")))
-                                                                  (case closest-edge
-                                                                    ("bottom" 0)
-                                                                    ("top"    0)))))
-                                            
-                                            (lambda () (chain htmx (trigger element "reload"))))
-                                           )))))))))))
+                    ;; (log :ll n item-index (chain n (get-attribute "data-drop-target-for-element")))
+                    (when (and (/= 3 (@ n node-type))
+                               ;; ensure the item has not already been set as a drop target
+                               (= null (chain n (get-attribute "data-drop-target-for-element"))))
+                      (drop-target-for-elements (mcode-drop-target element mode dragging n)))))))))
 
 (enter-js-element *misc-js* :get-drop-indicator
   (defun get-drop-indicator (edge gap)
@@ -1214,13 +1213,13 @@
                   (setf (@ ctx line-width) 0.6)
                   (loop :for p :from 0 :to (1- (@ sets 0 length))
                         :do (let* ((price (create open (getprop sets 0 p "yval")
-                                                  close (getprop sets 1 p "yval")
-                                                  high (getprop sets 2 p "yval")
-                                                  low (getprop sets 3 p "yval")
+                                                  high (getprop sets 1 p "yval")
+                                                  low (getprop sets 2 p "yval")
+                                                  close (getprop sets 3 p "yval")
                                                   open-y (getprop sets 0 p "y")
-                                                  close-y (getprop sets 1 p "y")
-                                                  high-y (getprop sets 2 p "y")
-                                                  low-y (getprop sets 3 p "y")))
+                                                  high-y (getprop sets 1 p "y")
+                                                  low-y (getprop sets 2 p "y")
+                                                  close-y (getprop sets 3 p "y")))
                                    (top-y (+ (@ area y) (* (@ area h) (@ price high-y))))
                                    (bottom-y (+ (@ area y) (* (@ area h) (@ price low-y))))
                                    (center-x (+ (@ area x) (* (@ area w) (getprop sets 0 p "x"))))

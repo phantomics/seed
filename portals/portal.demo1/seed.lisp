@@ -3,8 +3,7 @@
 (in-package #:portal.demo1)
 
 (seed :portal.demo1
-  (:contacts :demo.sheet :abcd)
-  (:access :to-grow grow :of-system of-system :systems systems
+  (:access :to-grow grow :systems systems
            :ctaccess (*contacts* . make-contacts) :staccess (state . of-state)))
 
 (defvar *contacts* (list :demo.sheet :abcd))
@@ -14,12 +13,14 @@
 
 (defvar *portal* :portal.demo1)
 
+(make-contacts)
+
 (branch :view
   (adapt-from-json :key :point)
   (adapt-from-alist :system :branch :key :point)
   (lambda (state input)
     (destructuring-bind (&key key point &allow-other-keys) input
-      (print (list :po point))
+      ;; (print (list :po point))
       (when (and key (string= "demo" (string-downcase key)))
         (of-state nil :user :hello))
 
@@ -27,19 +28,19 @@
         (if (loop :for i :across point :always (digit-char-p i))
             (when (and state point)
               ;; when a point is selected, assign it
-              (of-state :- :view-point (read-from-string point)))
+              (of-state (of-state nil :system-point) :view-point (read-from-string point)))
 
             (when (and state point)
               (if (string= "BASE" (string-upcase point))
-                  (of-state :-root- :system-point nil)
+                  (of-state nil :system-point nil)
                   ;; when a system is selected, assign it - case of new selector controls
                   (let ((epsym (intern (string-upcase point) "KEYWORD")))
-                    (of-state :-root- :system-point epsym)
+                    (of-state nil :system-point epsym)
                     (instantiate-priority-macro-reader (asdf:load-system epsym)
                       (load-seed-system epsym)))))))
 
       (when (integerp point)
-        (of-state :- :view-point point))
+        (of-state (of-state nil :system-point) :view-point point))
 
       ;; (print (list :opo point))
 
@@ -60,21 +61,20 @@
                                      (list :portal.demo1
                                            (dx (uicc-select :options (cons :base *contacts*)
                                                             :call (:.fetch (:point :.base) (:next :refresh)))
-                                               (of-state :-root- :system-point))))
-                                 
-                                 (and (of-state :-root- :system-point)
+                                               (of-state nil :system-point))))
+                                 (and (of-state nil :system-point)
                                       (dx (uic-series :type  '(:ui :partitioned :navigation)
-                                                      :point (of-state :- :view-point)
-                                                      :role  ((call-c :a (list :point :@index))))
-                                          (mapcar #'second (grow (of-state :-root- :system-point)
+                                                      :point (of-state (of-state nil :system-point)
+                                                                       :view-point)
+                                                      :role  ((call-c :a (list :point :@index)
+                                                                      :p (list :next :refresh))))
+                                          (mapcar #'second (grow (of-state nil :system-point)
                                                                  :summary))))
-                                 
                                  (dx (uic-series :type '(:ui :list))
-                                     (list (dx (uicc-field :name "key"
-                                                           :role ((actuatable :label "⍐")))
+                                     (list (dx (uicc-field :name "key" :role ((actuatable :label "⍐")))
                                                ""))))
-                             (if (of-state :-root- :system-point)
-                                 (grow (of-state :-root- :system-point) :view state)
+                             (if (of-state nil :system-point)
+                                 (grow (of-state nil :system-point) :view state)
                                  (grow nil :base state)))
 
                          (dx (uic-series :type (:ui :main :placard))

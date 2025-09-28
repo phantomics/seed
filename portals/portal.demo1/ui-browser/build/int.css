@@ -8,6 +8,7 @@ body{
 
 .button{
     border-width: 0 0 2px 0;
+    padding: calc(.15em - 1px) calc(.75em - 1px);;
 }
 
 .input{
@@ -56,10 +57,10 @@ body{
 }
 
 :root{
-    --bulma-control-height: 2em;
+    --bulma-control-height: 1.4em;
     --bulma-control-line-height: 1;
     --bulma-control-padding-horizontal: calc(0.4em - 1px);
-    --bulma-control-padding-vertical: calc(0.25em - 1px);
+    --bulma-control-padding-vertical: calc(0.15em - 1px);
 }
 
 #main > .stack{
@@ -211,10 +212,15 @@ body{
     overflow: auto;
     border-width: 0 2px;
     border-style: solid;
-    border-color: #eac8a6;
+    border-color: #93a1a1;
 }
 
 
+
+.ui.grid-layout .column .column-inner .access.body .table.list-table td{
+    border-width: 0 0 1px 0;
+    border-color: #d6dbdb;
+}
 
 .ui.grid-layout .column .column-inner .access.body .table.list-table tr:nth-child(even){
     background: #eee8d5;
@@ -322,7 +328,7 @@ body{
     background: #fbf5de;
     border-width: 0 2px;
     border-style: solid;
-    border-color: #eac8a6;
+    border-color: #93a1a1;
     display: grid;
     grid-template-rows: 100%;
 }
@@ -406,7 +412,7 @@ form .ui.selection.dropdown{
 }
 
 .meta-code .ui.series{
-    padding: 0.5rem;
+    padding: 0.25rem 0.5rem;
 }
 
 .meta-code .ui.series .series-heading{

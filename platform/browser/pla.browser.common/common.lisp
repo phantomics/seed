@@ -52,3 +52,6 @@
 
 (defmacro enter-js-element (collection key &body value)
   `(setf (getf ,collection ,key) (quote ,(first value))))
+
+(defpsmacro log (&rest items)
+  (list 'chain 'console (cons 'log items)))

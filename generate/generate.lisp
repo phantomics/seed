@@ -51,10 +51,10 @@
          (of-system (and access (getf access :of-system)))
          (pname     (string name))
          (defbranch (and access (intern "DEFBRANCH" pname)))
-         (grow%     (and access (intern (string (gensym "GROW%")) pname)))
          (expand-regardless (member :expand-regardless config))
-         (branches (gensym "BR")) (system (gensym "SY")) (key (gensym "KY")) (values (gensym "VL"))
-         (session (gensym "SS")) (input (gensym "IN")) (portal-state (gensym "PR")) (params (gensym "PA")))
+         (branches (gensym "BR")) (system (gensym "SY")) (key (gensym "KY"))
+         (values (gensym "VL")) (session (gensym "SS")) (input (gensym "IN"))
+         (item (gensym "IT")) (portal-state (gensym "PR")) (params (gensym "PA")))
     `(progn ,@(and staccess (destructuring-bind (st-sym &rest of-sym) staccess
                               (and (or expand-regardless (not (fboundp of-sym)))
                                    `((eval-when (:compile-toplevel :load-toplevel :execute)
@@ -70,12 +70,12 @@
                                              ,@(and contacts `(:contacts ,(cons 'list contacts)))
                                              ,@(and config   `(:config   ,(cons 'list config)))))
                         (,branches (list ,(or linking name) nil)))
-                    ,@(and access `((proclaim '(special ,grow ,of-system ,defbranch))))
+                    ,@(and access `((proclaim '(special ,grow ,@(and of-system '(of-system))
+                                                ,defbranch))))
                     (eval-when (:compile-toplevel :load-toplevel :execute)
                       (setf (symbol-function ',defbranch)
                             (lambda (,key &optional ,input)
                               (let ((,system ,(or linking name)))
-                                ;; (print (list :ssa ',props ,linking ,system ,key ,input))
                                 (if (member ,system ,branches)
                                     (if ,input (setf (getf (getf ,branches ,system) ,key) ,input)
                                         (getf (getf ,branches ,system) ,key))
@@ -100,18 +100,13 @@
                                    (destructuring-bind (ct-sym &rest of-sym) ctaccess
                                      (and (or expand-regardless (not (fboundp of-sym)))
                                           `((symbol-function ',of-sym)
-                                            (lambda () 
-                                              (loop :for contact-sym :in ,ct-sym
-                                                    :collect `(load-system-directory
-                                                               (asdf:system-relative-pathname ,contact-sym "./")
-                                                               (lambda (,input ,key) (setf (getf ,branches ,key)
-                                                                                           ,input)))))))))
-                            ))
-                    ,@(loop :for contact-sym :in contacts
-                            :collect `(load-system-directory
-                                       (asdf:system-relative-pathname ,contact-sym "./")
-                                       (lambda (,input ,key) (setf (getf ,branches ,key) ,input))))
-                    ))))))
+                                            (lambda (&rest ,key)
+                                              (dolist (,item ,ct-sym)
+                                                (and (or (not ,key) (member ,item ,key))
+                                                     (load-system-directory
+                                                      (asdf:system-relative-pathname ,item "./")
+                                                      (lambda (,input ,key)
+                                                        (setf (getf ,branches ,key) ,input))))))))))))))))))
 
 (defmacro branch (key &body input)
   (list (intern "DEFBRANCH" (package-name *package*))

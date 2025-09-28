@@ -240,7 +240,10 @@
           :initarg  :n)
    (%args :accessor uicall-args
           :initform nil
-          :initarg  :a))
+          :initarg  :a)
+   (%post :accessor uicall-post
+          :initform nil
+          :initarg  :p))
   (:documentation "A role for an element that can be interacted with to call a function."))
 
 (defclass uir-call-contact (uir-call) ())
@@ -569,7 +572,7 @@
                    (has-role aspect 'uir-sortable))
           ;; (print (list :ty types :r (uic-type (uic-root aspect))))
           (push (psl (let ((handle-container) (handle) (item))
-                       ;; (chain console (log :aa (@ $el child-nodes) (@ $el child-nodes length)))
+                       (chain console (log :aa (@ $el child-nodes) (@ $el child-nodes length)))
                        (dolist (n (@ $el child-nodes))
                          ;; (chain console (log :cc n (@ n class-name) (@ n class-list)
                          ;;                     (and (@ n class-list)
@@ -650,11 +653,10 @@
                                                    (list :|x-on:click|
                                                          (psl (fetch-contact $el mode
                                                                              (lisp (cons 'create
-                                                                                         call-args))))))))
-                                              ;; (and (of-root-type aspect :meta-code)
-                                              ;;      (list :x-data
-                                              ;;            (psl (create in-series
-                                              ;;                         containing-series))))
+                                                                                         call-args))
+                                                                             (lisp (cons 'create
+                                                                                         (uicall-post
+                                                                                          call-role)))))))))
                                               (and (and (of-root-type aspect :meta-code)
                                                         (member :sortable (uic-type aspect)))
                                                    (list :x-init

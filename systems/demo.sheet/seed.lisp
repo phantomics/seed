@@ -23,7 +23,7 @@
 
 (seed :seed.branch.demo.sheet
   (:linking . :demo.sheet)
-  (:access :systems systems :to-grow grow :of-system of-system :staccess (state . of-state)))
+  (:access :systems systems :to-grow grow :staccess (state . of-state)))
 
 (defun buttonize (item index)
   (declare (ignore index))
@@ -51,7 +51,7 @@
       ;; (print (list :bp package (funcall state :view-point)))
       (let ((context (first session))
             (summary (grow :demo.sheet :summary))
-            (branch-point (or (of-state :portal.demo1 :view-point) 0))
+            (branch-point (or (of-state :- :view-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 

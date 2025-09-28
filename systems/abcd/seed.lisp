@@ -23,7 +23,7 @@
 
 (seed :seed.branch.abcd
   (:linking . :abcd)
-  (:access :systems systems :to-grow grow :of-system of-system :staccess (state . of-state)))
+  (:access :systems systems :to-grow grow :staccess (state . of-state)))
 
 (defun buttonize (item index)
   (declare (ignore index))
@@ -36,7 +36,7 @@
 (branch :summary
   (lambda (state input)
     (declare (ignore state input))
-    '((:create :create) (:nav :analyses) nil
+    '((:create :welcome) (:nav :browse) nil
       (:chart :chart-candle) (:chentity :entities-view))))
 
 (branch :view
@@ -45,7 +45,7 @@
     (destructuring-bind (&key session &allow-other-keys) input
       (let ((context (first session))
             (summary (grow nil :summary))
-            (branch-point (or (of-state :portal.demo1 :view-point) 0))
+            (branch-point (or (of-state :- :view-point) 0))
             (start-point 0) (interval-found) (search-complete))
         
         (loop :for s :in summary :for sx :from 0 :until search-complete 
@@ -71,39 +71,6 @@
                                    (list (grow nil (first l)
                                                context (list :uimod :footer-controls)))))))))))
 
-(defun manifest-file-listing (path &optional is-creating)
-  (append (list (dx (uic-series :layout (:groups :rows '(2))
-                                :type (:series :enum :table-interstitial :enum)
-                                :call t)
-                    (dx (uicc-field :name :system-name :type (:string)) "")
-                    (dx (uicc-button :call (:@ :form-input))
-                        "create")))
-          (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
-                :append (let ((props (from-system-file *system* (format nil "~a/chart.lisp" dir)
-                                                       :properties)))
-                          (destructuring-bind (&key name description) (rest props)
-                            (and props (list (dx (uic-series :type (:series))
-                                                 (list (dx (uicc-button :call (:.fetch (:point ix)
-                                                                                       (:next :refresh)))
-                                                           name)
-                                                       description)))))))))
-
-;; (defun manifest-template-interface (template-list template-point)
-;;   (loop :for item :in template-list :for ix :from 0
-;;         :append (destructuring-bind (tname &rest tpath) item
-;;                   (multiple-value-bind (tname tdescription) (get-template-metadata tpath)
-;;                     (cons (dx ((uic-series :type (:series)))
-;;                               (list (dx ((uicc-button :call (:.fetch (:point ix) (:next :refresh))))
-;;                                         (first item))
-;;                                     tdescription))
-;;                           (and template-point (= ix template-point)
-;;                                (list (dx ((uic-series :layout (:groups :rows '(2))
-;;                                                       :type (:series :enum :table-interstitial :enum)
-;;                                                       :call t))
-;;                                          (dx ((uicc-field :name :system-name :type (:string))) "")
-;;                                          (dx ((uicc-button :call (:@ :form-input)))
-;;                                              "create")))))))))
-
 (defun point-from-template (form &optional index)
   (let ((x-start (second (nth 3 (second form))))
         (y-start (second (nth 4 (second form))))
@@ -127,6 +94,23 @@
         (of-state :- :chart-entities (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities))))))
 
+(defun manifest-file-listing (is-creating path)
+  (append (and is-creating (list (dx (uic-series :layout (:groups :rows '(2))
+                                                 :type (:series :enum :table-interstitial :enum)
+                                                 :call t)
+                                     (dx (uicc-field :name :system-name :type (:string)) "")
+                                     (dx (uicc-button :call (:@ :form-input))
+                                         "create"))))
+          (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
+                :append (let ((props (from-system-file *system* (format nil "~a/chart.lisp" dir)
+                                                       :properties)))
+                          (destructuring-bind (&key name description) (rest props)
+                            (and props (list (dx (uic-series :type (:series))
+                                                 (list (dx (uicc-button :call (:.fetch (:point ix)
+                                                                                       (:next :refresh)))
+                                                           name)
+                                                       description)))))))))
+
 (branch :nav
   (adapt-from-json :point :action)
   (lambda (state input)
@@ -136,7 +120,8 @@
              (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
                  (list :create)))
             (action (case (intern (string-upcase action) "KEYWORD")
-                      (:create (print (list :aa action)))))
+                      (:create (print (list :aa action))
+                       (of-state :- :creation-in-progress t))))
             (state (when (getf input :point)
                      (of-state :- :chart-point (getf input :point))
                      (of-state :- :chart-point nil))
@@ -145,7 +130,8 @@
                          ;; (print (list :ccc input))
                          (render (of-state nil :medium)
                                  (dx (uic-series :type (:ui :list-table))
-                                     (manifest-file-listing (asdf:system-relative-pathname
+                                     (manifest-file-listing (of-state :- :creation-in-progress)
+                                                            (asdf:system-relative-pathname
                                                              *system* "./analyses/")))))))))))
 
 (branch :chart
@@ -241,24 +227,24 @@
   (lambda (state input)
     (destructuring-bind (&key path sort remove &allow-other-keys) input
       (or (and state (let ((entities (of-state :- :chart-entities)))
-                       (symbol-macrolet ((elist (cdddr (second entities))))
+                       (let ((elist (second entities)))
                          (and path (cond (sort (destructuring-bind (index move-to) sort
-                                                 (let ((moved (nth index elist)))
-                                                   ;; (print (list :en index move-to elist :mm moved))
+                                                 (let ((moved (nth (1+ index) elist)))
                                                    (if (zerop index) (pop elist)
-                                                       (rplacd (nthcdr (1- index) elist)
-                                                               (rest (nthcdr index elist))))
-                                                   ;; (print (list :en2 index move-to elist :mov moved))
+                                                       (rplacd (nthcdr index elist)
+                                                               (rest (nthcdr (1+ index) elist))))
                                                    (if (zerop move-to) (setf elist (cons moved elist))
-                                                       (rplacd (nthcdr (1- move-to) elist)
-                                                               (cons moved (nthcdr move-to elist))))))
+                                                       (rplacd (nthcdr move-to elist)
+                                                               (cons moved (nthcdr (1+ move-to)
+                                                                                   elist))))))
                                                (of-state :- :chart-entities entities)
-                                               (print :complete))
+                                               (list :complete 0))
                                          (remove (if (zerop remove) (pop elist)
                                                      (rplacd (nthcdr (1- remove) elist)
                                                              (rest (nthcdr remove elist))))
                                                  (of-state :- :chart-entities entities)
-                                                 (values :complete t)))))))
+                                                 (values (list :complete 0)
+                                                         t)))))))
           input)))
   (lambda (state input)
     (destructuring-bind (&key identity uimod action &allow-other-keys) input
@@ -271,7 +257,6 @@
                                              (list :save)))
             (action (let ((chart-path (namestring (nth (of-state :- :chart-point)
                                                        (of-state :- :chart-paths)))))
-                      ;; (print (list :ce chart-entities))
                       (case (intern (string-upcase action) "KEYWORD")
                         (:save (let ((output))
                                  ;; (setf output (format nil "(progn~%~{~a~%~})" chart-entities))
@@ -284,7 +269,6 @@
                ;; (print (list :ccc state))
                (when state
                  ;; (print (list :con (funcall state :medium)))
-                 ;; (print (list :nnn chart-entities))
                  (render (funcall state nil :medium)
                          (dx (uic-frame :type (:meta-code))
                              (seed.modulate::express (of-state :- :chart-entities))))))))))

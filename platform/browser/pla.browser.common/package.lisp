@@ -5,7 +5,7 @@
   (:export #:lisp->camel-case #:camel-case->keyword #:*html* #:with-html #:compile-and-write
            #:ps* #:ps #:defpsmacro #:create #:create6 #:@ #:chain #:new #:getprop #:instanceof #:lisp
            #:write-to-file #:concat-files #:gen-provision #:retrieve-flat-source
-           #:create-js-collection #:enter-js-element)
+           #:create-js-collection #:enter-js-element #:log)
   (:shadowing-import-from #:cl-ppcre #:split)
   (:shadowing-import-from #:dexador #:get)
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->keyword)
