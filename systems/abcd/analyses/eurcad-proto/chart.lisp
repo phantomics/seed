@@ -5,7 +5,7 @@
 
 :chart-entities
 (fx
- (chart-view :chart-test (fx "/tmp/EURUSDX.csv" (:fx :uicc-field) (:type :text))
+ (chart-view :chart-test (fx "/tmp/EURUSDX2.csv" (:fx :uicc-field) (:type :text))
   (fx
    (span
     (fx "line" (:fx :uicc-select) (:type :select)

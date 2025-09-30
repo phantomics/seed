@@ -581,10 +581,10 @@
 ;;                                                                   input  input))))))
 ;;            (then (lambda (response) (chain response (json))))
 ;;            (then (lambda (data)
-;;                    ;; (chain console (log :dt data (@ data oob-reload)))
+;;                    ;; (log :dt data (@ data oob-reload))
 ;;                    (if (@ data oob-reload)
 ;;                        (chain data oob-reload (for-each (lambda (item)
-;;                                                           (chain console (log :it item))
+;;                                                           (log :it item)
 ;;                                                           (chain htmx (trigger (getprop seed-elements
 ;;                                                                                         item)
 ;;                                                                                "reload"))))))
@@ -612,7 +612,7 @@
 
 (enter-js-element *misc-js* :fetch-contact-defs
   (defun fetch-contact (element context input event)
-    ;; (chain console (log :cc context))
+    ;; (log :cc context)
     (let ((data-in (new (-form-data))))
       (chain data-in (append "path"  (chain (+ (@ context system) "*" (@ context branch))
                                             (to-upper-case))))
@@ -679,12 +679,12 @@
 
 (enter-js-element *misc-js* :extog-array
   (defun register-exclusive-toggle-array (data actions state)
-    ;; (chain console (log :ta data actions))
+    ;; (log :ta data actions)
     (lambda (key index)
-      ;; (chain console (log :key key))
+      ;; (log :key key)
 
       (when key
-        ;; (chain console (log :xx data state (getprop actions key)))
+        ;; (log :xx data state (getprop actions key))
         (funcall (getprop actions key) data)
 
         (setf (@ state index) index)))))
@@ -705,19 +705,19 @@
                         (when (= (@ n class-name) "field has-addons")
                           (setf handle-container n))))))
       
-      ;; (chain console (log 77 (@ element child-nodes) handle-container))
+      ;; (log 77 (@ element child-nodes) handle-container)
       (when handle-container
         (loop :for n :in (@ handle-container child-nodes)
               :do (when (= (@ n class-name) "control drag-handle")
                     (setf handle n)
                     (break))))
 
-      ;; (chain console (log :ha handle in-series))
+      ;; (log :ha handle in-series)
       
       (when (/= "undefined" (typeof in-series))
         (let ((drops (create element element drag-handle handle
                              on-drag-start (mcode-handler-on-drag in-series mode))))
-          ;; (chain console (log :dd drops))
+          ;; (log :dd drops)
           (draggable drops)
           nil)))))
 
@@ -771,10 +771,10 @@
 (enter-js-element *misc-js* :mcode-handler-on-drag
   (defun mcode-handler-on-drag (element mode)
     (lambda (dragging)
-      ;; (chain console (log :ee element mode))
-      ;; (chain console (log :mm mode dragging (chain dragging source element parent-element
-      ;;                                              (get-attribute "index"))))
-      ;; (chain console (log :drag-start element (@ element child-nodes length) (@ element child-nodes)))
+      ;; (log :ee element mode)
+      ;; (log :mm mode dragging (chain dragging source element parent-element
+      ;;                               (get-attribute "index")))
+      ;; (log :drag-start element (@ element child-nodes length) (@ element child-nodes))
       (chain -array (from (@ element child-nodes))
              (filter (lambda (item) (instanceof item -h-t-m-l-element)))
              (map (lambda (n item-index)
@@ -786,7 +786,7 @@
 
 (enter-js-element *misc-js* :get-drop-indicator
   (defun get-drop-indicator (edge gap)
-    ;; (chain console (log :ee edge gap))
+    ;; (log :ee edge gap)
     (let* ((stroke-size 2) (terminal-size 8)
            (line-offset (+ "calc(-0.5 * (" gap " + " stroke-size "px))"))
            (orientation (case edge
@@ -824,7 +824,7 @@
 (enter-js-element *misc-js* :ejoin
   (defun ejoin (base event)
     (unless (or (undefp event) (undefp (@ event detail)))
-      ;; (chain console (log :ee (@ event detail)))
+      ;; (log :ee (@ event detail))
       (loop :for k :in (chain -object (keys (@ event detail)))
             :do (unless (or (= k "elt" ) (undefp (getprop (@ event detail) k)))
                   (setf (getprop base k)
@@ -899,7 +899,7 @@
                       (setf (@ ctx stroke-style) "black"
                             (@ ctx line-width) 1)))
          (intersect-line (lambda (ent chart point callback)
-                           ;; (chain console (log :ch chart ent))
+                           ;; (log :ch chart ent)
                            (let ((line-points (list (chain chart (to-dom-coords (@ ent points 0 0)
                                                                                 (@ ent points 0 1)))
                                                     (chain chart (to-dom-coords (@ ent points 1 0)
@@ -976,7 +976,7 @@
     (fetch-contact null mode (create entities (if (= 0 (length (@ mode entities-in-flux)))
                                                   (list 0) (@ mode entities-in-flux)))
                    (lambda (data)
-                     ;; (chain console (log :en data (@ mode entities-in-flux) (@ mode linked-branch-id)))
+                     ;; (log :en data (@ mode entities-in-flux) (@ mode linked-branch-id))
                      (setf (@ mode entities) data)
                      ;; (@ mode entities-in-flux) (list)
                      (chain htmx (trigger (+ "#" (@ mode linked-branch-id)) "reload"))
@@ -1136,21 +1136,24 @@
                                           (remainder (mod (@ data-pos 0) time-interval)))
                                      (when (/= 0 remainder)
                                        (setf (@ data-pos 0) (- (@ data-pos 0) remainder)))
+                                     ;; (log :ee (@ self state) mode chart data-pos)
                                      ;; (let ((column-value (getprop (@ self state content-index)
-                                     ;;                             (@ data-pos 0))))
-                                     (loop :for point :in (@ ent points-in-flux)
-                                           :do (setf (getprop ent "layerPoints" point)
-                                                     (list (@ event layer-x) (@ event layer-y))
-                                                     ;; time-coord
-                                                     ;; (chain chart (to-dom-y-coord (@ column-value 1)))
-                                                     )
-                                               ;; (when (> 8 (abs (- time-coord (getprop ent "layerPoints"
-                                               ;;                                        point 1))))
-                                               ;;   (chain console (log "Snapped!"))
-                                               ;;   (setf (getprop ent "layerPoints" point 1)
-                                               ;;         time-coord)
-                                               ;;   )
-                                           )))
+                                     ;;                              (@ data-pos 0))))
+                                     ;;   (loop :for point :in (@ ent points-in-flux)
+                                     ;;         :do (setf (getprop ent "layerPoints" point)
+                                     ;;                   (list (@ event layer-x) (@ event layer-y))
+                                     ;;                   time-coord
+                                     ;;                   (chain chart (to-dom-y-coord (@ column-value 1)))
+                                     ;;                   )
+                                     ;;             (when (> 8 (abs (- time-coord (getprop ent "layerPoints"
+                                     ;;                                                    point 1))))
+                                     ;;               (chain console (log "Snapped!"))
+                                     ;;               (setf (getprop ent "layerPoints" point 1)
+                                     ;;                     time-coord)
+                                     ;;               )
+                                     ;;         ))
+
+                                     ))
                                (setf (@ mode moving-from) (list (@ event layer-x)
                                                                 (@ event layer-y)))
                                ;; (cl :xx (@ ent type))
@@ -1178,14 +1181,16 @@
 
 (enter-js-element *misc-js* :get-candle-plotter
   (defun get-candle-plotter (mode)
+    (log :mm mode)
     (lambda (e)
+      (log :xx e)
       (if (/= 0 (@ e series-index))
           (let ((self this)
                 (set-count (@ e series-count)))
-            ;; (chain console (log :ss set-count))
+            (log :ss set-count)
+            (setf (@ window bla) (@ e all-series-points))
             (if (/= 4 set-count)
-                (chain console
-                       (log "Error: Exactly 4 prices each point must be provided for the candle chart."))
+                (log "Error: Exactly 4 prices each point must be provided for the candle chart.")
                 (let* ((prices #())
                        (sets (@ e all-series-points))
                        (area (@ e plot-area))
@@ -1204,21 +1209,19 @@
                        (view-width (@ (chain e dygraph (get-area)) w))
                        (bar-width (max 1 (* 0.7 (/ view-width bar-count))))
                        (up-fill-style "rgba(38,139,210,1.0)")
-                       (up-stroke-style (if (< 2 bar-width) "rgba(38,139,210,1.0)"
-                                            "rgba(38,139,210,0.6)"))
+                       (up-stroke-style (if (< 2 bar-width) "rgba(38,139,210,1.0)" "rgba(38,139,210,0.6)"))
                        (down-fill-style "rgba(220,50,47,1.0)")
-                       (down-stroke-style (if (< 2 bar-width) "rgba(220,50,47,1.0)"
-                                              "rgba(220,50,47,0.6)")))
+                       (down-stroke-style (if (< 2 bar-width) "rgba(220,50,47,1.0)" "rgba(220,50,47,0.6)")))
                   ;; (chain console (log :sets sets))
                   (setf (@ ctx line-width) 0.6)
                   (loop :for p :from 0 :to (1- (@ sets 0 length))
-                        :do (let* ((price (create open (getprop sets 0 p "yval")
-                                                  high (getprop sets 1 p "yval")
-                                                  low (getprop sets 2 p "yval")
-                                                  close (getprop sets 3 p "yval")
-                                                  open-y (getprop sets 0 p "y")
-                                                  high-y (getprop sets 1 p "y")
-                                                  low-y (getprop sets 2 p "y")
+                        :do (let* ((price (create open    (getprop sets 0 p "yval")
+                                                  high    (getprop sets 1 p "yval")
+                                                  low     (getprop sets 2 p "yval")
+                                                  close   (getprop sets 3 p "yval")
+                                                  open-y  (getprop sets 0 p "y")
+                                                  high-y  (getprop sets 1 p "y")
+                                                  low-y   (getprop sets 2 p "y")
                                                   close-y (getprop sets 3 p "y")))
                                    (top-y (+ (@ area y) (* (@ area h) (@ price high-y))))
                                    (bottom-y (+ (@ area y) (* (@ area h) (@ price low-y))))
@@ -1231,10 +1234,10 @@
                               (chain ctx (line-to center-x bottom-y))
                               (chain ctx (close-path))
                               (if (> (@ price open) (@ price close))
-                                  (setf (@ ctx fill-style) down-fill-style
+                                  (setf (@ ctx fill-style)   down-fill-style
                                         (@ ctx stroke-style) down-stroke-style
                                         body-y (+ (@ area y) (* (@ area h) (@ price open-y))))
-                                  (setf (@ ctx fill-style) up-fill-style
+                                  (setf (@ ctx fill-style)   up-fill-style
                                         (@ ctx stroke-style) up-stroke-style
                                         body-y (+ (@ area y) (* (@ area h) (@ price close-y)))))
                               (chain ctx (stroke))
@@ -1242,7 +1245,7 @@
                               (chain ctx (fill-rect (- center-x (/ bar-width 2))
                                                     body-y bar-width body-height))))
                   (setf (@ ctx stroke-style) "black"
-                        (@ ctx line-width) 1.5)
+                        (@ ctx line-width)   1.5)
                   ;; (chain console (log :ents (@ mode entities)))
                   (loop :for ent :in (@ mode entities)
                         :do (if (not (and (@ mode mousedown) (@ ent in-flux)

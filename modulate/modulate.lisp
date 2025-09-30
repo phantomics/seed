@@ -1215,10 +1215,21 @@
                              $el mode (create mode "chart-data")
                              (lambda (data)
                                ;; (chain console (log :dd data config $el))
+                               ;; (setf (@ mode raw-data)  data
+                               ;;       (@ mode show-data)
+                               ;;       ;; (chain data (replace (regex "/(\\n)[0-9.\\- :]+(\\t)/")
+                               ;;       ;;                      "start$2max$2min$2end$1")
+                               ;;       ;;        (replace (regex "/\\t[0-9]+(\\n)[0-9.\\- :]+\\t/g") "$1"))
+                               ;;       (chain data (replace (regex "/[0-9.\\- :]+(\\t)[0-9. \\t]+(\\n)/")
+                               ;;                            "date$1start$1max$1min$1end$2")
+                               ;;              (replace (regex "/\\t[0-9]+(\\n)/g") "$1")))
+                               (log (@ mode show-data))
                                (setf (getprop (@ window seed-elements) (lisp branch))
                                      (setf (@ mode chart)
-                                           (new (chain window (-dygraph $el data config)))))
-                               
+                                           (new (chain window (-dygraph $el data
+                                                                        ;; (@ mode show-data)
+                                                                        config)))))
+                               (setf (@ window lines) data)
                                ;; perform the initial entity commit to draw existing lines on the chart
                                (commit-entities mode (lambda () (chain mode chart (draw-graph_))))))))))))
 
@@ -1526,8 +1537,7 @@
                                                      ;;              (rest item) (rest form)))
                                                      (lsort (rest item) ix subix))))
                                 (loop :for item :in (rest formatted)
-                                      :do (lsort item node-index index))
-                                )))
+                                      :do (lsort item node-index index)))))
                           ;; nodes are being sorted
                           (let ((original   (nth index (second indices-form)))
                                 (orig-node  (nth index formatted2))
