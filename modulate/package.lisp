@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:seed.modulate
-  (:use #:cl #:symbol-munger #:spinneret #:com.inuoe.jzon #:pla.browser.common)
+  (:use #:cl #:symbol-munger #:spinneret #:com.inuoe.jzon) ;; #:pla.browser.common)
   (:export #:meta-template #:encode #:render #:dx #:fx-assign
            ;; media
            #:uim-web

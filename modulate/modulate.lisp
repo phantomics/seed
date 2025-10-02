@@ -12,6 +12,9 @@
 (defmacro fx (form)
   (first form))
 
+(defpsmacro log (&rest items)
+  (list 'chain 'console (cons 'log items)))
+
 (defun from-system-file (system file key &key as-string)
   "Read a form from a file in the manner of a plist (but not requiring a strict key, value structure)."
   (with-open-file (stream (asdf:system-relative-pathname system (format nil "./~a" file))
@@ -1215,19 +1218,19 @@
                              $el mode (create mode "chart-data")
                              (lambda (data)
                                ;; (chain console (log :dd data config $el))
-                               ;; (setf (@ mode raw-data)  data
-                               ;;       (@ mode show-data)
-                               ;;       ;; (chain data (replace (regex "/(\\n)[0-9.\\- :]+(\\t)/")
-                               ;;       ;;                      "start$2max$2min$2end$1")
-                               ;;       ;;        (replace (regex "/\\t[0-9]+(\\n)[0-9.\\- :]+\\t/g") "$1"))
-                               ;;       (chain data (replace (regex "/[0-9.\\- :]+(\\t)[0-9. \\t]+(\\n)/")
-                               ;;                            "date$1start$1max$1min$1end$2")
-                               ;;              (replace (regex "/\\t[0-9]+(\\n)/g") "$1")))
-                               (log (@ mode show-data))
+                               (setf ix 1)
+                               (setf (@ mode raw-data)  data
+                                     (@ mode show-data)
+                                     (chain data (replace (regex "/(\\n)[0-9.\\- :]+(\\t)/")
+                                                          "time$2start$2max$2min$2end$1\0$2")
+                                            (replace (regex "/\\t[0-9]+(\\n)[0-9.\\- :]+(\\t)/g")
+                                                     (lambda (match p1 p2) (+ p1 (incf ix) p2)))
+                                            (replace (regex "/\\t[0-9]+\\n/") "")))
+                               ;; (log data (@ mode show-data))
                                (setf (getprop (@ window seed-elements) (lisp branch))
                                      (setf (@ mode chart)
-                                           (new (chain window (-dygraph $el data
-                                                                        ;; (@ mode show-data)
+                                           (new (chain window (-dygraph $el ;; data
+                                                                        (@ mode show-data)
                                                                         config)))))
                                (setf (@ window lines) data)
                                ;; perform the initial entity commit to draw existing lines on the chart

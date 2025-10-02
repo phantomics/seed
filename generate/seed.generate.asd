@@ -11,7 +11,8 @@
                               "parenscript" "paren6"
                               "seed.sublimate" "symbol-munger"
                               "com.inuoe.jzon" "trivial-package-local-nicknames"
-                              "pla.browser.common")
+                              ;; "pla.browser.common"
+                              )
   :components ((:file "package")
                (:file "setup")
                (:file "generate")))
