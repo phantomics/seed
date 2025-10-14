@@ -1117,7 +1117,7 @@
                    (let ((moving-from (@ mode moving-from)))
                      (chain temp-canvas (clear-rect 0 0 (@ chart canvas_ width)
                                                     (@ chart canvas_ height)))
-                     (log :ent (@ mode entities-in-flux))
+                     ;; (log :ent (@ mode entities-in-flux) chart)
                      (loop :for ent :in (@ mode entities-in-flux)
                            :do (if (= 0 (@ ent points-in-flux length))
                                    (setf (@ ent layer-points)
@@ -1137,30 +1137,37 @@
                                           (remainder (mod (@ data-pos 0) time-interval)))
                                      (when (/= 0 remainder)
                                        (setf (@ data-pos 0) (- (@ data-pos 0) remainder)))
-                                     (log :ee (@ self state) mode chart data-pos)
-                                     ;; (let ((column-value (getprop (@ self state content-index)
-                                     ;;                              (@ data-pos 0))))
-                                     ;;   (loop :for point :in (@ ent points-in-flux)
-                                     ;;         :do (setf (getprop ent "layerPoints" point)
-                                     ;;                   (list (@ event layer-x) (@ event layer-y))
-                                     ;;                   time-coord
-                                     ;;                   (chain chart (to-dom-y-coord (@ column-value 1)))
-                                     ;;                   )
-                                     ;;             (when (> 8 (abs (- time-coord (getprop ent "layerPoints"
-                                     ;;                                                    point 1))))
-                                     ;;               (chain console (log "Snapped!"))
-                                     ;;               (setf (getprop ent "layerPoints" point 1)
-                                     ;;                     time-coord)
-                                     ;;               )
-                                     ;;         ))
-
-                                     ))
+                                     ;; (log :ee (@ self state) mode chart data-pos
+                                     ;;      (chain chart (get-row-for-x (@ data-pos 0)))
+                                     ;;      (chain chart (get-value (@ data-pos 0) 1))
+                                     ;;      (chain chart (get-value (@ data-pos 0) 2))
+                                     ;;      )
+                                     (let* ((column-value (chain chart (get-value (@ data-pos 0) 1)))
+                                            (cvals (list (floor (chain chart (to-dom-y-coord
+                                                                              (getprop chart "rawData_"
+                                                                                       (@ data-pos 0) 2))))
+                                                         (floor (chain chart (to-dom-y-coord
+                                                                              (getprop chart "rawData_"
+                                                                                       (@ data-pos 0) 3)))))))
+                                       ;; (log :ccl column-value)
+                                       (loop :for point :in (@ ent points-in-flux)
+                                             :do (setf (getprop ent "layerPoints" point)
+                                                       (list (@ event layer-x) (@ event layer-y))
+                                                       ;; time-coord (@ cvals 0)
+                                                       )
+                                                 ;; (log :aabb point time-coord)
+                                                 (if (> 8 (abs (- (@ cvals 0) (getprop ent "layerPoints"
+                                                                                        point 1))))
+                                                     (setf (getprop ent "layerPoints" point 1)
+                                                           (@ cvals 0))
+                                                     (if (> 8 (abs (- (@ cvals 1) (getprop ent "layerPoints"
+                                                                                           point 1))))
+                                                         (setf (getprop ent "layerPoints" point 1)
+                                                               (@ cvals 1))))))))
                                (setf (@ mode moving-from) (list (@ event layer-x)
                                                                 (@ event layer-y)))
-                               ;; (cl :xx (@ ent type))
                                (funcall (getprop draw-methods (@ ent type) "draw")
-                                        temp-canvas ent chart))
-                     )))
+                                        temp-canvas ent chart)))))
               ;; TODO: add move-ephemera logic
               ("draw"
                (let* ((time-interval (- (@ chart raw-data_ 1 0) (@ chart raw-data_ 0 0)))

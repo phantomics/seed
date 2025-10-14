@@ -5,42 +5,43 @@
 
 :chart-entities
 (fx
- (chart-view :chart-test (fx "/tmp/EURUSDX.csv" (:fx :uicc-field) (:type :text))
-  (fx
-   (span
-    (fx "line" (:fx :uicc-select) (:type :select)
-        (:options "line" "retraceX" "retraceY"))
-    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button)
-        (:type) (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :|─∘─∘─|))))
-    (fx 1324252800000 (:fx :uicc-field) (:type :numeric :integer))
-    (fx 491.8025728987993d0 (:fx :uicc-field) (:type :numeric :float))
-    (fx 1328572800000 (:fx :uicc-field) (:type :numeric :integer))
-    (fx 379.4218113207547d0 (:fx :uicc-field) (:type :numeric :float)))
-   (:fx :uic-series :layout (:groups :rows (-2 4)))
-   (:role (uir-call-form :options (list 'line 'retrace))))
-  (fx
-   (span
-    (fx "line" (:fx :uicc-select) (:type :select)
-        (:options "line" "retraceX" "retraceY"))
-    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
-        (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :|─∘─∘─|))))
-    (fx 1324080000000 (:fx :uicc-field) (:type :numeric :integer))
-    (fx 418.7822229845626d0 (:fx :uicc-field) (:type :numeric :float))
-    (fx 1327881600000 (:fx :uicc-field) (:type :numeric :integer))
-    (fx 482.84468610634656d0 (:fx :uicc-field) (:type :numeric :float)))
-   (:fx :uic-series :layout (:groups :rows (-2 4)))
-   (:role (uir-call-form :options (list 'line 'retrace))))
+ (chart-view :chart-test
+  (fx "/tmp/EURUSDX.csv" (:fx :uicc-field) (:type :text))
   (fx
    (span
     (fx "line" (:fx :uicc-select) (:type :select)
      (:options "line" "retraceX" "retraceY"))
-    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button)
-        (:type) (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :|─∘─∘─|))))
-    (fx 1324598400000 (:fx :uicc-field) (:type :numeric :integer))
-    (fx 472.80099485420243d0 (:fx :uicc-field) (:type :numeric :float))
-    (fx 1328140800000 (:fx :uicc-field) (:type :numeric :integer))
-    (fx 385.66518696397947d0 (:fx :uicc-field) (:type :numeric :float)))
+    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
+     (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :─∘─∘─))))
+    (fx 364 (:fx :uicc-field) (:type :numeric :integer))
+    (fx 1.5145164983713355d0 (:fx :uicc-field) (:type :numeric :float))
+    (fx 1454 (:fx :uicc-field) (:type :numeric :integer))
+    (fx 1.3330432736156352d0 (:fx :uicc-field) (:type :numeric :float)))
    (:fx :uic-series :layout (:groups :rows (-2 4)))
-   (:role (uir-call-form :options (list 'line 'retrace)))))
+   (:role uir-call-form (uir-reducable)))
+  (fx
+   (span
+    (fx "line" (:fx :uicc-select) (:type :select)
+     (:options "line" "retraceX" "retraceY"))
+    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
+     (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :─∘─∘─))))
+    (fx 364 (:fx :uicc-field) (:type :numeric :integer))
+    (fx 1.5145164983713355d0 (:fx :uicc-field) (:type :numeric :float))
+    (fx 948 (:fx :uicc-field) (:type :numeric :integer))
+    (fx 1.3669097557003258d0 (:fx :uicc-field) (:type :numeric :float)))
+   (:fx :uic-series :layout (:groups :rows (-2 4)))
+   (:role uir-call-form (uir-reducable)))
+  (fx
+   (span
+    (fx "line" (:fx :uicc-select) (:type :select)
+     (:options "line" "retraceX" "retraceY"))
+    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
+     (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :─∘─∘─))))
+    (fx 360 (:fx :uicc-field) (:type :numeric :integer))
+    (fx 1.5145164983713355d0 (:fx :uicc-field) (:type :numeric :float))
+    (fx 1852 (:fx :uicc-field) (:type :numeric :integer))
+    (fx 1.4269748371335504d0 (:fx :uicc-field) (:type :numeric :float)))
+   (:fx :uic-series :layout (:groups :rows (-2 4)))
+   (:role uir-call-form (uir-reducable))))
  (:fx :uic-series :layout (:groups :rows (-2))) (:type :called :removable)
  (:role uir-call-form uir-reducable (uir-sortable :range 2)))

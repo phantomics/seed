@@ -727,7 +727,8 @@
                                                 (loop :for i :below (or (second lprops) breadth-default)
                                                       :collect ratio))))
                         :x-data (if (of-root-type aspect :meta-code)
-                                    (psl (create containing-series $el))))
+                                    (psl (create containing-series $el
+                                                 meta-path         (lisp (cons 'list (uic-path aspect)))))))
                   
                   (and (eq t call)
                        (list :hx-inherit "*" :hx-post "/render/"))
@@ -1023,7 +1024,14 @@
                  (:span :class "select"
                         (:select :name ,(or (lisp->camel-case field-name) "")
                           :class ,(furnish-type medium aspect)
-                          ,@(furnish-call medium aspect)
+                          ;; ,@(furnish-call medium aspect)
+                          ,@(let ((role (has-role (uic-root aspect) 'uir-call-form)))
+                              (and role `(:|x-on:change|
+                                           ,(psl (lambda (event)
+                                                   (log :eevv event (@ event target value))
+                                                   (fetch-contact
+                                                    $el mode (create item (@ event target value)
+                                                                     path meta-path)))))))
                           ,@(append (and (member :default-blank types)
                                          (not field-content)
                                          `((:option "")))
