@@ -4,7 +4,7 @@
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
-                          #:from-system-file #:build-templater #:get-template-metadata
+                          #:from-system-file #:at-path #:build-templater #:get-template-metadata
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)
   (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
@@ -97,7 +97,7 @@
 (defun manifest-file-listing (is-creating path)
   (append (and is-creating (list (dx (uic-series :layout (:groups :rows '(2))
                                                  :type (:series :enum :table-interstitial :enum)
-                                                 :call t)
+                                                 :call ((form)(call)))
                                      (dx (uicc-field :name :system-name :type (:string)) "")
                                      (dx (uicc-button :call (:@ :form-input))
                                          "create"))))
@@ -223,9 +223,18 @@
                                 :abcd :chart)))))))))
 
 (branch :chentity
-  (adapt-from-json :path :sort :remove :action :mode)
+  (adapt-from-json :data :path :sort :remove :action :mode)
   (lambda (state input)
-    (destructuring-bind (&key path sort remove &allow-other-keys) input
+    (destructuring-bind (&key data path &allow-other-keys) input
+      (print (list :datx data path))
+      (or (and data path (at-path path (lambda (index form)
+                                         (if (and (listp (nth index form))
+                                                  (eql 'fx (first (nth index form))))
+                                             (setf (second (nth index form)) data)
+                                             (setf (nth index form) data)))))
+          input)))
+  (lambda (state input)
+    (destructuring-bind (&key data path sort remove &allow-other-keys) input
       (or (and state (let ((entities (of-state :- :chart-entities)))
                        (let ((elist (second entities)))
                          (and path (cond (sort (destructuring-bind (index move-to) sort

@@ -11,6 +11,7 @@
            ;; roles
            #:role-cast
            #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
+           #:uir-contact #:uir-contact-refreshing
            #:uir-sortable #:uir-reducable #:uir-toggle)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)
   (:shadowing-import-from #:parenscript #:ps #:ps* #:ps-inline #:ps-inline* #:defpsmacro

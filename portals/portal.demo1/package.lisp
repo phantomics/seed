@@ -8,13 +8,14 @@
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
-                          #:from-system-file #:build-templater #:get-template-metadata
+                          #:from-system-file #:at-path #:build-templater #:get-template-metadata
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->keyword)
   (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
-                          #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
+                          #:role-cast #:uir-form #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
+                          #:uir-contact-refreshing
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
   (:shadowing-import-from #:seed.access #:authorize)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source

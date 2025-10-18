@@ -408,6 +408,10 @@
                      (write-sequence after-bytes output))
                    new-value))))
 
+(defun at-path (path function &optional data)
+  (if (rest path) (at-path (rest path) function (nth (first path) data))
+      (funcall function (first path) data)))
+
 (defun seek-key (form key)
   (let ((to-return))
     (loop :for item :in form :for i :from 0 :until to-return

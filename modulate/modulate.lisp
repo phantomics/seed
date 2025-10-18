@@ -130,7 +130,7 @@
   ((%name :accessor uic-name
           :initform nil
           :initarg  :name
-          :documentation "The component's unique name.")
+          :documentation "The component's identifying name.")
    (%base :accessor uic-base
           :initform nil
           :initarg  :base
@@ -237,19 +237,29 @@
   (let ((pos (position role-sym (uic-role component) :test (lambda (r c) (typep c r)))))
     (and pos (nth pos (uic-role component)))))
 
-(defclass uir-call (ui-role)
-  ((%name :accessor uicall-name
+(defclass uir-form (ui-role) ())
+
+(defclass uir-interact (ui-role)
+  ((%name :accessor uiri-name
           :initform nil
           :initarg  :n)
-   (%args :accessor uicall-args
+   (%args :accessor uiri-args
           :initform nil
-          :initarg  :a)
-   (%post :accessor uicall-post
-          :initform nil
-          :initarg  :p))
+          :initarg  :a)))
+
+(defclass uir-call (uir-interact)
+  ()
   (:documentation "A role for an element that can be interacted with to call a function."))
 
-(defclass uir-call-contact (uir-call) ())
+(defclass uir-call-refreshing (uir-call)
+  ()
+  (:documentation "A role for an element that can be interacted with to call a function."))
+
+(defclass uir-contact (uir-interact) ())
+
+(defclass uir-contact-refreshing (uir-contact) ())
+
+(defclass uir-render (uir-call) ())
 
 ;; (define-symbol-macro uir-call-c uir-call-contact)
 
@@ -260,6 +270,10 @@
 (defclass uir-call-base (uir-call) ())
 
 (define-symbol-macro uir-call-b uir-call-base)
+
+(defclass uir-call-rendering (uir-call) ())
+
+(define-symbol-macro uir-form-rerendering uir-call-base)
 
 (defclass uir-call-form (ui-role)
   ((%options :accessor uircf-options
@@ -511,7 +525,6 @@
                                   :collect (funcall (uic-series-map aspect) item ix))
           (uic-series-map aspect) nil)))
 
-
 (defmethod generate ((medium uim-web) (aspect uic-series))
   (let ((last-type-index (1- (length (uic-type aspect))))
         (class-stream (make-string-output-stream))
@@ -520,6 +533,8 @@
         (breadth-default 12) (call (uic-call aspect))
         (is-list-table (member :list-table (uic-type aspect)))
         (layout (uic-series-layout aspect))
+        (is-render-form (and (has-role aspect 'uir-form)
+                             (has-role aspect 'uir-call)))
         (x-inits) (items))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
@@ -644,22 +659,26 @@
                                                           (t :div))
                                                     :class (get-output-stream-string class-stream)
                                                     :index ix)
-                                              (let* ((call-role (has-role aspect 'uir-call))
+                                              (let* ((call-role (has-role aspect 'uir-contact))
                                                      (call-args (and call-role
                                                                      (mapcar (lambda (arg)
                                                                                (case arg
                                                                                  (:@index ix)
                                                                                  (t arg)))
-                                                                             (uicall-args call-role)))))
+                                                                             (uiri-args call-role))))
+                                                     (call-post (and (has-role aspect 'uir-contact-refreshing)
+                                                                     '(create next "refresh"))))
+                                                ;; (print (list :po call-post (uic-role aspect)))
                                                 (typecase call-role
-                                                  (uir-call-contact
+                                                  (uir-contact
                                                    (list :|x-on:click|
                                                          (psl (fetch-contact $el mode
                                                                              (lisp (cons 'create
                                                                                          call-args))
-                                                                             (lisp (cons 'create
-                                                                                         (uicall-post
-                                                                                          call-role)))))))))
+                                                                             (lisp ;; (cons 'create
+                                                                                   ;;       (uicall-post
+                                                                                   ;;        call-role))
+                                                                                   call-post)))))))
                                               (and (and (of-root-type aspect :meta-code)
                                                         (member :sortable (uic-type aspect)))
                                                    (list :x-init
@@ -701,7 +720,7 @@
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
           
-          (append (list (cond ((or (eq t call) (member :enum types))
+          (append (list (cond ((or is-render-form (member :enum types))
                                :form)
                               (is-list-table :table)
                               (t :div))
@@ -730,8 +749,7 @@
                                     (psl (create containing-series $el
                                                  meta-path         (lisp (cons 'list (uic-path aspect)))))))
                   
-                  (and (eq t call)
-                       (list :hx-inherit "*" :hx-post "/render/"))
+                  (and is-render-form (list :hx-inherit "*" :hx-post "/render/"))
 
                   (and x-inits (list :x-init (apply #'concatenate 'string (mapcar (lambda (str)
                                                                                     (format nil "~a;~%" str))
@@ -1024,22 +1042,23 @@
                  (:span :class "select"
                         (:select :name ,(or (lisp->camel-case field-name) "")
                           :class ,(furnish-type medium aspect)
-                          ;; ,@(furnish-call medium aspect)
-                          ,@(let ((role (has-role (uic-root aspect) 'uir-call-form)))
+                          ,@(furnish-call medium aspect)
+                          ,@(let ((role (or (has-role aspect 'uir-call-form)
+                                            (has-role (uic-root aspect) 'uir-call-form)))
+                                  (path (cons 'list (uic-path aspect))))
                               (and role `(:|x-on:change|
                                            ,(psl (lambda (event)
-                                                   (log :eevv event (@ event target value))
                                                    (fetch-contact
-                                                    $el mode (create item (@ event target value)
-                                                                     path meta-path)))))))
+                                                    $el mode (create data (@ event target value)
+                                                                     path (lisp path))))))))
                           ,@(append (and (member :default-blank types)
                                          (not field-content)
                                          `((:option "")))
                                     (loop :for item :in (uics-options aspect)
                                           :collect (let* ((item-out (if (not (symbolp item))
                                                                         item (lisp->camel-case item)))
-                                                          (selected (if (equalp item field-content)
-                                                                        `(:selected "selected"))))
+                                                          (selected (and (equalp item field-content)
+                                                                         `(:selected "selected"))))
                                                      `(:option ,@selected ,item-out)))))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
@@ -1269,13 +1288,13 @@
                                          out)))
                         (fx-property (rest (assoc :fx (cddr form))))
                         (fx-class (first fx-property))
-                        ;; (layout (rest (assoc :layout (cddr form))))
                         (class (when fx-class (intern (string fx-class) "SEED.MODULATE")))
                         (props (list :base (if (eql class 'uic-series)
                                                (loop :for i :from 0 :for f :in (second form)
                                                      :collect (express f params (cons i path)))
                                                (second form))
                                      :path (reverse path)
+                                     :name (rest (assoc :name (cddr form)))
                                      :type (rest (assoc :type (cddr form)))
                                      :role (loop :for r :in (rest (assoc :role (cddr form)))
                                                  :collect (if (atom r)

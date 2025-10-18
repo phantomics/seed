@@ -66,8 +66,9 @@
                                       (dx (uic-series :type  '(:ui :partitioned :navigation)
                                                       :point (of-state (of-state nil :system-point)
                                                                        :view-point)
-                                                      :role  ((call-c :a (list :point :@index)
-                                                                      :p (list :next :refresh))))
+                                                      :role  ((contact-refreshing :a (list :point :@index)
+                                                                                  ;; :p (list :next :refresh)
+                                                                                  )))
                                           (mapcar #'second (grow (of-state nil :system-point)
                                                                  :summary))))
                                  (dx (uic-series :type '(:ui :list))
@@ -78,7 +79,8 @@
                                  (grow nil :base state)))
 
                          (dx (uic-series :type (:ui :main :placard))
-                             (list (dx (uic-series :type (:ui :column :short) :call t) ;; should this be :cast?
+                             (list (dx (uic-series :type (:ui :column :short)
+                                                   :role ((form)(call))) ;; should this be :cast?
                                        (list "please input your key"
                                              (dx (uicc-field :name "key") "")
                                              (dx (uicc-button) "enter")))))))))))
@@ -94,7 +96,7 @@
                           (and template-point (= ix template-point)
                                (list (dx (uic-series :layout (:groups :rows '(2))
                                                      :type (:series :enum :table-interstitial :enum)
-                                                     :call t)
+                                                     :role ((form)(call)))
                                          (dx (uicc-field :name :system-name :type (:string)) "")
                                          (dx (uicc-button :call (:@ :form-input))
                                              "create")))))))))
