@@ -251,21 +251,14 @@
   ()
   (:documentation "A role for an element that can be interacted with to call a function."))
 
-(defclass uir-call-refreshing (uir-call)
-  ()
-  (:documentation "A role for an element that can be interacted with to call a function."))
-
-(defclass uir-contact (uir-interact) ())
+(defclass uir-contact (uir-interact)
+  ((%base-key :accessor uiric-base-key
+              :initform nil
+              :initarg  :base-key)))
 
 (defclass uir-contact-refreshing (uir-contact) ())
 
 (defclass uir-render (uir-call) ())
-
-;; (define-symbol-macro uir-call-c uir-call-contact)
-
-;; (defclass uir-call-generate (uir-call) ())
-
-;; (define-symbol-macro uir-call-g uir-call-generate)
 
 (defclass uir-call-base (uir-call) ())
 
@@ -385,7 +378,7 @@
   (let* ((pairs (if (uic-join aspect)
                     (list :mode (list :system   (first  (uic-join aspect))
                                       :branch   (second (uic-join aspect))
-                                      :of-local '(manifest-locality)
+                                      ;; :of-local '(manifest-locality)
                                       :domain   '(create)))))
          (base (merge-furnishings base pairs)))
     (merge-furnishings
@@ -668,17 +661,13 @@
                                                                              (uiri-args call-role))))
                                                      (call-post (and (has-role aspect 'uir-contact-refreshing)
                                                                      '(create next "refresh"))))
-                                                ;; (print (list :po call-post (uic-role aspect)))
                                                 (typecase call-role
                                                   (uir-contact
                                                    (list :|x-on:click|
                                                          (psl (fetch-contact $el mode
                                                                              (lisp (cons 'create
                                                                                          call-args))
-                                                                             (lisp ;; (cons 'create
-                                                                                   ;;       (uicall-post
-                                                                                   ;;        call-role))
-                                                                                   call-post)))))))
+                                                                             (lisp call-post)))))))
                                               (and (and (of-root-type aspect :meta-code)
                                                         (member :sortable (uic-type aspect)))
                                                    (list :x-init
@@ -968,10 +957,28 @@
                        (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
                                                          (lisp (uic-sort aspect))))
                              :|x-bind:class|
-                          ;; ,(psl (if (= (@ toggle-state index) (lisp (uic-sort aspect)))
-                          ;;                           "is-focused"))
+                             ;; ,(psl (if (= (@ toggle-state index) (lisp (uic-sort aspect)))
+                             ;;                           "is-focused"))
                              (format nil "toggleState.index === ~a ? 'is-focused' : ''"
                                      (uic-sort aspect))))
+                ,@(let* ((call-role (has-role aspect 'uir-contact))
+                         (call-args (append (and call-role
+                                                 (mapcar (lambda (arg)
+                                                           (case arg
+                                                             (t arg)))
+                                                         (uiri-args call-role)))
+                                            (and call-role (uiric-base-key call-role)
+                                                 (list (uiric-base-key call-role)
+                                                       base))))
+                         (call-post (and (has-role aspect 'uir-contact-refreshing)
+                                         '(create next "refresh"))))
+                    (typecase call-role
+                      (uir-contact
+                       (list :|x-on:click|
+                             (psl (fetch-contact $el mode
+                                                 (lisp (cons 'create
+                                                             call-args))
+                                                 (lisp call-post)))))))
                 ;; ,@(and (has-role aspect 'uir-toggle)
                 ;;        (list :|x-on:click|
                 ;;              (psl (fetch-contact element mode (create path meta-path
@@ -1043,22 +1050,32 @@
                         (:select :name ,(or (lisp->camel-case field-name) "")
                           :class ,(furnish-type medium aspect)
                           ,@(furnish-call medium aspect)
-                          ,@(let ((role (or (has-role aspect 'uir-call-form)
-                                            (has-role (uic-root aspect) 'uir-call-form)))
-                                  (path (cons 'list (uic-path aspect))))
-                              (and role `(:|x-on:change|
-                                           ,(psl (lambda (event)
-                                                   (fetch-contact
-                                                    $el mode (create data (@ event target value)
-                                                                     path (lisp path))))))))
+                          ,@(let* ((call-role (has-role aspect 'uir-contact))
+                                   (call-args (append (and call-role
+                                                           (mapcar (lambda (arg)
+                                                                     (case arg
+                                                                       (t arg)))
+                                                                   (uiri-args call-role)))
+                                                      (and call-role (uiric-base-key call-role)
+                                                           (list (uiric-base-key call-role)
+                                                                 '(@ event target value)))))
+                                   (call-post (and (has-role aspect 'uir-contact-refreshing)
+                                                   '(create next "refresh"))))
+                              (typecase call-role
+                                (uir-contact
+                                 (list :|x-on:change|
+                                       (psl (lambda (event)
+                                              (fetch-contact $el mode (lisp (cons 'create call-args))
+                                                             (lisp call-post))))))))
+
                           ,@(append (and (member :default-blank types)
                                          (not field-content)
                                          `((:option "")))
                                     (loop :for item :in (uics-options aspect)
-                                          :collect (let* ((item-out (if (not (symbolp item))
-                                                                        item (lisp->camel-case item)))
-                                                          (selected (and (equalp item field-content)
-                                                                         `(:selected "selected"))))
+                                          :collect (let ((item-out (if (not (symbolp item))
+                                                                       item (lisp->camel-case item)))
+                                                         (selected (and (equalp item field-content)
+                                                                        `(:selected "selected"))))
                                                      `(:option ,@selected ,item-out)))))))))))
 
 (defmethod locate ((medium uim-web) (aspect uic-series) index item)
@@ -1121,7 +1138,9 @@
 
 (defmethod build-call ((medium uim-web) (aspect ui-component)) ;; TODO: merge this in later
   (let* ((base (uic-base aspect))
-         (call (uic-call aspect)))
+         (call (or (uic-call aspect)
+                   (has-role aspect 'uir-call))))
+    (print (list :cl call))
     (labels ((js-format-plist (items)
                (if (not (and items (listp items)))
                    items (cons 'parenscript:create
@@ -1147,22 +1166,31 @@
                                 (t (:.base `(@ methods (@ $event target value)))
                                  `(@ methods ,(intern (string method)))))))
                         $el mode ,@(mapcar #'js-format-plist args))))
-          `(funcall ,(case call ;; method
-                       (:.fetch 'fetch-contact)
-                       (:.base `(@ $event target value))
-                       (t `(@ methods ,call)))
-                    $el mode)))))
+          (if (typep call 'uir-call)
+              (list (uiri-name call '$el 'bla 'mode))
+              `(funcall ,(case call ;; method
+                           (:.fetch 'fetch-contact)
+                           (:.base `(@ $event target value))
+                           (t `(@ methods ,call)))
+                        $el mode))))))
 
 (defmethod furnish-call ((medium uim-web) (aspect ui-component))
   (let ((base (uic-base aspect)))
-    (and (uic-call aspect)
-         (not (atom (uic-call aspect)))
-         (destructuring-bind (method &rest args) (uic-call aspect)
-           (let* ((action (typecase aspect
+    (or (let ((role (has-role aspect 'uir-call)))
+          (and role (list (typecase aspect
                             (uicc-button :|x-on:click|)
                             (uicc-select :|x-on:change|)
-                            (t :|x-on:click|))))
-             (list action (ps* (build-call medium aspect))))))))
+                            (t :|x-on:click|))
+                          (ps* (list (intern (string (uiri-name role))) ;; TODO: intern should not be used
+                                     '$el 'mode)))))
+        (and (uic-call aspect)
+             (not (atom (uic-call aspect)))
+             (destructuring-bind (method &rest args) (uic-call aspect)
+               (list (typecase aspect
+                       (uicc-button :|x-on:click|)
+                       (uicc-select :|x-on:change|)
+                       (t :|x-on:click|))
+                     (ps* (build-call medium aspect))))))))
 
 ;; (defmethod furnish-call ((medium uim-web) (aspect ui-component))
 ;;   (let ((base (uic-base aspect)))
@@ -1222,7 +1250,8 @@
                       (list :x-data (ps* `(create ,@(loop :for f :in furnishing
                                                           :collect (if (symbolp f)
                                                                    f (cons 'create f)))
-                                              of-local (manifest-locality)))))
+                                                  ;; of-local (manifest-locality)
+                                                  ))))
                   
                   (if (uic-path aspect)
                       (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))

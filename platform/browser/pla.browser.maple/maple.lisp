@@ -116,7 +116,8 @@
                           :hx-vals (format nil "js:{...ejoin(~a,event)}"
                                            (seed.generate::psl (create system (lisp (string portal-sym))
                                                                        branch :view
-                                                                       of-local (lambda (a b c)))))
+                                                                       of-local (lambda (a b c))
+                                                                       )))
                           ;; :hx-vals (format nil "js:~a" (ps* `(create :system ,portal-sym :branch :view
                           ;;                                            :data (@ event details))))
                           :x-data (ps (create domain (create system (lisp (string portal-sym))
@@ -643,19 +644,19 @@
              (then (lambda (response) (chain response (json))))
              (then (lambda (data) (chain htmx (trigger element "refresh"))))))))
 
-(enter-js-element *misc-js* :manifest-locality
-  (defun manifest-locality ()
-    (let ((types (create)))
-      (lambda (action option body)
-        (case action
-          ("register" (when (= "undefined" (typeof (getprop types option)))
-                        (setf (getprop types option) (list)))
-           (setf (getprop types option)
-                 (chain (getprop types option) (concat body))))
-          ("list" (when (!= "undefined" (typeof (getprop types option)))
-                    (getprop types option)))
-          ("trigger" (loop :for item :in (getprop types option)
-                           :do (chain htmx (trigger item body)))))))))
+;; (enter-js-element *misc-js* :manifest-locality
+;;   (defun manifest-locality ()
+;;     (let ((types (create)))
+;;       (lambda (action option body)
+;;         (case action
+;;           ("register" (when (= "undefined" (typeof (getprop types option)))
+;;                         (setf (getprop types option) (list)))
+;;            (setf (getprop types option)
+;;                  (chain (getprop types option) (concat body))))
+;;           ("list" (when (!= "undefined" (typeof (getprop types option)))
+;;                     (getprop types option)))
+;;           ("trigger" (loop :for item :in (getprop types option)
+;;                            :do (chain htmx (trigger item body)))))))))
 
 ;; (enter-js-element *misc-js* :extog-array
 ;;   (defun register-exclusive-toggle-array (object)

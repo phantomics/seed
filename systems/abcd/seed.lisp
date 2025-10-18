@@ -10,6 +10,7 @@
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
+                          #:uir-contact #:uir-contact-refreshing
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
@@ -31,7 +32,8 @@
 
 (defun buttonize-calling (item index)
   (declare (ignore index))
-  (make-instance 'uicc-button :base item :type '(:local) :call '(:.fetch (:action :.base))))
+  (make-instance 'uicc-button :base item :type '(:local)
+                              :role (list (make-instance 'uir-contact :base-key :action))))
 
 (branch :summary
   (lambda (state input)
@@ -99,15 +101,15 @@
                                                  :type (:series :enum :table-interstitial :enum)
                                                  :call ((form)(call)))
                                      (dx (uicc-field :name :system-name :type (:string)) "")
-                                     (dx (uicc-button :call (:@ :form-input))
+                                     (dx (uicc-button :role ((call :n :form-input)))
                                          "create"))))
           (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
                 :append (let ((props (from-system-file *system* (format nil "~a/chart.lisp" dir)
                                                        :properties)))
                           (destructuring-bind (&key name description) (rest props)
                             (and props (list (dx (uic-series :type (:series))
-                                                 (list (dx (uicc-button :call (:.fetch (:point ix)
-                                                                                       (:next :refresh)))
+                                                 (list (dx (uicc-button :role ((contact-refreshing
+                                                                                :a (list :point ix))))
                                                            name)
                                                        description)))))))))
 
@@ -226,7 +228,6 @@
   (adapt-from-json :data :path :sort :remove :action :mode)
   (lambda (state input)
     (destructuring-bind (&key data path &allow-other-keys) input
-      (print (list :datx data path))
       (or (and data path (at-path path (lambda (index form)
                                          (if (and (listp (nth index form))
                                                   (eql 'fx (first (nth index form))))
@@ -275,9 +276,7 @@
                                        (of-state :- :chart-entities))
                                  output)))))
             (t (init-chart-entities state)
-               ;; (print (list :ccc state))
                (when state
-                 ;; (print (list :con (funcall state :medium)))
                  (render (funcall state nil :medium)
                          (dx (uic-frame :type (:meta-code))
                              (seed.modulate::express (of-state :- :chart-entities))))))))))
