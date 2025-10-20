@@ -10,7 +10,7 @@
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
-                          #:uir-contact #:uir-contact-refreshing
+                          #:uir-form #:uir-contact #:uir-contact-refreshing
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
@@ -79,7 +79,8 @@
         (x-end   (second (nth 5 (second form))))
         (y-end   (second (nth 6 (second form)))))
     (list :type "line" :points (list (list x-start y-start) (list x-end y-end))
-          :name (format nil "obj-~a" (or index 0)) :points-in-flux nil :in-flux :true :ratios nil)))
+          :name (format nil "obj-~a" (or index 0))
+          :points-in-flux nil :in-flux :true :ratios nil)))
 
 (branch :create
   (adapt-from-json :point)
@@ -97,9 +98,10 @@
                                                        :chart-entities))))))
 
 (defun manifest-file-listing (is-creating path)
-  (append (and is-creating (list (dx (uic-series :layout (:groups :rows '(2))
+  (append (and ;; is-creating
+               t (list (dx (uic-series :layout (:groups :rows '(2))
                                                  :type (:series :enum :table-interstitial :enum)
-                                                 :call ((form)(call)))
+                                                 :role ((form)(call)))
                                      (dx (uicc-field :name :system-name :type (:string)) "")
                                      (dx (uicc-button :role ((call :n :form-input)))
                                          "create"))))
@@ -114,16 +116,17 @@
                                                        description)))))))))
 
 (branch :nav
-  (adapt-from-json :point :action)
+  (adapt-from-json :point :action :system-name)
   (lambda (state input)
-    (destructuring-bind (&key identity action uimod &allow-other-keys) input
+    (destructuring-bind (&key identity action system-name uimod &allow-other-keys) input
+      (print (list :id identity action input system-name))
       (cond (identity (values nil))
             ((eq uimod :header-controls)
              (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
                  (list :create)))
             (action (case (intern (string-upcase action) "KEYWORD")
                       (:create (print (list :aa action))
-                       (of-state :- :creation-in-progress t))))
+                       (print (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress)))))))
             (state (when (getf input :point)
                      (of-state :- :chart-point (getf input :point))
                      (of-state :- :chart-point nil))
