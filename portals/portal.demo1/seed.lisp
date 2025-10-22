@@ -123,7 +123,8 @@
                       (dx (uic-series :type (:ui :header))
                           :welcome
                           (list "welcome"))
-                      "Welcome to the Seed demo portal."
+                      (dx (uic-frame :name :templates :type (:body))
+                          "Welcome to the Seed demo portal.")
                       (dx (uic-series :type (:ui :footer))))
                   (dx (uic-series :layout (:vertical :of 3 1 1 1)
                                   :type   (:column)
@@ -131,14 +132,10 @@
                       (dx (uic-series :type (:ui :header))
                           :templates
                           (list "aaa"))
-                      (dx (uic-series :type (:ui :list-table)
-                                      :call (:.fetch (:point :@base) (:next :refresh))
-                                      ;; :role ((contact-refreshing :base-key :point))
-                                      )
-                          (manifest-template-interface *seed-templates* (of-state :- :template-point)))
-                      (dx (uic-series :type (:ui :footer))
-                          ;; (list "bbb")
-                          ))))))))
+                      (dx (uic-frame :name :templates :type (:body))
+                          (dx (uic-series :type (:ui :list-table))
+                              (manifest-template-interface *seed-templates* (of-state :- :template-point))))
+                      (dx (uic-series :type (:ui :footer))))))))))
 
 (branch :systems
   (adapt-from-alist :system :branch)

@@ -31,11 +31,11 @@
 
 (defun buttonize-calling (item index)
   (declare (ignore index))
-  (make-instance 'uicc-button :base item :call ':.base))
+  (make-instance 'uicc-button :base item)) ;; :call ':.base))
 
 (defun buttonize-calling-remote (item index)
   (declare (ignore index))
-  (make-instance 'uicc-button :base item :type '(:remote) :call ':.base))
+  (make-instance 'uicc-button :base item :type '(:remote))) ;; :call ':.base))
 
 (branch :summary
   (let ((layout '((:main :code-view) (:cells :cells-view) nil

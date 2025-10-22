@@ -58,7 +58,7 @@
         (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
             (loop :for l :in (nthcdr start-point summary) :while l
                   :collect (dx (uic-series :layout (:vertical :of 3 1 1 1)
-                                           :join   (list :abcd (first l))
+                                           :join   (list *system* (first l))
                                            :type   (:column)
                                            :mode   (grow nil (first l)
                                                          context (list :identity (second l))))
@@ -67,7 +67,7 @@
                                    (grow nil (first l)
                                          context (list :uimod :header-controls)))
                                (dx (uic-frame :name (second l) :type (:body)
-                                              :access :abcd)
+                                              :access *system*)
                                    (first l))
                                (dx (uic-series :type (:ui :footer))
                                    (list (grow nil (first l)
@@ -225,7 +225,7 @@
                                                             :chart-entities)))))))
                  (t (render (funcall state nil :medium)
                             (dx (uich-candle :type (:green-red))
-                                :abcd :chart)))))))))
+                                *system* :chart)))))))))
 
 (branch :chentity
   (adapt-from-json :data :path :sort :remove :action :mode)

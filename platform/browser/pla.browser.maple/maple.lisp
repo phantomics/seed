@@ -118,8 +118,6 @@
                                                                        branch :view
                                                                        of-local (lambda (a b c))
                                                                        )))
-                          ;; :hx-vals (format nil "js:~a" (ps* `(create :system ,portal-sym :branch :view
-                          ;;                                            :data (@ event details))))
                           :x-data (ps (create domain (create system (lisp (string portal-sym))
                                                              branch "VIEW")
                                               mode   (create system (lisp (string portal-sym))
