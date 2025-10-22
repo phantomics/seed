@@ -11,6 +11,7 @@
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
+  ;; (:shadowing-import-from #:seed.sublimate #:instantiate-priority-macro-reader)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -31,11 +32,11 @@
 
 (defun buttonize-calling (item index)
   (declare (ignore index))
-  (make-instance 'uicc-button :base item)) ;; :call ':.base))
+  (make-instance 'uicc-button :base item))
 
 (defun buttonize-calling-remote (item index)
   (declare (ignore index))
-  (make-instance 'uicc-button :base item :type '(:remote))) ;; :call ':.base))
+  (make-instance 'uicc-button :base item :type '(:remote)))
 
 (branch :summary
   (let ((layout '((:main :code-view) (:cells :cells-view) nil
@@ -160,46 +161,49 @@
                                                (list :save)))
               (t (funcall interactor (funcall state nil :medium) input)))))))
 
+
 (branch :play
   (adapt-from-json :index)
-  (let ((state) (node) (selector))
-    (lambda (state input)
-      (destructuring-bind (&key index &allow-other-keys) input
-        (unless (and (find-package 'demo.sheet)
-                     (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
-          (instantiate-priority-macro-reader (asdf:load-system :demo.sheet)))
-        (unless node (multiple-value-bind (this-node selector-out)
-                         (seed.generate::graph-walker
-                          (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
-                       ;; (print (list :tn1 this-node input))
-                       (setf node this-node selector selector-out)))
-        (when index
-          (multiple-value-bind (this-node selector-out)
-              (funcall selector (read-from-string index))
-            (setf node this-node selector selector-out)))
-        (let* ((out (make-string-output-stream))
-               (dialog (rest (assoc :dialog (first node))))
-               (image (rest (assoc :image (first node))))
-               (imsym (intern (string-upcase image) "KEYWORD"))
-               (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
-                                  (second node))))
-          (spinneret:interpret-html-tree
-           `(:div :class "scenario-frame"
-                  ,@(unless (eq imsym :none)
-                      `(:style ,(format nil "background-image: url(./static/characters/~a.jpg); background-size: 500px; background-position-y: top; background-position-x: right; background-repeat: no-repeat;"
-                                        image)))
-                  (:div :class "setting"
-                        (:div :class "dialog" ,dialog)
-                        (:ol :class "responses"
-                             ,@(loop :for response :in responses :for ix :from 0
-                                     :collect
-                                     (list :li :|hx-on:click|
-                                           (parenscript:ps (parenscript:chain
-                                                            htmx (trigger this "reload"
-                                                                          (parenscript:create
-                                                                           index (parenscript:lisp ix))))
-                                             (parenscript:chain console (log "hello")))
-                                           :hx-vals (seed.generate::json-convert-to (list :index ix))
-                                           response)))))
-           :stream out)
-          (get-output-stream-string out))))))
+  (adapt-from-alist :system :branch :index)
+  (lambda (state input)
+    (destructuring-bind (&key system branch index &allow-other-keys) input
+      (unless (and (find-package 'demo.sheet)
+                   (boundp (intern "*GRAPH-NODES*" "DEMO.SHEET")))
+        (instantiate-priority-macro-reader (asdf:load-system :demo.sheet)))
+      (unless (of-state :- :node)
+        (multiple-value-bind (this-node selector-out)
+            (seed.generate::graph-walker
+             (first (symbol-value (intern "*GRAPH-NODES*" "DEMO.SHEET"))))
+          (of-state :- :node     this-node)
+          (of-state :- :selector selector-out)))
+      (when index
+        (multiple-value-bind (this-node selector-out)
+            (funcall (of-state :- :selector) (read-from-string index))
+          (of-state :- :node     this-node)
+          (of-state :- :selector selector-out)))
+      (let* ((out (make-string-output-stream))
+             (dialog (rest (assoc :dialog (first (of-state :- :node)))))
+             (image (rest (assoc :image (first (of-state :- :node)))))
+             (imsym (intern (string-upcase image) "KEYWORD"))
+             (responses (mapcar (lambda (item) (rest (assoc :dialog item)))
+                                (second (of-state :- :node)))))
+        (spinneret:interpret-html-tree
+         `(:div :class "scenario-frame"
+                ,@(unless (eq imsym :none)
+                    `(:style ,(format nil "background-image: url(./static/characters/~a.jpg); background-size: 500px; background-position-y: top; background-position-x: right; background-repeat: no-repeat;"
+                                      image)))
+                (:div :class "setting"
+                      (:div :class "dialog" ,dialog)
+                      (:ol :class "responses"
+                           ,@(loop :for response :in responses :for ix :from 0
+                                   :collect
+                                   (list :li :|hx-on:click|
+                                         (parenscript:ps (parenscript:chain
+                                                          htmx (trigger this "reload"
+                                                                        (parenscript:create
+                                                                         index (parenscript:lisp ix))))
+                                           (parenscript:chain console (log "hello")))
+                                         :hx-vals (seed.generate::json-convert-to (list :index ix))
+                                         response)))))
+         :stream out)
+        (get-output-stream-string out)))))
