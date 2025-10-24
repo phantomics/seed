@@ -677,7 +677,7 @@
 
         (setf items (reverse items))
 
-        (print (list :it items (uic-base aspect)))
+        ;; (print (list :it items (uic-base aspect)))
 
         (let* ((parent-sortable (and (typep    (uic-root aspect) 'ui-component)
                                      (has-role (uic-root aspect) 'uir-sortable)))

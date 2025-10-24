@@ -11,7 +11,6 @@
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
-  ;; (:shadowing-import-from #:seed.sublimate #:instantiate-priority-macro-reader)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -40,7 +39,8 @@
 
 (branch :summary
   (let ((layout '((:main :code-view) (:cells :cells-view) nil
-                  (:graph :graph-overview) (:graph :graph-node))))
+                  (:graph :graph-overview) (:graph :graph-node) nil
+                  (:code :edit-view) (:main :code-view))))
     (lambda (state input)
       (declare (ignore state input))
       layout)))
@@ -207,3 +207,40 @@
                                          response)))))
          :stream out)
         (get-output-stream-string out)))))
+
+(let ((files (list :setup :sheet)))
+  (branch :code
+    (adapt-from-json :text :select)
+    (lambda (state input)
+      (destructuring-bind (&key select text uimod &allow-other-keys) input
+        (print (list :ddd (macroexpand `(of-state :- :open-file))))
+        (when state
+          (unless (of-state :- :open-file)
+            (print :eee)
+            (of-state :- :open-file (first files))
+            (with-open-file (stream (asdf:system-relative-pathname
+                                     *system* (format nil "./~a.lisp" (string-downcase (first files))))
+			            :direction :input)
+              (let ((contents (make-string (file-length stream))))
+                (print (list :ccc))
+                (read-sequence contents stream)
+                (print (list :rrs stream))
+                (of-state :- :code contents))))
+          (print (list :st (of-state :- :code)))
+          (cond (select (of-state :- :open-file (nth select files))
+                  (with-open-file (stream (asdf:system-relative-pathname
+                                           *system* (format nil "./~a.lisp"
+                                                            (string-downcase (nth select files))))
+			                  :direction :input)
+                    (let ((contents (make-string (file-length stream))))
+                      (read-sequence contents stream)
+                      (of-state :- :code contents))))
+                (uimod (case uimod (:header-controls (dx (uic-series :map #'buttonize :type (:ui :controls))
+                                                         (list :save :abc)))
+                             (:footer-controls (dx (uic-series :map #'buttonize :type (:ui :controls))
+                                                   (list :save)))))
+                (t (of-state :- :view-point)
+                   (if text (list :text (of-state :- :code))
+                       (render (funcall state nil :medium)
+                               (dx (uicc-field :type (:code))
+                                   :demo.sheet :code))))))))))
