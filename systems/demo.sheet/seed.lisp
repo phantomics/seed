@@ -38,9 +38,9 @@
   (make-instance 'uicc-button :base item :type '(:remote)))
 
 (branch :summary
-  (let ((layout '((:main :code-view) (:cells :cells-view) nil
-                  (:graph :graph-overview) (:graph :graph-node) nil
-                  (:code :edit-view) (:main :code-view))))
+  (let ((layout '((:sheet (:main :code-view) (:cells :cells-view))
+                  (:scenario (:graph :graph-overview) (:graph :graph-node))
+                  (:editor (:code :edit-view) (:main :code-view)))))
     (lambda (state input)
       (declare (ignore state input))
       layout)))
@@ -49,30 +49,23 @@
   (adapt-from-json :path :session)
   (lambda (state input)
     (destructuring-bind (&key session &allow-other-keys) input
-      ;; (print (list :bp package (funcall state :view-point)))
       (let ((context (first session))
             (summary (grow :demo.sheet :summary))
             (branch-point (or (of-state :- :view-point) 0))
             (start-point 0) (interval-found) (search-complete))
-        
-        (loop :for s :in summary :for sx :from 0 :until search-complete 
-              :do (unless s (if interval-found (setf search-complete t)
-                                (setf start-point (1+ sx))))
-                  (when (= sx branch-point) (setf interval-found t)))
-
         (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
-            (loop :for l :in (nthcdr start-point summary) :while l
+            (loop :for l :in (rest (nth branch-point summary))
                   :collect (dx (uic-series :layout (:vertical :of 3 1 1 1)
-                                            :join   (list :demo.sheet (first l))
-                                            :type   (:column)
-                                            :mode   (grow :demo.sheet (first l)
-                                                          context (list :identity (second l))))
+                                           :join   (list :demo.sheet (first l))
+                                           :type   (:column)
+                                           :mode   (grow :demo.sheet (first l)
+                                                         context (list :identity (second l))))
                                (dx (uic-series :type (:ui :header))
                                    (second l)
                                    (grow :demo.sheet (first l)
                                          context (list :uimod :header-controls)))
                                (dx (uic-frame :name (second l) :type (:body)
-                                               :access :demo.sheet)
+                                              :access :demo.sheet)
                                    (first l))
                                (dx (uic-series :type (:ui :footer))
                                    (list (grow :demo.sheet (first l)
@@ -213,20 +206,15 @@
     (adapt-from-json :text :select)
     (lambda (state input)
       (destructuring-bind (&key select text uimod &allow-other-keys) input
-        (print (list :ddd (macroexpand `(of-state :- :open-file))))
         (when state
           (unless (of-state :- :open-file)
-            (print :eee)
             (of-state :- :open-file (first files))
             (with-open-file (stream (asdf:system-relative-pathname
                                      *system* (format nil "./~a.lisp" (string-downcase (first files))))
 			            :direction :input)
               (let ((contents (make-string (file-length stream))))
-                (print (list :ccc))
                 (read-sequence contents stream)
-                (print (list :rrs stream))
                 (of-state :- :code contents))))
-          (print (list :st (of-state :- :code)))
           (cond (select (of-state :- :open-file (nth select files))
                   (with-open-file (stream (asdf:system-relative-pathname
                                            *system* (format nil "./~a.lisp"

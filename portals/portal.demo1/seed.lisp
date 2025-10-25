@@ -11,6 +11,8 @@
 (defvar *seed-templates* (list (cons :template.chart (asdf:system-relative-pathname
                                                       :portal.demo1 "../../templates/template.charts/"))))
 
+;; THREE METHODS TO INTERACT: call, exec, pass
+
 (defvar *portal* :portal.demo1)
 
 (make-contacts)
@@ -48,7 +50,6 @@
 
         (of-state nil :medium medium)
 
-        ;; (print (list :cccc (package-name *package*)))
         (render medium (authorize (of-state nil :user)
                          (dx (uic-series :type '(:ui :grid-layout :linear :main :split :left-sidebar)
                                          :map (lambda (item index)
@@ -67,8 +68,8 @@
                                                       :point (of-state (of-state nil :system-point)
                                                                        :view-point)
                                                       :role  ((contact-refreshing :a (list :point :@index))))
-                                          (mapcar #'second (grow (of-state nil :system-point)
-                                                                 :summary))))
+                                          (mapcar #'first (grow (of-state nil :system-point)
+                                                                :summary))))
                                  (dx (uic-series :type '(:ui :list))
                                      (list (dx (uicc-field :name "key" :role ((actuatable :label "⍐")))
                                                ""))))

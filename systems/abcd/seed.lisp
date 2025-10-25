@@ -38,8 +38,8 @@
 (branch :summary
   (lambda (state input)
     (declare (ignore state input))
-    '((:create :welcome) (:nav :browse) nil
-      (:chart :chart-candle) (:chentity :entities-view))))
+    '((:start (:create :welcome) (:nav :browse))
+      (:chart (:chart :chart-candle) (:chentity :entities-view)))))
 
 (branch :view
   (adapt-from-json :path :session)
@@ -49,14 +49,8 @@
             (summary (grow nil :summary))
             (branch-point (or (of-state :- :view-point) 0))
             (start-point 0) (interval-found) (search-complete))
-        
-        (loop :for s :in summary :for sx :from 0 :until search-complete 
-              :do (unless s (if interval-found (setf search-complete t)
-                                (setf start-point (1+ sx))))
-                  (when (= sx branch-point) (setf interval-found t)))
-
         (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
-            (loop :for l :in (nthcdr start-point summary) :while l
+            (loop :for l :in (rest (nth branch-point summary))
                   :collect (dx (uic-series :layout (:vertical :of 3 1 1 1)
                                            :join   (list *system* (first l))
                                            :type   (:column)
@@ -119,20 +113,17 @@
   (adapt-from-json :point :action :system-name)
   (lambda (state input)
     (destructuring-bind (&key identity action system-name uimod &allow-other-keys) input
-      (print (list :id identity action input system-name))
       (cond (identity (values nil))
             ((eq uimod :header-controls)
              (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
                  (list :create)))
             (action (case (intern (string-upcase action) "KEYWORD")
-                      (:create (print (list :aa action))
-                       (print (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress)))))))
+                      (:create (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress))))))
             (state (when (getf input :point)
                      (of-state :- :chart-point (getf input :point))
                      (of-state :- :chart-point nil))
                      (let ((template-point (of-state :- :template-point)))
                        (destructuring-bind (&key system-name &allow-other-keys) input
-                         ;; (print (list :ccc input))
                          (render (of-state nil :medium)
                                  (dx (uic-series :type (:ui :list-table))
                                      (manifest-file-listing (of-state :- :creation-in-progress)
