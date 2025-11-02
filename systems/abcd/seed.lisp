@@ -11,7 +11,9 @@
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
                           #:uir-form #:uir-contact #:uir-contact-refreshing
-                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
+                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
+
+                          #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -38,34 +40,30 @@
 (branch :summary
   (lambda (state input)
     (declare (ignore state input))
-    '((:start (:create :welcome) (:nav :browse))
-      (:chart (:chart :chart-candle) (:chentity :entities-view)))))
+    (symbol-macrolet ((header-controls (grow :abcd name nil (list :uimod :header-controls)))
+                      (footer-controls (grow :abcd name nil (list :uimod :footer-controls))))
+      (list (aspect pane-series (:name :start)
+              (let ((name :create)  (title :welcome))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls)))
+              (let ((name :nav) (title :browse))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls))))
+            (aspect pane-series (:name :chart)
+              (let ((name :chart)  (title :chart-candle))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls)))
+              (let ((name :chentity) (title :entities-view))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls))))))))
 
 (branch :view
   (adapt-from-json :path :session)
   (lambda (state input)
     (destructuring-bind (&key session &allow-other-keys) input
-      (let ((context (first session))
-            (summary (grow nil :summary))
-            (branch-point (or (of-state :- :view-point) 0))
-            (start-point 0) (interval-found) (search-complete))
-        (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
-            (loop :for l :in (rest (nth branch-point summary))
-                  :collect (dx (uic-series :layout (:vertical :of 3 1 1 1)
-                                           :join   (list *system* (first l))
-                                           :type   (:column)
-                                           :mode   (grow nil (first l)
-                                                         context (list :identity (second l))))
-                               (dx (uic-series :type (:ui :header))
-                                   (second l)
-                                   (grow nil (first l)
-                                         context (list :uimod :header-controls)))
-                               (dx (uic-frame :name (second l) :type (:body)
-                                              :access *system*)
-                                   (first l))
-                               (dx (uic-series :type (:ui :footer))
-                                   (list (grow nil (first l)
-                                               context (list :uimod :footer-controls)))))))))))
+      (let ((summary (grow :abcd :summary))
+            (branch-point (or (of-state :- :view-point) 0)))
+        (amake (nth branch-point summary))))))
 
 (defun point-from-template (form &optional index)
   (let ((x-start (second (nth 3 (second form))))

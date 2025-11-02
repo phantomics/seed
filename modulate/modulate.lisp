@@ -779,9 +779,99 @@
                                      (t #'identity))
                                (append header items)))))))))
 
-;; (defclass ui-format ())
+(defclass ui-aspect ()
+  ((%name   :accessor uia-name
+            :initform nil
+            :initarg  :name
+            :documentation "The component's identifying name.")
+   (%title  :accessor uia-title
+            :initform nil
+            :initarg  :title
+            :documentation "A display title for the component.")
+   (%system :accessor uia-system
+            :initform nil
+            :initarg  :system)))
 
-;; (defclass uif-hf-block)
+(defclass uia-with-controls (ui-aspect)
+  ((%controls :accessor uia-wcon-controls
+              :initform nil
+              :initarg  :controls
+              :documentation "Control features associated with the aspect.")))
+
+(defclass uia-primal (ui-aspect)
+  ())
+
+(defclass uia-based  (ui-aspect)
+  ((%base :accessor uia-base
+          :initform nil
+          :initarg  :base)))
+
+(defclass uia-based-pane-series (uia-based)
+  ())
+
+(defclass uia-primal-dual-bank-pane (uia-primal uia-with-controls)
+  ())
+
+(defmacro aspect (slug &body args)
+  (let ((params (if (not (listp (first args)))
+                    args (first args)))
+        (members (if (listp (first args))
+                     (rest args))))
+  `(make-instance ',(intern (format nil "UIA-~a-~a" (if members "BASED" "PRIMAL")
+                                    (string-upcase slug))
+                            (package-name *package*))
+                  ,@params
+                  ,@(and members (list :base (if (second members) (cons 'list members)
+                                                 (first members)))))))
+
+(defgeneric amake (item))
+
+(defmethod amake ((item t))
+  item)
+
+(defmethod amake ((item list))
+  (mapcar #'amake item))
+
+(defmethod amake ((item uia-based-pane-series))
+  (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
+      (amake (uia-base item))))
+
+(defmethod amake ((item uia-primal-dual-bank-pane))
+  (with-slots (%name %title %system %controls) item
+    ;; (print (list :nn %name %title))
+    (dx (uic-series :layout (:vertical :of 3 1 1 1) :join (list %system %name)
+                    :type (:column) :mode (list :identity %name))
+        (dx (uic-series :type (:ui :header))
+            %title (first %controls))
+        (dx (uic-frame :name %name :access %system :type (:body))
+            %name)
+        (dx (uic-series :type (:ui :footer))
+            (list (second %controls))))))
+
+(defun %uia-cpanel-sw2 (system name title contents)
+  (print (list :sy system name title))
+  (dx (uic-series :layout (:vertical :of 3 1 1 1) :join (list system name) :type (:column)
+                  :mode (first contents))
+      (dx (uic-series :type (:ui :header))
+          title (second contents))
+      (dx (uic-frame :name title :type (:body) :access system)
+          name)
+      (dx (uic-series :type (:ui :footer))
+          (list (third contents)))))
+
+(defmacro uia-cpanel-sw2 (params &body contents)
+  (destructuring-bind (system name title) params
+    (list '%uia-cpanel-sw2 system name title (cons 'list contents))))
+
+(defun uia-cpanel-sandwich (system to-grow context name title)
+  (dx (uic-series :layout (:vertical :of 3 1 1 1) :join (list system name) :type (:column)
+                  :mode (funcall to-grow nil name context (list :identity title)))
+      (dx (uic-series :type (:ui :header))
+          title (funcall to-grow nil name context (list :uimod :header-controls)))
+      (dx (uic-frame :name title :type (:body) :access system)
+          name)
+      (dx (uic-series :type (:ui :footer))
+          (list (funcall to-grow nil name context (list :uimod :footer-controls))))))
 
 ;; (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
 ;;     (loop :for l :in (rest (nth branch-point summary))
@@ -982,8 +1072,6 @@
                        (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
                                                          (lisp (uic-sort aspect))))
                              :|x-bind:class|
-                             ;; ,(psl (if (= (@ toggle-state index) (lisp (uic-sort aspect)))
-                             ;;                           "is-focused"))
                              (format nil "toggleState.index === ~a ? 'is-focused' : ''"
                                      (uic-sort aspect))))
                 ,@(let* ((call-role (has-role aspect 'uir-contact))
@@ -1003,12 +1091,6 @@
                              (psl (fetch-contact $el mode
                                                  (lisp (cons 'create call-args))
                                                  (lisp call-post)))))))
-                ;; ,@(and (has-role aspect 'uir-toggle)
-                ;;        (list :|x-on:click|
-                ;;              (psl (fetch-contact element mode (create path meta-path
-                ;;                                                       toggle (lisp (uic-sort aspect)))
-                ;;                                  (lambda () (chain console (log "ee" element $el))
-                ;;                                    (chain htmx (trigger $el "reload")))))))
                 :class ,(furnish-type medium aspect '(:ui :button))
                 ,(if (and (has-role aspect 'uir-toggle) (listp base)
                           (eql 'nth (first base))) ;;  (integerp (second base)))
@@ -1133,16 +1215,6 @@
                                            "grid-column-end" "grid-row-end")
                                        (1+ (floor (* width next-index)))))))))))
                (cons (first item) (append item-props (last item)))))))
-
-;; (defmethod generate ((medium uim-web) (aspect uic-anchor))
-;;   (let ((base (uic-base aspect)))
-;;     (case (first (uic-type aspect))
-;;       (:branch (if base `(:h4 (:a :|hx-on:click|
-;;                                   ,(psl (chain htmx (trigger this "navigate"
-;;                                                              (create point (lisp (uic-sort aspect))))))
-;;                                   ,(generate medium base)))
-;;                    '(:hr :class "divider")))
-;;       (t (generate medium base)))))
 
 (defmethod furnish-type ((medium uim-web) (aspect ui-component) &optional other-types)
   (let* ((original-type (uic-type aspect))

@@ -10,7 +10,9 @@
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
-                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
+                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
+
+                          #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -38,12 +40,31 @@
   (make-instance 'uicc-button :base item :type '(:remote)))
 
 (branch :summary
-  (let ((layout '((:sheet (:main :code-view) (:cells :cells-view))
-                  (:scenario (:graph :graph-overview) (:graph :graph-node))
-                  (:editor (:code :edit-view) (:main :code-view)))))
-    (lambda (state input)
-      (declare (ignore state input))
-      layout)))
+  (lambda (state input)
+    (declare (ignore state input))
+    (symbol-macrolet ((header-controls (grow :demo.sheet name nil (list :uimod :header-controls)))
+                      (footer-controls (grow :demo.sheet name nil (list :uimod :footer-controls))))
+      (list (aspect pane-series (:name :sheet)
+              (let ((name :main)  (title :code-view))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls)))
+              (let ((name :cells) (title :cell-view))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls))))
+            (aspect pane-series (:name :scenario)
+              (let ((name :graph)  (title :graph-overview))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls)))
+              (let ((name :graph) (title :graph-node))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls))))
+            (aspect pane-series (:name :editor)
+              (let ((name :code)  (title :edit-view))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls)))
+              (let ((name :main) (title :code-view))
+                (aspect dual-bank-pane :system *system* :name name :title title
+                  :controls (list header-controls footer-controls))))))))
 
 (branch :view
   (adapt-from-json :path :session)
@@ -53,23 +74,24 @@
             (summary (grow :demo.sheet :summary))
             (branch-point (or (of-state :- :view-point) 0))
             (start-point 0) (interval-found) (search-complete))
-        (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
-            (loop :for l :in (rest (nth branch-point summary))
-                  :collect (dx (uic-series :layout (:vertical :of 3 1 1 1)
-                                           :join   (list :demo.sheet (first l))
-                                           :type   (:column)
-                                           :mode   (grow :demo.sheet (first l)
-                                                         context (list :identity (second l))))
-                               (dx (uic-series :type (:ui :header))
-                                   (second l)
-                                   (grow :demo.sheet (first l)
-                                         context (list :uimod :header-controls)))
-                               (dx (uic-frame :name (second l) :type (:body)
-                                              :access :demo.sheet)
-                                   (first l))
-                               (dx (uic-series :type (:ui :footer))
-                                   (list (grow :demo.sheet (first l)
-                                               context (list :uimod :footer-controls)))))))))))
+        (amake (nth branch-point summary))))))
+
+;; (loop :for l :in (rest (nth branch-point summary))
+;;       :collect (dx (uic-series :layout (:vertical :of 3 1 1 1)
+;;                                :join   (list :demo.sheet (first l))
+;;                                :type   (:column)
+;;                                :mode   (grow :demo.sheet (first l)
+;;                                              context (list :identity (second l))))
+;;                    (dx (uic-series :type (:ui :header))
+;;                        (second l)
+;;                        (grow :demo.sheet (first l)
+;;                              context (list :uimod :header-controls)))
+;;                    (dx (uic-frame :name (second l) :type (:body)
+;;                                   :access :demo.sheet)
+;;                        (first l))
+;;                    (dx (uic-series :type (:ui :footer))
+;;                        (list (grow :demo.sheet (first l)
+;;                                    context (list :uimod :footer-controls)))))))))))
 
 (branch :main
   (adapt-from-json :text)

@@ -16,7 +16,9 @@
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-form #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
                           #:uir-contact-refreshing
-                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle)
+                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
+
+                           #:uia-name)
   (:shadowing-import-from #:seed.access #:authorize)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
