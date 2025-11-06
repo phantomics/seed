@@ -976,6 +976,7 @@
                                                   (list 0) (@ mode entities-in-flux)))
                    (lambda (data)
                      ;; (log :en data (@ mode entities-in-flux) (@ mode linked-branch-id))
+                     (log :en (@ mode entities) data (@ mode linked-branch-id))
                      (setf (@ mode entities) data)
                      ;; (@ mode entities-in-flux) (list)
                      (chain htmx (trigger (+ "#" (@ mode linked-branch-id)) "reload"))

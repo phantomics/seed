@@ -1,4 +1,5 @@
 ;;;; seed.modulate.lisp
+
 (in-package #:seed.modulate)
 
 (defmacro psl (form)
@@ -151,23 +152,19 @@
           :initform nil
           :initarg  :join
           :documentation "Specification for a server-side data structure with which the component is associated.")
-   ;; (%call :accessor uic-call
-   ;;        :initform nil
-   ;;        :initarg  :call
-   ;;        :documentation "An effect produced by interaction with the component; this may involve the Seed server or manifest only within the user interface.")
-   ;; (%cast :accessor uic-cast ;; may not be needed
-   ;;        :initform nil
-   ;;        :initarg  :cast
-   ;;        :documentation "An event coinciding with use of the component; this affects the UI engine.")
    (%sort :accessor uic-sort ;; TODO: remove this when no uses left
           :initform nil
           :initarg  :sort
+          :documentation "")
+   (%plan :accessor uic-plan
+          :initform nil
+          :initarg  :plan
           :documentation "")
    (%mode :accessor uic-mode
           :initform nil
           :initarg  :mode
           :documentation "")
-   (%role :accessor uic-role
+   (%role :accessor uic-role ;; cast
           :initform nil
           :initarg  :role
           :documentation "")))
@@ -840,7 +837,9 @@
   (with-slots (%name %title %system %controls) item
     ;; (print (list :nn %name %title))
     (dx (uic-series :layout (:vertical :of 3 1 1 1) :join (list %system %name)
-                    :type (:column) :mode (list :identity %name))
+                    :type (:column) :mode %name ;; (print (list :identity %name))
+                    ;; :mode (grow :demo.sheet (first l) context (list :identity %name))
+                    )
         (dx (uic-series :type (:ui :header))
             %title (first %controls))
         (dx (uic-frame :name %name :access %system :type (:body))
@@ -1072,8 +1071,7 @@
                        (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
                                                          (lisp (uic-sort aspect))))
                              :|x-bind:class|
-                             (format nil "toggleState.index === ~a ? 'is-focused' : ''"
-                                     (uic-sort aspect))))
+                             (format nil "toggleState.index === ~a ? 'is-focused' : ''" (uic-sort aspect))))
                 ,@(let* ((call-role (has-role aspect 'uir-contact))
                          (call-args (append (and call-role
                                                  (mapcar (lambda (arg)
@@ -1133,13 +1131,11 @@
                            `(:textarea :class "textarea" :name ,(or (lisp->camel-case field-name) "")
                                        ,(or field-content (uicc-field-default aspect)
                                             ""))))
-              (t 
-               ;; (print (list :fi field-name base))
-               (wrap-label (lisp->camel-case field-name)
-                           `(:input :class "input" :type "text" :value ,(or field-content
-                                                                            (uicc-field-default aspect)
-                                                                            "")
-                                    :name ,(or (lisp->camel-case field-name) "")))))))))
+              (t (wrap-label (lisp->camel-case field-name)
+                             `(:input :class "input" :type "text" :value ,(or field-content
+                                                                              (uicc-field-default aspect)
+                                                                              "")
+                                      :name ,(or (lisp->camel-case field-name) "")))))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   (let* ((base (uic-base aspect))
@@ -1265,6 +1261,15 @@
                       (ps* (list (intern (string (uiri-name role))) ;; TODO: intern should not be used
                                  '$el 'mode)))))))
 
+(defmethod generate :before ((medium uim-web) (aspect ui-component))
+  (let ((class-stream (make-string-output-stream)))
+    (if (atom (uic-type aspect))
+        (format class-stream "~a"      (string-downcase (uic-type aspect)))
+        (format class-stream "~{~a ~}" (mapcar #'string-downcase (uic-type aspect))))
+    (setf (getf (uic-plan aspect) :class-string)
+          (get-output-stream-string class-stream))
+    (close class-stream)))
+
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   "Generation method qualifier manifesting call effects for UI components."
   (let* ((main (call-next-method))
@@ -1275,20 +1280,27 @@
     ;;                                                   of-local (manifest-locality)))))
 
     (cons (first main)
-          (append (if furnishing
-                      (list :x-data (ps* `(create ,@(loop :for f :in furnishing
-                                                          :collect (if (symbolp f)
-                                                                   f (cons 'create f)))
-                                                  ;; of-local (manifest-locality)
-                                                  ))))
+          (append (and furnishing
+                       (list :x-data (ps* `(create ,@(loop :for f :in furnishing
+                                                           :collect (if (symbolp f)
+                                                                        f (cons 'create f)))
+                                                   ;; of-local (manifest-locality)
+                                                   ))))
                   
-                  (if (uic-path aspect)
-                      (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
+                  (and (uic-path aspect)
+                       (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
                   (rest main)))))
+
+;; (defmethod generate :before ((medium uim-web) (aspect uich-candle))
+;;   (unless (atom (uic-type aspect))
+;;     (push :hello123 (uic-type aspect))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
   (destructuring-bind (system branch) (uic-base aspect)
-    `(:div :class "chart-holder" :id ,(format nil "~a-~a" system branch)
+    `(:div :class ,(format nil "chart-holder~a~a"
+                           (or (and (getf (uic-plan aspect) :class-string) " ") "")
+                           (or (getf (uic-plan aspect) :class-string) ""))
+           :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
                           (let ((config (create plotter (funcall get-candle-plotter mode)
                                                 height (@ $el offset-height)
@@ -1303,23 +1315,23 @@
                              $el mode (create mode "chart-data")
                              (lambda (data)
                                ;; (chain console (log :dd data config $el))
-                               (setf ix 1)
-                               (setf (@ mode raw-data)  data
+                               (setf ix 1
+                                     (@ mode raw-data) data
                                      (@ mode show-data)
                                      (chain data (replace (regex "/(\\n)[0-9.\\- :]+(\\t)/")
                                                           "time$2start$2max$2min$2end$1\0$2")
                                             (replace (regex "/\\t[0-9]+(\\n)[0-9.\\- :]+(\\t)/g")
                                                      (lambda (match p1 p2) (+ p1 (incf ix) p2)))
-                                            (replace (regex "/\\t[0-9]+\\n/") "")))
-                               ;; (log data (@ mode show-data))
-                               (setf (getprop (@ window seed-elements) (lisp branch))
+                                            (replace (regex "/\\t[0-9]+\\n/") ""))
+                                     ;; (log data (@ mode show-data))
+                                     (getprop (@ window seed-elements) (lisp branch))
                                      (setf (@ mode chart)
-                                           (new (chain window (-dygraph $el ;; data
-                                                                        (@ mode show-data)
-                                                                        config)))))
-                               (setf (@ window lines) data)
+                                           (new (chain window (-dygraph $el (@ mode show-data) config))))
+                                     (@ window lines) data)
                                ;; perform the initial entity commit to draw existing lines on the chart
-                               (commit-entities mode (lambda () (chain mode chart (draw-graph_))))))))))))
+                               (chain console (log :sh mode))
+                               (commit-entities mode (lambda () (chain mode chart (draw-graph_))))
+                               ))))))))
 
 (defun meta-combine (form template)
   (let ((to-append))

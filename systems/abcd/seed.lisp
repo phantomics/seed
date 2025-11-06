@@ -43,19 +43,19 @@
     (symbol-macrolet ((header-controls (grow :abcd name nil (list :uimod :header-controls)))
                       (footer-controls (grow :abcd name nil (list :uimod :footer-controls))))
       (list (aspect pane-series (:name :start)
-              (let ((name :create)  (title :welcome))
-                (aspect dual-bank-pane :system *system* :name name :title title
-                  :controls (list header-controls footer-controls)))
-              (let ((name :nav) (title :browse))
-                (aspect dual-bank-pane :system *system* :name name :title title
-                  :controls (list header-controls footer-controls))))
+              (let ((name :create)   (title :welcome))
+                (aspect dual-bank-pane :name name :title title
+                  :system *system* :controls (list header-controls footer-controls)))
+              (let ((name :nav)      (title :browse))
+                (aspect dual-bank-pane :name name :title title
+                  :system *system* :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :chart)
-              (let ((name :chart)  (title :chart-candle))
-                (aspect dual-bank-pane :system *system* :name name :title title
-                  :controls (list header-controls footer-controls)))
+              (let ((name :chart)    (title :chart-candle))
+                (aspect dual-bank-pane :name name :title title
+                  :system *system* :controls (list header-controls footer-controls)))
               (let ((name :chentity) (title :entities-view))
-                (aspect dual-bank-pane :system *system* :name name :title title
-                  :controls (list header-controls footer-controls))))))))
+                (aspect dual-bank-pane :name name :title title
+                  :system *system* :controls (list header-controls footer-controls))))))))
 
 (branch :view
   (adapt-from-json :path :session)
@@ -213,7 +213,7 @@
                                                             *system* (format nil "~a/chart.lisp" chart-path)
                                                             :chart-entities)))))))
                  (t (render (funcall state nil :medium)
-                            (dx (uich-candle :type (:green-red))
+                            (dx (uich-candle :type (:green-red :abc :def-ghi))
                                 *system* :chart)))))))))
 
 (branch :chentity

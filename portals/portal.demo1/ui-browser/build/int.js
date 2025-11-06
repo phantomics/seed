@@ -40,31 +40,6 @@ function realize(system, branch, element) {
         });
     };
 };
-function manifestLocality() {
-    var types = {  };
-    return function (action, option, body) {
-        switch (action) {
-        case 'register':
-            if ('undefined' === typeof(types[option])) {
-                types[option] = [];
-            };
-            __PS_MV_REG = [];
-            return types[option] = types[option].concat(body);
-        case 'list':
-            __PS_MV_REG = [];
-            return bangequals('undefined', typeof(types[option])) ? types[option] : null;
-        case 'trigger':
-            var _js1682 = types[option];
-            var _js1684 = _js1682.length;
-            for (var _js1683 = 0; _js1683 < _js1684; _js1683 += 1) {
-                var item = _js1682[_js1683];
-                htmx.trigger(item, body);
-            };
-            __PS_MV_REG = [];
-            return;
-        };
-    };
-};
 function registerExclusiveToggleArray(data, actions, state) {
     return function (key, index) {
         if (key) {
@@ -90,10 +65,10 @@ function initializeDraggable(element, mode, inSeries) {
         };
     });
     if (handleContainer) {
-        var _js1685 = handleContainer.childNodes;
-        var _js1687 = _js1685.length;
-        for (var _js1686 = 0; _js1686 < _js1687; _js1686 += 1) {
-            var n = _js1685[_js1686];
+        var _js51 = handleContainer.childNodes;
+        var _js53 = _js51.length;
+        for (var _js52 = 0; _js52 < _js53; _js52 += 1) {
+            var n = _js51[_js52];
             if (n.className === 'control drag-handle') {
                 handle = n;
                 break;
@@ -199,10 +174,10 @@ function submitForms(formList) {
 };
 function ejoin(base, event) {
     if (!('undefined' === typeof(event) || 'undefined' === typeof(event.detail))) {
-        var _js1688 = Object.keys(event.detail);
-        var _js1690 = _js1688.length;
-        for (var _js1689 = 0; _js1689 < _js1690; _js1689 += 1) {
-            var k = _js1688[_js1689];
+        var _js54 = Object.keys(event.detail);
+        var _js56 = _js54.length;
+        for (var _js55 = 0; _js55 < _js56; _js55 += 1) {
+            var k = _js54[_js55];
             if (!(k === 'elt' || 'undefined' === typeof(event.detail[k]))) {
                 base[k] = event.detail[k];
             };
@@ -220,29 +195,29 @@ var drawLine = function (ctx, ent, chart, points) {
         ctx.lineWidth = 2;
     };
     ctx.beginPath();
-    var points1691 = points ? points : derivePoints(ent, chart);
+    var points57 = points ? points : derivePoints(ent, chart);
     var circleRadius = 5;
-    ctx.moveTo(points1691[0][0], points1691[0][1]);
-    ctx.lineTo(points1691[1][0], points1691[1][1]);
+    ctx.moveTo(points57[0][0], points57[0][1]);
+    ctx.lineTo(points57[1][0], points57[1][1]);
     ctx.closePath();
     ctx.stroke();
     if (ent.inFlux && 'false' !== ent.inFlux) {
-        var diffs = [[points1691[0][0] - points1691[1][0], points1691[0][1] - points1691[1][1]], [points1691[1][0] - points1691[0][0], points1691[1][1] - points1691[0][1]]];
+        var diffs = [[points57[0][0] - points57[1][0], points57[0][1] - points57[1][1]], [points57[1][0] - points57[0][0], points57[1][1] - points57[0][1]]];
         var ri = [Math.sign(diffs[0][1]) * Math.acos(diffs[0][0] / Math.sqrt(Math.pow(diffs[0][0], 2) + Math.pow(diffs[0][1], 2))), Math.sign(diffs[1][1]) * Math.acos(diffs[1][0] / Math.sqrt(Math.pow(diffs[1][0], 2) + Math.pow(diffs[1][1], 2)))];
         ctx.strokeStyle = 'black';
         ctx.fillStyle = 'black';
         ctx.lineWidth = 0.5;
         ctx.beginPath();
-        ctx.arc(points1691[0][0], points1691[0][1], 1, 0, Math.PI * 2, true);
+        ctx.arc(points57[0][0], points57[0][1], 1, 0, Math.PI * 2, true);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(points1691[1][0], points1691[1][1], 1, 0, Math.PI * 2, true);
+        ctx.arc(points57[1][0], points57[1][1], 1, 0, Math.PI * 2, true);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(points1691[0][0], points1691[0][1], circleRadius, -Math.PI + (ri[0] - Math.PI * 0.2), -Math.PI + (ri[0] + Math.PI * 0.2), true);
+        ctx.arc(points57[0][0], points57[0][1], circleRadius, -Math.PI + (ri[0] - Math.PI * 0.2), -Math.PI + (ri[0] + Math.PI * 0.2), true);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(points1691[1][0], points1691[1][1], circleRadius, -Math.PI + (ri[1] - Math.PI * 0.2), -Math.PI + (ri[1] + Math.PI * 0.2), true);
+        ctx.arc(points57[1][0], points57[1][1], circleRadius, -Math.PI + (ri[1] - Math.PI * 0.2), -Math.PI + (ri[1] + Math.PI * 0.2), true);
         ctx.stroke();
     };
     ctx.strokeStyle = 'black';
@@ -269,10 +244,10 @@ if ('undefined' === typeof drawMethods) {
         ctx.lineWidth = 1;
         var xOrigin = points[0][0] < points[1][0] ? points[0][0] : points[1][0];
         var xInterval = points[0][0] - points[1][0];
-        var _js1692 = ent.ratios[0];
-        var _js1694 = _js1692.length;
-        for (var _js1693 = 0; _js1693 < _js1694; _js1693 += 1) {
-            var ratio = _js1692[_js1693];
+        var _js58 = ent.ratios[0];
+        var _js60 = _js58.length;
+        for (var _js59 = 0; _js59 < _js60; _js59 += 1) {
+            var ratio = _js58[_js59];
             var xLevel = points[0][0] < points[1][0] ? xOrigin - ratio * xInterval : xOrigin + ratio * xInterval;
             ctx.beginPath();
             ctx.moveTo(xLevel, 0);
@@ -292,10 +267,10 @@ if ('undefined' === typeof drawMethods) {
         var xOrigin = points[0][0] < points[1][0] ? points[0][0] : points[1][0];
         var yOrigin = points[0][1] < points[1][1] ? points[0][1] : points[1][1];
         var yInterval = points[0][1] - points[1][1];
-        var _js1695 = ent.ratios[1];
-        var _js1697 = _js1695.length;
-        for (var _js1696 = 0; _js1696 < _js1697; _js1696 += 1) {
-            var ratio = _js1695[_js1696];
+        var _js61 = ent.ratios[1];
+        var _js63 = _js61.length;
+        for (var _js62 = 0; _js62 < _js63; _js62 += 1) {
+            var ratio = _js61[_js62];
             var yLevel = points[0][1] < points[1][1] ? yOrigin - ratio * yInterval : yOrigin + ratio * yInterval;
             ctx.beginPath();
             ctx.moveTo(xOrigin, yLevel);
@@ -318,6 +293,7 @@ if ('undefined' === typeof candlestickChartEntityTemplates) {
 function commitEntities(mode, callback) {
     __PS_MV_REG = [];
     return fetchContact(null, mode, { entities : 0 === mode.entitiesInFlux.length ? [0] : mode.entitiesInFlux }, function (data) {
+        console.log('en', mode.entities, data, mode.linkedBranchId);
         mode.entities = data;
         htmx.trigger('#' + mode.linkedBranchId, 'reload');
         return callback ? callback() : null;
@@ -334,9 +310,9 @@ function interactorMousewheel(mode) {
         } else {
             var timeRange = chart.xAxisRange();
             var timeInterval = timeRange[1] - timeRange[0];
-            var zoomInterval1698 = 0.05 * timeInterval;
-            var wheelDelta1699 = 0 < event.deltaY ? 1 : -1;
-            return chart.updateOptions({ dateWindow : [1 === wheelDelta1699 ? timeRange[0] - zoomInterval1698 : timeRange[0] + zoomInterval1698, timeRange[1]], valueRange : chart.yAxisRange() });
+            var zoomInterval64 = 0.05 * timeInterval;
+            var wheelDelta65 = 0 < event.deltaY ? 1 : -1;
+            return chart.updateOptions({ dateWindow : [1 === wheelDelta65 ? timeRange[0] - zoomInterval64 : timeRange[0] + zoomInterval64, timeRange[1]], valueRange : chart.yAxisRange() });
         };
     };
 };
@@ -349,8 +325,8 @@ function interactorMousedown(mode) {
         switch (mode.interaction) {
         case 'select':
             var entityClicked = false;
-            var _js1700 = entitiesCount - 1;
-            for (var entix = 0; entix <= _js1700; entix += 1) {
+            var _js66 = entitiesCount - 1;
+            for (var entix = 0; entix <= _js66; entix += 1) {
                 self.drawMethods.line.intersect(mode.entities[entix], mode.chart, domCoords, function (ent) {
                     entityClicked = true;
                     ent.layerPoints = [g.toDomCoords(ent.points[0][0], ent.points[0][1]), g.toDomCoords(ent.points[1][0], ent.points[1][1])];
@@ -376,10 +352,10 @@ function interactorMousedown(mode) {
             };
             if (!entityClicked) {
                 mode.entitiesInFlux = [];
-                var _js1701 = mode.entities;
-                var _js1703 = _js1701.length;
-                for (var _js1702 = 0; _js1702 < _js1703; _js1702 += 1) {
-                    var ent = _js1701[_js1702];
+                var _js67 = mode.entities;
+                var _js69 = _js67.length;
+                for (var _js68 = 0; _js68 < _js69; _js68 += 1) {
+                    var ent = _js67[_js68];
                     ent.inFlux = false;
                 };
             };
@@ -421,10 +397,10 @@ function interactorMouseup(mode) {
                 window.Dygraph.endPan(event, chart, context);
                 return chart.drawGraph_();
             } else {
-                var _js1704 = mode.entities;
-                var _js1706 = _js1704.length;
-                for (var _js1705 = 0; _js1705 < _js1706; _js1705 += 1) {
-                    var ent = _js1704[_js1705];
+                var _js70 = mode.entities;
+                var _js72 = _js70.length;
+                for (var _js71 = 0; _js71 < _js72; _js71 += 1) {
+                    var ent = _js70[_js71];
                     if (ent.inFlux && 'false' !== ent.inFlux) {
                         ent.points[0] = chart.toDataCoords(ent.layerPoints[0][0], ent.layerPoints[0][1]);
                         ent.points[1] = chart.toDataCoords(ent.layerPoints[1][0], ent.layerPoints[1][1]);
@@ -454,14 +430,14 @@ function interactorMousemove(mode) {
                 if (0 === mode.entitiesInFlux.length) {
                     return context.isPanning ? window.Dygraph.movePan(event, chart, context) : chart.drawGraph_();
                 } else {
-                    var movingFrom1707 = mode.movingFrom;
+                    var movingFrom73 = mode.movingFrom;
                     tempCanvas.clearRect(0, 0, chart.canvas_.width, chart.canvas_.height);
-                    var _js1708 = mode.entitiesInFlux;
-                    var _js1710 = _js1708.length;
-                    for (var _js1709 = 0; _js1709 < _js1710; _js1709 += 1) {
-                        var ent = _js1708[_js1709];
+                    var _js74 = mode.entitiesInFlux;
+                    var _js76 = _js74.length;
+                    for (var _js75 = 0; _js75 < _js76; _js75 += 1) {
+                        var ent = _js74[_js75];
                         if (0 === ent.pointsInFlux.length) {
-                            ent.layerPoints = [[ent.layerPoints[0][0] - (movingFrom1707[0] - event.layerX), ent.layerPoints[0][1] - (movingFrom1707[1] - event.layerY)], [ent.layerPoints[1][0] - (movingFrom1707[0] - event.layerX), ent.layerPoints[1][1] - (movingFrom1707[1] - event.layerY)]];
+                            ent.layerPoints = [[ent.layerPoints[0][0] - (movingFrom73[0] - event.layerX), ent.layerPoints[0][1] - (movingFrom73[1] - event.layerY)], [ent.layerPoints[1][0] - (movingFrom73[0] - event.layerX), ent.layerPoints[1][1] - (movingFrom73[1] - event.layerY)]];
                         } else {
                             var timeInterval = chart.rawData_[1][0] - chart.rawData_[0][0];
                             var domCoords = chart.eventToDomCoords(event);
@@ -472,10 +448,10 @@ function interactorMousemove(mode) {
                             };
                             var columnValue = chart.getValue(dataPos[0], 1);
                             var cvals = [Math.floor(chart.toDomYCoord(chart['rawData_'][dataPos[0]][2])), Math.floor(chart.toDomYCoord(chart['rawData_'][dataPos[0]][3]))];
-                            var _js1711 = ent.pointsInFlux;
-                            var _js1713 = _js1711.length;
-                            for (var _js1712 = 0; _js1712 < _js1713; _js1712 += 1) {
-                                var point = _js1711[_js1712];
+                            var _js77 = ent.pointsInFlux;
+                            var _js79 = _js77.length;
+                            for (var _js78 = 0; _js78 < _js79; _js78 += 1) {
+                                var point = _js77[_js78];
                                 ent['layerPoints'][point] = [event.layerX, event.layerY];
                                 if (8 > Math.abs(cvals[0] - ent['layerPoints'][point][1])) {
                                     ent['layerPoints'][point][1] = cvals[0];
@@ -493,18 +469,18 @@ function interactorMousemove(mode) {
                     return;
                 };
             case 'draw':
-                var timeInterval1711 = chart.rawData_[1][0] - chart.rawData_[0][0];
-                var domCoords1712 = chart.eventToDomCoords(event);
-                var dataPos1713 = chart.toDataCoords(domCoords1712[0], domCoords1712[1]);
-                var remainder1714 = (dataPos1713[0] % timeInterval1711 + timeInterval1711) % timeInterval1711;
-                var ent1715 = mode.activeEntity;
-                if (0 !== remainder1714) {
-                    dataPos1713[0] -= remainder1714;
+                var timeInterval77 = chart.rawData_[1][0] - chart.rawData_[0][0];
+                var domCoords78 = chart.eventToDomCoords(event);
+                var dataPos79 = chart.toDataCoords(domCoords78[0], domCoords78[1]);
+                var remainder80 = (dataPos79[0] % timeInterval77 + timeInterval77) % timeInterval77;
+                var ent81 = mode.activeEntity;
+                if (0 !== remainder80) {
+                    dataPos79[0] -= remainder80;
                 };
-                ent1715.points[1] = [dataPos1713[0], dataPos1713[1]];
+                ent81.points[1] = [dataPos79[0], dataPos79[1]];
                 tempCanvas.clearRect(0, 0, chart.canvas_.width, chart.canvas_.height);
                 __PS_MV_REG = [];
-                return drawMethods[ent1715.type]['draw'](tempCanvas, ent1715, chart);
+                return drawMethods[ent81.type]['draw'](tempCanvas, ent81, chart);
             };
         };
     };
@@ -524,10 +500,10 @@ function getCandlePlotter(mode) {
                 var ctx = e.drawingContext;
                 var candleMaxSpacing = 3;
                 var barCount = (range = e.dygraph.xAxisRange(), counting = false, length = 0, ((function () {
-                    var _js1716 = sets[0];
-                    var _js1718 = _js1716.length;
-                    for (var _js1717 = 0; _js1717 < _js1718; _js1717 += 1) {
-                        var point = _js1716[_js1717];
+                    var _js82 = sets[0];
+                    var _js84 = _js82.length;
+                    for (var _js83 = 0; _js83 < _js84; _js83 += 1) {
+                        var point = _js82[_js83];
                         if (!counting && point.xval > range[0]) {
                             counting = true;
                         };
@@ -546,8 +522,8 @@ function getCandlePlotter(mode) {
                 var downFillStyle = 'rgba(220,50,47,1.0)';
                 var downStrokeStyle = 2 < barWidth ? 'rgba(220,50,47,1.0)' : 'rgba(220,50,47,0.6)';
                 ctx.lineWidth = 0.6;
-                var _js1719 = sets[0].length - 1;
-                for (var p = 0; p <= _js1719; p += 1) {
+                var _js85 = sets[0].length - 1;
+                for (var p = 0; p <= _js85; p += 1) {
                     var price = { open : sets[0][p]['yval'],
                                   high : sets[1][p]['yval'],
                                   low : sets[2][p]['yval'],
@@ -582,10 +558,10 @@ function getCandlePlotter(mode) {
                 };
                 ctx.strokeStyle = 'black';
                 ctx.lineWidth = 1.5;
-                var _js1720 = mode.entities;
-                var _js1722 = _js1720.length;
-                for (var _js1721 = 0; _js1721 < _js1722; _js1721 += 1) {
-                    var ent = _js1720[_js1721];
+                var _js86 = mode.entities;
+                var _js88 = _js86.length;
+                for (var _js87 = 0; _js87 < _js88; _js87 += 1) {
+                    var ent = _js86[_js87];
                     if (!(mode.mousedown && ent.inFlux)) {
                         drawMethods[ent.type]['draw'](ctx, ent, mode.chart);
                     };
