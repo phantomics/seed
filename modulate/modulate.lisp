@@ -488,11 +488,13 @@
                         (uic-type aspect)))
         (face (lisp->camel-case (uic-name aspect)))
         (system (uicf-access aspect)))
+    (push :access (uic-type aspect))
+    (push :body   (uic-type aspect))
 
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
-                         :class (furnish-type medium aspect '(:access))
+                         ;; :class (furnish-type medium aspect '(:access))
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             ;; (chain mode (of-local "register" "main" $el))
                                             (setf (@ mode domain main) $el)
@@ -507,7 +509,7 @@
                          :x-data (psl (create branch-frame $el)))
                    (progn (when (typep (uic-base aspect) 'ui-component)
                             (setf (uic-root (uic-base aspect)) aspect))
-                          (list :class (furnish-type medium aspect '(:access))
+                          (list ;; :class (furnish-type medium aspect '(:access))
                                 (realize aspect medium (uic-base aspect))))))))
 
 (defmethod generate :before (medium (aspect uic-series))
@@ -701,6 +703,20 @@
 
           ;; (print (list :it items (of-root-type aspect :meta-code)
           ;;              (uic-type aspect)))
+
+          (setf (uic-type aspect) (append '(:ui :series)
+                                          (case ltype
+                                            ((:horizontal :vertical)
+                                             '(:series :grid-layout)))
+                                          (and is-list-table '(:table))
+                                          (uic-type aspect)))
+          
+          ;; (append '(:ui :series)
+          ;;         (case ltype
+          ;;           ((:horizontal :vertical)
+          ;;            '(:series :grid-layout)))
+          ;;         (and is-list-table '(:table)))
+
           
           (loop :for type :in types :for ix :from 0
                 :do (format class-stream "~a" (string-downcase type))
@@ -714,12 +730,12 @@
                         ;; enum structure or if its :call property is set to t indicating
                         ;; that it is a form whose submission causes its rerendering
                         ;; :path ""
-                        :class (furnish-type medium aspect
-                                             (append '(:ui :series)
-                                                     (case ltype
-                                                       ((:horizontal :vertical)
-                                                        '(:series :grid-layout)))
-                                                     (and is-list-table '(:table))))
+                        ;; :class (furnish-type medium aspect
+                        ;;                      (append '(:ui :series)
+                        ;;                              (case ltype
+                        ;;                                ((:horizontal :vertical)
+                        ;;                                 '(:series :grid-layout)))
+                        ;;                              (and is-list-table '(:table))))
                         ;; :style (if (and ;; (not (member ltype '(:horizontal :vertical)))
                         ;;                 ;; (not (eql :even (first lprops)))
                         ;;                 t
@@ -1058,6 +1074,9 @@
                    base))
          (root-types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                               (uic-type (uic-root aspect)))))
+
+    (setf (uic-type aspect) (append '(:ui :button) (uic-type aspect)))
+    
     (destructuring-bind (name &optional action &rest props)
         (if name (list name name) (uic-base aspect))
       ;; (print (list :bs base (and (listp base) (second base))
@@ -1089,7 +1108,7 @@
                              (psl (fetch-contact $el mode
                                                  (lisp (cons 'create call-args))
                                                  (lisp call-post)))))))
-                :class ,(furnish-type medium aspect '(:ui :button))
+                ;; :class ,(furnish-type medium aspect '(:ui :button))
                 ,(if (and (has-role aspect 'uir-toggle) (listp base)
                           (eql 'nth (first base))) ;;  (integerp (second base)))
                      (progn
@@ -1127,12 +1146,16 @@
                                                          (chain document (get-element-by-id (lisp token)))
                                                          (@ data text)))))))))))
               ((member :area (uic-type aspect))
+               (push :textarea (uic-type aspect))
                (wrap-label (lisp->camel-case field-name)
-                           `(:textarea :class "textarea" :name ,(or (lisp->camel-case field-name) "")
+                           `(:textarea ;; :class "textarea"
+                                       :name ,(or (lisp->camel-case field-name) "")
                                        ,(or field-content (uicc-field-default aspect)
                                             ""))))
-              (t (wrap-label (lisp->camel-case field-name)
-                             `(:input :class "input" :type "text" :value ,(or field-content
+              (t (push :input (uic-type aspect))
+                 (wrap-label (lisp->camel-case field-name)
+                             `(:input ;; :class "input"
+                                      :type "text" :value ,(or field-content
                                                                               (uicc-field-default aspect)
                                                                               "")
                                       :name ,(or (lisp->camel-case field-name) "")))))))))
@@ -1144,7 +1167,8 @@
     (destructuring-bind (field-name &rest field-content)
         (if (and base (listp base))
             base (cons (uic-name aspect) base))
-      `(:div :class "field has-addons"
+      (setf (uic-type aspect) (append '(:field :has-addone) (uic-type aspect)))
+      `(:div ;; :class "field has-addons"
              ,@(if field-name `((:p :class "control"
                                     (:a :class "button is-static" ,(lisp->camel-case field-name)))))
              (:p :class "control"
@@ -1261,14 +1285,14 @@
                       (ps* (list (intern (string (uiri-name role))) ;; TODO: intern should not be used
                                  '$el 'mode)))))))
 
-(defmethod generate :before ((medium uim-web) (aspect ui-component))
-  (let ((class-stream (make-string-output-stream)))
-    (if (atom (uic-type aspect))
-        (format class-stream "~a"      (string-downcase (uic-type aspect)))
-        (format class-stream "~{~a ~}" (mapcar #'string-downcase (uic-type aspect))))
-    (setf (getf (uic-plan aspect) :class-string)
-          (get-output-stream-string class-stream))
-    (close class-stream)))
+;; (defmethod generate :before ((medium uim-web) (aspect ui-component))
+;;   (let ((class-stream (make-string-output-stream)))
+;;     (if (atom (uic-type aspect))
+;;         (format class-stream "~a"      (string-downcase (uic-type aspect)))
+;;         (format class-stream "~{~a ~}" (mapcar #'string-downcase (uic-type aspect))))
+;;     (setf (getf (uic-plan aspect) :class-string)
+;;           (get-output-stream-string class-stream))
+;;     (close class-stream)))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   "Generation method qualifier manifesting call effects for UI components."
@@ -1289,6 +1313,12 @@
                   
                   (and (uic-path aspect)
                        (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
+                  (and (uic-type aspect)
+                       (let ((class-stream (make-string-output-stream)))
+                         (if (atom (uic-type aspect))
+                             (format class-stream "~a"      (string-downcase (uic-type aspect)))
+                             (format class-stream "~{~a ~}" (mapcar #'string-downcase (uic-type aspect))))
+                         (list :class (get-output-stream-string class-stream))))
                   (rest main)))))
 
 ;; (defmethod generate :before ((medium uim-web) (aspect uich-candle))
@@ -1296,10 +1326,11 @@
 ;;     (push :hello123 (uic-type aspect))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))
+  (push :chart-holder (uic-type aspect))
   (destructuring-bind (system branch) (uic-base aspect)
-    `(:div :class ,(format nil "chart-holder~a~a"
-                           (or (and (getf (uic-plan aspect) :class-string) " ") "")
-                           (or (getf (uic-plan aspect) :class-string) ""))
+    `(:div ;; :class ,(format nil "chart-holder~a~a"
+           ;;                 (or (and (getf (uic-plan aspect) :class-string) " ") "")
+           ;;                 (or (getf (uic-plan aspect) :class-string) ""))
            :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
                           (let ((config (create plotter (funcall get-candle-plotter mode)
