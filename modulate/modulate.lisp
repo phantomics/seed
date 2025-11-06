@@ -1154,7 +1154,7 @@
                                             ""))))
               (t (push :input (uic-type aspect))
                  (wrap-label (lisp->camel-case field-name)
-                             `(:input ;; :class "input"
+                             `(:input :class "input"
                                       :type "text" :value ,(or field-content
                                                                               (uicc-field-default aspect)
                                                                               "")
