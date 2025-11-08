@@ -364,7 +364,8 @@
   (labels ((format-params (items)
              (loop :for (ikey ival) :on items :by #'cddr
                    :append (list ikey (case ikey
-                                        (:role (cons 'list (role-cast (mapcar #'format-role-spec ival))))
+                                        (:role (if (not (listp ival))
+                                                   ival (cons 'list (role-cast (mapcar #'format-role-spec ival)))))
                                         (t (format-list ival))))))
            (process-spec (item spec-list)
              (let ((generated))
@@ -428,6 +429,9 @@
                                   (intern (string key)))
                             val)))
   base)
+
+(defmethod xfurnish ((medium t) (aspect t) (role t))
+  nil)
 
 (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
   (let* ((pairs (if (uic-join aspect)
@@ -591,7 +595,7 @@
     ;; (when (eq :chart (uic-name aspect))
     ;;   (push aspect portal.demo1::*aabb*))
 
-    ;; (print (list :ro (uic-role aspect)))
+    (print (list :ro (uic-role aspect)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -895,10 +899,10 @@
       (amake (uia-base item))))
 
 (defmethod amake ((item uia-primal-dual-bank-pane))
-  (with-slots (%name %title %roles %system %controls) item
-    ;; (print (list :nn %name %title %roles))
+  (with-slots (%name %title %role %system %controls) item
+    (print (list :nn %name %title %role))
     (dx (uic-series :name %name :layout (:vertical :of 3 1 1 1) :join (list %system %name)
-                    ;; :role %roles
+                    :role %role
                     :type (:column) :mode %name ;; (print (list :identity %name))
                     ;; :mode (grow :demo.sheet (first l) context (list :identity %name))
                     )
@@ -1358,6 +1362,11 @@
           (get-output-stream-string class-stream))
     (close class-stream)))
 
+(defmethod generate :before ((medium uim-web) (aspect ui-component))
+  (dolist (role (uic-role aspect))
+    ;; (print (list :mm medium aspect role))
+    (xfurnish medium aspect role)))
+
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   "Generation method qualifier manifesting call effects for UI components."
   (let* ((main (call-next-method))
@@ -1377,11 +1386,11 @@
                   
                   (and (uic-path aspect)
                        (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
-                  (let ((jsen (getf (uic-plan aspect) :js-entities)))
-                    (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
-                             (getf (getf (uic-plan aspect) :js-entities) :methods))
-                         (list :bla-bla (ps* `(create mode    ,@(cons 'create (getf jsen :mode))
-                                                      methods ,@(cons 'create (getf jsen :methods)))))))
+                  ;; (let ((jsen (getf (uic-plan aspect) :js-entities)))
+                  ;;   (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
+                  ;;            (getf (getf (uic-plan aspect) :js-entities) :methods))
+                  ;;        (print (list :x-data (ps* `(create methods ,(cons 'create (getf jsen :methods))
+                  ;;                                    mode     ,(cons 'create (getf jsen :mode))))))))
                   (and (uic-type aspect)
                        (let ((class-stream (make-string-output-stream)))
                          (if (atom (uic-type aspect)) ;; print downcased symbols for class list
@@ -1396,9 +1405,7 @@
 
 ;; (defmethod generate ((medium uim-web) (aspect uich-candle) (role uir)))
 
-(defmethod generate ((medium uim-web) (aspect uich-candle))
-  (push :chart-holder (uic-type aspect))
-
+(defmethod xfurnish ((medium uim-web) (aspect uic-series) (role uir-pro-chart))
   (setf (getf (getf (uic-plan aspect) :js-entities) :mode)
         (append (list :interaction "select" :draw-entity "line" :active-entity 'nil
                       :linked-branch-id "branch-entitiesView" :moving-from 'nil
@@ -1422,7 +1429,35 @@
                       :zoom-actual
                       '(lambda (mode))
                       :when-toggled `(lambda (mode) (chain console (log 202 mode))))
-                (getf (getf (uic-plan aspect) :js-entities) :methods)))
+                (getf (getf (uic-plan aspect) :js-entities) :methods))))
+
+(defmethod generate ((medium uim-web) (aspect uich-candle))
+  (push :chart-holder (uic-type aspect))
+
+  ;; (setf (getf (getf (uic-plan aspect) :js-entities) :mode)
+  ;;       (append (list :interaction "select" :draw-entity "line" :active-entity 'nil
+  ;;                     :linked-branch-id "branch-entitiesView" :moving-from 'nil
+  ;;                     :mousedown 'false :entities-in-flux '(list) :entities '(list))
+  ;;               (getf (getf (uic-plan aspect) :js-entities) :mode))
+  ;;       (getf (getf (uic-plan aspect) :js-entities) :methods)
+  ;;       (append (list :save
+  ;;                     '(lambda (mode)
+  ;;                       (fetch-contact $el mode (create action "save") (lambda (data))))
+  ;;                     :select
+  ;;                     '(lambda (mode) (setf (@ mode interaction) "select"))
+  ;;                     :draw
+  ;;                     '(lambda (mode)
+  ;;                       (setf (@ mode interaction) "draw" (@ mode draw-entity) "line"))
+  ;;                     :retrace-x
+  ;;                     '(lambda (mode)
+  ;;                       (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceX"))
+  ;;                     :retrace-y
+  ;;                     '(lambda (mode)
+  ;;                       (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceY"))
+  ;;                     :zoom-actual
+  ;;                     '(lambda (mode))
+  ;;                     :when-toggled `(lambda (mode) (chain console (log 202 mode))))
+  ;;               (getf (getf (uic-plan aspect) :js-entities) :methods)))
 
   (destructuring-bind (system branch) (uic-base aspect)
     `(:div ;; :class ,(format nil "chart-holder~a~a"
