@@ -13,7 +13,10 @@
                           #:uir-form #:uir-contact #:uir-contact-refreshing
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
 
-                          #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane)
+                          #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
+
+                          #:xfurnish
+                          #:uir-pro-chart)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -51,7 +54,7 @@
                   :system *system* :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :chart)
               (let ((name :chart)    (title :chart-candle))
-                (aspect dual-bank-pane :name name :title title
+                (aspect dual-bank-pane :name name :title title :role (pro-chart)
                   :system *system* :controls (list header-controls footer-controls)))
               (let ((name :chentity) (title :entities-view))
                 (aspect dual-bank-pane :name name :title title

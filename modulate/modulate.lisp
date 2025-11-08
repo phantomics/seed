@@ -234,6 +234,8 @@
   (let ((pos (position role-sym (uic-role component) :test (lambda (r c) (typep c r)))))
     (and pos (nth pos (uic-role component)))))
 
+(defclass ui-role-provisioning (ui-role) ())
+
 (defclass uir-form (ui-role) ())
 
 (defclass uir-interact (ui-role)
@@ -286,47 +288,87 @@
   ()
   (:documentation "A role for a series whose elements may be manually removed."))
 
-(defclass uir-toggle ()
+(defclass uir-toggle (ui-role)
   ((%symap :accessor uirt-symap
            :initform nil
            :initarg  :symap))
   (:documentation "A role for an element or series of elements that may be toggled."))
 
-(defmacro role-cast (&rest roles)
-  (cons 'list (loop :for role :in roles
-                    :collect (let ((symbol (intern (format nil "UIR-~a" (if (symbolp role)
-                                                                            role (first role)))
-                                                   (package-name *package*))))
-                               (loop :for alias :in *role-aliases* :when (eql symbol (first alias))
-                                     :do (setf symbol (second alias)))
-                               `(make-instance ',symbol ,@(and (listp role) (rest role)))))))
+(defclass uir-pro-chart (ui-role-provisioning)
+  ()
+  (:documentation "A role for an element or series of elements that may be toggled."))
+
+;; (defmacro role-cast (&rest roles)
+;;   (print (list :rrr roles))
+;;   (cons 'list (loop :for role :in roles
+;;                     :collect (let (;; (symbol (intern (format nil "UIR-~a" (if (symbolp role)
+;;                                    ;;                                          role (first role)))
+;;                                    ;;                 (package-name *package*)))
+;;                                    (symbol (if (symbolp role) role (first role))))
+;;                                (loop :for alias :in *role-aliases* :when (eql symbol (first alias))
+;;                                      :do (setf symbol (second alias)))
+;;                                (print `(make-instance ',symbol ,@(and (listp role) (rest role))))))))
+
+;; (defmacro dx (specs &rest form)
+;;   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
+;;   (labels ((find-role-sym (symbol)
+;;              (intern (format nil "UIR-~a" symbol) (package-name *package*)))
+;;            (format-list (form)
+;;              (if (or (atom form) (not (keywordp (first form))))
+;;                  (list (find-role-sym form))
+;;                  (cons 'list (loop :for item :in form
+;;                                    :collect (if (atom item) (find-role-sym item)
+;;                                                 (cons (find-role-sym (first item)) item))))))
+;;            (format-params (items)
+;;              ;; (print (loop :for item :in items
+;;              ;;              :collect (if (or (atom item)
+;;              ;;                               (not (keywordp (first item))))
+;;              ;;                           item (format-list item))))
+;;              (loop :for (ikey ival) :on items :by #'cddr
+;;                    :append (list ikey (case ikey
+;;                                         (:role (macroexpand (cons '
+
+;; (defmacro role-cast (&rest roles)
+;;   (print (list :rrr roles))
+;;   (print (cons 'list (loop :for role :in roles
+;;                     :collect (let ((symbol (intern (format nil "UIR-~a" (if (symbolp role)
+;;                                                                             role (first role)))
+;;                                                    (package-name *package*))))
+;;                                (loop :for alias :in *role-aliases* :when (eql symbol (first alias))
+;;                                      :do (setf symbol (second alias)))
+;;                                `(make-instance ',symbol ,@(and (listp role) (rest role))))))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun role-cast (roles)
+    ;; (print (list :rrr roles))
+    (loop :for role :in roles
+          :collect (let ((symbol (if (symbolp role) role (first role))))
+                     (loop :for alias :in *role-aliases* :when (eql symbol (first alias))
+                           :do (setf symbol (second alias)))
+                     `(make-instance ',symbol ,@(and (listp role) (rest role))))))
+
+  (defun format-list (form)
+    (if (or (atom form) (not (keywordp (first form))))
+        form (cons 'list (loop :for item :in form
+                               :collect (if (atom item) item (format-list item))))))
+
+  (defun format-role-spec (form)
+    (flet ((find-role-sym (symbol)
+             (intern (format nil "UIR-~a" symbol) (package-name *package*))))
+      (if (atom form) (find-role-sym form)
+          (cons (find-role-sym (first form))
+                (loop :for item :in (rest form) :collect (if (atom item) item (format-list item))))))))
 
 (defmacro dx (specs &rest form)
   "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
-  (labels ((format-list (form)
-             (if (or (atom form) (not (keywordp (first form))))
-                 form (cons 'list (loop :for item :in form
-                                        :collect (if (atom item) item (format-list item))))))
-           (format-params (items)
-             ;; (print (loop :for item :in items
-             ;;              :collect (if (or (atom item)
-             ;;                               (not (keywordp (first item))))
-             ;;                           item (format-list item))))
+  (labels ((format-params (items)
              (loop :for (ikey ival) :on items :by #'cddr
                    :append (list ikey (case ikey
-                                        (:role (macroexpand (cons 'role-cast (format-list ival))))
+                                        (:role (cons 'list (role-cast (mapcar #'format-role-spec ival))))
                                         (t (format-list ival))))))
            (process-spec (item spec-list)
              (let ((generated))
-               ;; (case (caar spec-list)
-               ;; (:each
-               ;;  (destructuring-bind (class &rest params) (cdar spec-list)
-               ;;    (let* ((sub-item (gensym))
-               ;;           (params (format-params params)))
-               ;;      (setf generated `(mapcar (lambda (,sub-item)
-               ;;                                 (make-instance ',class :base ,sub-item ,@params))
-               ;;                               ,item)))))
-               (destructuring-bind (class &rest params) spec-list ;; (first spec-list)
+               (destructuring-bind (class &rest params) spec-list
                  ;; (print (list :prr params))
                  (setf generated `(make-instance ',class :base ,item ,@(format-params params))))
                ;; (if (not (rest spec-list))
@@ -336,10 +378,26 @@
     (let ((evaluated-form (gensym)))
       `(let ((,evaluated-form ,(if (not (second form))
                                    (first form) (cons 'list form))))
-         ,(process-spec evaluated-form ;; (list (first specs))
-                        specs)))))
+         ,(process-spec evaluated-form specs)))))
+
+(defmacro aspect (slug &body args)
+  (let ((params (if (not (listp (first args))) args (first args)))
+        (members (if (listp (first args)) (rest args))))
+    ;; (print (list :par params))
+    (when (getf params :role)
+      ;; (print (list :gg (getf params :role)))
+      (setf (getf params :role)
+            (cons 'list (role-cast (mapcar #'format-role-spec (getf params :role))))))
+    ;; (print (list :ro (getf params :role)))
+    `(make-instance ',(intern (format nil "UIA-~a-~a" (if members "BASED" "PRIMAL")
+                                      (string-upcase slug))
+                              (package-name *package*))
+                    ,@params ,@(and members (list :base (if (second members) (cons 'list members)
+                                                            (first members)))))))
 
 (defgeneric render (medium component))
+
+(defgeneric xfurnish (medium component role))
 
 (defgeneric furnish (medium component &optional base))
 
@@ -494,7 +552,6 @@
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
-                         ;; :class (furnish-type medium aspect '(:access))
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             ;; (chain mode (of-local "register" "main" $el))
                                             (setf (@ mode domain main) $el)
@@ -509,8 +566,7 @@
                          :x-data (psl (create branch-frame $el)))
                    (progn (when (typep (uic-base aspect) 'ui-component)
                             (setf (uic-root (uic-base aspect)) aspect))
-                          (list ;; :class (furnish-type medium aspect '(:access))
-                                (realize aspect medium (uic-base aspect))))))))
+                          (list (realize aspect medium (uic-base aspect))))))))
 
 (defmethod generate :before (medium (aspect uic-series))
   "If a series has a :map slot filled, the function there should be mapped over the items in the series."
@@ -525,12 +581,17 @@
         (class-stream (make-string-output-stream))
         (types (funcall (if (listp (uic-type aspect)) #'identity #'list)
                         (uic-type aspect)))
-        (breadth-default 12)
+        ;; (breadth-default 12)
         (is-list-table (member :list-table (uic-type aspect)))
-        (layout (uic-series-layout aspect))
+        ;; (layout (uic-series-layout aspect))
         (is-render-form (and (has-role aspect 'uir-form)
                              (has-role aspect 'uir-call)))
         (x-inits) (items))
+
+    ;; (when (eq :chart (uic-name aspect))
+    ;;   (push aspect portal.demo1::*aabb*))
+
+    ;; (print (list :ro (uic-role aspect)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -730,12 +791,6 @@
                         ;; enum structure or if its :call property is set to t indicating
                         ;; that it is a form whose submission causes its rerendering
                         ;; :path ""
-                        ;; :class (furnish-type medium aspect
-                        ;;                      (append '(:ui :series)
-                        ;;                              (case ltype
-                        ;;                                ((:horizontal :vertical)
-                        ;;                                 '(:series :grid-layout)))
-                        ;;                              (and is-list-table '(:table))))
                         ;; :style (if (and ;; (not (member ltype '(:horizontal :vertical)))
                         ;;                 ;; (not (eql :even (first lprops)))
                         ;;                 t
@@ -780,10 +835,7 @@
                                             (first envelopes)))
                             (setf (first envelopes) (append (list :div :class "columns")
                                                             (reverse (first envelopes))))
-                            ;; (incf item-index (max 1 (abs item)))
-                            (incf item-index (max 0 (abs item)))
-                            ))
-
+                            (incf item-index (max 0 (abs item)))))
                         
                         (append (reverse envelopes)
                                 (if (< item-index (- (length items) 0))
@@ -801,6 +853,10 @@
             :initform nil
             :initarg  :title
             :documentation "A display title for the component.")
+   (%role   :accessor uia-role
+            :initform nil
+            :initarg  :role
+            :documentation "Roles to apply to component(s) generated, typically to the outermost.")
    (%system :accessor uia-system
             :initform nil
             :initarg  :system)))
@@ -825,18 +881,6 @@
 (defclass uia-primal-dual-bank-pane (uia-primal uia-with-controls)
   ())
 
-(defmacro aspect (slug &body args)
-  (let ((params (if (not (listp (first args)))
-                    args (first args)))
-        (members (if (listp (first args))
-                     (rest args))))
-  `(make-instance ',(intern (format nil "UIA-~a-~a" (if members "BASED" "PRIMAL")
-                                    (string-upcase slug))
-                            (package-name *package*))
-                  ,@params
-                  ,@(and members (list :base (if (second members) (cons 'list members)
-                                                 (first members)))))))
-
 (defgeneric amake (item))
 
 (defmethod amake ((item t))
@@ -846,13 +890,15 @@
   (mapcar #'amake item))
 
 (defmethod amake ((item uia-based-pane-series))
-  (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
+  (dx (uic-series :name (uia-name item)
+                  :layout (:horizontal :even) :type (:workspace :even))
       (amake (uia-base item))))
 
 (defmethod amake ((item uia-primal-dual-bank-pane))
-  (with-slots (%name %title %system %controls) item
-    ;; (print (list :nn %name %title))
-    (dx (uic-series :layout (:vertical :of 3 1 1 1) :join (list %system %name)
+  (with-slots (%name %title %roles %system %controls) item
+    ;; (print (list :nn %name %title %roles))
+    (dx (uic-series :name %name :layout (:vertical :of 3 1 1 1) :join (list %system %name)
+                    ;; :role %roles
                     :type (:column) :mode %name ;; (print (list :identity %name))
                     ;; :mode (grow :demo.sheet (first l) context (list :identity %name))
                     )
@@ -1044,7 +1090,7 @@
     (let ((token (format nil "canvas-datagrid-~a-~a"
                          (string-downcase system) (string-downcase branch)))
           (branch (string-downcase branch)))
-      `(:div :id "datagrid-cells" ;; :class (getf props :item-classes)
+      `(:div :id "datagrid-cells"
              :x-init ,(psl (progn (setf (getprop (@ window seed-elements) (lisp branch)) $el)
                                   (fetch-contact
                                    $el mode ;; (list (list "cells" 0))
@@ -1108,7 +1154,6 @@
                              (psl (fetch-contact $el mode
                                                  (lisp (cons 'create call-args))
                                                  (lisp call-post)))))))
-                ;; :class ,(furnish-type medium aspect '(:ui :button))
                 ,(if (and (has-role aspect 'uir-toggle) (listp base)
                           (eql 'nth (first base))) ;;  (integerp (second base)))
                      (progn
@@ -1146,14 +1191,12 @@
                                                          (chain document (get-element-by-id (lisp token)))
                                                          (@ data text)))))))))))
               ((member :area (uic-type aspect))
-               (push :textarea (uic-type aspect))
                (wrap-label (lisp->camel-case field-name)
-                           `(:textarea ;; :class "textarea"
+                           `(:textarea :class "textarea"
                                        :name ,(or (lisp->camel-case field-name) "")
                                        ,(or field-content (uicc-field-default aspect)
                                             ""))))
-              (t (push :input (uic-type aspect))
-                 (wrap-label (lisp->camel-case field-name)
+              (t (wrap-label (lisp->camel-case field-name)
                              `(:input :class "input"
                                       :type "text" :value ,(or field-content
                                                                               (uicc-field-default aspect)
@@ -1268,7 +1311,7 @@
                                                               (t base)))
                                                     (t item))))))))
       (if (typep call 'uir-call)
-          (list (uiri-name call '$el 'bla 'mode))
+          (list (uiri-name call) '$el 'bla 'mode)
           `(funcall ,(case call ;; method
                        (:.fetch 'fetch-contact)
                        (:.base `(@ $event target value))
@@ -1285,14 +1328,35 @@
                       (ps* (list (intern (string (uiri-name role))) ;; TODO: intern should not be used
                                  '$el 'mode)))))))
 
-;; (defmethod generate :before ((medium uim-web) (aspect ui-component))
-;;   (let ((class-stream (make-string-output-stream)))
-;;     (if (atom (uic-type aspect))
-;;         (format class-stream "~a"      (string-downcase (uic-type aspect)))
-;;         (format class-stream "~{~a ~}" (mapcar #'string-downcase (uic-type aspect))))
-;;     (setf (getf (uic-plan aspect) :class-string)
-;;           (get-output-stream-string class-stream))
-;;     (close class-stream)))
+(defmethod generate :before ((medium uim-web) (aspect ui-component))
+  ;; (:meta-code-form (list :mode    (list :form nil)
+  ;;                        :methods (list :register-form
+  ;;                                       '(lambda (mode)
+  ;;                                         (lambda (form)
+  ;;                                           (setf (@ mode form) form)))
+  ;;                                       :save
+  ;;                                       '(lambda (mode)
+  ;;                                         ;; (chain htmx (trigger (@ mode form) "submit"))))))
+  ;;                                         (let* ((fdata (new (-form-data (@ mode form))))
+  ;;                                                (obj (chain -object
+  ;;                                                            (from-entries
+  ;;                                                             (chain fdata (entries))))))
+  ;;                                           (setf (@ obj action) "saveNode")
+  ;;                                           (fetch-contact
+  ;;                                            $el mode obj
+  ;;                                            (lambda (data)
+  ;;                                              (chain htmx (trigger (@ mode domain main)
+  ;;                                                                   "reload")))))))))
+  (setf (getf (uic-plan aspect) :js-entities)
+        (list :mode nil :methods nil))
+  
+  (let ((class-stream (make-string-output-stream)))
+    (if (atom (uic-type aspect))
+        (format class-stream "~a"      (string-downcase (uic-type aspect)))
+        (format class-stream "~{~a ~}" (mapcar #'string-downcase (uic-type aspect))))
+    (setf (getf (uic-plan aspect) :class-string)
+          (get-output-stream-string class-stream))
+    (close class-stream)))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
   "Generation method qualifier manifesting call effects for UI components."
@@ -1313,11 +1377,16 @@
                   
                   (and (uic-path aspect)
                        (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
+                  (let ((jsen (getf (uic-plan aspect) :js-entities)))
+                    (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
+                             (getf (getf (uic-plan aspect) :js-entities) :methods))
+                         (list :bla-bla (ps* `(create mode    ,@(cons 'create (getf jsen :mode))
+                                                      methods ,@(cons 'create (getf jsen :methods)))))))
                   (and (uic-type aspect)
                        (let ((class-stream (make-string-output-stream)))
-                         (if (atom (uic-type aspect))
-                             (format class-stream "~a"      (string-downcase (uic-type aspect)))
-                             (format class-stream "~{~a ~}" (mapcar #'string-downcase (uic-type aspect))))
+                         (if (atom (uic-type aspect)) ;; print downcased symbols for class list
+                             (format class-stream "~(~a~)"      (uic-type aspect))
+                             (format class-stream "~{~(~a~) ~}" (uic-type aspect)))
                          (list :class (get-output-stream-string class-stream))))
                   (rest main)))))
 
@@ -1325,8 +1394,36 @@
 ;;   (unless (atom (uic-type aspect))
 ;;     (push :hello123 (uic-type aspect))))
 
+;; (defmethod generate ((medium uim-web) (aspect uich-candle) (role uir)))
+
 (defmethod generate ((medium uim-web) (aspect uich-candle))
   (push :chart-holder (uic-type aspect))
+
+  (setf (getf (getf (uic-plan aspect) :js-entities) :mode)
+        (append (list :interaction "select" :draw-entity "line" :active-entity 'nil
+                      :linked-branch-id "branch-entitiesView" :moving-from 'nil
+                      :mousedown 'false :entities-in-flux '(list) :entities '(list))
+                (getf (getf (uic-plan aspect) :js-entities) :mode))
+        (getf (getf (uic-plan aspect) :js-entities) :methods)
+        (append (list :save
+                      '(lambda (mode)
+                        (fetch-contact $el mode (create action "save") (lambda (data))))
+                      :select
+                      '(lambda (mode) (setf (@ mode interaction) "select"))
+                      :draw
+                      '(lambda (mode)
+                        (setf (@ mode interaction) "draw" (@ mode draw-entity) "line"))
+                      :retrace-x
+                      '(lambda (mode)
+                        (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceX"))
+                      :retrace-y
+                      '(lambda (mode)
+                        (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceY"))
+                      :zoom-actual
+                      '(lambda (mode))
+                      :when-toggled `(lambda (mode) (chain console (log 202 mode))))
+                (getf (getf (uic-plan aspect) :js-entities) :methods)))
+
   (destructuring-bind (system branch) (uic-base aspect)
     `(:div ;; :class ,(format nil "chart-holder~a~a"
            ;;                 (or (and (getf (uic-plan aspect) :class-string) " ") "")
