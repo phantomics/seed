@@ -294,9 +294,13 @@
            :initarg  :symap))
   (:documentation "A role for an element or series of elements that may be toggled."))
 
+(defclass uir-pro-form (ui-role-provisioning)
+  ()
+  (:documentation "A provisioning role for an element containing a code form."))
+
 (defclass uir-pro-chart (ui-role-provisioning)
   ()
-  (:documentation "A role for an element or series of elements that may be toggled."))
+  (:documentation "A provisioning role for an element containing an interactive chart."))
 
 ;; (defmacro role-cast (&rest roles)
 ;;   (print (list :rrr roles))
@@ -430,8 +434,24 @@
                             val)))
   base)
 
+;; (defun uic-as-domain-p (item)
+;;   (and (typep item 'ui-component)
+;;        (not (loop :for role :in (uic-role item) :never (typep role 'AAA)))))
+
+;; (deftype uic-as-domain ()
+;;   `(satisfies uic-as-domain-p))
+
 (defmethod xfurnish ((medium t) (aspect t) (role t))
   nil)
+
+(defmethod xfurnish :before ((medium uim-web) (aspect ui-component) (role ui-role-provisioning))
+  (print (list :aas aspect role))
+  (unless (getf (uic-plan aspect) :js-entities)
+    (setf (getf (uic-plan aspect) :js-entities)
+          (merge-furnishings (getf (uic-plan aspect) :js-entities)
+                             (list :mode (list :system (first  (uic-join aspect))
+                                               :branch (second (uic-join aspect))
+                                               :domain '(create)))))))
 
 (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
   (let* ((pairs (if (uic-join aspect)
@@ -442,38 +462,38 @@
          (base (merge-furnishings base pairs)))
     (merge-furnishings
      base (case (uic-mode aspect)
-            (:chart (list :mode    (list :interaction "select"
-                                         :draw-entity "line"
-                                         :linked-branch-id "branch-entitiesView"
-                                         :moving-from 'nil
-                                         :mousedown 'false
-                                         :active-entity 'nil
-                                         :entities-in-flux '(list)
-                                         :entities '(list))
-                          :methods (list :save
-                                         '(lambda (mode)
-                                           (fetch-contact
-                                            $el mode (create action "save")
-                                            (lambda (data))))
-                                         :select
-                                         '(lambda (mode)
-                                           (setf (@ mode interaction) "select"))
-                                         :draw
-                                         '(lambda (mode)
-                                           (setf (@ mode interaction) "draw"
-                                                 (@ mode draw-entity) "line"))
-                                         :retrace-x
-                                         '(lambda (mode)
-                                           (setf (@ mode interaction) "draw"
-                                                 (@ mode draw-entity) "retraceX"))
-                                         :retrace-y
-                                         '(lambda (mode)
-                                           (setf (@ mode interaction) "draw"
-                                                 (@ mode draw-entity) "retraceY"))
-                                         :zoom-actual
-                                         '(lambda (mode))
-                                         :when-toggled `(lambda (mode)
-                                                          (chain console (log 202 mode))))))
+            ;; (:chart (list :mode    (list :interaction "select"
+            ;;                              :draw-entity "line"
+            ;;                              :linked-branch-id "branch-entitiesView"
+            ;;                              :moving-from 'nil
+            ;;                              :mousedown 'false
+            ;;                              :active-entity 'nil
+            ;;                              :entities-in-flux '(list)
+            ;;                              :entities '(list))
+            ;;               :methods (list :save
+            ;;                              '(lambda (mode)
+            ;;                                (fetch-contact
+            ;;                                 $el mode (create action "save")
+            ;;                                 (lambda (data))))
+            ;;                              :select
+            ;;                              '(lambda (mode)
+            ;;                                (setf (@ mode interaction) "select"))
+            ;;                              :draw
+            ;;                              '(lambda (mode)
+            ;;                                (setf (@ mode interaction) "draw"
+            ;;                                      (@ mode draw-entity) "line"))
+            ;;                              :retrace-x
+            ;;                              '(lambda (mode)
+            ;;                                (setf (@ mode interaction) "draw"
+            ;;                                      (@ mode draw-entity) "retraceX"))
+            ;;                              :retrace-y
+            ;;                              '(lambda (mode)
+            ;;                                (setf (@ mode interaction) "draw"
+            ;;                                      (@ mode draw-entity) "retraceY"))
+            ;;                              :zoom-actual
+            ;;                              '(lambda (mode))
+            ;;                              :when-toggled `(lambda (mode)
+            ;;                                               (chain console (log 202 mode))))))
             (:meta-code-form (list :mode    (list :form nil)
                                    :methods (list :register-form
                                                   '(lambda (mode)
@@ -553,6 +573,10 @@
     (push :access (uic-type aspect))
     (push :body   (uic-type aspect))
 
+    (print (list :sy system aspect (uic-name aspect)))
+
+    (unless system (setf portal.demo1::aabbcc aspect))
+    
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
@@ -595,7 +619,7 @@
     ;; (when (eq :chart (uic-name aspect))
     ;;   (push aspect portal.demo1::*aabb*))
 
-    (print (list :ro (uic-role aspect)))
+    ;; (print (list :ro (uic-role aspect)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -1377,20 +1401,20 @@
     ;;                                                   of-local (manifest-locality)))))
 
     (cons (first main)
-          (append (and furnishing
-                       (list :x-data (ps* `(create ,@(loop :for f :in furnishing
-                                                           :collect (if (symbolp f)
-                                                                        f (cons 'create f)))
-                                                   ;; of-local (manifest-locality)
-                                                   ))))
+          (append ;; (and furnishing
+                  ;;      (list :x-data (ps* `(create ,@(loop :for f :in furnishing
+                  ;;                                          :collect (if (symbolp f)
+                  ;;                                                       f (cons 'create f)))
+                  ;;                                  ;; of-local (manifest-locality)
+                  ;;                                  ))))
                   
                   (and (uic-path aspect)
                        (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
-                  ;; (let ((jsen (getf (uic-plan aspect) :js-entities)))
-                  ;;   (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
-                  ;;            (getf (getf (uic-plan aspect) :js-entities) :methods))
-                  ;;        (print (list :x-data (ps* `(create methods ,(cons 'create (getf jsen :methods))
-                  ;;                                    mode     ,(cons 'create (getf jsen :mode))))))))
+                  (let ((jsen (getf (uic-plan aspect) :js-entities)))
+                    (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
+                             (getf (getf (uic-plan aspect) :js-entities) :methods))
+                         (print (list :x-data (ps* `(create methods ,(cons 'create (getf jsen :methods))
+                                                     mode     ,(cons 'create (getf jsen :mode))))))))
                   (and (uic-type aspect)
                        (let ((class-stream (make-string-output-stream)))
                          (if (atom (uic-type aspect)) ;; print downcased symbols for class list
@@ -1407,28 +1431,28 @@
 
 (defmethod xfurnish ((medium uim-web) (aspect uic-series) (role uir-pro-chart))
   (setf (getf (getf (uic-plan aspect) :js-entities) :mode)
-        (append (list :interaction "select" :draw-entity "line" :active-entity 'nil
-                      :linked-branch-id "branch-entitiesView" :moving-from 'nil
-                      :mousedown 'false :entities-in-flux '(list) :entities '(list))
+        (append (list 'interaction "select" 'draw-entity "line" 'active-entity 'nil
+                      'linked-branch-id "branch-entitiesView" 'moving-from 'nil
+                      'mousedown 'false 'entities-in-flux '(list) 'entities '(list))
                 (getf (getf (uic-plan aspect) :js-entities) :mode))
         (getf (getf (uic-plan aspect) :js-entities) :methods)
-        (append (list :save
+        (append (list 'save
                       '(lambda (mode)
                         (fetch-contact $el mode (create action "save") (lambda (data))))
-                      :select
+                      'select
                       '(lambda (mode) (setf (@ mode interaction) "select"))
-                      :draw
+                      'draw
                       '(lambda (mode)
                         (setf (@ mode interaction) "draw" (@ mode draw-entity) "line"))
-                      :retrace-x
+                      'retrace-x
                       '(lambda (mode)
                         (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceX"))
-                      :retrace-y
+                      'retrace-y
                       '(lambda (mode)
                         (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceY"))
-                      :zoom-actual
+                      'zoom-actual
                       '(lambda (mode))
-                      :when-toggled `(lambda (mode) (chain console (log 202 mode))))
+                      'when-toggled `(lambda (mode) (chain console (log 202 mode))))
                 (getf (getf (uic-plan aspect) :js-entities) :methods))))
 
 (defmethod generate ((medium uim-web) (aspect uich-candle))

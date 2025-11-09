@@ -16,7 +16,7 @@
                           #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
 
                           #:xfurnish
-                          #:uir-pro-chart)
+                          #:uir-pro-form #:uir-pro-chart)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -57,7 +57,7 @@
                 (aspect dual-bank-pane :name name :title title :role (pro-chart)
                   :system *system* :controls (list header-controls footer-controls)))
               (let ((name :chentity) (title :entities-view))
-                (aspect dual-bank-pane :name name :title title
+                (aspect dual-bank-pane :name name :title title :role (pro-form)
                   :system *system* :controls (list header-controls footer-controls))))))))
 
 (branch :view
