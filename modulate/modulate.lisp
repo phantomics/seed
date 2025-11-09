@@ -302,6 +302,10 @@
   ()
   (:documentation "A provisioning role for an element containing an interactive chart."))
 
+(defclass uir-pro-graph (ui-role-provisioning)
+  ()
+  (:documentation "A provisioning role for an element containing an interactive graph."))
+
 ;; (defmacro role-cast (&rest roles)
 ;;   (print (list :rrr roles))
 ;;   (cons 'list (loop :for role :in roles
@@ -494,24 +498,24 @@
             ;;                              '(lambda (mode))
             ;;                              :when-toggled `(lambda (mode)
             ;;                                               (chain console (log 202 mode))))))
-            (:meta-code-form (list :mode    (list :form nil)
-                                   :methods (list :register-form
-                                                  '(lambda (mode)
-                                                    (lambda (form)
-                                                      (setf (@ mode form) form)))
-                                                  :save
-                                                  '(lambda (mode)
-                                                    ;; (chain htmx (trigger (@ mode form) "submit"))))))
-                                                    (let* ((fdata (new (-form-data (@ mode form))))
-                                                           (obj (chain -object
-                                                                       (from-entries
-                                                                        (chain fdata (entries))))))
-                                                      (setf (@ obj action) "saveNode")
-                                                      (fetch-contact
-                                                       $el mode obj
-                                                       (lambda (data)
-                                                         (chain htmx (trigger (@ mode domain main)
-                                                                              "reload")))))))))
+            ;; (:meta-code-form (list :mode    (list :form nil)
+            ;;                        :methods (list :register-form
+            ;;                                       '(lambda (mode)
+            ;;                                         (lambda (form)
+            ;;                                           (setf (@ mode form) form)))
+            ;;                                       :save
+            ;;                                       '(lambda (mode)
+            ;;                                         ;; (chain htmx (trigger (@ mode form) "submit"))))))
+            ;;                                         (let* ((fdata (new (-form-data (@ mode form))))
+            ;;                                                (obj (chain -object
+            ;;                                                            (from-entries
+            ;;                                                             (chain fdata (entries))))))
+            ;;                                           (setf (@ obj action) "saveNode")
+            ;;                                           (fetch-contact
+            ;;                                            $el mode obj
+            ;;                                            (lambda (data)
+            ;;                                              (chain htmx (trigger (@ mode domain main)
+            ;;                                                                   "reload")))))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
                                                    (fetch-contact
@@ -871,6 +875,24 @@
                       (funcall (cond (is-list-table (lambda (form) (list (cons :tbody form))))
                                      (t #'identity))
                                (append header items)))))))))
+
+(defmethod xfurnish ((medium uim-web) (aspect uic-series) (role uir-pro-form))
+  (setf (getf (uic-plan aspect) :js-entities)
+        (merge-furnishings
+         (getf (uic-plan aspect) :js-entities)
+         (list :mode    (list 'form nil)
+               :methods (list 'register-form
+                              '(lambda (mode) (lambda (form) (setf (@ mode form) form)))
+                              'save
+                              '(lambda (mode)
+                                ;; (chain htmx (trigger (@ mode form) "submit"))))))
+                                (let* ((fdata (new (-form-data (@ mode form))))
+                                       (obj (chain -object (from-entries (chain fdata (entries))))))
+                                  (setf (@ obj action) "saveNode")
+                                  (fetch-contact $el mode obj
+                                                 (lambda (data)
+                                                   (chain htmx (trigger (@ mode domain main)
+                                                                        "reload")))))))))))
 
 (defclass ui-aspect ()
   ((%name   :accessor uia-name

@@ -12,7 +12,10 @@
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
 
-                          #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane)
+                          #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
+
+                          #:xfurnish
+                          #:uir-pro-form #:uir-pro-graph)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -52,10 +55,10 @@
                 (aspect dual-bank-pane :system *system* :name name :title title
                   :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :scenario)
-              (let ((name :graph)  (title :graph-overview))
+              (let ((name :graph)  (title :graph-overview)) :role (pro-graph)
                 (aspect dual-bank-pane :system *system* :name name :title title
                   :controls (list header-controls footer-controls)))
-              (let ((name :graph) (title :graph-node))
+              (let ((name :graph) (title :graph-node)) :role (pro-form)
                 (aspect dual-bank-pane :system *system* :name name :title title
                   :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :editor)

@@ -15,7 +15,7 @@
            #:uir-sortable #:uir-reducable #:uir-toggle
 
            #:xfurnish
-           #:uir-pro-form #:uir-pro-chart)
+           #:uir-pro-form #:uir-pro-chart #:uir-pro-graph)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)
   (:shadowing-import-from #:parenscript #:ps #:ps* #:ps-inline #:ps-inline* #:defpsmacro
                           #:create #:@ #:chain #:new #:getprop #:instanceof #:lisp #:regex)
