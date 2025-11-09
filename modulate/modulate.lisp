@@ -575,7 +575,7 @@
 
     (print (list :sy system aspect (uic-name aspect)))
 
-    (unless system (setf portal.demo1::aabbcc aspect))
+    ;; (unless system (setf portal.demo1::aabbcc aspect))
     
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
@@ -1432,7 +1432,7 @@
 (defmethod xfurnish ((medium uim-web) (aspect uic-series) (role uir-pro-chart))
   (setf (getf (getf (uic-plan aspect) :js-entities) :mode)
         (append (list 'interaction "select" 'draw-entity "line" 'active-entity 'nil
-                      'linked-branch-id "branch-entitiesView" 'moving-from 'nil
+                      'linked-branch-id "branch-chentity" 'moving-from 'nil
                       'mousedown 'false 'entities-in-flux '(list) 'entities '(list))
                 (getf (getf (uic-plan aspect) :js-entities) :mode))
         (getf (getf (uic-plan aspect) :js-entities) :methods)
