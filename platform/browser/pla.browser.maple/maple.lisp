@@ -1189,7 +1189,7 @@
 
 (enter-js-element *misc-js* :get-candle-plotter
   (defun get-candle-plotter (mode)
-    ;; (log :mm mode)
+    (log :mm mode)
     (lambda (e)
       ;; (log :xx e)
       (if (/= 0 (@ e series-index))
@@ -1220,7 +1220,7 @@
                        (up-stroke-style (if (< 2 bar-width) "rgba(38,139,210,1.0)" "rgba(38,139,210,0.6)"))
                        (down-fill-style "rgba(220,50,47,1.0)")
                        (down-stroke-style (if (< 2 bar-width) "rgba(220,50,47,1.0)" "rgba(220,50,47,0.6)")))
-                  ;; (chain console (log :sets sets))
+                  (chain console (log :sets sets))
                   (setf (@ ctx line-width) 0.6)
                   (loop :for p :from 0 :to (1- (@ sets 0 length))
                         :do (let* ((price (create open    (getprop sets 0 p "yval")
@@ -1254,7 +1254,7 @@
                                                     body-y bar-width body-height))))
                   (setf (@ ctx stroke-style) "black"
                         (@ ctx line-width)   1.5)
-                  ;; (chain console (log :ents (@ mode entities)))
+                  ;; (chain console (log :ents mode (@ mode entities)))
                   (loop :for ent :in (@ mode entities)
                         :do (if (not (and (@ mode mousedown) (@ ent in-flux)
                                           ;; (/= "false" (@ ent in-flux))

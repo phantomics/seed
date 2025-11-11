@@ -55,11 +55,11 @@
                 (aspect dual-bank-pane :system *system* :name name :title title
                   :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :scenario)
-              (let ((name :graph)  (title :graph-overview)) :role (pro-graph)
-                (aspect dual-bank-pane :system *system* :name name :title title
+              (let ((name :graph)  (title :graph-overview))
+                (aspect dual-bank-pane :system *system* :name name :title title :role (pro-graph)
                   :controls (list header-controls footer-controls)))
-              (let ((name :graph) (title :graph-node)) :role (pro-form)
-                (aspect dual-bank-pane :system *system* :name name :title title
+              (let ((name :graph) (title :graph-node))
+                (aspect dual-bank-pane :system *system* :name name :title title :role (pro-form)
                   :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :editor)
               (let ((name :code)  (title :edit-view))

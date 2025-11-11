@@ -2,6 +2,16 @@
 
 (in-package #:seed.modulate)
 
+;; PROPOSED TOP-LEVEL COMPONENT CLASSES:
+;; FORM:   the familiar code form
+;; SCENE:  a display of entities that change in response to user actions, not Seed UI components
+;; VIEW:   a display of stored graphics that may be navigated but are not otherwise interactive (image, video)
+;; TEXT:   a display of character data, could be editable or not
+;; PROMPT: a display of interactive character-formatted data, i.e. a terminal emulator
+;; SHEET:  a spreadsheet display
+;; EDITOR: a rich text viewing and editing interface
+;; PAGE:   a display of hypertext
+
 (defmacro psl (form)
   "A macro for denoting inline Parenscript code."
   `(subseq (ps-inline ,form) 11))
@@ -449,13 +459,11 @@
   nil)
 
 (defmethod xfurnish :before ((medium uim-web) (aspect ui-component) (role ui-role-provisioning))
-  (print (list :aas aspect role))
-  (unless (getf (uic-plan aspect) :js-entities)
-    (setf (getf (uic-plan aspect) :js-entities)
-          (merge-furnishings (getf (uic-plan aspect) :js-entities)
-                             (list :mode (list :system (first  (uic-join aspect))
-                                               :branch (second (uic-join aspect))
-                                               :domain '(create)))))))
+  (setf (getf (uic-plan aspect) :js-entities)
+        (merge-furnishings (getf (uic-plan aspect) :js-entities)
+                           (list :mode (list :system (first  (uic-join aspect))
+                                             :branch (second (uic-join aspect))
+                                             :domain '(create))))))
 
 (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
   (let* ((pairs (if (uic-join aspect)
@@ -577,7 +585,7 @@
     (push :access (uic-type aspect))
     (push :body   (uic-type aspect))
 
-    (print (list :sy system aspect (uic-name aspect)))
+    ;; (print (list :sy system aspect (uic-name aspect)))
 
     ;; (unless system (setf portal.demo1::aabbcc aspect))
     
@@ -1379,24 +1387,6 @@
                                  '$el 'mode)))))))
 
 (defmethod generate :before ((medium uim-web) (aspect ui-component))
-  ;; (:meta-code-form (list :mode    (list :form nil)
-  ;;                        :methods (list :register-form
-  ;;                                       '(lambda (mode)
-  ;;                                         (lambda (form)
-  ;;                                           (setf (@ mode form) form)))
-  ;;                                       :save
-  ;;                                       '(lambda (mode)
-  ;;                                         ;; (chain htmx (trigger (@ mode form) "submit"))))))
-  ;;                                         (let* ((fdata (new (-form-data (@ mode form))))
-  ;;                                                (obj (chain -object
-  ;;                                                            (from-entries
-  ;;                                                             (chain fdata (entries))))))
-  ;;                                           (setf (@ obj action) "saveNode")
-  ;;                                           (fetch-contact
-  ;;                                            $el mode obj
-  ;;                                            (lambda (data)
-  ;;                                              (chain htmx (trigger (@ mode domain main)
-  ;;                                                                   "reload")))))))))
   (setf (getf (uic-plan aspect) :js-entities)
         (list :mode nil :methods nil))
   
@@ -1477,40 +1467,33 @@
                       'when-toggled `(lambda (mode) (chain console (log 202 mode))))
                 (getf (getf (uic-plan aspect) :js-entities) :methods))))
 
+(defmethod xfurnish ((medium uim-web) (aspect uic-series) (role uir-pro-chart))
+  (setf (getf (uic-plan aspect) :js-entities)
+        (merge-furnishings (getf (uic-plan aspect) :js-entities)
+                           (list :methods (list 'add-node
+                                                '(lambda (mode)
+                                                  (fetch-contact $el mode (create action "addNode")
+                                                   (lambda (data))))
+                                                'add-link
+                                                '(lambda (mode)
+                                                  (fetch-contact $el mode (create action "addLink")
+                                                   (lambda (data)))))
+                                 :mode (list 'interaction "select"
+                                             'draw-entity "line"
+                                             'linked-branch-id "branch-chentity"
+                                             'moving-from 'nil
+                                             'mousedown 'false
+                                             'active-entity 'nil
+                                             'entities-in-flux '(list)
+                                             'entities '(list))))))
+
 (defmethod generate ((medium uim-web) (aspect uich-candle))
   (push :chart-holder (uic-type aspect))
 
-  ;; (setf (getf (getf (uic-plan aspect) :js-entities) :mode)
-  ;;       (append (list :interaction "select" :draw-entity "line" :active-entity 'nil
-  ;;                     :linked-branch-id "branch-entitiesView" :moving-from 'nil
-  ;;                     :mousedown 'false :entities-in-flux '(list) :entities '(list))
-  ;;               (getf (getf (uic-plan aspect) :js-entities) :mode))
-  ;;       (getf (getf (uic-plan aspect) :js-entities) :methods)
-  ;;       (append (list :save
-  ;;                     '(lambda (mode)
-  ;;                       (fetch-contact $el mode (create action "save") (lambda (data))))
-  ;;                     :select
-  ;;                     '(lambda (mode) (setf (@ mode interaction) "select"))
-  ;;                     :draw
-  ;;                     '(lambda (mode)
-  ;;                       (setf (@ mode interaction) "draw" (@ mode draw-entity) "line"))
-  ;;                     :retrace-x
-  ;;                     '(lambda (mode)
-  ;;                       (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceX"))
-  ;;                     :retrace-y
-  ;;                     '(lambda (mode)
-  ;;                       (setf (@ mode interaction) "draw" (@ mode draw-entity) "retraceY"))
-  ;;                     :zoom-actual
-  ;;                     '(lambda (mode))
-  ;;                     :when-toggled `(lambda (mode) (chain console (log 202 mode))))
-  ;;               (getf (getf (uic-plan aspect) :js-entities) :methods)))
-
   (destructuring-bind (system branch) (uic-base aspect)
-    `(:div ;; :class ,(format nil "chart-holder~a~a"
-           ;;                 (or (and (getf (uic-plan aspect) :class-string) " ") "")
-           ;;                 (or (getf (uic-plan aspect) :class-string) ""))
-           :id ,(format nil "~a-~a" system branch)
+    `(:div :id ,(format nil "~a-~a" system branch)
            :x-init ,(ps (progn
+                          (log :mode mode)
                           (let ((config (create plotter (funcall get-candle-plotter mode)
                                                 height (@ $el offset-height)
                                                 width  (@ $el offset-width)
@@ -1841,10 +1824,7 @@
                                          (loop :for item :in (rest form)
                                                :when (and (listp item) (second item)
                                                           (listp (second item)))
-                                                 :do ;; (print (list :ri
-                                                     ;;              form
-                                                     ;;              (rest item) (rest form)))
-                                                     (lsort (rest item) ix subix))))
+                                                 :do (lsort (rest item) ix subix))))
                                 (loop :for item :in (rest formatted)
                                       :do (lsort item node-index index)))))
                           ;; nodes are being sorted
