@@ -623,6 +623,7 @@
                      (if (@ data oob-reload)
                          (chain data oob-reload
                                 (for-each (lambda (item)
+                                            (log :it item)
                                             (chain htmx (trigger (getprop seed-elements item) "reload"))))))
                      data))
              (then (if (= "function" (typeof event))
@@ -1189,13 +1190,11 @@
 
 (enter-js-element *misc-js* :get-candle-plotter
   (defun get-candle-plotter (mode)
-    (log :mm mode)
     (lambda (e)
       ;; (log :xx e)
       (if (/= 0 (@ e series-index))
           (let ((self this)
                 (set-count (@ e series-count)))
-            ;; (log :ss set-count)
             (setf (@ window bla) (@ e all-series-points))
             (if (/= 4 set-count)
                 (log "Error: Exactly 4 prices each point must be provided for the candle chart.")
@@ -1220,7 +1219,7 @@
                        (up-stroke-style (if (< 2 bar-width) "rgba(38,139,210,1.0)" "rgba(38,139,210,0.6)"))
                        (down-fill-style "rgba(220,50,47,1.0)")
                        (down-stroke-style (if (< 2 bar-width) "rgba(220,50,47,1.0)" "rgba(220,50,47,0.6)")))
-                  (chain console (log :sets sets))
+                  ;; (chain console (log :sets sets))
                   (setf (@ ctx line-width) 0.6)
                   (loop :for p :from 0 :to (1- (@ sets 0 length))
                         :do (let* ((price (create open    (getprop sets 0 p "yval")

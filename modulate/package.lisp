@@ -6,7 +6,7 @@
            ;; media
            #:uim-web
            ;; components
-           #:uic-frame #:uic-anchor #:uic-series #:uic-grid #:uicc-button
+           #:uic-page #:uic-frame #:uic-anchor #:uic-series #:uic-grid #:uicc-button
            #:uicc-field #:uicc-text-line #:uich-candle #:spec-graph-interface
            ;; roles
            #:role-cast

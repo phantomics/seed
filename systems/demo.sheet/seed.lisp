@@ -79,23 +79,6 @@
             (start-point 0) (interval-found) (search-complete))
         (amake (nth branch-point summary))))))
 
-;; (loop :for l :in (rest (nth branch-point summary))
-;;       :collect (dx (uic-series :layout (:vertical :of 3 1 1 1)
-;;                                :join   (list :demo.sheet (first l))
-;;                                :type   (:column)
-;;                                :mode   (grow :demo.sheet (first l)
-;;                                              context (list :identity (second l))))
-;;                    (dx (uic-series :type (:ui :header))
-;;                        (second l)
-;;                        (grow :demo.sheet (first l)
-;;                              context (list :uimod :header-controls)))
-;;                    (dx (uic-frame :name (second l) :type (:body)
-;;                                   :access :demo.sheet)
-;;                        (first l))
-;;                    (dx (uic-series :type (:ui :footer))
-;;                        (list (grow :demo.sheet (first l)
-;;                                    context (list :uimod :footer-controls)))))))))))
-
 (branch :main
   (adapt-from-json :text)
   (lambda (state input)
@@ -163,12 +146,16 @@
          :link-template-key :graph-link-template :graph-key :graph
          :node-indices-key :graph-node-indices)))
   (branch :graph
-    (adapt-from-json :action :index :target :width :height :path :face
-                             :title :image :dialog)
+    (adapt-from-json :action :index :target :width :height :path ;; :face
+                     :title :image :dialog)
     (adapt-from-alist :system :branch :face)
     (lambda (state input)
       (destructuring-bind (&key identity uimod action index target width height path face &allow-other-keys)
           input
+
+        (when (and state (not (of-state :- :gm-index)))
+          (of-state :- :gm-index 0)) ;; set graph node index to zero if not set
+
         (cond (identity (case identity
                           (:graph-overview :graph-breadth)
                           (:graph-node     :meta-code-form)))
@@ -177,8 +164,10 @@
                                                (list :add-node :add-link)))
               ((eq uimod :footer-controls) (dx (uic-series :map #'buttonize-calling :type (:ui :controls))
                                                (list :save)))
-              (t (funcall interactor (funcall state nil :medium) input)))))))
-
+              (t (funcall interactor (funcall state nil :medium)
+                          (lambda (key &optional value)
+                            (and state (funcall state :demo.sheet key value)))
+                          input)))))))
 
 (branch :play
   (adapt-from-json :index)

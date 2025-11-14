@@ -7,7 +7,7 @@
                           #:from-system-file #:at-path #:build-templater #:get-template-metadata
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)
   (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
-                          #:uic-anchor #:uic-frame #:uic-series #:uic-grid
+                          #:uic-anchor #:uic-page #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
                           #:uir-form #:uir-contact #:uir-contact-refreshing
@@ -43,14 +43,18 @@
 (branch :summary
   (lambda (state input)
     (declare (ignore state input))
-    (symbol-macrolet ((header-controls (grow :abcd name nil (list :uimod :header-controls)))
-                      (footer-controls (grow :abcd name nil (list :uimod :footer-controls))))
+    (symbol-macrolet ((header-controls (grow *system* name nil (list :uimod :header-controls)))
+                      (footer-controls (grow *system* name nil (list :uimod :footer-controls))))
       (list (aspect pane-series (:name :start)
               (let ((name :create)   (title :welcome))
-                (aspect dual-bank-pane :name name :title title
-                  :system *system* :controls (list header-controls footer-controls)))
+                (dx (uic-page)
+                    '(:div (:h2 "Welcome")
+                      (:p "This is a financial analysis chart tool.")))
+                ;; (aspect dual-bank-pane :name name :title title
+                ;;   :system *system* :controls (list header-controls footer-controls))
+                )
               (let ((name :nav)      (title :browse))
-                (aspect dual-bank-pane :name name :title title
+                (aspect dual-bank-pane :name name :title title :role (pro-form)
                   :system *system* :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :chart)
               (let ((name :chart)    (title :chart-candle))
@@ -64,7 +68,7 @@
   (adapt-from-json :path :session)
   (lambda (state input)
     (destructuring-bind (&key session &allow-other-keys) input
-      (let ((summary (grow :abcd :summary))
+      (let ((summary (grow *system* :summary))
             (branch-point (or (of-state :- :view-point) 0)))
         (amake (nth branch-point summary))))))
 
