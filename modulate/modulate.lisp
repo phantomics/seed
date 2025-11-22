@@ -467,15 +467,14 @@
   (setf (getf (uic-plan aspect) :js-entities)
         (merge-furnishings (getf (uic-plan aspect) :js-entities)
                            (list :mode (list :system (first  (uic-join aspect))
-                                             :branch (second (uic-join aspect))
-                                             :domain '(create))))))
+                                             :branch (second (uic-join aspect)))
+                                 :patch  '()))))
 
 (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
   (let* ((pairs (if (uic-join aspect)
                     (list :mode (list :system   (first  (uic-join aspect))
-                                      :branch   (second (uic-join aspect))
-                                      ;; :of-local '(manifest-locality)
-                                      :domain   '(create)))))
+                                      :branch   (second (uic-join aspect)))
+                          :patch   '())))
          (base (merge-furnishings base pairs)))
     (merge-furnishings
      base (case (uic-mode aspect)
@@ -527,7 +526,7 @@
             ;;                                           (fetch-contact
             ;;                                            $el mode obj
             ;;                                            (lambda (data)
-            ;;                                              (chain htmx (trigger (@ mode domain main)
+            ;;                                              (chain htmx (trigger (@ mode patch main)
             ;;                                                                   "reload")))))))))
             (:graph-breadth (list :methods (list :add-node
                                                  '(lambda (mode)
@@ -545,6 +544,12 @@
                                                       ;; (chain mode (of-local "trigger" "main" "reload"))
                                                       ))))))
             ))))
+
+;; basis
+;; suite
+;; patch
+;; above
+;; fetch
 
 (defun alist-supersede (new original)
   (loop :for n :in new :do (if (assoc (first n) original)
@@ -601,7 +606,7 @@
     (push :access (uic-type aspect))
     (push :body   (uic-type aspect))
 
-    ;; (print (list :sy system aspect (uic-name aspect)))
+    (print (list :sy system aspect (uic-name aspect)))
 
     ;; (unless system (setf portal.demo1::aabbcc aspect))
     
@@ -610,7 +615,7 @@
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             ;; (chain mode (of-local "register" "main" $el))
-                                            (setf (@ mode domain main) $el)
+                                            (setf (@ patch main) $el)
                                             (fetch-contact $el mode (create height (@ $el offset-height)
                                                                             width  (@ $el offset-width))
                                                            (lambda (data)))))
@@ -914,7 +919,8 @@
                                   (setf (@ obj action) "saveNode")
                                   (fetch-contact $el mode obj
                                                  (lambda (data)
-                                                   (chain htmx (trigger (@ mode domain main)
+                                                   (log :eee patch)
+                                                   (chain htmx (trigger (@ patch main)
                                                                         "reload")))))))))))
 
 (defclass ui-aspect ()
@@ -1434,7 +1440,8 @@
                     (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
                              (getf (getf (uic-plan aspect) :js-entities) :methods))
                          (list :x-data (ps* `(create methods ,(cons 'create (getf jsen :methods))
-                                                     mode     ,(cons 'create (getf jsen :mode)))))))
+                                                     mode    ,(cons 'create (getf jsen :mode))
+                                                     patch   ,(cons 'create (getf jsen :patch)))))))
                   (and (uic-type aspect)
                        (let ((class-stream (make-string-output-stream)))
                          (if (atom (uic-type aspect)) ;; print downcased symbols for class list
@@ -1646,8 +1653,7 @@
         (funcall of-local-state :graph-data
                  (format-graph-spec-to-edit (copy-tree (funcall of-local-state :orig-data))
                                             (funcall of-local-state :gnode-order)))
-        ;;(funcall of-local-state :gr-formatted (copy-graph-spec (of-local-state :graph-data)))
-        )
+        (funcall of-local-state :gr-formatted (copy-graph-spec (funcall of-local-state :graph-data))))
       
       (unless graph-base
         (setf graph-base  (from-system-file package file-name graph-key)
@@ -1681,9 +1687,12 @@
               (list :oob-reload associated-node-ids))
             (let ((network-changed)
                   (index (or (funcall of-local-state :gm-index) index))
-                  ;; (sub-index (or (funcall of-local-state :gs-index) sub-index))
-                  )
-              (print (list :eee (funcall of-local-state :gm-index)))
+                  (sub-index (or (funcall of-local-state :gs-index) sub-index))
+                  (nodes-order (funcall of-local-state :gnode-order))
+                  (graph-data (funcall of-local-state :graph-data))
+                  (formatted (funcall of-local-state :gr-formatted)))
+              ;; (print (list :ele (funcall of-local-state :gm-index)
+              ;;              (funcall of-local-state :gnode-order)))
               (when width
                 (setf el-width  width
                       el-height height))
@@ -1937,7 +1946,8 @@
 
                 (when network-changed ;; assign changes to the file when they happen
                   ;; (print (list :ch "CHANGED" graph-base))
-                  (setf (from-system-file package file-name graph-key) graph-base)
+                  (setf (from-system-file package file-name graph-key)
+                        (funcall of-local-state :graph-base))
                   ;; (instantiate-priority-macro-reader (asdf:load-system package)) ;; RESTORE THIS
                   )
                 
@@ -1991,6 +2001,8 @@
                                              (fetch-contact
                                               $el mode (create action "open" path path)
                                               (lambda (data)
+                                                (log :br ,branch-id
+                                                     (chain document (get-element-by-id ,branch-id)))
                                                 (chain htmx (trigger ,branch-id "reload")))))
                              expand-node   (lambda (path)
                                              (fetch-contact

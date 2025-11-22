@@ -116,10 +116,10 @@
                           :hx-vals (format nil "js:{...ejoin(~a,event)}"
                                            (seed.generate::psl (create system (lisp (string portal-sym))
                                                                        branch :view
-                                                                       of-local (lambda (a b c))
+                                                                       ;; of-local (lambda (a b c))
                                                                        )))
-                          :x-data (ps (create domain (create system (lisp (string portal-sym))
-                                                             branch "VIEW")
+                          :x-data (ps (create ;; domain (create system (lisp (string portal-sym))
+                                              ;;                branch "VIEW")
                                               mode   (create system (lisp (string portal-sym))
                                                              branch "VIEW"))))
                     (:script :src "./build/ext.js")
@@ -620,6 +620,7 @@
       (chain (fetch "/contact/" (create method "POST" body data-in))
              (then (lambda (response) (chain response (json))))
              (then (lambda (data)
+                     ;; (log :dt data)
                      (if (@ data oob-reload)
                          (chain data oob-reload
                                 (for-each (lambda (item)

@@ -6,7 +6,7 @@
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
                           #:from-system-file #:build-templater #:get-template-metadata
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)
-  (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
+  (:shadowing-import-from #:seed.modulate #:dx #:express #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
@@ -58,7 +58,7 @@
               (let ((name :graph)  (title :graph-overview))
                 (aspect dual-bank-pane :system *system* :name name :title title :role (pro-graph)
                   :controls (list header-controls footer-controls)))
-              (let ((name :graph) (title :graph-node))
+              (let ((name :graph-node) (title :graph-node))
                 (aspect dual-bank-pane :system *system* :name name :title title :role (pro-form)
                   :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :editor)
@@ -168,6 +168,32 @@
                           (lambda (key &optional value)
                             (and state (funcall state :demo.sheet key value)))
                           input)))))))
+
+(branch :graph-node
+  (adapt-from-json :title :image :dialog)
+  (adapt-from-alist :system :branch :face)
+  (lambda (state input)
+    (destructuring-bind (&key uimod title image dialog &allow-other-keys) input
+      (cond
+        ((eq uimod :header-controls) (dx (uic-series :map #'buttonize-calling :type (:ui :controls))
+                                         (list :save)))
+        ((eq uimod :footer-controls) (dx (uic-series :map #'buttonize-calling :type (:ui :controls))
+                                         (list :save)))
+        (state
+         (let* ((index     (or (of-state :- :gm-index) 0))
+                (sub-index (of-state :- :gs-index))
+                (formatted (of-state :- :gr-formatted))
+                (items (loop :for item
+                               :in (funcall (if sub-index #'identity #'rest)
+                                            ;; nodes have an (index . N) form to omit, links don't
+                                            (first (if sub-index (nth sub-index
+                                                                      (rest (nth index (rest formatted))))
+                                                       (nth index (rest formatted)))))
+                             :collect item)))
+           ;; (print (list :in index sub-index))
+           (render (funcall state nil :medium)
+                   (dx (uic-frame :type (:meta-code))
+                       (express `(fx ,items (:type :enum) (:fx :uic-series)))))))))))
 
 (branch :play
   (adapt-from-json :index)
