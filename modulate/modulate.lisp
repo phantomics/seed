@@ -253,6 +253,8 @@
 
 (defclass uir-form (ui-role) ())
 
+(defclass uir-patching (ui-role) ())
+
 (defclass uir-interact (ui-role)
   ((%name :accessor uiri-name
           :initform nil
@@ -407,9 +409,7 @@
 (defmacro aspect (slug &body args)
   (let ((params (if (not (listp (first args))) args (first args)))
         (members (if (listp (first args)) (rest args))))
-    ;; (print (list :par params))
     (when (getf params :role)
-      ;; (print (list :gg (getf params :role)))
       (setf (getf params :role)
             (cons 'list (role-cast (mapcar #'format-role-spec (getf params :role))))))
     ;; (print (list :ro (getf params :role)))
@@ -468,7 +468,14 @@
         (merge-furnishings (getf (uic-plan aspect) :js-entities)
                            (list :mode (list :system (first  (uic-join aspect))
                                              :branch (second (uic-join aspect)))
-                                 :patch  '()))))
+                                 ;; :patch  '()
+                                 ))))
+
+(defmethod xfurnish :before ((medium uim-web) (aspect ui-component) (role uir-patching))
+  ;; (print (list :eee aspect (uic-type aspect)))
+  (or (getf (getf (uic-plan aspect) :js-entities) :patch)
+      (setf (getf (uic-plan aspect) :js-entities)
+            (append (list :patch nil) (getf (uic-plan aspect) :js-entities)))))
 
 (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
   (let* ((pairs (if (uic-join aspect)
@@ -476,6 +483,7 @@
                                       :branch   (second (uic-join aspect)))
                           :patch   '())))
          (base (merge-furnishings base pairs)))
+    (print (list :iii (uic-role aspect)))
     (merge-furnishings
      base (case (uic-mode aspect)
             ;; (:chart (list :mode    (list :interaction "select"
@@ -653,6 +661,7 @@
     ;;   (push aspect portal.demo1::*aabb*))
 
     ;; (print (list :ro (uic-role aspect)))
+    (print (list :ty types (getf (uic-plan aspect) :js-entities)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -969,9 +978,10 @@
   (mapcar #'amake item))
 
 (defmethod amake ((item uia-based-pane-series))
-  (dx (uic-series :name (uia-name item)
-                  :layout (:horizontal :even) :type (:workspace :even))
-      (amake (uia-base item))))
+  (let ((rr (uia-role item)))
+    (dx (uic-series :name (uia-name item) :role rr
+                    :layout (:horizontal :even) :type (:workspace :even :aabbcc))
+        (amake (uia-base item)))))
 
 (defmethod amake ((item uia-primal-dual-bank-pane))
   (with-slots (%name %title %role %system %controls) item
@@ -1433,15 +1443,30 @@
     ;; (if pairs (list :x-data (ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
 
+    (print (list :ttt (uic-type aspect) (uic-role aspect)
+                 (getf (uic-plan aspect) :js-entities)))
+    
     (cons (first main)
           (append (and (uic-path aspect)
                        (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
-                  (let ((jsen (getf (uic-plan aspect) :js-entities)))
-                    (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
-                             (getf (getf (uic-plan aspect) :js-entities) :methods))
-                         (list :x-data (ps* `(create methods ,(cons 'create (getf jsen :methods))
-                                                     mode    ,(cons 'create (getf jsen :mode))
-                                                     patch   ,(cons 'create (getf jsen :patch)))))))
+                  ;; (let ((jsen (getf (uic-plan aspect) :js-entities)))
+                  ;;   (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)
+                  ;;            (getf (getf (uic-plan aspect) :js-entities) :methods))
+                  ;;        (list :x-data (ps* `(create methods ,(cons 'create (getf jsen :methods))
+                  ;;                                    mode    ,(cons 'create (getf jsen :mode))
+                  ;;                                    patch   ,(cons 'create (getf jsen :patch)))))))
+                  (destructuring-bind (&key mode methods patch) (getf (uic-plan aspect) :js-entities)
+                    (let ((patch-empty))
+                      (unless (or patch (not (member :patch (getf (uic-plan aspect) :js-entities))))
+                        (setf patch-empty (list 'patch (list 'create))))
+                      (print (list :mmo mode methods patch patch-empty))
+                      (and (or mode methods patch patch-empty)
+                           (print (list :x-data (ps* (cons 'create
+                                                           (append (and methods (list 'methods (cons 'create methods)))
+                                                                   (and mode    (list 'mode    (cons 'create mode)))
+                                                                   (or (and patch (list 'patch
+                                                                                        (cons 'create patch)))
+                                                                       patch-empty)))))))))
                   (and (uic-type aspect)
                        (let ((class-stream (make-string-output-stream)))
                          (if (atom (uic-type aspect)) ;; print downcased symbols for class list

@@ -9,8 +9,9 @@
   (:shadowing-import-from #:seed.modulate #:dx #:express #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
-                          #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
-                          #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
+                          #:role-cast #:uir-call #:uir-call-c #:uir-call-b
+                          #:uir-patching #:uir-call-form  #:uir-actuatable
+                          #:uir-sortable #:uir-reducable #:uir-toggle
 
                           #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
 
@@ -47,21 +48,21 @@
     (declare (ignore state input))
     (symbol-macrolet ((header-controls (grow :demo.sheet name nil (list :uimod :header-controls)))
                       (footer-controls (grow :demo.sheet name nil (list :uimod :footer-controls))))
-      (list (aspect pane-series (:name :sheet)
+      (list (aspect pane-series (:name :sheet :role (patching))
               (let ((name :main)  (title :code-view))
                 (aspect dual-bank-pane :system *system* :name name :title title
                   :controls (list header-controls footer-controls)))
               (let ((name :cells) (title :cell-view))
                 (aspect dual-bank-pane :system *system* :name name :title title
                   :controls (list header-controls footer-controls))))
-            (aspect pane-series (:name :scenario)
+            (aspect pane-series (:name :scenario :role (patching))
               (let ((name :graph)  (title :graph-overview))
                 (aspect dual-bank-pane :system *system* :name name :title title :role (pro-graph)
                   :controls (list header-controls footer-controls)))
               (let ((name :graph-node) (title :graph-node))
                 (aspect dual-bank-pane :system *system* :name name :title title :role (pro-form)
                   :controls (list header-controls footer-controls))))
-            (aspect pane-series (:name :editor)
+            (aspect pane-series (:name :editor :role (patching))
               (let ((name :code)  (title :edit-view))
                 (aspect dual-bank-pane :system *system* :name name :title title
                   :controls (list header-controls footer-controls)))
