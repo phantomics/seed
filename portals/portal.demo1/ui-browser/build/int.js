@@ -14,12 +14,6 @@ function fetchContact(element, context, input, event) {
     return fetch('/contact/', { method : 'POST', body : dataIn }).then(function (response) {
         return response.json();
     }).then(function (data) {
-        if (data.oobReload) {
-            data.oobReload.forEach(function (item) {
-                console.log('it', item);
-                return htmx.trigger(seedElements[item], 'reload');
-            });
-        };
         return data;
     }).then('function' === typeof(event) ? event : ('undefined' !== typeof(event) ? function (data) {
         return htmx.trigger(element, event.next);

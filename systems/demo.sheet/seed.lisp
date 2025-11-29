@@ -82,6 +82,7 @@
 
 (branch :main
   (adapt-from-json :text)
+  (adapt-from-alist :system :branch :face)
   (lambda (state input)
     (destructuring-bind (&key identity uimod text &allow-other-keys) input
       (cond (identity)
@@ -108,6 +109,7 @@
   
 (branch :cells
   (adapt-from-json :cells)
+  (adapt-from-alist :system :branch :face)
   (lambda (state input)
     (destructuring-bind (&key identity uimod cells &allow-other-keys) input
       (cond (identity)
@@ -143,7 +145,7 @@
 (let ((interactor
         (spec-graph-interface
          :package :demo.sheet :file-name "sheet.lisp" :holder-id "graphOverview"
-         :associated-node-ids #("graphNode") :node-template-key :graph-node-template
+         :associated-node-ids '("graphNode") :node-template-key :graph-node-template
          :link-template-key :graph-link-template :graph-key :graph
          :node-indices-key :graph-node-indices)))
   (branch :graph

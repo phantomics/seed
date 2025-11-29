@@ -467,23 +467,13 @@
   (setf (getf (uic-plan aspect) :js-entities)
         (merge-furnishings (getf (uic-plan aspect) :js-entities)
                            (list :mode (list :system (first  (uic-join aspect))
-                                             :branch (second (uic-join aspect)))
-                                 ;; :patch  '()
-                                 ))))
-
-(defmethod xfurnish :before ((medium uim-web) (aspect ui-component) (role uir-patching))
-  ;; (print (list :eee aspect (uic-type aspect)))
-  (or (getf (getf (uic-plan aspect) :js-entities) :patch)
-      (setf (getf (uic-plan aspect) :js-entities)
-            (append (list :patch nil) (getf (uic-plan aspect) :js-entities)))))
+                                             :branch (second (uic-join aspect)))))))
 
 (defmethod furnish ((medium uim-web) (aspect ui-component) &optional base)
   (let* ((pairs (if (uic-join aspect)
                     (list :mode (list :system   (first  (uic-join aspect))
-                                      :branch   (second (uic-join aspect)))
-                          :patch   '())))
+                                      :branch   (second (uic-join aspect))))))
          (base (merge-furnishings base pairs)))
-    (print (list :iii (uic-role aspect)))
     (merge-furnishings
      base (case (uic-mode aspect)
             ;; (:chart (list :mode    (list :interaction "select"
@@ -623,7 +613,8 @@
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
                          :x-init (ps (progn (setf (getprop (@ window seed-elements) (lisp face)) $el)
                                             ;; (chain mode (of-local "register" "main" $el))
-                                            (setf (@ patch main) $el)
+                                            (setf (getprop patch (lisp face)) $el)
+                                            (log (list :pat patch))
                                             (fetch-contact $el mode (create height (@ $el offset-height)
                                                                             width  (@ $el offset-width))
                                                            (lambda (data)))))
@@ -1443,8 +1434,8 @@
     ;; (if pairs (list :x-data (ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
 
-    (print (list :ttt (uic-type aspect) (uic-role aspect)
-                 (getf (uic-plan aspect) :js-entities)))
+    ;; (print (list :ttt (uic-type aspect) (uic-role aspect)
+    ;;              (getf (uic-plan aspect) :js-entities)))
     
     (cons (first main)
           (append (and (uic-path aspect)
@@ -1455,18 +1446,14 @@
                   ;;        (list :x-data (ps* `(create methods ,(cons 'create (getf jsen :methods))
                   ;;                                    mode    ,(cons 'create (getf jsen :mode))
                   ;;                                    patch   ,(cons 'create (getf jsen :patch)))))))
-                  (destructuring-bind (&key mode methods patch) (getf (uic-plan aspect) :js-entities)
-                    (let ((patch-empty))
-                      (unless (or patch (not (member :patch (getf (uic-plan aspect) :js-entities))))
-                        (setf patch-empty (list 'patch (list 'create))))
-                      (print (list :mmo mode methods patch patch-empty))
-                      (and (or mode methods patch patch-empty)
-                           (print (list :x-data (ps* (cons 'create
-                                                           (append (and methods (list 'methods (cons 'create methods)))
-                                                                   (and mode    (list 'mode    (cons 'create mode)))
-                                                                   (or (and patch (list 'patch
-                                                                                        (cons 'create patch)))
-                                                                       patch-empty)))))))))
+                  (destructuring-bind (&key mode methods) (getf (uic-plan aspect) :js-entities)
+                    (let ((mode-form    (and mode    (list 'mode    (cons 'create mode))))
+                          (methods-form (and methods (list 'methods (cons 'create methods))))
+                          (patch-form   (and (has-role aspect 'uir-patching) '(patch (create)))))
+                      (print (list :mmo mode methods))
+                      (and (or mode-form methods-form patch-form)
+                           (print (list :x-data
+                                        (ps* (cons 'create (append mode-form methods-form patch-form))))))))
                   (and (uic-type aspect)
                        (let ((class-stream (make-string-output-stream)))
                          (if (atom (uic-type aspect)) ;; print downcased symbols for class list
@@ -1708,7 +1695,7 @@
              
               ;; (print (list :nnn index))
               ;; (close path-str)
-              (print (list :eee (funcall of-local-state :gm-index)))
+              (print (list :eee associated-node-ids (funcall of-local-state :gm-index)))
               (list :oob-reload associated-node-ids))
             (let ((network-changed)
                   (index (or (funcall of-local-state :gm-index) index))
@@ -1979,42 +1966,44 @@
                 ;; (print (list :af (assoc :face input :test #'eq)))
                 ;; (print (list :ew el-width formatted))
                 ;; the output-stream is created in the seed package - best elsewhere?
-                (if (and face (string= "graphNode" face))
-                    (render medium
-                            (dx (uic-frame :type (:meta-code))
-                                (express
-                                 (funcall (lambda (items)
-                                            `(fx ,items (:type :enum) (:fx :uic-series)))
-                                          (loop :for item :in (funcall
-                                                               ;; nodes have an (index . N)
-                                                               ;; form to omit, links don't
-                                                               (if sub-index #'identity #'rest)
-                                                               (first (if sub-index
-                                                                          (nth sub-index
-                                                                               (rest (nth index
-                                                                                          (rest formatted))))
-                                                                          (nth index (rest formatted)))))
-                                                :collect item)))))
-                    (if (or network-changed system)
-                        (progn (setf *giface-output-stream* (make-string-output-stream))
-                               ;; (print (list :nc input))
-                               ;; (print (list :form formatted))
-                               (eval `(cl-who:with-html-output (*giface-output-stream*)
-                                        ,(svrender-graph
-                                          (rest formatted)
-                                          :width el-width :height el-height
-                                          :point (list index sub-index)
-                                          :id-string holder-id :branch-name graph-key)))
-                               (let ((output (get-output-stream-string *giface-output-stream*)))
-                                 ;; (print (list :out output))
-                                 ;; (close output-stream)
-                                 output))
-                        (list :oob-reload associated-node-ids)))))))))
+                ;; (if (and face (string= "graphNode" face))
+                ;;     (render medium
+                ;;             (dx (uic-frame :type (:meta-code))
+                ;;                 (express
+                ;;                  (funcall (lambda (items)
+                ;;                             `(fx ,items (:type :enum) (:fx :uic-series)))
+                ;;                           (loop :for item :in (funcall
+                ;;                                                ;; nodes have an (index . N)
+                ;;                                                ;; form to omit, links don't
+                ;;                                                (if sub-index #'identity #'rest)
+                ;;                                                (first (if sub-index
+                ;;                                                           (nth sub-index
+                ;;                                                                (rest (nth index
+                ;;                                                                           (rest formatted))))
+                ;;                                                           (nth index (rest formatted)))))
+                ;;                                 :collect item)))))
+              (if (or network-changed system)
+                  (progn (setf *giface-output-stream* (make-string-output-stream))
+                         ;; (print (list :nc input))
+                         ;; (print (list :form formatted))
+                         (eval `(cl-who:with-html-output (*giface-output-stream*)
+                                  ,(svrender-graph
+                                    (rest formatted)
+                                    :width el-width :height el-height
+                                    :point (list index sub-index)
+                                    :associated-node-ids associated-node-ids
+                                    :id-string holder-id :branch-name graph-key)))
+                         (let ((output (get-output-stream-string *giface-output-stream*)))
+                           ;; (print (list :out output))
+                           ;; (close output-stream)
+                           output))
+                  (list :oob-reload associated-node-ids))))))))
 
-(defun svrender-graph (gmodel &key x-offset y-offset point branch-name id-string
+(defun svrender-graph (gmodel &key x-offset y-offset point branch-name id-string associated-node-ids
                                 (path-string "") (height 400) (width 400))
   (multiple-value-bind (nodes-markup y-offset)
-      (svrender-layer gmodel :x-offset x-offset :y-offset y-offset :point point
+      (svrender-layer gmodel :x-offset x-offset :y-offset y-offset :point point :branch-name branch-name
+                             :associated-node-ids associated-node-ids
                              :path-string path-string :height height :width width)
     (let ((branch-string (string branch-name))
           (branch-id (format nil "#branch-~a" id-string)))
@@ -2022,13 +2011,20 @@
       `(:svg
         :class "svg-visualizer" :width ,width :height ,(max height y-offset)
         :x-init (psl (enable-drag $el))
-        :x-data (psl (create open-node     (lambda (path)
+        :x-data (psl (create open-node     (lambda (path elements)
                                              (fetch-contact
                                               $el mode (create action "open" path path)
                                               (lambda (data)
-                                                (log :br ,branch-id
-                                                     (chain document (get-element-by-id ,branch-id)))
-                                                (chain htmx (trigger ,branch-id "reload")))))
+                                                ;; (log :br ,branch-id
+                                                ;;      (chain document (get-element-by-id ,branch-id)))
+                                                ;; (chain htmx (trigger ,branch-id "reload"))
+                                                (log :elel elements)
+                                                (when elements
+                                                  (chain elements
+                                                         (for-each (lambda (item)
+                                                                     (chain htmx (trigger item "reload"))))))
+                                                
+                                                )))
                              expand-node   (lambda (path)
                                              (fetch-contact
                                               $el mode (create action "expand" path path)
@@ -2156,16 +2152,19 @@
 (let ((x-start 10) (y-start 30) (x-increment 40) (y-increment 40)
       (expander-code   (psl (expand-node   (chain $el (get-attribute "path")))))
       (contracter-code (psl (contract-node (chain $el (get-attribute "path")))))
-      (opener-code (psl (open-node (chain $el (get-attribute "index")))))
       (connector-code (psl (connect-node (chain $el (get-attribute "index"))))))
   (flet ((meta-strip (form)
            (loop :for item :in form :collect (if (not (string= "FX" (string (first item))))
                                                  item (second item)))))
     (defun svrender-layer (gmodel &key x-offset y-offset parent point (path-string "")
-                                    (height 400) (width 400) (depth 1)
-                                    (depth-store (cons :depth 0)))
+                                    branch-name associated-node-ids (height 400) (width 400)
+                                    (depth 1) (depth-store (cons :depth 0)))
       ;; (print (list :mm gmodel x-offset y-offset parent point path-string))
-      (let ((y-offset (or y-offset y-start)) (x-offset (or x-offset x-start))
+      (let ((opener-code (psl* (print `(open-node (chain $el (get-attribute "index"))
+                                                  (list ,@(mapcar (lambda (s) (list 'getprop 'patch s))
+                                                                  (cons branch-name
+                                                                        associated-node-ids)))))))
+            (y-offset (or y-offset y-start)) (x-offset (or x-offset x-start))
             (main-radius 16) (output) (link-specs) (l2-specs) (interval (/ (- width 350))))
         (setf (rest depth-store)
               (max depth (rest depth-store)))
