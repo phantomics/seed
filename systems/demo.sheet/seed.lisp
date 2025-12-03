@@ -183,17 +183,32 @@
         ((eq uimod :footer-controls) (dx (uic-series :map #'buttonize-calling :type (:ui :controls))
                                          (list :save)))
         (state
+         ;; (print (list :ell))
          (let* ((index     (or (of-state :- :gm-index) 0))
                 (sub-index (of-state :- :gs-index))
                 (formatted (of-state :- :gr-formatted))
-                (items (loop :for item
-                               :in (funcall (if sub-index #'identity #'rest)
-                                            ;; nodes have an (index . N) form to omit, links don't
-                                            (first (if sub-index (nth sub-index
-                                                                      (rest (nth index (rest formatted))))
-                                                       (nth index (rest formatted)))))
-                             :collect item)))
+                ;; (eee (print (list :aaa sub-index)))
+                ;; (items (loop :for item :in (let ((point (if sub-index
+                ;;                                             (nth sub-index
+                ;;                                                  (rest (nth index (rest formatted))))
+                ;;                                             (nth index (rest formatted)))))
+                ;;                              ;; (print (list :po point index sub-index))
+                ;;                              (funcall (if sub-index #'identity #'rest)
+                ;;                                       ;; nodes have an (index . N) form to omit, links don't
+                ;;                                       (if (not (listp point))
+                ;;                                           point (if sub-index (first point) point))))
+                ;;              :collect item))
+                (items (loop :for item :in (funcall (if sub-index #'identity #'rest)
+                                                    ;; nodes have an (index . N) form to omit, links don't
+                                                    (first (if sub-index (print (nth sub-index
+                                                                              (rest (nth index
+                                                                                         (rest formatted)))))
+                                                               (nth index (rest formatted)))))
+                             :collect item))
+
+                )
            ;; (print (list :in index sub-index))
+           ;; (print (list :xx))
            (render (funcall state nil :medium)
                    (dx (uic-frame :type (:meta-code))
                        (express `(fx ,items (:type :enum) (:fx :uic-series)))))))))))

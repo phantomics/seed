@@ -652,7 +652,7 @@
     ;;   (push aspect portal.demo1::*aabb*))
 
     ;; (print (list :ro (uic-role aspect)))
-    (print (list :ty types (getf (uic-plan aspect) :js-entities)))
+    ;; (print (list :ty types (getf (uic-plan aspect) :js-entities)))
     
     (destructuring-bind (&optional ltype &rest lprops) (uic-series-layout aspect)
 
@@ -883,7 +883,6 @@
                   (if (eq :groups ltype)
                       (let ((envelopes) (item-index 0)
                             (rows (getf lprops :rows)))
-
                         (dolist (item rows)
                           (let ((in-header (and header (zerop item-index) (minusp item))))
                             (push nil envelopes)
@@ -1434,9 +1433,6 @@
     ;; (if pairs (list :x-data (ps* `(create mode (create ,@pairs)
     ;;                                                   of-local (manifest-locality)))))
 
-    ;; (print (list :ttt (uic-type aspect) (uic-role aspect)
-    ;;              (getf (uic-plan aspect) :js-entities)))
-    
     (cons (first main)
           (append (and (uic-path aspect)
                        (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
@@ -1450,10 +1446,9 @@
                     (let ((mode-form    (and mode    (list 'mode    (cons 'create mode))))
                           (methods-form (and methods (list 'methods (cons 'create methods))))
                           (patch-form   (and (has-role aspect 'uir-patching) '(patch (create)))))
-                      (print (list :mmo mode methods))
                       (and (or mode-form methods-form patch-form)
-                           (print (list :x-data
-                                        (ps* (cons 'create (append mode-form methods-form patch-form))))))))
+                           (list :x-data
+                                 (ps* (cons 'create (append mode-form methods-form patch-form)))))))
                   (and (uic-type aspect)
                        (let ((class-stream (make-string-output-stream)))
                          (if (atom (uic-type aspect)) ;; print downcased symbols for class list
@@ -1798,161 +1793,161 @@
 
                 ;; shifting a node is the most complicated operation,
                 ;; requiring that the graph be rebuilt
-                ;; (when (and action (string= "shiftNode" action))
-                ;;   ;; add newest node index to end of indices
-                ;;   (setf network-changed nil)
-                ;;   (let* ((index-str (make-string-input-stream "")) ;; index))
-                ;;          (pos-str (make-string-input-stream target))
-                ;;          (indices (loop :for c := (read index-str nil) :while c :collect c))
-                ;;          (posx (loop :for c := (read pos-str nil) :while c :collect c))
-                ;;          (index (or (second indices) (first indices)))
-                ;;          (node-index (if (second indices) (first indices) nil))
-                ;;          (position (or (second posx) (first posx)))
-                ;;          (pos-parent (if (second posx) (first posx) nil)))
+                (when (and action (string= "shiftNode" action))
+                  ;; add newest node index to end of indices
+                  (setf network-changed nil)
+                  (let* ((index-str (make-string-input-stream "")) ;; index))
+                         (pos-str (make-string-input-stream target))
+                         (indices (loop :for c := (read index-str nil) :while c :collect c))
+                         (posx (loop :for c := (read pos-str nil) :while c :collect c))
+                         (index (or (second indices) (first indices)))
+                         (node-index (if (second indices) (first indices) nil))
+                         (position (or (second posx) (first posx)))
+                         (pos-parent (if (second posx) (first posx) nil)))
                     
-                ;;     (symbol-macrolet ((formatted2 (rest formatted))
-                ;;                       (graph-data2 (rest graph-data)))
+                    (symbol-macrolet ((formatted2 (rest formatted))
+                                      (graph-data2 (rest graph-data)))
 
-                ;;       (if node-index ;; links are being sorted
-                ;;           (when (and pos-parent (= node-index pos-parent))
-                ;;             (let ((orig-link (nth index (rest (nth node-index graph-data2))))
-                ;;                   (orig-flink (nth index (rest (nth node-index (rest orig-data))))))
+                      (if node-index ;; links are being sorted
+                          (when (and pos-parent (= node-index pos-parent))
+                            (let ((orig-link (nth index (rest (nth node-index graph-data2))))
+                                  (orig-flink (nth index (rest (nth node-index (rest orig-data))))))
 
-                ;;               (if (zerop index) (setf (rest (nth node-index (rest orig-data)))
-                ;;                                       (cddr (nth node-index (rest orig-data))))
-                ;;                   (rplacd (nthcdr (1- index)
-                ;;                                   (rest (nth node-index (rest orig-data))))
-                ;;                           (rest (nthcdr index (rest (nth node-index
-                ;;                                                          (rest orig-data)))))))
+                              (if (zerop index) (setf (rest (nth node-index (rest orig-data)))
+                                                      (cddr (nth node-index (rest orig-data))))
+                                  (rplacd (nthcdr (1- index)
+                                                  (rest (nth node-index (rest orig-data))))
+                                          (rest (nthcdr index (rest (nth node-index
+                                                                         (rest orig-data)))))))
 
-                ;;               (if (zerop position) (setf (rest (nth node-index (rest orig-data)))
-                ;;                                          (cons orig-flink
-                ;;                                                (rest (nth node-index
-                ;;                                                           (rest orig-data)))))
-                ;;                   (rplacd (nthcdr (1- position) (rest (nth node-index (rest orig-data))))
-                ;;                           (cons orig-flink
-                ;;                                 (nthcdr position
-                ;;                                         (rest (nth node-index (rest orig-data)))))))
+                              (if (zerop position) (setf (rest (nth node-index (rest orig-data)))
+                                                         (cons orig-flink
+                                                               (rest (nth node-index
+                                                                          (rest orig-data)))))
+                                  (rplacd (nthcdr (1- position) (rest (nth node-index (rest orig-data))))
+                                          (cons orig-flink
+                                                (nthcdr position
+                                                        (rest (nth node-index (rest orig-data)))))))
 
-                ;;               ;; (print (list :tt orig-data))
+                              ;; (print (list :tt orig-data))
                               
-                ;;               (if (zerop index) (setf (cddr (nth node-index graph-data2))
-                ;;                                       (cdddr (nth node-index graph-data2)))
-                ;;                   (rplacd (nthcdr (1- index)
-                ;;                                   (cddr (nth node-index graph-data2)))
-                ;;                           (rest (nthcdr index (cddr (nth node-index
-                ;;                                                          graph-data2))))))
+                              (if (zerop index) (setf (cddr (nth node-index graph-data2))
+                                                      (cdddr (nth node-index graph-data2)))
+                                  (rplacd (nthcdr (1- index)
+                                                  (cddr (nth node-index graph-data2)))
+                                          (rest (nthcdr index (cddr (nth node-index
+                                                                         graph-data2))))))
                               
-                ;;               (if (zerop position) (setf (cddr (nth node-index graph-data2))
-                ;;                                          (cons orig-link
-                ;;                                                (cddr (nth node-index
-                ;;                                                           graph-data2))))
-                ;;                   (rplacd (nthcdr (1- position)
-                ;;                                   (cddr (nth node-index graph-data2)))
-                ;;                           (cons orig-link
-                ;;                                 (rest (nthcdr position
-                ;;                                               (cddr (nth node-index
-                ;;                                                          graph-data2)))))))
+                              (if (zerop position) (setf (cddr (nth node-index graph-data2))
+                                                         (cons orig-link
+                                                               (cddr (nth node-index
+                                                                          graph-data2))))
+                                  (rplacd (nthcdr (1- position)
+                                                  (cddr (nth node-index graph-data2)))
+                                          (cons orig-link
+                                                (rest (nthcdr position
+                                                              (cddr (nth node-index
+                                                                         graph-data2)))))))
                               
-                ;;               ;; (if (zerop position) (setf graph-data2 (cons orig-link graph-data2))
-                ;;               ;;     (rplacd (nthcdr (1- position) graph-data2)
-                ;;               ;;             (cons orig-link (nthcdr position graph-data2))))
+                              ;; (if (zerop position) (setf graph-data2 (cons orig-link graph-data2))
+                              ;;     (rplacd (nthcdr (1- position) graph-data2)
+                              ;;             (cons orig-link (nthcdr position graph-data2))))
 
-                ;;               ;; (print (list :xyz orig-data graph-data formatted2))
+                              ;; (print (list :xyz orig-data graph-data formatted2))
                               
-                ;;               (labels ((lsort (form ix subix)
-                ;;                          ;; (print (list :fr form))
-                ;;                          (when (and (eq :index (caaar form))
-                ;;                                     (= ix (cdaar form)))
-                ;;                            (let ((olink (nth subix (rest form))))
-                ;;                              (if (zerop index) (setf (rest form) (cddr form))
-                ;;                                  (rplacd (nthcdr (1- subix) (rest form))
-                ;;                                          (rest (nthcdr subix (rest form)))))
-                ;;                              (if (zerop position)
-                ;;                                  (setf (rest form)
-                ;;                                        (cons olink (rest form)))
-                ;;                                  (rplacd (nthcdr (1- position) (rest form))
-                ;;                                          (cons olink (nthcdr position
-                ;;                                                              (rest form)))))))
-                ;;                          (loop :for item :in (rest form)
-                ;;                                :when (and (listp item) (second item)
-                ;;                                           (listp (second item)))
-                ;;                                  :do (lsort (rest item) ix subix))))
-                ;;                 (loop :for item :in (rest formatted)
-                ;;                       :do (lsort item node-index index)))))
-                ;;           ;; nodes are being sorted
-                ;;           (let ((original   (nth index (second indices-form)))
-                ;;                 (orig-node  (nth index formatted2))
-                ;;                 (orig-gnode (nth index graph-data2)))
+                              (labels ((lsort (form ix subix)
+                                         ;; (print (list :fr form))
+                                         (when (and (eq :index (caaar form))
+                                                    (= ix (cdaar form)))
+                                           (let ((olink (nth subix (rest form))))
+                                             (if (zerop index) (setf (rest form) (cddr form))
+                                                 (rplacd (nthcdr (1- subix) (rest form))
+                                                         (rest (nthcdr subix (rest form)))))
+                                             (if (zerop position)
+                                                 (setf (rest form)
+                                                       (cons olink (rest form)))
+                                                 (rplacd (nthcdr (1- position) (rest form))
+                                                         (cons olink (nthcdr position
+                                                                             (rest form)))))))
+                                         (loop :for item :in (rest form)
+                                               :when (and (listp item) (second item)
+                                                          (listp (second item)))
+                                                 :do (lsort (rest item) ix subix))))
+                                (loop :for item :in (rest formatted)
+                                      :do (lsort item node-index index)))))
+                          ;; nodes are being sorted
+                          (let ((original   (nth index (second indices-form)))
+                                (orig-node  (nth index formatted2))
+                                (orig-gnode (nth index graph-data2)))
 
-                ;;             (if (zerop index) (setf formatted2 (rest formatted2))
-                ;;                 (rplacd (nthcdr (1- index) formatted2)
-                ;;                         (rest (nthcdr index formatted2))))
+                            (if (zerop index) (setf formatted2 (rest formatted2))
+                                (rplacd (nthcdr (1- index) formatted2)
+                                        (rest (nthcdr index formatted2))))
 
-                ;;             (if (zerop position) (setf formatted2 (cons orig-node formatted2))
-                ;;                 (rplacd (nthcdr (1- position) formatted2)
-                ;;                         (cons orig-node (nthcdr position formatted2))))
+                            (if (zerop position) (setf formatted2 (cons orig-node formatted2))
+                                (rplacd (nthcdr (1- position) formatted2)
+                                        (cons orig-node (nthcdr position formatted2))))
 
-                ;;             (if (zerop index) (setf graph-data2 (rest graph-data2))
-                ;;                 (rplacd (nthcdr (1- index) graph-data2)
-                ;;                         (rest (nthcdr index graph-data2))))
+                            (if (zerop index) (setf graph-data2 (rest graph-data2))
+                                (rplacd (nthcdr (1- index) graph-data2)
+                                        (rest (nthcdr index graph-data2))))
 
-                ;;             (if (zerop position) (setf graph-data2 (cons orig-node graph-data2))
-                ;;                 (rplacd (nthcdr (1- position) graph-data2)
-                ;;                         (cons orig-node (nthcdr position graph-data2))))
+                            (if (zerop position) (setf graph-data2 (cons orig-node graph-data2))
+                                (rplacd (nthcdr (1- position) graph-data2)
+                                        (cons orig-node (nthcdr position graph-data2))))
 
-                ;;             (if (zerop index) (setf graph-data2 (rest orig-data))
-                ;;                 (rplacd (nthcdr (1- index) orig-data)
-                ;;                         (rest (nthcdr index orig-data))))
+                            (if (zerop index) (setf graph-data2 (rest orig-data))
+                                (rplacd (nthcdr (1- index) orig-data)
+                                        (rest (nthcdr index orig-data))))
 
-                ;;             (if (zerop position) (setf graph-data2 (cons orig-gnode orig-data))
-                ;;                 (rplacd (nthcdr (1- position) orig-data)
-                ;;                         (cons orig-gnode (nthcdr position orig-data))))
+                            (if (zerop position) (setf graph-data2 (cons orig-gnode orig-data))
+                                (rplacd (nthcdr (1- position) orig-data)
+                                        (cons orig-gnode (nthcdr position orig-data))))
 
-                ;;             (if (zerop index) (setf (second indices-form) (cdadr indices-form))
-                ;;                 (rplacd (nthcdr (1- index) (second indices-form))
-                ;;                         (rest (nthcdr index (second indices-form)))))
+                            (if (zerop index) (setf (second indices-form) (cdadr indices-form))
+                                (rplacd (nthcdr (1- index) (second indices-form))
+                                        (rest (nthcdr index (second indices-form)))))
 
-                ;;             (if (zerop position)
-                ;;                 (setf (second indices-form) (cons original (second indices-form)))
-                ;;                 (rplacd (nthcdr (1- position) (second indices-form))
-                ;;                         (cons original (nthcdr position
-                ;;                                                (second indices-form)))))
+                            (if (zerop position)
+                                (setf (second indices-form) (cons original (second indices-form)))
+                                (rplacd (nthcdr (1- position) (second indices-form))
+                                        (cons original (nthcdr position
+                                                               (second indices-form)))))
                             
-                ;;             (setf nodes-order (let* ((indices (second indices-form)))
-                ;;                                 (make-array (length indices)
-                ;;                                             :initial-contents indices))
-                ;;                   (from-system-file package file-name node-indices-key)
-                ;;                   indices-form))))))
+                            (setf nodes-order (let* ((indices (second indices-form)))
+                                                (make-array (length indices)
+                                                            :initial-contents indices))
+                                  (from-system-file package file-name node-indices-key)
+                                  indices-form))))))
 
-                ;; (when (and action (string= "connect" action))
-                ;;   (let ((this-index (read-from-string index)))
-                ;;     ;; (print (list :ti this-index orig-data graph-data))
-                ;;     (labels ((relink (form new ix subix)
-                ;;                    (if (and (eq :index (caaar form))
-                ;;                             (= ix (cdaar form)))
-                ;;                        (setf (second (nth (+ subix (if (eq :closed (second form)) 1 0))
-                ;;                                           (rest form)))
-                ;;                              new)
-                ;;                        (loop :for item :in (rest form)
-                ;;                              :when (and (listp item) (second item)
-                ;;                                         (listp (second item)))
-                ;;                                :do (relink (second item) new ix subix)))))
+                (when (and action (string= "connect" action))
+                  (let ((this-index (or index 0))) ;; (read-from-string index)))
+                    ;; (print (list :ti this-index orig-data graph-data))
+                    (labels ((relink (form new ix subix)
+                                   (if (and (eq :index (caaar form))
+                                            (= ix (cdaar form)))
+                                       (setf (second (nth (+ subix (if (eq :closed (second form)) 1 0))
+                                                          (rest form)))
+                                             new)
+                                       (loop :for item :in (rest form)
+                                             :when (and (listp item) (second item)
+                                                        (listp (second item)))
+                                               :do (relink (second item) new ix subix)))))
 
-                ;;           ;; (print (list :oo (second (nth sub-index
-                ;;           ;;                               (rest (nth index (rest orig-data)))))
-                ;;           ;;              sub-index
-                ;;           ;;              (nth sub-index (rest (nth index (rest graph-data))))))
+                          ;; (print (list :oo (second (nth sub-index
+                          ;;                               (rest (nth index (rest orig-data)))))
+                          ;;              sub-index
+                          ;;              (nth sub-index (rest (nth index (rest graph-data))))))
 
-                ;;           (rplacd (nth sub-index (rest (nth index (rest orig-data))))
-                ;;                   (list (aref nodes-order this-index)))
-                ;;           (rplacd (nth (1+ sub-index)
-                ;;                        (rest (nth index (rest graph-data))))
-                ;;                   (list (aref nodes-order this-index)))
+                          (rplacd (nth sub-index (rest (nth index (rest orig-data))))
+                                  (list (aref nodes-order this-index)))
+                          (rplacd (nth (1+ sub-index)
+                                       (rest (nth index (rest graph-data))))
+                                  (list (aref nodes-order this-index)))
                           
-                ;;           (loop :for item :in (rest formatted)
-                ;;                 :do (relink item (nth this-index (rest graph-data))
-                ;;                             index sub-index)))))
+                          (loop :for item :in (rest formatted)
+                                :do (relink item (nth this-index (rest graph-data))
+                                            index sub-index)))))
 
                 )
 
@@ -1962,7 +1957,8 @@
                         (funcall of-local-state :graph-base))
                   ;; (instantiate-priority-macro-reader (asdf:load-system package)) ;; RESTORE THIS
                   )
-                
+
+                ;; REDUNDANT
                 ;; (print (list :af (assoc :face input :test #'eq)))
                 ;; (print (list :ew el-width formatted))
                 ;; the output-stream is created in the seed package - best elsewhere?
@@ -2006,6 +2002,7 @@
                              :associated-node-ids associated-node-ids
                              :path-string path-string :height height :width width)
     (let ((branch-string (string branch-name))
+          (branch-name (lisp->camel-case branch-name))
           (branch-id (format nil "#branch-~a" id-string)))
       ;; (print (list :hi id-string point branch-string))
       `(:svg
@@ -2018,28 +2015,32 @@
                                                 ;; (log :br ,branch-id
                                                 ;;      (chain document (get-element-by-id ,branch-id)))
                                                 ;; (chain htmx (trigger ,branch-id "reload"))
-                                                (log :elel elements)
+                                                ;; (log :elel elements)
+                                                (chain htmx (trigger (getprop patch ,branch-name)
+                                                                     "reload"))
                                                 (when elements
                                                   (chain elements
                                                          (for-each (lambda (item)
-                                                                     (chain htmx (trigger item "reload"))))))
-                                                
-                                                )))
+                                                                     (chain htmx
+                                                                            (trigger item "reload")))))))))
                              expand-node   (lambda (path)
                                              (fetch-contact
                                               $el mode (create action "expand" path path)
                                               (lambda (data)
-                                                (chain htmx (trigger ,branch-id "reload")))))
+                                                (chain htmx (trigger (getprop patch ,branch-name)
+                                                                     "reload")))))
                              contract-node (lambda (path)
                                              (fetch-contact
                                               $el mode (create action "contract" path path)
                                               (lambda (data)
-                                                (chain htmx (trigger ,branch-id "reload")))))
+                                                (chain htmx (trigger (getprop patch ,branch-name)
+                                                                     "reload")))))
                              connect-node  (lambda (index)
                                              (fetch-contact
                                               $el mode (create action "connect" index index)
                                               (lambda (data)
-                                                (chain htmx (trigger ,branch-id "reload")))))
+                                                (chain htmx (trigger (getprop patch ,branch-name)
+                                                                     "reload")))))
                              enable-drag   (lambda (svg)
                                              (let ((selected-element null) (dragging-link false)
                                                    (drag-node null) (dragging-index nil))
@@ -2160,12 +2161,12 @@
                                     branch-name associated-node-ids (height 400) (width 400)
                                     (depth 1) (depth-store (cons :depth 0)))
       ;; (print (list :mm gmodel x-offset y-offset parent point path-string))
-      (let ((opener-code (psl* (print `(open-node (chain $el (get-attribute "index"))
-                                                  (list ,@(mapcar (lambda (s) (list 'getprop 'patch s))
-                                                                  (cons branch-name
-                                                                        associated-node-ids)))))))
+      (let ((opener-code (psl* `(open-node (chain $el (get-attribute "index"))
+                                           (list ,@(mapcar (lambda (s) (list 'getprop 'patch s))
+                                                           associated-node-ids)))))
             (y-offset (or y-offset y-start)) (x-offset (or x-offset x-start))
             (main-radius 16) (output) (link-specs) (l2-specs) (interval (/ (- width 350))))
+        ;; (print (list :oop opener-code))
         (setf (rest depth-store)
               (max depth (rest depth-store)))
         (loop :for item :in gmodel :for ix :from 0 :when (listp item)
@@ -2193,7 +2194,8 @@
                                                            (= (third parent) (first point))))
                                                   " selected" "")
                                               (if is-link " link-group" ""))))
-                    ;; (print (list :exp is-expandable item))
+                    (print (list :exp is-expandable index :nn num-index
+                                 (and is-expandable (listp is-expandable) item)))
                     (push `(:g :class ,group-class
                                :transform ,(format nil "translate(~a,~a)" x-offset y-offset)
                                (:g :class "title-frame"

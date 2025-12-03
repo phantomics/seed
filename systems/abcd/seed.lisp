@@ -116,6 +116,7 @@
 
 (branch :nav
   (adapt-from-json :point :action :system-name)
+  (adapt-from-alist :system :branch :face)
   (lambda (state input)
     (destructuring-bind (&key identity action system-name uimod &allow-other-keys) input
       (cond (identity (values nil))
@@ -138,6 +139,7 @@
 (branch :chart
   (adapt-from-json :entities :action :mode ;; next line: entities properties
                              :name :type :in-flux :points :points-in-flux :ratios)
+  (adapt-from-alist :system :branch :face)
   (lambda (state input)
     (unless (or (not state) (of-state :- :chart-paths)) ;; load list of analyses
       (of-state :- :chart-paths (uiop:subdirectories (asdf:system-relative-pathname *system* "./analyses/"))))
@@ -225,6 +227,7 @@
 
 (branch :chentity
   (adapt-from-json :data :path :sort :remove :action :mode)
+  (adapt-from-alist :system :branch :face)
   (lambda (state input)
     (destructuring-bind (&key data path &allow-other-keys) input
       (or (and data path (at-path path (lambda (index form)
