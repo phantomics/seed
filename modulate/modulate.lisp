@@ -1661,7 +1661,7 @@
                  (format-graph-spec-to-edit (copy-tree (funcall of-local-state :orig-data))
                                             (funcall of-local-state :gnode-order)))
         (funcall of-local-state :gr-formatted (copy-graph-spec (funcall of-local-state :graph-data))))
-      
+
       (unless graph-base
         (setf graph-base  (from-system-file package file-name graph-key)
               orig-data   (third graph-base)
@@ -1997,6 +1997,7 @@
 
 (defun svrender-graph (gmodel &key x-offset y-offset point branch-name id-string associated-node-ids
                                 (path-string "") (height 400) (width 400))
+  (print :eiei)
   (multiple-value-bind (nodes-markup y-offset)
       (svrender-layer gmodel :x-offset x-offset :y-offset y-offset :point point :branch-name branch-name
                              :associated-node-ids associated-node-ids
@@ -2160,7 +2161,8 @@
     (defun svrender-layer (gmodel &key x-offset y-offset parent point (path-string "")
                                     branch-name associated-node-ids (height 400) (width 400)
                                     (depth 1) (depth-store (cons :depth 0)))
-      ;; (print (list :mm gmodel x-offset y-offset parent point path-string))
+      (print (list :mm ;; gmodel
+                   x-offset y-offset parent point path-string))
       (let ((opener-code (psl* `(open-node (chain $el (get-attribute "index"))
                                            (list ,@(mapcar (lambda (s) (list 'getprop 'patch s))
                                                            associated-node-ids)))))
@@ -2264,6 +2266,7 @@
                                            link-specs)
                                      (push (list parent-x parent-y)
                                            l2-specs))))
+                    (print :ttt)
                     ;; (print (list :si parent (second item)))
                     (if (and (rest item) (listp (second item))
                              (not (eq :closed (caadr item))))

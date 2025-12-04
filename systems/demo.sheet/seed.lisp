@@ -169,7 +169,8 @@
                                                (list :save)))
               (t (funcall interactor (funcall state nil :medium)
                           (lambda (key &optional value)
-                            (and state (funcall state :demo.sheet key value)))
+                            (and state (if value (funcall state :demo.sheet key value)
+                                           (funcall state :demo.sheet key))))
                           input)))))))
 
 (branch :graph-node
@@ -183,7 +184,6 @@
         ((eq uimod :footer-controls) (dx (uic-series :map #'buttonize-calling :type (:ui :controls))
                                          (list :save)))
         (state
-         ;; (print (list :ell))
          (let* ((index     (or (of-state :- :gm-index) 0))
                 (sub-index (of-state :- :gs-index))
                 (formatted (of-state :- :gr-formatted))

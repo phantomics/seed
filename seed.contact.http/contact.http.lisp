@@ -54,9 +54,10 @@
 
 (defun of-session (session-id store)
   (let ((session-store (gethash session-id store)))
-    (lambda (sys-key item-key &optional value)
+    (lambda (sys-key item-key &rest value-list)
       (setf sys-key (or sys-key :-root-))
-      (if value (progn (if (getf session-store sys-key)
+      (if value-list (destructuring-bind (value) value-list
+                       (if (getf session-store sys-key)
                            (setf (getf (getf session-store sys-key) item-key) value)
                            (setf (getf session-store sys-key) (list item-key value)))
                        (setf (gethash session-id store) session-store))
