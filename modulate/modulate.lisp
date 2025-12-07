@@ -315,6 +315,14 @@
   ()
   (:documentation "A provisioning role for an element containing a code form."))
 
+(defclass uir-pro-text (ui-role-provisioning)
+  ()
+  (:documentation "A provisioning role for an element containing character data."))
+
+(defclass uir-pro-sheet (ui-role-provisioning)
+  ()
+  (:documentation "A provisioning role for an element containing spreadsheet cells."))
+
 (defclass uir-pro-chart (ui-role-provisioning)
   ()
   (:documentation "A provisioning role for an element containing an interactive chart."))
@@ -604,7 +612,7 @@
     (push :access (uic-type aspect))
     (push :body   (uic-type aspect))
 
-    (print (list :sy system aspect (uic-name aspect)))
+    ;; (print (list :sy system aspect (uic-name aspect)))
 
     ;; (unless system (setf portal.demo1::aabbcc aspect))
     
@@ -1290,8 +1298,7 @@
         (if (and base (listp base))
             base (cons (uic-name aspect) base))
       (setf (uic-type aspect) (append '(:field :has-addone) (uic-type aspect)))
-      `(:div ;; :class "field has-addons"
-             ,@(if field-name `((:p :class "control"
+      `(:div ,@(if field-name `((:p :class "control"
                                     (:a :class "button is-static" ,(lisp->camel-case field-name)))))
              (:p :class "control"
                  (:span :class "select"
@@ -2196,8 +2203,8 @@
                                                            (= (third parent) (first point))))
                                                   " selected" "")
                                               (if is-link " link-group" ""))))
-                    (print (list :exp is-expandable index :nn num-index
-                                 (and is-expandable (listp is-expandable) item)))
+                    ;; (print (list :exp is-expandable index :nn num-index
+                    ;;              (and is-expandable (listp is-expandable) item)))
                     (push `(:g :class ,group-class
                                :transform ,(format nil "translate(~a,~a)" x-offset y-offset)
                                (:g :class "title-frame"
@@ -2266,7 +2273,6 @@
                                            link-specs)
                                      (push (list parent-x parent-y)
                                            l2-specs))))
-                    (print :ttt)
                     ;; (print (list :si parent (second item)))
                     (if (and (rest item) (listp (second item))
                              (not (eq :closed (caadr item))))

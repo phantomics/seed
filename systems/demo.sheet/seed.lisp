@@ -16,7 +16,7 @@
                           #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
 
                           #:xfurnish
-                          #:uir-pro-form #:uir-pro-graph)
+                          #:uir-pro-form #:uir-pro-text #:uir-pro-sheet #:uir-pro-graph)
   (:shadowing-import-from #:pla.browser.maple #:*flat-sources* #:retrieve-flat-source
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
@@ -50,10 +50,10 @@
                       (footer-controls (grow :demo.sheet name nil (list :uimod :footer-controls))))
       (list (aspect pane-series (:name :sheet :role (patching))
               (let ((name :main)  (title :code-view))
-                (aspect dual-bank-pane :system *system* :name name :title title
+                (aspect dual-bank-pane :system *system* :name name :title title :role (pro-text)
                   :controls (list header-controls footer-controls)))
               (let ((name :cells) (title :cell-view))
-                (aspect dual-bank-pane :system *system* :name name :title title
+                (aspect dual-bank-pane :system *system* :name name :title title :role (pro-sheet)
                   :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :scenario :role (patching))
               (let ((name :graph)  (title :graph-overview))
@@ -64,10 +64,10 @@
                   :controls (list header-controls footer-controls))))
             (aspect pane-series (:name :editor :role (patching))
               (let ((name :code)  (title :edit-view))
-                (aspect dual-bank-pane :system *system* :name name :title title
+                (aspect dual-bank-pane :system *system* :name name :title title :role (pro-text)
                   :controls (list header-controls footer-controls)))
               (let ((name :main) (title :code-view))
-                (aspect dual-bank-pane :system *system* :name name :title title
+                (aspect dual-bank-pane :system *system* :name name :title title :role (pro-text)
                   :controls (list header-controls footer-controls))))))))
 
 (branch :view
@@ -262,6 +262,7 @@
 (let ((files (list :setup :sheet)))
   (branch :code
     (adapt-from-json :text :select)
+    (adapt-from-alist :system :branch :face)
     (lambda (state input)
       (destructuring-bind (&key select text uimod &allow-other-keys) input
         (when state
