@@ -10,7 +10,7 @@
                           #:uic-anchor #:uic-page #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
-                          #:uir-form #:uir-contact #:uir-contact-refreshing
+                          #:uir-patching #:uir-form #:uir-contact #:uir-contact-refreshing
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
 
                           #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
@@ -45,7 +45,7 @@
     (declare (ignore state input))
     (symbol-macrolet ((header-controls (grow *system* name nil (list :uimod :header-controls)))
                       (footer-controls (grow *system* name nil (list :uimod :footer-controls))))
-      (list (aspect pane-series (:name :start)
+      (list (aspect pane-series (:name :start :role (patching))
               (let ((name :create)   (title :welcome))
                 (dx (uic-page)
                     '(:div (:h2 "Welcome")
@@ -56,7 +56,7 @@
               (let ((name :nav)      (title :browse))
                 (aspect dual-bank-pane :name name :title title :role (pro-form)
                   :system *system* :controls (list header-controls footer-controls))))
-            (aspect pane-series (:name :chart)
+            (aspect pane-series (:name :chart :role (patching))
               (let ((name :chart)    (title :chart-candle))
                 (aspect dual-bank-pane :name name :title title :role (pro-chart)
                   :system *system* :controls (list header-controls footer-controls)))

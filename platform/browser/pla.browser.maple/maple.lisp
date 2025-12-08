@@ -142,7 +142,7 @@
                        color-focal-fg0 color-focal-fg1 color-focal-fg3
                        color-focal-fg35 color-focal-fg45 color-focal-fg5
                        
-                       color-focal-sh0 color-focal-sh1
+                       color-focal-sh0 color-focal-sh05 color-focal-sh1
                        color-focal-bg0 color-focal-bg1)
       (append (render-html-palette #2A((28 33 49) (40 44 61) (59 63 81) (84 88 107)
                                        (114 118 138) (145 149 170) (174 178 199)
@@ -151,7 +151,7 @@
               ;;                          (67 75 106) (92 99 132) (118 125 159)
               ;;                          (142 148 184) (161 168 204) (174 181 217) (179 185 222)))
               (list "#002b36" "#073642" "#727f7f" "#93a1a1" "#c8cdcd" "#d6dbdb")
-              (list "#eac8a6" "#fbf5de")
+              (list "#eac8a6" "#f2ecd5" "#fbf5de")
               (list "#eee8d5" "#fdf6e6"))
     ;; ash-blue: c3c7d2
     (format
@@ -264,7 +264,8 @@
             ((:and tr (:nth-child even)) :background ,color-focal-bg0)
             ((:and tr (:nth-child odd))  :background ,color-focal-bg1))
            :height "100%" :background ,color-focal-sh1 :overflow auto
-           :border-width "0 2px" :border-style solid :border-color ,color-focal-fg35)
+           :border-width 0 ;; "0 2px"
+           :border-style solid :border-color ,color-focal-fg35)
           (".access.body:has(>.table.list-table)"
            :background ,(format nil "repeating-linear-gradient(135deg, ~a, ~a 4px, ~a 4px, ~a 8px)"
                                 color-focal-bg0 color-focal-bg0 color-focal-bg1 color-focal-bg1)))
@@ -276,11 +277,13 @@
                     ;;  ((:and .column-inner :after)
                     ;;   :content "" :display block :width 100% :background red :height 2px))
                     (".column-inner:has(>.ui.header):after"
-                     :content "" :display block :width 100% :background "#dc3c22" :height 2px
+                     ;; :content ""
+                     :display block :width 100% :background "#dc3c22" :height 2px
                      :border-width 0 2px :border-color "#c80000" :border-style solid
                      :position relative :bottom 2px)
                     (".column-inner:has(>.ui.footer):before"
-                     :content "" :display block :width 100% :background "#dc3c22" :height 2px
+                     ;; :content ""
+                     :display block :width 100% :background "#dc3c22" :height 2px
                      :border-width 0 2px :border-color "#a20000" :border-style solid)
                     )
 
@@ -318,14 +321,15 @@
         :grid-column-start 7 :grid-column-end 13)
 
       `(.ui.grid-layout.workspace
-        (.column :padding 0 6px))
+        (.column :padding 0 2px))
       
       `((:or .ui.header .ui.footer)
-        :width "100%" :height "100%" :padding 8px :margin 0 :background ,color-focal-sh1
-        :border-width 0 2px :border-style solid :border-color ,color-focal-fg35
+        :width "100%" :height "100%" :padding 8px :margin 0 :background ,color-focal-sh05
+        :border-width 0 ;; 0 2px
+        :border-style solid :border-color ,color-focal-fg35
         :display grid :grid-template-rows 100%
         (.controls :grid-column-end 3 (.item :display inline))
-        (.button :background transparent :border-color ,color-focal-sh0)
+        (.button :background ,color-focal-sh1 :border-color ,color-focal-sh0)
         ((.item > .symbol) :font-size 1.4em :font-weight ))
 
       `(.ui.header

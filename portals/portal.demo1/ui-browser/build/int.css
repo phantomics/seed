@@ -210,7 +210,7 @@ body{
     height: 100%;
     background: #fbf5de;
     overflow: auto;
-    border-width: 0 2px;
+    border-width: 0;
     border-style: solid;
     border-color: #93a1a1;
 }
@@ -255,7 +255,6 @@ body{
 }
 
 .ui.grid-layout .workspace .column-inner:has(>.ui.header):after{
-    content: "";
     display: block;
     width: 100%;
     background: #dc3c22;
@@ -268,7 +267,6 @@ body{
 }
 
 .ui.grid-layout .workspace .column-inner:has(>.ui.footer):before{
-    content: "";
     display: block;
     width: 100%;
     background: #dc3c22;
@@ -316,7 +314,7 @@ body{
 
 
 .ui.grid-layout.workspace .column{
-    padding: 0 6px;
+    padding: 0 2px;
 }
 
 .ui.header,
@@ -325,8 +323,8 @@ body{
     height: 100%;
     padding: 8px;
     margin: 0;
-    background: #fbf5de;
-    border-width: 0 2px;
+    background: #f2ecd5;
+    border-width: 0;
     border-style: solid;
     border-color: #93a1a1;
     display: grid;
@@ -345,7 +343,7 @@ body{
 
 .ui.header .button,
 .ui.footer .button{
-    background: transparent;
+    background: #fbf5de;
     border-color: #eac8a6;
 }
 
