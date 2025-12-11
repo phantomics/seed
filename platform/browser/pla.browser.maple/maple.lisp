@@ -175,10 +175,7 @@
 
         ((:and (.has-addons .control) (:nth-child even))
          (.button
-          :background ,color-focal-fg45 :border-color ,color-focal-fg3))
-
-        ((.access.body > .meta-code)
-         :height 100% :background-color ,color-focal-bg0))
+          :background ,color-focal-fg45 :border-color ,color-focal-fg3)))
       
       `(|#root| :width "100%")
 
@@ -266,6 +263,11 @@
            :height "100%" :background ,color-focal-sh1 :overflow auto
            :border-width 0 ;; "0 2px"
            :border-style solid :border-color ,color-focal-fg35)
+          ((.access.body > .meta-code)
+           :height 100% :background-color ,color-focal-sh05
+           :border-width 2px 0 :border-color ,color-focal-sh1
+           (form (.item :margin-bottom 0.5rem)))
+          
           (".access.body:has(>.table.list-table)"
            :background ,(format nil "repeating-linear-gradient(135deg, ~a, ~a 4px, ~a 4px, ~a 8px)"
                                 color-focal-bg0 color-focal-bg0 color-focal-bg1 color-focal-bg1)))

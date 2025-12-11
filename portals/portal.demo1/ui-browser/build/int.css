@@ -47,11 +47,6 @@ body{
     border-color: #727f7f;
 }
 
-.workspace .access.body > .meta-code{
-    height: 100%;
-    background-color: #eee8d5;
-}
-
 #root{
     width: 100%;
 }
@@ -228,6 +223,19 @@ body{
 
 .ui.grid-layout .column .column-inner .access.body .table.list-table tr:nth-child(odd){
     background: #fdf6e6;
+}
+
+.ui.grid-layout .column .column-inner .access.body > .meta-code{
+    height: 100%;
+    background-color: #f2ecd5;
+    border-width: 2px 0;
+    border-color: #fbf5de;
+}
+
+
+
+.ui.grid-layout .column .column-inner .access.body > .meta-code form .item{
+    margin-bottom: 0.5rem;
 }
 
 .ui.grid-layout .column .column-inner .access.body:has(>.table.list-table){
