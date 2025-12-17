@@ -14,6 +14,27 @@
 ;; EDITOR: a rich text viewing and editing interface
 ;; PAGE:   a display of hypertext
 
+;; dichotomy of methods:
+
+;; exec: execute a function on the client side
+;; call: execute a function on the server side
+
+
+;; names for JS API items:
+
+;; mode
+;; methods
+
+;; basis
+;; suite
+;; patch
+;; above
+;; fetch
+
+
+;; THREE METHODS TO INTERACT: call, exec, pass
+
+
 (defmacro psl (form)
   "A macro for denoting inline Parenscript code."
   `(subseq (ps-inline ,form) 11))
@@ -242,7 +263,7 @@
   (:documentation "The ui-role class describes roles for ui components, which define their relationships with their subcomponents and neighboring components."))
 
 (defparameter *role-aliases*
-  '((uir-call-c uir-call-contact)
+  '(;; (uir-call-c uir-call-contact)
     (uir-call-b uir-call-base)))
 
 (defun has-role (component role-sym)
@@ -263,26 +284,34 @@
           :initform nil
           :initarg  :a)))
 
+(defclass uir-exec (uir-interact)
+  ()
+  (:documentation "A role for an element whose interaction involves only functions within the frontend interface."))
+
 (defclass uir-call (uir-interact)
   ()
-  (:documentation "A role for an element that can be interacted with to call a function."))
+  (:documentation "A role for an element whose interaction involves the Seed server."))
 
 (defclass uir-contact (uir-interact)
   ((%base-key :accessor uiric-base-key
               :initform nil
               :initarg  :base-key)))
 
+(defclass uir-exec-base (uir-exec) ())
+
+(defclass uir-call-refreshing (uir-call) ())
+
 (defclass uir-contact-refreshing (uir-contact) ())
 
-(defclass uir-render (uir-call) ())
+;; (defclass uir-render (uir-call) ())
 
-(defclass uir-call-base (uir-call) ())
+;; (defclass uir-call-base (uir-call) ())
 
-(define-symbol-macro uir-call-b uir-call-base)
+;; (define-symbol-macro uir-call-b uir-call-base)
 
-(defclass uir-call-rendering (uir-call) ())
+;; (defclass uir-call-rendering (uir-call) ())
 
-(define-symbol-macro uir-form-rerendering uir-call-base)
+;; (define-symbol-macro uir-form-rerendering uir-call-base)
 
 (defclass uir-call-form (ui-role)
   ((%options :accessor uircf-options
@@ -550,12 +579,6 @@
                                                       ;; (chain mode (of-local "trigger" "main" "reload"))
                                                       ))))))
             ))))
-
-;; basis
-;; suite
-;; patch
-;; above
-;; fetch
 
 (defun alist-supersede (new original)
   (loop :for n :in new :do (if (assoc (first n) original)
@@ -930,6 +953,35 @@
                                                    (chain htmx (trigger (@ patch main)
                                                                         "reload")))))))))))
 
+;; (defmethod furnish-call ((medium uim-web) (aspect ui-component))
+;;   ;; (let ((base (uic-base aspect)))
+;;   (let ((role (has-role aspect 'uir-call)))
+;;     (and role (list (typecase aspect
+;;                       (uicc-button :|x-on:click|)
+;;                       (uicc-select :|x-on:change|)
+;;                       (t :|x-on:click|))
+;;                     (ps* (list (intern (string (uiri-name role))) ;; TODO: intern should not be used
+;;                                '$el 'mode))))))
+
+;; (defmethod furnish-call ((medium uim-web) (aspect ui-component))
+;;   (let ((role (has-role aspect 'uir-call)))
+;;     (and role (list (intern (string (uiri-name role))) ;; TODO: intern should not be used
+;;                     '$el 'mode))))
+
+(defmethod furnish-call ((medium uim-web) (aspect ui-component))
+  (let ((role (has-role aspect 'uir-call)))
+    (and role (list 'fetch-contact ;; TODO: intern should not be used
+                    '$el 'mode (list 'create (intern (string (uiri-name role)))
+                                     (uic-base aspect))
+                    'null))))
+
+(defmethod furnish-exec ((medium uim-web) (aspect ui-component))
+  (let* ((role (has-role aspect 'uir-exec))
+         (base (typep role 'uir-exec-base)))
+    (and role (let ((fn-sym (intern (string (uiri-name role)))))
+                (if base (list fn-sym '$el 'mode)
+                    (list 'chain 'methods (list fn-sym '$el 'mode)))))))
+
 (defclass ui-aspect ()
   ((%name   :accessor uia-name
             :initform nil
@@ -1206,7 +1258,9 @@
          (name (if (or (symbolp base) (stringp base))
                    base))
          (root-types (funcall (if (listp (uic-type aspect)) #'identity #'list)
-                              (uic-type (uic-root aspect)))))
+                              (uic-type (uic-root aspect))))
+         (interactions (append (furnish-exec medium aspect)
+                               (furnish-call medium aspect))))
 
     (setf (uic-type aspect) (append '(:ui :button) (uic-type aspect)))
     
@@ -1217,7 +1271,9 @@
       ;;                   (uirt-symap (has-role aspect 'uir-toggle)))))
       ;; (when (has-role aspect 'uir-toggle)
       ;;   (setf portal.demo1::aaa aspect))
-      `(:button :name ,(string (or name "")) ,@(furnish-call medium aspect)
+      `(:button :name ,(string (or name ""))
+                ;; ,@(furnish-call medium aspect)
+                ,@(and interactions (list :|x-on:click| (ps* interactions)))
                 ,@(and (member :controls root-types)
                        (has-role (uic-root aspect) 'uir-toggle)
                        (list :|x-on:click| (psl (funcall this-toggle (lisp (lisp->camel-case name))
@@ -1293,7 +1349,9 @@
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   (let* ((base (uic-base aspect))
          (original-type (uic-type aspect))
-         (types (if (listp original-type) original-type (list original-type))))
+         (types (if (listp original-type) original-type (list original-type)))
+         (interactions (append (furnish-exec medium aspect)
+                               (furnish-call medium aspect))))
     (destructuring-bind (field-name &rest field-content)
         (if (and base (listp base))
             base (cons (uic-name aspect) base))
@@ -1304,7 +1362,7 @@
                  (:span :class "select"
                         (:select :name ,(or (lisp->camel-case field-name) "")
                           :class ,(furnish-type medium aspect)
-                          ,@(furnish-call medium aspect)
+                          ,@(and interactions (list :|x-on:click| (ps* interactions)))
                           ,@(let* ((call-role (has-role aspect 'uir-contact))
                                    (call-args (append (and call-role
                                                            (mapcar (lambda (arg)
@@ -1403,16 +1461,6 @@
                        (:.base `(@ $event target value))
                        (t `(@ methods ,call)))
                     $el mode)))))
-
-(defmethod furnish-call ((medium uim-web) (aspect ui-component))
-  (let ((base (uic-base aspect)))
-    (let ((role (has-role aspect 'uir-call)))
-      (and role (list (typecase aspect
-                        (uicc-button :|x-on:click|)
-                        (uicc-select :|x-on:change|)
-                        (t :|x-on:click|))
-                      (ps* (list (intern (string (uiri-name role))) ;; TODO: intern should not be used
-                                 '$el 'mode)))))))
 
 (defmethod generate :before ((medium uim-web) (aspect ui-component))
   (setf (getf (uic-plan aspect) :js-entities)

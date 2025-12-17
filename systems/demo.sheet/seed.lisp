@@ -9,7 +9,11 @@
   (:shadowing-import-from #:seed.modulate #:dx #:express #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
-                          #:role-cast #:uir-call #:uir-call-c #:uir-call-b
+                          #:role-cast
+
+                          #:uir-call #:uir-call-c #:uir-call-b
+
+                          #:uir-exec
                           #:uir-patching #:uir-call-form  #:uir-actuatable
                           #:uir-sortable #:uir-reducable #:uir-toggle
 
@@ -33,7 +37,7 @@
 
 (defun buttonize (item index)
   (declare (ignore index))
-  (make-instance 'uicc-button :base item :type '(:local)))
+  (make-instance 'uicc-button :base item :role (list (make-instance 'uir-call :n :action))))
 
 (defun buttonize-calling (item index)
   (declare (ignore index))
@@ -207,7 +211,7 @@
                              :collect item))
 
                 )
-           ;; (print (list :in index sub-index))
+           (print (list :in input index sub-index))
            ;; (print (list :xx))
            (render (funcall state nil :medium)
                    (dx (uic-frame :type (:meta-code))

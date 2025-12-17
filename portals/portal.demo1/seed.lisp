@@ -11,8 +11,6 @@
 (defvar *seed-templates* (list (cons :template.chart (asdf:system-relative-pathname
                                                       :portal.demo1 "../../templates/template.charts/"))))
 
-;; THREE METHODS TO INTERACT: call, exec, pass
-
 (defvar *portal* :portal.demo1)
 
 (make-contacts)
@@ -92,7 +90,7 @@
                               (list (dx (uicc-button :role ((contact-refreshing :a (list :point ix))))
                                         (first item))
                                     tdescription))
-                          (and template-point (= ix template-point)
+                          (and t ; template-point (= ix template-point)
                                (list (dx (uic-series :layout (:groups :rows '(2))
                                                      :type (:series :enum :table-interstitial :enum)
                                                      ;; :role ((form)(call))

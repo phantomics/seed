@@ -10,7 +10,8 @@
                           #:uic-anchor #:uic-page #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
-                          #:uir-patching #:uir-form #:uir-contact #:uir-contact-refreshing
+                          #:uir-exec
+                          #:uir-patching #:uir-form ;; #:uir-contact #:uir-contact-refreshing
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
 
                           #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
@@ -35,10 +36,17 @@
   (declare (ignore index))
   (make-instance 'uicc-button :base item :type '(:local)))
 
+;; (defun buttonize-calling (item index)
+;;   (declare (ignore index))
+;;   (make-instance 'uicc-button :base item :type '(:local)
+;;                               :role (list (make-instance 'uir-contact :base-key :action))))
+
 (defun buttonize-calling (item index)
   (declare (ignore index))
   (make-instance 'uicc-button :base item :type '(:local)
-                              :role (list (make-instance 'uir-contact :base-key :action))))
+                              :role (list (make-instance 'uir-call :n :action))))
+
+;; :base-key :action))))
 
 (branch :summary
   (lambda (state input)
@@ -99,10 +107,10 @@
 (defun manifest-file-listing (is-creating path)
   (append (and ;; is-creating
                t (list (dx (uic-series :layout (:groups :rows '(2))
-                                                 :type (:series :enum :table-interstitial :enum)
-                                                 :role ((form)(call)))
-                                     (dx (uicc-field :name :system-name :type (:string)) "")
-                                     (dx (uicc-button :role ((call :n :form-input)))
+                                       :type (:series :enum :table-interstitial :enum)
+                                       :role ((form)(call)))
+                           (dx (uicc-field :name :system-name :type (:string)) "")
+                           (dx (uicc-button :role ((call :n :form-input)))
                                          "create"))))
           (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
                 :append (let ((props (from-system-file *system* (format nil "~a/chart.lisp" dir)

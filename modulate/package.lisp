@@ -11,6 +11,7 @@
            ;; roles
            #:role-cast
            #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
+           #:uir-exec
            #:uir-form #:uir-patching #:uir-contact #:uir-contact-refreshing
            #:uir-sortable #:uir-reducable #:uir-toggle
 
