@@ -249,6 +249,10 @@
         :display "grid" :height "100%"
         ((:and (.ui.column > .item) (:nth-child 2))
          :overflow auto)
+
+        (.page-container.column ;; provisional -- delete after column refactor
+         (.column-inner :padding 1em))
+
         (.column
          ;; :display grid ;; :overflow auto
          ;; :grid-template-rows min-content auto min-content
@@ -695,7 +699,8 @@
       ;; (log :key key)
 
       (when key
-        ;; (log :xx data state (getprop actions key))
+        (log :xx data state (getprop actions key)
+             actions)
         (funcall (getprop actions key) data)
 
         (setf (@ state index) index)))))

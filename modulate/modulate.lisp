@@ -906,7 +906,7 @@
                   
                   (and (and (member :controls types)
                             (has-role aspect 'uir-toggle))
-                       (list :x-data (psl (create this-toggle null
+                       (list :x-data (psl (create this-toggle  null
                                                   toggle-state (create index null)))))
 
                   ;; header
@@ -1544,7 +1544,7 @@
                       'when-toggled `(lambda (mode) (chain console (log 202 mode))))
                 (getf (getf (uic-plan aspect) :js-entities) :methods))))
 
-(defmethod xfurnish ((medium uim-web) (aspect uic-series) (role uir-pro-chart))
+(defmethod xfurnish ((medium uim-web) (aspect uic-series) (role uir-pro-graph))
   (setf (getf (uic-plan aspect) :js-entities)
         (merge-furnishings (getf (uic-plan aspect) :js-entities)
                            (list :methods (list 'add-node

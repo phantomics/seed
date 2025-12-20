@@ -191,6 +191,12 @@ body{
 
 
 
+.ui.grid-layout .page-container.column .column-inner{
+    padding: 1em;
+}
+
+
+
 .ui.grid-layout .column .container{
     position: relative;
     height: 100%;

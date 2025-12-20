@@ -11,7 +11,8 @@
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
                           #:uir-exec
-                          #:uir-patching #:uir-form ;; #:uir-contact #:uir-contact-refreshing
+                          #:uir-patching #:uir-form ;; #:uir-contact
+                          #:uir-contact-refreshing
                           #:uir-actuatable #:uir-sortable #:uir-reducable #:uir-toggle
 
                           #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
@@ -54,13 +55,13 @@
     (symbol-macrolet ((header-controls (grow *system* name nil (list :uimod :header-controls)))
                       (footer-controls (grow *system* name nil (list :uimod :footer-controls))))
       (list (aspect pane-series (:name :start :role (patching))
-              (let ((name :create)   (title :welcome))
-                (dx (uic-page)
-                    '(:div (:h2 "Welcome")
-                      (:p "This is a financial analysis chart tool.")))
-                ;; (aspect dual-bank-pane :name name :title title
-                ;;   :system *system* :controls (list header-controls footer-controls))
-                )
+              ;; (let ((name :create)   (title :welcome))
+              (dx (uic-page :type (:column))
+                  '(:div :class "column-inner" (:h2 "Welcome")
+                    (:p "This is a financial analysis chart tool.")))
+              ;; (aspect dual-bank-pane :name name :title title
+              ;;   :system *system* :controls (list header-controls footer-controls))
+              ;; )
               (let ((name :nav)      (title :browse))
                 (aspect dual-bank-pane :name name :title title :role (pro-form)
                   :system *system* :controls (list header-controls footer-controls))))
@@ -174,6 +175,7 @@
             (entities
              (let ((collected))
                ;; (print (list :ent entities))
+               
                (unless (of-state :- :line-templater)
                  (of-state :- :line-templater
                           (build-templater (from-system-file *system* "sheet.lisp"
@@ -271,7 +273,7 @@
       (cond (identity :meta-code-form)
             ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)
                                                          :map #'buttonize-calling)
-                                             (list :save)))
+                                             (list :add-span :add-set :save)))
             ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls)
                                                          :map #'buttonize-calling)
                                              (list :save)))
@@ -284,7 +286,15 @@
                                        (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                          :chart-entities)
                                        (of-state :- :chart-entities))
-                                 output)))))
+                                 output))
+                        (:add-set
+                         (of-state :- :set-templater
+                                   (build-templater (from-system-file *system* "sheet.lisp"
+                                                                      :chart-entity-template-set)
+                                                    :type :format))
+                         (setf (cdddr (of-state :- :chart-entities))
+                               (cons (of-state :- :set-templater)
+                                     (cdddr (of-state :- :chart-entities))))))))
             (t (init-chart-entities state)
                (when state
                  (render (funcall state nil :medium)

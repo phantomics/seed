@@ -9,6 +9,7 @@
 
 :analysis-invocation
 (defun load-analyses (&optional index)
+  (declare (ignore index))
   (dolist (dir (uiop:subdirectories (asdf:system-relative-pathname :abcd "./analyses/")))
     (load (pathname (format nil "~a/chart.lisp" dir)))))
 
@@ -30,3 +31,9 @@
           (fx :y-end   (:fx :uicc-field)  (:type :numeric :float)))
     (:fx :uic-series :layout (:groups :rows (-2 4)))
     (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
+
+;; :chart-entity-template-set
+;; (fx (set (fx :type    (:fx :uicc-select) (:type :select) (:options "line" "retraceX" "retraceY"))
+;;          (fx "" (:fx :uicc-field) (:type :text)))
+;;     (:fx :uic-series :layout (:groups :rows (-1 1)))
+;;     (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
