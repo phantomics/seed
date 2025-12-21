@@ -97,11 +97,13 @@
       (cond (uimod (values nil t))
             (t "This is a financial chart analysis tool.")))))
 
-(defun init-chart-entities (state)
+(defun init-chart-entities (state &optional refresh)
   (when (and state (of-state :- :chart-point))
-    (unless (of-state :- :chart-entities)
+    (print (list :stt (of-state :- :chart-point)))
+    (when (or refresh (not (of-state :- :chart-entities)))
       (let ((chart-path (namestring (nth (of-state :- :chart-point)
                                          (of-state :- :chart-paths)))))
+        (print (list :cp chart-path))
         (of-state :- :chart-entities (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities))))))
 
@@ -127,23 +129,23 @@
   (adapt-from-json :point :action :system-name)
   (adapt-from-alist :system :branch :face)
   (lambda (state input)
-    (destructuring-bind (&key identity action system-name uimod &allow-other-keys) input
+    (destructuring-bind (&key identity action system-name uimod point &allow-other-keys) input
       (cond (identity (values nil))
             ((eq uimod :header-controls)
              (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
                  (list :create)))
             (action (case (intern (string-upcase action) "KEYWORD")
                       (:create (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress))))))
-            (state (when (getf input :point)
-                     (of-state :- :chart-point (getf input :point))
-                     (of-state :- :chart-point nil))
-                     (let ((template-point (of-state :- :template-point)))
-                       (destructuring-bind (&key system-name &allow-other-keys) input
-                         (render (of-state nil :medium)
-                                 (dx (uic-series :type (:ui :list-table))
-                                     (manifest-file-listing (of-state :- :creation-in-progress)
-                                                            (asdf:system-relative-pathname
-                                                             *system* "./analyses/")))))))))))
+            (state (when point (of-state :- :chart-point point)
+                         (init-chart-entities state t))
+                   (print (list :po point))
+                   (let ((template-point (of-state :- :template-point)))
+                     (destructuring-bind (&key system-name &allow-other-keys) input
+                       (render (of-state nil :medium)
+                               (dx (uic-series :type (:ui :list-table))
+                                   (manifest-file-listing (of-state :- :creation-in-progress)
+                                                          (asdf:system-relative-pathname
+                                                           *system* "./analyses/")))))))))))
 
 (branch :chart
   (adapt-from-json :entities :action :mode ;; next line: entities properties
@@ -155,7 +157,7 @@
 
     (init-chart-entities state)
 
-    (unless (or (not state) (of-state :- :chart-point))
+    (when (and state (not (of-state :- :chart-point))) ;; assign chart-point to 0 if not present
       (of-state :- :chart-point 0))
     
     (destructuring-bind (&key identity uimod action entities mode &allow-other-keys) input
@@ -297,6 +299,7 @@
                                      (cdddr (of-state :- :chart-entities))))))))
             (t (init-chart-entities state)
                (when state
+                 (print (list :nno (of-state :- :chart-entities)))
                  (render (funcall state nil :medium)
                          (dx (uic-frame :type (:meta-code))
                              (seed.modulate::express (of-state :- :chart-entities))))))))))
