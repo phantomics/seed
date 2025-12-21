@@ -434,6 +434,10 @@
         (.drag-indicator :opacity 0 :fill "#000")
         (.mouse-transparent :pointer-events none))
 
+      `(.page-container
+        (h1 :font-size 2em :font-weight bold)
+        (h2 :font-size 1.65em :font-weight bold))
+
       `(.svg-visualizer.for-node.drag
         ((:and .node-group :|not(.dragging)| :hover)
          (.handle :opacity 0)
@@ -1235,7 +1239,7 @@
                        (up-stroke-style (if (< 2 bar-width) "rgba(38,139,210,1.0)" "rgba(38,139,210,0.6)"))
                        (down-fill-style "rgba(220,50,47,1.0)")
                        (down-stroke-style (if (< 2 bar-width) "rgba(220,50,47,1.0)" "rgba(220,50,47,0.6)")))
-                  ;; (chain console (log :sets sets))
+                  (chain console (log :sets sets))
                   (setf (@ ctx line-width) 0.6)
                   (loop :for p :from 0 :to (1- (@ sets 0 length))
                         :do (let* ((price (create open    (getprop sets 0 p "yval")

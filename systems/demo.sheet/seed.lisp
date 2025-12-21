@@ -11,7 +11,7 @@
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast
 
-                          #:uir-call #:uir-call-c #:uir-call-b
+                          #:uir-call #:uir-call-b
 
                           #:uir-exec
                           #:uir-patching #:uir-call-form  #:uir-actuatable

@@ -301,6 +301,8 @@
 
 (defclass uir-call-refreshing (uir-call) ())
 
+(define-symbol-macro uir-call-r uir-call-refreshing)
+
 (defclass uir-contact-refreshing (uir-contact) ())
 
 ;; (defclass uir-render (uir-call) ())
@@ -736,7 +738,6 @@
 
         (when (and (typep    aspect 'ui-component)
                    (has-role aspect 'uir-sortable))
-          ;; (print (list :ty types :r (uic-type (uic-root aspect))))
           (push (psl (let ((handle-container) (handle) (item))
                        ;; (chain console (log :aa (@ $el child-nodes) (@ $el child-nodes length)))
                        (dolist (n (@ $el child-nodes))
@@ -767,7 +768,6 @@
 
         (when (and (typep    aspect 'ui-component)
                    (has-role aspect 'uir-reducable))
-          ;; (print (list :ty types :r (uic-type (uic-root aspect))))
           (push (psl (let* ((remover) (item) (meta-path (chain $el (get-attribute "meta-path")))
                             (interactor (lambda (element index)
                                           (fetch-contact element mode (create path meta-path remove index)
@@ -809,8 +809,10 @@
                                                                                  (:@index ix)
                                                                                  (t arg)))
                                                                              (uiri-args call-role))))
-                                                     (call-post (and (has-role aspect 'uir-contact-refreshing)
-                                                                     '(create next "refresh"))))
+                                                     (call-post
+                                                       (and (or (has-role aspect 'uir-contact-refreshing)
+                                                                (has-role aspect 'uir-call-refreshing))
+                                                            '(create next "refresh"))))
                                                 (typecase call-role
                                                   (uir-contact
                                                    (list :|x-on:click|
@@ -973,7 +975,8 @@
     (and role (list 'fetch-contact ;; TODO: intern should not be used
                     '$el 'mode (list 'create (intern (string (uiri-name role)))
                                      (uic-base aspect))
-                    'null))))
+                    (if (not (has-role aspect 'uir-call-refreshing))
+                        'null '(create next "refresh"))))))
 
 (defmethod furnish-exec ((medium uim-web) (aspect ui-component))
   (let* ((role (has-role aspect 'uir-exec))
@@ -1289,7 +1292,8 @@
                                             (and call-role (uiric-base-key call-role)
                                                  (list (uiric-base-key call-role)
                                                        base))))
-                         (call-post (and (has-role aspect 'uir-contact-refreshing)
+                         (call-post (and (or (has-role aspect 'uir-contact-refreshing)
+                                             (has-role aspect 'uir-call-refreshing))
                                          '(create next "refresh"))))
                     (typecase call-role
                       (uir-contact
@@ -1372,7 +1376,8 @@
                                                       (and call-role (uiric-base-key call-role)
                                                            (list (uiric-base-key call-role)
                                                                  '(@ event target value)))))
-                                   (call-post (and (has-role aspect 'uir-contact-refreshing)
+                                   (call-post (and (or (has-role aspect 'uir-contact-refreshing)
+                                                       (has-role aspect 'uir-call-refreshing))
                                                    '(create next "refresh"))))
                               (typecase call-role
                                 (uir-contact

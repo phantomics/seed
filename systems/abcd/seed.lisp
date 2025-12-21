@@ -9,7 +9,9 @@
   (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-page #:uic-frame #:uic-series #:uic-grid
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
-                          #:role-cast #:uir-call #:uir-call-c #:uir-call-b #:uir-call-form
+                          #:role-cast
+                          #:uir-call #:uir-call-refreshing ;; #:uir-call-b
+                          #:uir-call-form
                           #:uir-exec
                           #:uir-patching #:uir-form ;; #:uir-contact
                           #:uir-contact-refreshing
@@ -23,7 +25,8 @@
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
                           #:build-script-cmirror #:build-script-pmirror #:build-script-misc)
-  (:shadowing-import-from #:seed.access #:authorize))
+  (:shadowing-import-from #:seed.access #:authorize)
+  (:shadowing-import-from #:cl-csv #:read-csv))
 
 (in-package :seed.branch.abcd)
 
@@ -45,9 +48,7 @@
 (defun buttonize-calling (item index)
   (declare (ignore index))
   (make-instance 'uicc-button :base item :type '(:local)
-                              :role (list (make-instance 'uir-call :n :action))))
-
-;; :base-key :action))))
+                              :role (list (make-instance 'uir-call-refreshing :n :action))))
 
 (branch :summary
   (lambda (state input)
@@ -99,22 +100,25 @@
 
 (defun init-chart-entities (state &optional refresh)
   (when (and state (of-state :- :chart-point))
-    (print (list :stt (of-state :- :chart-point)))
-    (when (or refresh (not (of-state :- :chart-entities)))
+    (when (and (or refresh (not (of-state :- :chart-entities)))
+               (nth (of-state :- :chart-point)
+                    (of-state :- :chart-paths)))
       (let ((chart-path (namestring (nth (of-state :- :chart-point)
                                          (of-state :- :chart-paths)))))
-        (print (list :cp chart-path))
         (of-state :- :chart-entities (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities))))))
 
 (defun manifest-file-listing (is-creating path)
-  (append (and ;; is-creating
-               t (list (dx (uic-series :layout (:groups :rows '(2))
+  (append (and is-creating
+               (list (dx (uic-series :layout (:groups :rows '(2 2))
                                        :type (:series :enum :table-interstitial :enum)
                                        :role ((form)(call)))
                            (dx (uicc-field :name :system-name :type (:string)) "")
                            (dx (uicc-button :role ((call :n :form-input)))
-                                         "create"))))
+                               "create")
+                           "Testing."
+                           (dx (uicc-button :role ((call :n :form-input)))
+                               "cancel"))))
           (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
                 :append (let ((props (from-system-file *system* (format nil "~a/chart.lisp" dir)
                                                        :properties)))
@@ -126,19 +130,24 @@
                                                        description)))))))))
 
 (branch :nav
-  (adapt-from-json :point :action :system-name)
+  (adapt-from-json :point :action :system-name :form-input)
   (adapt-from-alist :system :branch :face)
   (lambda (state input)
-    (destructuring-bind (&key identity action system-name uimod point &allow-other-keys) input
+    (destructuring-bind (&key identity action system-name uimod point form-input &allow-other-keys) input
       (cond (identity (values nil))
             ((eq uimod :header-controls)
              (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
                  (list :create)))
-            (action (case (intern (string-upcase action) "KEYWORD")
-                      (:create (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress))))))
-            (state (when point (of-state :- :chart-point point)
-                         (init-chart-entities state t))
-                   (print (list :po point))
+            (form-input
+             (case (intern (string-upcase form-input) "KEYWORD")
+               (:create (print (list :bbb 10)))
+               (:cancel (of-state :- :creation-in-progress nil))))
+            (action
+             (case (intern (string-upcase action) "KEYWORD")
+               (:create (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress))))))
+            (state (when point
+                     (of-state :- :chart-point point)
+                     (init-chart-entities state t))
                    (let ((template-point (of-state :- :template-point)))
                      (destructuring-bind (&key system-name &allow-other-keys) input
                        (render (of-state nil :medium)
@@ -176,7 +185,6 @@
                                              (list :save :zoom-actual)))
             (entities
              (let ((collected))
-               ;; (print (list :ent entities))
                
                (unless (of-state :- :line-templater)
                  (of-state :- :line-templater
@@ -201,7 +209,7 @@
                            (if index (setf (nth index edata) item)
                                (progn (push item edata)
                                       (push (funcall (of-state :- :line-templater)
-                                                     :x-start x-start :x-end x-end ;; :format format
+                                                     :x-start x-start :x-end x-end
                                                      :y-start y-start :y-end y-end :type type)
                                             collected)))
                            (of-state :- :entity-data edata)))))))
@@ -227,12 +235,14 @@
             (t (case (intern (string-upcase mode) "KEYWORD")
                  (:chart-data
                   ;; (print (list :cc (of-state :- :chart-point)))
-                  ;; (if (and state (funcall state :chart-point))
-                  (let ((chart-path (namestring (nth (of-state :- :chart-point)
-                                                     (of-state :- :chart-paths)))))
-                    (file-to-string (second (third (second (from-system-file
-                                                            *system* (format nil "~a/chart.lisp" chart-path)
-                                                            :chart-entities)))))))
+                  (let* ((chart-path (namestring (nth (of-state :- :chart-point)
+                                                      (of-state :- :chart-paths))))
+                         (data (second (third (second (from-system-file
+                                                       *system* (format nil "~a/chart.lisp" chart-path)
+                                                       :chart-entities))))))
+                    (file-to-string data)
+                    (cl-ppcre::regex-replace-all ",[^,]+\\n" (file-to-string data)
+                                                 (coerce (list #\Newline) 'string))))
                  (t (render (funcall state nil :medium)
                             (dx (uich-candle :type (:green-red :abc :def-ghi))
                                 *system* :chart)))))))))
@@ -289,6 +299,15 @@
                                                          :chart-entities)
                                        (of-state :- :chart-entities))
                                  output))
+                        (:add-span
+                         (of-state :- :line-templater
+                                   (funcall (build-templater (from-system-file *system* "sheet.lisp"
+                                                                               :chart-entity-template-line)
+                                                             :type :format)))
+                         (setf (cdddr (second (of-state :- :chart-entities)))
+                               (cons (of-state :- :line-templater)
+                                     (cdddr (second (of-state :- :chart-entities))))))
+                         ;; (print (list :ce (of-state :- :chart-entities))))
                         (:add-set
                          (of-state :- :set-templater
                                    (build-templater (from-system-file *system* "sheet.lisp"
@@ -299,7 +318,6 @@
                                      (cdddr (of-state :- :chart-entities))))))))
             (t (init-chart-entities state)
                (when state
-                 (print (list :nno (of-state :- :chart-entities)))
                  (render (funcall state nil :medium)
                          (dx (uic-frame :type (:meta-code))
                              (seed.modulate::express (of-state :- :chart-entities))))))))))

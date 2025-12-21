@@ -76,8 +76,7 @@
                                  (grow nil :base state)))
 
                          (dx (uic-series :type (:ui :main :placard))
-                             (list (dx (uic-series :type (:ui :column :short)
-                                                   :role ((form)(call))) ;; should this be :cast?
+                             (list (dx (uic-series :type (:ui :column :short) :role ((form)(call)))
                                        (list "please input your key"
                                              (dx (uicc-field :name "key") "")
                                              (dx (uicc-button) "enter")))))))))))

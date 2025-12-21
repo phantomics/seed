@@ -640,6 +640,18 @@ form .ui.selection.dropdown{
 
 
 
+.page-container h1{
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.page-container h2{
+    font-size: 1.65em;
+    font-weight: bold;
+}
+
+
+
 
 
 .svg-visualizer.for-node.drag .node-group:not(.dragging):hover .handle{
