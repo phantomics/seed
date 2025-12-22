@@ -32,6 +32,23 @@
            :initform nil
            :initarg :color)))
 
+(defclass entity-set (entity)
+  ((%items  :accessor eset-items
+            :initform nil
+            :initarg  :items)
+   (%source :accessor eset-source
+            :initform nil
+            :initarg  :source)))
+
+(defclass set-source () ())
+
+(defclass set-source-file (set-source)
+  ((%path :accessor set-source-file-path
+          :initform nil
+          :initarg  :path)))
+
+(defclass set-source-file-csv (set-source-file) ())
+
 (defclass entity-span (entity)
   ((%points :accessor espan-points
             :initform nil
@@ -93,8 +110,13 @@
                     ))
         )))
 
+(defmacro eset (style format source &rest items)
+  `(make-instance 'entity-set :style ,style :source ,source :items (list ,@items)))
+
+(defmacro essource (path)
+  `(make-instance 'set-source-file :path ,path))
+
 (defmacro span (style format xfrom yfrom xto yto)
   `(make-instance 'enspan-retrace :points (list ,xfrom ,yfrom ,xto ,yto)
                                   :style ,style))
 
-;; (chart-view :main-chart 'stuff (line))

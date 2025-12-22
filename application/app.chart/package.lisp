@@ -2,4 +2,5 @@
 
 (defpackage #:app.chart
   (:use #:cl)
-  (:export #:chart-view #:chart-style #:line))
+  (:export #:chart-view #:chart-style #:eset #:essource #:span))
+

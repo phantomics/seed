@@ -44,7 +44,13 @@
    (:role uir-call-form (uir-reducable)))
 
 :chart-entity-template-set
-(fx (list (fx "type" (:fx :uicc-select) (:type :select) (:options "line" "retraceX" "retraceY"))
-          (fx "" (:fx :uicc-field) (:type :text)))
-    (:fx :uic-series :layout (:groups :rows (-1 1)))
+(fx (eset (fx "csv" (:fx :uicc-select) (:type :select) (:options "csv"))
+          "test" ;; (fx "test" (:fx :uicc-field) (:type :text))
+          (fx "test" (:fx :uicc-field) (:type :text))
+          (fx (essource (fx "" (:fx :uicc-field) (:type :text)))
+              (:fx :uic-series :layout (:groups :rows (-1)))
+              (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
+          ;; (essource (fx "" (:fx :uicc-field) (:type :text)))
+          )
+    (:fx :uic-series :layout (:groups :rows (-1 2)))
     (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))

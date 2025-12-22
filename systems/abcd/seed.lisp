@@ -25,6 +25,7 @@
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
                           #:build-script-cmirror #:build-script-pmirror #:build-script-misc)
+  (:shadowing-import-from #:app.chart #:eset #:essource #:span)
   (:shadowing-import-from #:seed.access #:authorize)
   (:shadowing-import-from #:cl-csv #:read-csv))
 
@@ -89,7 +90,7 @@
         (y-end   (second (nth 6 (second form)))))
     (list :type "line" :points (list (list x-start y-start) (list x-end y-end))
           :name (format nil "obj-~a" (or index 0))
-          :points-in-flux nil :in-flux :true :ratios nil)))
+          :points-in-flux nil :in-flux nil :ratios nil)))
 
 (branch :create
   (adapt-from-json :point)
@@ -184,14 +185,22 @@
             ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls) :map #'buttonize)
                                              (list :save :zoom-actual)))
             (entities
-             (let ((collected))
+             (let ((collected)
+                   (ex-lines (loop :for ix :from 0 :for line :in (read-csv #P"/tmp/USDJPY.cl.csv")
+                                   :collect (destructuring-bind (x-start y-start x-end y-end weight)
+                                                (mapcar #'read-from-string line)
+                                              (list :type "line" :points (list (list x-start y-start)
+                                                                               (list x-end   y-end))
+                                                    :name (format nil "obx-~a" ix)
+                                                    :weight weight :points-in-flux nil
+                                                    :in-flux nil :ratios nil)))))
                
                (unless (of-state :- :line-templater)
                  (of-state :- :line-templater
                           (build-templater (from-system-file *system* "sheet.lisp"
                                                              :chart-entity-template-line)
                                            :type :format :x-start :y-start :x-end :y-end)))
-               
+               ;; (print (list :ent entities (of-state :- :chart-entities) (of-state :- :entity-data)))
                (when (listp (first entities))
                  (dolist (espec entities)
                    (destructuring-bind (&key name type in-flux points points-in-flux ratios) espec
@@ -217,7 +226,8 @@
                  (setf (second entities) (append (second (of-state :- :chart-entities))
                                                  (reverse collected)))
                  (of-state :- :chart-entities entities)
-                 (of-state :- :entity-data))))
+                 (of-state :- :entity-data)
+                 (print ex-lines))))
             (action
              (let ((chart-entities (of-state :- :chart-point (getf input :point)))
                    (chart-path (namestring (nth (of-state :- :chart-point)
@@ -310,12 +320,12 @@
                          ;; (print (list :ce (of-state :- :chart-entities))))
                         (:add-set
                          (of-state :- :set-templater
-                                   (build-templater (from-system-file *system* "sheet.lisp"
-                                                                      :chart-entity-template-set)
-                                                    :type :format))
-                         (setf (cdddr (of-state :- :chart-entities))
+                                   (funcall (build-templater (from-system-file *system* "sheet.lisp"
+                                                                               :chart-entity-template-set)
+                                                             :type :format)))
+                         (setf (cdddr (second (of-state :- :chart-entities)))
                                (cons (of-state :- :set-templater)
-                                     (cdddr (of-state :- :chart-entities))))))))
+                                     (cdddr (second (of-state :- :chart-entities)))))))))
             (t (init-chart-entities state)
                (when state
                  (render (funcall state nil :medium)

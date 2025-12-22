@@ -1613,6 +1613,7 @@
     (append form to-append)))
 
 (defun express (form &optional params path) ;; TODO: this will not grow well with the metaform topology
+  (print (list :fo form))
   (if (atom form)
       form (let ((path (or path '(0))))
              ;; (print (list :ff form))

@@ -19,6 +19,7 @@
                "seed.sublimate"
                "seed.contact.http"
                "pla.browser.maple"
+               "app.chart"
                )
   :components ((:file "package")
                (:file "setup")
