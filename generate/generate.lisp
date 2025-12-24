@@ -127,6 +127,13 @@
 (defun with-meta (item &rest props)
   `(fx ,item ,@props))
 
+(defun meta-base (form)
+  (if (atom form)
+      form (if (not (string= "FX" (string-upcase (first form))))
+               form (if (atom (second form))
+                        (second form)
+                        (mapcar #'meta-base (second form))))))
+
 (defun build-key-path (value keys)
   (if (rest keys) (list (first keys) (build-key-path value (rest keys)))
       (list (first keys) value)))

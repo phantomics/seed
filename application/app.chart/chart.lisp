@@ -76,8 +76,10 @@
             :initarg  :extend)))
 
 (defmacro chart-view (name data &body entities)
-  `(make-instance 'chart :name ,name :data ,data
-                         :entities (list ,@entities)))
+  (let ((namekey (intern (string name) "KEYWORD")))
+    (proclaim (list 'special name))
+    `(setf (symbol-value ',name)
+           (make-instance 'chart :name ,namekey :data ,data :entities (list ,@entities)))))
 
 (defmacro chart-style (type name &body props)
   `(make-instance ',(intern (string type) "APP.CHART")
@@ -110,11 +112,12 @@
                     ))
         )))
 
-(defmacro eset (style format source &rest items)
-  `(make-instance 'entity-set :style ,style :source ,source :items (list ,@items)))
+(defmacro eset (source &rest items)
+  `(make-instance 'entity-set :source ,source :items (list ,@items)))
 
-(defmacro essource (path)
-  `(make-instance 'set-source-file :path ,path))
+(defmacro essource (type path)
+  (let ((class-sym (intern (format nil "SET-SOURCE-~a" type) "APP.CHART")))
+    `(make-instance ',class-sym :path ,path)))
 
 (defmacro span (style format xfrom yfrom xto yto)
   `(make-instance 'enspan-retrace :points (list ,xfrom ,yfrom ,xto ,yto)

@@ -25,6 +25,7 @@
                           #:implement-start-controls #:write-to-file
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
                           #:build-script-cmirror #:build-script-pmirror #:build-script-misc)
+  (:shadowing-import-from #:seed.sublimate #:instantiate-priority-macro-reader)
   (:shadowing-import-from #:app.chart #:eset #:essource #:span)
   (:shadowing-import-from #:seed.access #:authorize)
   (:shadowing-import-from #:cl-csv #:read-csv))
@@ -106,6 +107,8 @@
                     (of-state :- :chart-paths)))
       (let ((chart-path (namestring (nth (of-state :- :chart-point)
                                          (of-state :- :chart-paths)))))
+        
+        (instantiate-priority-macro-reader (load (format nil "~a/chart.lisp" chart-path)))
         (of-state :- :chart-entities (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities))))))
 
@@ -167,8 +170,11 @@
 
     (init-chart-entities state)
 
-    (when (and state (not (of-state :- :chart-point))) ;; assign chart-point to 0 if not present
-      (of-state :- :chart-point 0))
+    ;; (when (and state (not (of-state :- :chart-point))) ;; assign chart-point to 0 if not present
+    ;;   (let ((chart-path (namestring (nth (of-state :- :chart-point)
+    ;;                                      (of-state :- :chart-paths)))))
+    ;;     (instantiate-priority-macro-reader (load chart-path)))
+    ;;   (of-state :- :chart-point 0))
     
     (destructuring-bind (&key identity uimod action entities mode &allow-other-keys) input
 
@@ -227,7 +233,8 @@
                                                  (reverse collected)))
                  (of-state :- :chart-entities entities)
                  (of-state :- :entity-data)
-                 (print ex-lines))))
+                 ;; (print ex-lines)
+                 ex-lines)))
             (action
              (let ((chart-entities (of-state :- :chart-point (getf input :point)))
                    (chart-path (namestring (nth (of-state :- :chart-point)
@@ -261,6 +268,7 @@
   (adapt-from-json :data :path :sort :remove :action :mode)
   (adapt-from-alist :system :branch :face)
   (lambda (state input)
+    (print (list :iii input))
     (destructuring-bind (&key data path &allow-other-keys) input
       (or (and data path (at-path path (lambda (index form)
                                          (if (and (listp (nth index form))
@@ -308,6 +316,8 @@
                                        (from-system-file *system* (format nil "~a/chart.lisp" chart-path)
                                                          :chart-entities)
                                        (of-state :- :chart-entities))
+                                 (instantiate-priority-macro-reader
+                                   (load (format nil "~a/chart.lisp" chart-path)))
                                  output))
                         (:add-span
                          (of-state :- :line-templater
