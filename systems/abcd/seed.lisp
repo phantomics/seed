@@ -11,7 +11,7 @@
                           #:uicc-button #:uicc-field #:uicc-select #:uich-candle #:spec-graph-interface
                           #:role-cast
                           #:uir-call #:uir-call-refreshing ;; #:uir-call-b
-                          #:uir-call-form
+                          #:uir-form #:uir-call-form
                           #:uir-exec
                           #:uir-patching #:uir-form ;; #:uir-contact
                           #:uir-contact-refreshing
@@ -115,7 +115,7 @@
 (defun manifest-file-listing (is-creating path)
   (append (and is-creating
                (list (dx (uic-series :layout (:groups :rows '(2 2))
-                                       :type (:series :enum :table-interstitial :enum)
+                                       :type (:series :table-interstitial)
                                        :role ((form)(call)))
                            (dx (uicc-field :name :system-name :type (:string)) "")
                            (dx (uicc-button :role ((call :n :form-input)))
@@ -170,11 +170,12 @@
 
     (init-chart-entities state)
 
-    ;; (when (and state (not (of-state :- :chart-point))) ;; assign chart-point to 0 if not present
-    ;;   (let ((chart-path (namestring (nth (of-state :- :chart-point)
-    ;;                                      (of-state :- :chart-paths)))))
-    ;;     (instantiate-priority-macro-reader (load chart-path)))
-    ;;   (of-state :- :chart-point 0))
+    (when (and state (not (of-state :- :chart-point))) ;; assign chart-point to 0 if not present
+      ;; (print (list :iii (of-state :- :chart-point) (of-state :- :chart-paths)))
+      ;; (let ((chart-path (namestring (nth (of-state :- :chart-point)
+      ;;                                    (of-state :- :chart-paths)))))
+      ;;   (instantiate-priority-macro-reader (load chart-path)))
+      (of-state :- :chart-point 0))
     
     (destructuring-bind (&key identity uimod action entities mode &allow-other-keys) input
 
@@ -182,7 +183,7 @@
         (of-state :- :entity-data (loop :for chent :in (cdddr (second (of-state :- :chart-entities)))
                                         :for ix :from 0 :collect (point-from-template chent ix))))
 
-      ;; (print (list :ac action entities))
+      (print (list :ac action entities))
       
       (cond (identity :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
             ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)
@@ -251,7 +252,7 @@
                                 output))))))
             (t (case (intern (string-upcase mode) "KEYWORD")
                  (:chart-data
-                  ;; (print (list :cc (of-state :- :chart-point)))
+                  (print (list :cc (of-state :- :chart-point)))
                   (let* ((chart-path (namestring (nth (of-state :- :chart-point)
                                                       (of-state :- :chart-paths))))
                          (data (second (third (second (from-system-file

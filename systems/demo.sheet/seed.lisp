@@ -14,7 +14,8 @@
                           #:uir-call #:uir-call-b
 
                           #:uir-exec
-                          #:uir-patching #:uir-call-form  #:uir-actuatable
+                          #:uir-patching
+                          #:uir-form #:uir-call-form  #:uir-actuatable
                           #:uir-sortable #:uir-reducable #:uir-toggle
 
                           #:aspect #:amake #:uia-name #:uia-based-pane-series #:uia-primal-dual-bank-pane
@@ -215,7 +216,8 @@
            ;; (print (list :xx))
            (render (funcall state nil :medium)
                    (dx (uic-frame :type (:meta-code))
-                       (express `(fx ,items (:type :enum) (:fx :uic-series)))))))))))
+                       (express `(fx ,items (:type) (:fx :uic-series)
+                                     (:role (uir-form))))))))))))
 
 (branch :play
   (adapt-from-json :index)

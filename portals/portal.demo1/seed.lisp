@@ -76,7 +76,7 @@
                                  (grow nil :base state)))
 
                          (dx (uic-series :type (:ui :main :placard))
-                             (list (dx (uic-series :type (:ui :column :short) :role ((form)(call)))
+                             (list (dx (uic-series :type (:ui :column :short) :role (form (call)))
                                        (list "please input your key"
                                              (dx (uicc-field :name "key") "")
                                              (dx (uicc-button) "enter")))))))))))
@@ -91,7 +91,8 @@
                                     tdescription))
                           (and t ; template-point (= ix template-point)
                                (list (dx (uic-series :layout (:groups :rows '(2))
-                                                     :type (:series :enum :table-interstitial :enum)
+                                                     :type (:series :table-interstitial)
+                                                     :role ((form))
                                                      ;; :role ((form)(call))
                                                      )
                                          (dx (uicc-field :name :system-name :type (:string)) "")

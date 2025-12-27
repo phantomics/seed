@@ -18,7 +18,7 @@
     (fx 1454 (:fx :uicc-field) (:type :numeric :integer))
     (fx 1.3330432736156352d0 (:fx :uicc-field) (:type :numeric :float)))
    (:fx :uic-series :layout (:groups :rows (-2 4)))
-   (:role uir-call-form (uir-reducable)))
+   (:role uir-form uir-call-form (uir-reducable)))
   (fx
    (span
     (fx "line" (:fx :uicc-select) (:type :select)
@@ -30,7 +30,7 @@
     (fx 948 (:fx :uicc-field) (:type :numeric :integer))
     (fx 1.3669097557003258d0 (:fx :uicc-field) (:type :numeric :float)))
    (:fx :uic-series :layout (:groups :rows (-2 4)))
-   (:role uir-call-form (uir-reducable)))
+   (:role uir-form uir-call-form (uir-reducable)))
   (fx
    (span
     (fx "line" (:fx :uicc-select) (:type :select)
@@ -44,4 +44,4 @@
    (:fx :uic-series :layout (:groups :rows (-2 4)))
    (:role uir-call-form (uir-reducable))))
  (:fx :uic-series :layout (:groups :rows (-2))) (:type :called :removable)
- (:role uir-call-form uir-reducable (uir-sortable :range 2)))
+ (:role uir-form uir-call-form uir-reducable (uir-sortable :range 2)))

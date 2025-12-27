@@ -716,7 +716,7 @@
                  (unless types (setf item (realize aspect medium item :sort index)))
                  (if output-unlisted item (list item)))))
         
-        (loop :for item :in (uic-base aspect) ;; :do (print (list :it item (uic-base aspect)))
+        (loop :for item :in (uic-base aspect)
               :when (and (typep item 'ui-component) (not (uic-root item)))
                 :do (setf (uic-root item) aspect))
 
@@ -725,7 +725,7 @@
         ;;            (string= "CHART-VIEW" (string (first (uic-base aspect)))))
         ;;   (print (list :iio (uic-base aspect) (mapcar #'uic-base (nthcdr 3 (uic-base aspect))))))
         
-        (when (member :enum types)
+        (when (has-role aspect 'uir-form)
           (push (psl (if (and (not (= "undefined" (typeof methods)))
                               (not (= "undefined" (typeof (@ methods register-form)))))
                          (funcall (chain methods (register-form mode)) $el)))
@@ -865,18 +865,11 @@
                                           (and is-list-table '(:table))
                                           (uic-type aspect)))
           
-          ;; (append '(:ui :series)
-          ;;         (case ltype
-          ;;           ((:horizontal :vertical)
-          ;;            '(:series :grid-layout)))
-          ;;         (and is-list-table '(:table)))
-
-          
           (loop :for type :in types :for ix :from 0
                 :do (format class-stream "~a" (string-downcase type))
                     (unless (= ix last-type-index) (format class-stream " ")))
           
-          (append (list (cond ((or is-render-form (member :enum types))
+          (append (list (cond ((has-role aspect 'uir-form)
                                :form)
                               (is-list-table :table)
                               (t :div))
@@ -1093,11 +1086,6 @@
 ;;                        (dx (uic-series :type (:ui :footer))
 ;;                            (list (grow nil (first l)
 ;;                                        context (list :uimod :footer-controls)))))))
-
-;; (and (member :enum types)
-;;      (list :x-init (psl (if (and (not (= "undefined" (typeof methods)))
-;;                                  (not (= "undefined" (typeof (@ methods register-form)))))
-;;                             (funcall (chain methods (register-form mode)) $el)))))
 
 ;; (and (and (member :controls types) (member :extog types))
 ;;      (list :x-data (psl (create this-toggle null
@@ -1340,11 +1328,12 @@
               ((member :area (uic-type aspect))
                (wrap-label (lisp->camel-case field-name)
                            `(:textarea :class "textarea"
+                                       ;; :name ,(format nil "field-~{~a.~}" (uic-path aspect))
                                        :name ,(or (lisp->camel-case field-name) "")
                                        ,(or field-content (uicc-field-default aspect)
                                             ""))))
               (t (wrap-label (lisp->camel-case field-name)
-                             `(:input :class "input"
+                             `(:input :class "input" ;; :name ,(format nil "field-~{~a.~}" (uic-path aspect))
                                       :type "text" :value ,(or field-content
                                                                               (uicc-field-default aspect)
                                                                               "")
@@ -2018,26 +2007,6 @@
                   ;; (instantiate-priority-macro-reader (asdf:load-system package)) ;; RESTORE THIS
                   )
 
-                ;; REDUNDANT
-                ;; (print (list :af (assoc :face input :test #'eq)))
-                ;; (print (list :ew el-width formatted))
-                ;; the output-stream is created in the seed package - best elsewhere?
-                ;; (if (and face (string= "graphNode" face))
-                ;;     (render medium
-                ;;             (dx (uic-frame :type (:meta-code))
-                ;;                 (express
-                ;;                  (funcall (lambda (items)
-                ;;                             `(fx ,items (:type :enum) (:fx :uic-series)))
-                ;;                           (loop :for item :in (funcall
-                ;;                                                ;; nodes have an (index . N)
-                ;;                                                ;; form to omit, links don't
-                ;;                                                (if sub-index #'identity #'rest)
-                ;;                                                (first (if sub-index
-                ;;                                                           (nth sub-index
-                ;;                                                                (rest (nth index
-                ;;                                                                           (rest formatted))))
-                ;;                                                           (nth index (rest formatted)))))
-                ;;                                 :collect item)))))
               (if (or network-changed system)
                   (progn (setf *giface-output-stream* (make-string-output-stream))
                          ;; (print (list :nc input))
