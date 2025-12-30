@@ -4,7 +4,7 @@
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
-                          #:from-system-file #:at-path #:build-templater #:get-template-metadata
+                          #:from-system-file #:at-path #:at-fx-path #:build-templater #:get-template-metadata
                           #:astr #:setf-value #:abind #:cbind #:text-wrap #:of-array-spec)
   (:shadowing-import-from #:seed.modulate #:dx #:render #:uim-web #:uim-web-stream
                           #:uic-anchor #:uic-page #:uic-frame #:uic-series #:uic-grid
@@ -36,7 +36,7 @@
 
 (seed :seed.branch.abcd
   (:linking . :abcd)
-  (:access :systems systems :to-grow grow :staccess (state . of-state)))
+  (:access :systems systems :to-grow grow :staccess (state of-state state-accessor)))
 
 (defun buttonize (item index)
   (declare (ignore index))
@@ -183,7 +183,7 @@
         (of-state :- :entity-data (loop :for chent :in (cdddr (second (of-state :- :chart-entities)))
                                         :for ix :from 0 :collect (point-from-template chent ix))))
 
-      (print (list :ac action entities))
+      ;; (print (list :ac action entities))
       
       (cond (identity :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
             ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)
@@ -252,7 +252,7 @@
                                 output))))))
             (t (case (intern (string-upcase mode) "KEYWORD")
                  (:chart-data
-                  (print (list :cc (of-state :- :chart-point)))
+                  ;; (print (list :cc (of-state :- :chart-point)))
                   (let* ((chart-path (namestring (nth (of-state :- :chart-point)
                                                       (of-state :- :chart-paths))))
                          (data (second (third (second (from-system-file
@@ -265,18 +265,53 @@
                             (dx (uich-candle :type (:green-red :abc :def-ghi))
                                 *system* :chart)))))))))
 
+(defmacro fx-path-access (state input accessor)
+  (let ((form (gensym)) (dtype-spec (gensym)))
+    `(lambda (,state ,input)
+       (destructuring-bind (&key data path &allow-other-keys) ,input
+         (when (and ,state data path)
+           (at-fx-path (rest path)
+                       (lambda (,form)
+                         (let ((,dtype-spec (rest (assoc :type (cddr ,form)))))
+                           (setf (second ,form)
+                                 (case (first ,dtype-spec)
+                                   (:numeric (read-from-string data))
+                                   (t data)))))
+                       ,accessor))
+         ,input))))
+
+(defmacro form-sort (state input accessor)
+  (let ((index (gensym)) (move-to (gensym)) (elist (gensym)))
+    `(lambda (,state ,input)
+       (destructuring-bind (&key data path sort remove &allow-other-keys) ,input
+         (or (and ,state (let ((,elist (second ,accessor)))
+                           (and path (cond (sort (destructuring-bind (,index ,move-to) sort
+                                                   (let ((moved (nth (1+ ,index) ,elist)))
+                                                     (if (zerop ,index) (pop ,elist)
+                                                         (rplacd (nthcdr index ,elist)
+                                                                 (rest (nthcdr (1+ ,index) ,elist))))
+                                                     (if (zerop ,move-to) (setf ,elist (cons moved ,elist))
+                                                         (rplacd (nthcdr ,move-to ,elist)
+                                                                 (cons moved (nthcdr (1+ ,move-to)
+                                                                                     ,elist))))))
+                                                 ,accessor
+                                                 (list :complete 0))
+                                           (remove (if (zerop remove) (pop ,elist)
+                                                       (rplacd (nthcdr (1- remove) ,elist)
+                                                               (rest (nthcdr remove ,elist))))
+                                                   ,accessor
+                                                   (values (list :complete 0)
+                                                           t))))))
+             ,input)))))
+
 (branch :chentity
   (adapt-from-json :data :path :sort :remove :action :mode)
   (adapt-from-alist :system :branch :face)
-  (lambda (state input)
-    (print (list :iii input))
-    (destructuring-bind (&key data path &allow-other-keys) input
-      (or (and data path (at-path path (lambda (index form)
-                                         (if (and (listp (nth index form))
-                                                  (eql 'fx (first (nth index form))))
-                                             (setf (second (nth index form)) data)
-                                             (setf (nth index form) data)))))
-          input)))
+  (fx-path-access state input (of-state :- :chart-entities))
+  ;; (lambda (state input)
+  ;;   (destructuring-bind (&key action path &allow-other-keys) input
+  ;;     (when action)
+  ;;     input))
   (lambda (state input)
     (destructuring-bind (&key data path sort remove &allow-other-keys) input
       (or (and state (let ((entities (of-state :- :chart-entities)))

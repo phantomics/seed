@@ -474,6 +474,8 @@
 
 (defmethod render ((medium uim-web) (component t))
   (let* ((out-stream (make-string-output-stream))
+         (spinneret:*html-style* :tree)
+         (spinneret:*always-quote* t)
          (spinneret:*html* out-stream))
     (spinneret:interpret-html-tree (generate medium component))
     (values (get-output-stream-string out-stream)
@@ -611,7 +613,7 @@
 
 (defmethod generate ((medium uim-web) (aspect symbol))
   (declare (ignore medium))
-  (list :span :class "symbol" (symbol-munger:lisp->camel-case aspect)))
+  (list :span :class "symbol " (symbol-munger:lisp->camel-case aspect)))
 
 (defmethod generate ((medium uim-web) (aspect string))
   (declare (ignore medium))
@@ -637,10 +639,6 @@
     (push :access (uic-type aspect))
     (push :body   (uic-type aspect))
 
-    ;; (print (list :sy system aspect (uic-name aspect)))
-
-    ;; (unless system (setf portal.demo1::aabbcc aspect))
-    
     (cons :div (if system
                    (list :hx-post "/render/" :hx-trigger "load, reload consume, submit consume"
                          :id (format nil "branch-~a" (lisp->camel-case (uic-name aspect)))
@@ -789,43 +787,40 @@
               ;; if this is a call-form, the form's head symbol is not displayed
               ;; with the others; in most cases it is either not shown or displayed
               ;; in a special manner as in a series header
-              :when (or item (member :partitioned (uic-type aspect)))
-                :do (format class-stream "item ")
-                    (when (and (uic-series-point aspect)
-                               (= ix (uic-series-point aspect)))
-                      (format class-stream "point "))
+              :when item
+                :do (format class-stream "item")
+                    (when (and (uic-series-point aspect) (= ix (uic-series-point aspect)))
+                      (format class-stream "point"))
                     ;; (print (list :ii item))
-                    (push (if (and (not item) (member :partitioned (uic-type aspect)))
-                              '(:hr :class "divider")
-                              (locate medium aspect ix
-                                      (append (list (cond (is-list-table :tr)
-                                                          (t :div))
-                                                    :class (get-output-stream-string class-stream)
-                                                    :index ix)
-                                              (let* ((call-role (has-role aspect 'uir-contact))
-                                                     (call-args (and call-role
-                                                                     (mapcar (lambda (arg)
-                                                                               (case arg
-                                                                                 (:@index ix)
-                                                                                 (t arg)))
-                                                                             (uiri-args call-role))))
-                                                     (call-post
-                                                       (and (or (has-role aspect 'uir-contact-refreshing)
-                                                                (has-role aspect 'uir-call-refreshing))
-                                                            '(create next "refresh"))))
-                                                (typecase call-role
-                                                  (uir-contact
-                                                   (list :|x-on:click|
-                                                         (psl (fetch-contact $el mode
-                                                                             (lisp (cons 'create
-                                                                                         call-args))
-                                                                             (lisp call-post)))))))
-                                              (and (and (of-root-type aspect :meta-code)
-                                                        (member :sortable (uic-type aspect)))
-                                                   (list :x-init
-                                                         (psl (initialize-draggable
-                                                               $el mode in-series))))
-                                              (enclose-by-type types item ix))))
+                    (push (locate medium aspect ix
+                                  (append (list (cond (is-list-table :tr)
+                                                      (t :div))
+                                                :class (get-output-stream-string class-stream)
+                                                :index ix)
+                                          (let* ((call-role (has-role aspect 'uir-contact))
+                                                 (call-args (and call-role
+                                                                 (mapcar (lambda (arg)
+                                                                           (case arg
+                                                                             (:@index ix)
+                                                                             (t arg)))
+                                                                         (uiri-args call-role))))
+                                                 (call-post
+                                                   (and (or (has-role aspect 'uir-contact-refreshing)
+                                                            (has-role aspect 'uir-call-refreshing))
+                                                        '(create next "refresh"))))
+                                            (typecase call-role
+                                              (uir-contact
+                                               (list :|x-on:click|
+                                                     (psl (fetch-contact $el mode
+                                                                         (lisp (cons 'create
+                                                                                     call-args))
+                                                                         (lisp call-post)))))))
+                                          (and (and (of-root-type aspect :meta-code)
+                                                    (member :sortable (uic-type aspect)))
+                                               (list :x-init
+                                                     (psl (initialize-draggable
+                                                           $el mode in-series))))
+                                          (enclose-by-type types item ix)))
                           items))
 
         (setf items (reverse items))
@@ -838,6 +833,19 @@
                          (when (and parent-sortable (of-root-type aspect :meta-code))
                            (push '(:p :class "control drag-handle" (:a :class "button is-static" "≣"))
                                  segments))
+                         (let ((call-role (has-role aspect 'uir-call)))
+                           (when call-role (push `(:p :class "control call-trigger"
+                                                      (:a :class "button"
+                                                          :|x-on:click|
+                                                          ,(psl (fetch-contact
+                                                                 $el mode
+                                                                 (lisp (list 'create
+                                                                             'path (cons 'list
+                                                                                         (uic-path aspect))
+                                                                             'action (lisp->camel-case
+                                                                                      (uiri-name call-role))))))
+                                                          ,(lisp->camel-case (uiri-name call-role))))
+                                                 segments)))
                          (when (has-role aspect 'uir-call-form)
                            (push `(:p :class "control is-expanded"
                                       (:a :class "button is-static" ,(first (uic-base aspect))))
@@ -876,22 +884,10 @@
                         ;; the series should be expressed as a form if it is conveying an
                         ;; enum structure or if its :call property is set to t indicating
                         ;; that it is a form whose submission causes its rerendering
-                        ;; :path ""
-                        ;; :style (if (and ;; (not (member ltype '(:horizontal :vertical)))
-                        ;;                 ;; (not (eql :even (first lprops)))
-                        ;;                 t
-                        ;;                 )
-                        ;;            ;; TODO: this needs more rigorous logic for partitioning according
-                        ;;            ;; to params and numbers in lprops, currently it only supports
-                        ;;            ;; the :even (number) case
-                        ;;            "" (let ((ratio (/ 100.0 (or (second lprops) breadth-default))))
-                        ;;                 (format nil "grid-template-~a: ~{~a% ~};"
-                        ;;                         (if (eq ltype :horizontal) "columns" "rows")
-                        ;;                         (loop :for i :below (or (second lprops) breadth-default)
-                        ;;                               :collect ratio))))
-                        :x-data (if (of-root-type aspect :meta-code)
-                                    (psl (create containing-series $el
-                                                 meta-path         (lisp (cons 'list (uic-path aspect)))))))
+                        ;; :x-data (if (of-root-type aspect :meta-code)
+                        ;;             (psl (create containing-series $el
+                        ;;                          meta-path         (lisp (cons 'list (uic-path aspect))))))
+                        )
                   
                   (and is-render-form (list :hx-inherit "*" :hx-post "/render/"))
 
@@ -907,13 +903,13 @@
                   ;; header
 
                   (if (eq :groups ltype)
-                      (let ((envelopes) (item-index 0)
-                            (rows (getf lprops :rows)))
+                      (let ((envelopes) (item-index 0) (rows (getf lprops :rows)))
+                        (unless (minusp (first rows))
+                          (push (first header) envelopes))
                         (dolist (item rows)
                           (let ((in-header (and header (zerop item-index) (minusp item))))
                             (push nil envelopes)
-                            (when in-header (push (first header)
-                                                  (first envelopes)))
+                            (when in-header (push (first header) (first envelopes)))
                             (loop :for c :below (abs item)
                                   :do (push (list :div :class (if in-header "following" "column")
                                                   (nth (+ c item-index) items))
@@ -921,7 +917,8 @@
                             (setf (first envelopes) (append (list :div :class "columns")
                                                             (reverse (first envelopes))))
                             (incf item-index (max 0 (abs item)))))
-                        
+
+                        ;; append unsorted items in list to end
                         (append (reverse envelopes)
                                 (if (< item-index (- (length items) 0))
                                     (nthcdr item-index items))))
@@ -1026,7 +1023,7 @@
 (defmethod amake ((item uia-based-pane-series))
   (let ((rr (uia-role item)))
     (dx (uic-series :name (uia-name item) :role rr
-                    :layout (:horizontal :even) :type (:workspace :even :aabbcc))
+                    :layout (:horizontal :even) :type (:workspace :even))
         (amake (uia-base item)))))
 
 (defmethod amake ((item uia-primal-dual-bank-pane))
@@ -1334,10 +1331,11 @@
                                             ""))))
               (t (wrap-label (lisp->camel-case field-name)
                              `(:input :class "input" ;; :name ,(format nil "field-~{~a.~}" (uic-path aspect))
-                                      :type "text" :value ,(or field-content
-                                                                              (uicc-field-default aspect)
-                                                                              "")
-                                      :name ,(or (lisp->camel-case field-name) "")))))))))
+                                      :type "text" :value ,(or field-content (uicc-field-default aspect) "")
+                                      :name ,(or (lisp->camel-case field-name) "")
+                                      :|x-on:change| ,(psl (field-in $el (lisp (cons 'list (uic-path aspect)))
+                                                                     mode))
+                                      ))))))))
 
 (defmethod generate ((medium uim-web) (aspect uicc-select))
   (let* ((base (uic-base aspect))
@@ -1739,7 +1737,7 @@
              
               ;; (print (list :nnn index))
               ;; (close path-str)
-              (print (list :eee associated-node-ids (funcall of-local-state :gm-index)))
+              ;; (print (list :eee associated-node-ids (funcall of-local-state :gm-index)))
               (list :oob-reload associated-node-ids))
             (let ((network-changed)
                   (index (or (funcall of-local-state :gm-index) index))
@@ -2026,7 +2024,6 @@
 
 (defun svrender-graph (gmodel &key x-offset y-offset point branch-name id-string associated-node-ids
                                 (path-string "") (height 400) (width 400))
-  (print :eiei)
   (multiple-value-bind (nodes-markup y-offset)
       (svrender-layer gmodel :x-offset x-offset :y-offset y-offset :point point :branch-name branch-name
                              :associated-node-ids associated-node-ids
@@ -2190,8 +2187,8 @@
     (defun svrender-layer (gmodel &key x-offset y-offset parent point (path-string "")
                                     branch-name associated-node-ids (height 400) (width 400)
                                     (depth 1) (depth-store (cons :depth 0)))
-      (print (list :mm ;; gmodel
-                   x-offset y-offset parent point path-string))
+      ;; (print (list :mm ;; gmodel
+      ;;              x-offset y-offset parent point path-string))
       (let ((opener-code (psl* `(open-node (chain $el (get-attribute "index"))
                                            (list ,@(mapcar (lambda (s) (list 'getprop 'patch s))
                                                            associated-node-ids)))))

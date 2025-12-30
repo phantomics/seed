@@ -4,7 +4,7 @@
 
 (seed :portal.demo1
   (:access :to-grow grow :systems systems
-           :ctaccess (*contacts* . make-contacts) :staccess (state . of-state)))
+           :ctaccess (*contacts* . make-contacts) :staccess (state of-state state-accessor)))
 
 (defvar *contacts* (list :demo.sheet :abcd))
 
@@ -62,7 +62,7 @@
                                                             :role ((contact-refreshing :base-key :point)))
                                                (of-state nil :system-point))))
                                  (and (of-state nil :system-point)
-                                      (dx (uic-series :type  '(:ui :partitioned :navigation)
+                                      (dx (uic-series :type  '(:ui :navigation)
                                                       :point (of-state (of-state nil :system-point)
                                                                        :view-point)
                                                       :role  ((contact-refreshing :a (list :point :@index))))

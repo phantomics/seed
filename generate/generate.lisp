@@ -55,7 +55,7 @@
          (branches (gensym "BR")) (system (gensym "SY")) (key (gensym "KY"))
          (values (gensym "VL")) (session (gensym "SS")) (input (gensym "IN"))
          (item (gensym "IT")) (portal-state (gensym "PR")) (params (gensym "PA")))
-    `(progn ,@(and staccess (destructuring-bind (st-sym &rest of-sym) staccess
+    `(progn ,@(and staccess (destructuring-bind (st-sym of-sym ac-sym) staccess
                               (and (or expand-regardless (not (fboundp of-sym)))
                                    `((eval-when (:compile-toplevel :load-toplevel :execute)
                                        (setf (macro-function ',of-sym)
@@ -64,7 +64,18 @@
                                                  (declare (ignore _))
                                                  (when (eq :- (first ,params))
                                                    (setf (first ,params) ,(or linking name)))
-                                                 (cons 'funcall (cons ',st-sym ,params))))))))))
+                                                 (cons 'funcall (cons ',st-sym ,params))))
+                                             (macro-function ',ac-sym)
+                                             (lambda (form env)
+                                               (destructuring-bind (_ &rest ,params) form
+                                                 (declare (ignore _))
+                                                 (when (eq :- (first ,params))
+                                                   (setf (first ,params) ,(or linking name)))
+                                                 (print (list 'lambda nil
+                                                              (list 'and (list 'boundp '',st-sym)
+                                                                    ',st-sym
+                                                                    (cons 'funcall (cons ',st-sym
+                                                                                         ,params)))))))))))))
             ,@(when access
                 `((let ((,portal-state (list :point nil :template-point nil
                                              ,@(and contacts `(:contacts ,(cons 'list contacts)))
@@ -418,6 +429,13 @@
 (defun at-path (path function &optional data)
   (if (rest path) (at-path (rest path) function (nth (first path) data))
       (funcall function (first path) data)))
+
+(defun at-fx-path (path function &optional data)
+  (if (and (symbolp (first data))
+           (string= "FX" (string-upcase (first data))))
+      (at-fx-path path function (second data))
+      (if (rest path) (at-fx-path (rest path) function (nth (first path) data))
+          (funcall function (nth (first path) data)))))
 
 (defun seek-key (form key)
   (let ((to-return))

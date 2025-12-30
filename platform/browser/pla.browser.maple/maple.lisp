@@ -270,7 +270,8 @@
           ((.access.body > .meta-code)
            :height 100% :background-color ,color-focal-sh05
            :border-width 2px 0 :border-color ,color-focal-sh1
-           (form (.item :margin-bottom 0.5rem)))
+           (form ;; (.item :margin-bottom 0.5rem)
+                 ))
           
           (".access.body:has(>.table.list-table)"
            :background ,(format nil "repeating-linear-gradient(135deg, ~a, ~a 4px, ~a 4px, ~a 8px)"
@@ -363,6 +364,7 @@
          (button :height 100%)))
       
       `(.meta-code
+        (form :margin-block-end 0)
         (.columns
          :margin 0 0 0.25rem 0)
         (.ui.series
@@ -622,6 +624,13 @@
     (let* ((fdata (new (-form-data (chain element (closest "form")))))
            (obj (chain -object (from-entries (chain fdata (entries))))))
       (fetch-contact element context obj event))))
+
+(enter-js-element *misc-js* :form-input-def
+  (defun field-in (element path context event)
+    ;; (log :ell element context)
+    (fetch-contact element context (create path path data (@ element value)
+                                           branch (@ context branch) system (@ context system))
+                   event)))
 
 (enter-js-element *misc-js* :fetch-contact-defs
   (defun fetch-contact (element context input event)

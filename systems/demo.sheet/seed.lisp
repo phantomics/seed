@@ -34,7 +34,7 @@
 
 (seed :seed.branch.demo.sheet
   (:linking . :demo.sheet)
-  (:access :systems systems :to-grow grow :staccess (state . of-state)))
+  (:access :systems systems :to-grow grow :staccess (state of-state state-accessor)))
 
 (defun buttonize (item index)
   (declare (ignore index))
