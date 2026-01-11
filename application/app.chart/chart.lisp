@@ -52,7 +52,10 @@
 (defclass entity-span (entity)
   ((%points :accessor espan-points
             :initform nil
-            :initarg  :points)))
+            :initarg  :points)
+   (%weight :accessor enspan-weight
+            :initform nil
+            :initarg  :weight)))
 
 (defclass enspan-line (entity-span)
   ((%extend :accessor enspan-line-extend
@@ -85,6 +88,24 @@
   `(make-instance ',(intern (string type) "APP.CHART")
                   :name ,name ,@props))
 
+(defgeneric list-entities (set))
+
+(defmethod list-entities ((chart chart))
+  (let ((output))
+    (dolist (entity (chart-entities chart))
+      (if (typep entity 'entity-set)
+          (setf output (append (list-entities entity) output))
+          (push entity output)))
+    (reverse output)))
+
+(defmethod list-entities ((set entity-set))
+  (let ((output))
+    (dolist (entity (eset-items set))
+      (if (typep entity 'entity-set)
+          (setf output (append (list-entities entity) output))
+          (push entity output)))
+    output))
+
 (defgeneric plot (chart data))
 
 (defmethod plot ((chart chart) data)
@@ -108,9 +129,7 @@
                          (next-delta (- line-origin (first next-coords)))
                          (prev-ratio (- (* (/ prev-delta ratio) (cadar (espan-points entity)))
                                         (second last-coords))))
-                    prev-ratio
-                    ))
-        )))
+                    prev-ratio)))))
 
 (defmacro eset (source &rest items)
   `(make-instance 'entity-set :source ,source :items (list ,@items)))
@@ -119,7 +138,7 @@
   (let ((class-sym (intern (format nil "SET-SOURCE-~a" type) "APP.CHART")))
     `(make-instance ',class-sym :path ,path)))
 
-(defmacro span (style format xfrom yfrom xto yto)
+(defmacro span (style format xfrom yfrom xto yto &optional weight)
   `(make-instance 'enspan-retrace :points (list ,xfrom ,yfrom ,xto ,yto)
-                                  :style ,style))
+                                  :style ,style :weight ,weight))
 

@@ -161,7 +161,7 @@
 
       `(.list :background transparent)
 
-      `(.button :border-width 0 0 2px 0
+      `(.button :border-width 0 0 2px 0 :padding 0 0.5rem :line-height 0.6rem
                 :padding "calc(.15em - 1px) calc(.75em - 1px);")
 
       `(.input :border-width 2px 0)
@@ -169,7 +169,8 @@
       `(.select (select :border-width 0 0 2px 0))
 
       `(.workspace
-        (.input :color ,color-focal-fg1 :background-color ,color-focal-bg1 :border-color ,color-focal-fg5)
+        (.input :color ,color-focal-fg1 :background-color ,color-focal-bg1 :border-color ,color-focal-fg5
+                :box-sizing border-box)
         (.button :color ,color-focal-fg0 :background ,color-focal-fg5 :border-color ,color-focal-fg35)
         (.select :background "#d6dbdb" :border-color "#93a1a1")
 

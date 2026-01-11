@@ -26,7 +26,7 @@
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
                           #:build-script-cmirror #:build-script-pmirror #:build-script-misc)
   (:shadowing-import-from #:seed.sublimate #:instantiate-priority-macro-reader)
-  (:shadowing-import-from #:app.chart #:eset #:essource #:span)
+  (:shadowing-import-from #:app.chart #:list-entities #:eset #:essource #:span)
   (:shadowing-import-from #:seed.access #:authorize)
   (:shadowing-import-from #:cl-csv #:read-csv))
 
@@ -193,14 +193,36 @@
                                              (list :save :zoom-actual)))
             (entities
              (let ((collected)
-                   (ex-lines (loop :for ix :from 0 :for line :in (read-csv #P"/tmp/USDJPY.cl.csv")
-                                   :collect (destructuring-bind (x-start y-start x-end y-end weight)
-                                                (mapcar #'read-from-string line)
-                                              (list :type "line" :points (list (list x-start y-start)
-                                                                               (list x-end   y-end))
-                                                    :name (format nil "obx-~a" ix)
-                                                    :weight weight :points-in-flux nil
-                                                    :in-flux nil :ratios nil)))))
+                   (ex-lines ;; (loop :for ix :from 0 :for line :in (read-csv #P"/tmp/USDJPY.cl.csv")
+                     ;;       :collect (destructuring-bind (x-start y-start x-end y-end weight)
+                     ;;                    (mapcar #'read-from-string line)
+                     ;;                  (list :type "line" :points (list (list x-start y-start)
+                     ;;                                                   (list x-end   y-end))
+                     ;;                        :name (format nil "obx-~a" ix)
+                     ;;                        :weight weight :points-in-flux nil
+                     ;;                        :in-flux nil :ratios nil)))
+                     ))
+
+               (print (list :aa action (and (find-package "ABCD")
+                                            (find-symbol "CHART-TEST-USDJPY" "ABCD")
+                                            (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
+                                            (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
+                                                                                      "ABCD"))))))
+               
+               
+               (when (and (find-package "ABCD")
+                          (find-symbol "CHART-TEST-USDJPY" "ABCD")
+                          (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD")))
+                 (loop :for ix :from 0
+                       :for line :in (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY" "ABCD")))
+                       :do (push (destructuring-bind (x-start y-start x-end y-end)
+                                     (app.chart::espan-points line)
+                                   (list :type "line" :points (list (list x-start y-start)
+                                                                    (list x-end   y-end))
+                                         :name (format nil "obx-~a" ix)
+                                         :weight 1 :points-in-flux nil
+                                         :in-flux nil :ratios nil))
+                                 ex-lines)))
                
                (unless (of-state :- :line-templater)
                  (of-state :- :line-templater
@@ -308,10 +330,58 @@
   (adapt-from-json :data :path :sort :remove :action :mode)
   (adapt-from-alist :system :branch :face)
   (fx-path-access state input (of-state :- :chart-entities))
-  ;; (lambda (state input)
-  ;;   (destructuring-bind (&key action path &allow-other-keys) input
-  ;;     (when action)
-  ;;     input))
+  (lambda (state input)
+    (destructuring-bind (&key action path &allow-other-keys) input
+      (let ((asym (intern (string-upcase (symbol-munger::camel-case->lisp-name action)) "KEYWORD")))
+        (flet ((exprs-to-linespecs (path)
+                 (loop :for ix :from 0 :for line :in (read-csv path)
+                       :collect (destructuring-bind (x-start y-start x-end y-end weight)
+                                    (mapcar #'read-from-string line)
+                                  ;; (list :type "line" :points (list (list x-start y-start)
+                                  ;;                                  (list x-end   y-end))
+                                  ;;       :name (format nil "obx-~a" ix)
+                                  ;;       :weight weight :points-in-flux nil :in-flux nil :ratios nil)
+                                  (print `(fx
+                                    (span
+                                     (fx "line" (:fx :uicc-select) (:type :select)
+                                         (:options "line" "retraceX" "retraceY"))
+                                     (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
+                                         (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :─∘─∘─))))
+                                     (fx ,x-start (:fx :uicc-field) (:type :numeric :integer))
+                                     (fx ,y-start (:fx :uicc-field) (:type :numeric :float))
+                                     (fx ,x-end   (:fx :uicc-field) (:type :numeric :integer))
+                                     (fx ,y-end   (:fx :uicc-field) (:type :numeric :float))
+                                     (fx ,weight  (:fx :uicc-field)  (:type :numeric :float))
+                                     )
+                                    (:fx :uic-series :layout (:groups :rows (-2 4 2)))
+                                    (:role uir-call-form (uir-reducable))))))))
+          ;; (print (list :aa action asym path (and (find-package "ABCD")
+          ;;                                        (find-symbol "CHART-TEST-USDJPY" "ABCD")
+          ;;                                        (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
+          ;;                                        (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
+          ;;                                                                                  "ABCD"))))))
+          (case asym
+            (:populate (at-fx-path (rest path)
+                                   (lambda (form)
+                                     (print (list :ff form))
+                                     (at-fx-path '(1)
+                                                 (lambda (item)
+                                                   (let ((specs (exprs-to-linespecs
+                                                                 (pathname (second (third (second item))))))
+                                                         (form-root (loop :for i :below 2
+                                                                          :for el :in (second item)
+                                                                          :collect el)))
+                                                     
+                                                     (print (list :ee (second (third (second item)))
+                                                                  (second item)
+                                                                  specs
+                                                                  item))
+                                                     (setf (second form) (append form-root specs))
+                                                     ))
+                                                 form))
+                                   (of-state :- :chart-entities))
+             (print (list :sst (of-state :- :chart-entities)))))))
+      input))
   (lambda (state input)
     (destructuring-bind (&key data path sort remove &allow-other-keys) input
       (or (and state (let ((entities (of-state :- :chart-entities)))

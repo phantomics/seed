@@ -843,11 +843,12 @@
                                                                              'path (cons 'list
                                                                                          (uic-path aspect))
                                                                              'action (lisp->camel-case
-                                                                                      (uiri-name call-role))))))
+                                                                                      (uiri-name call-role))))
+                                                                 (lisp (list 'create 'next "refresh"))))
                                                           ,(lisp->camel-case (uiri-name call-role))))
                                                  segments)))
                          (when (has-role aspect 'uir-call-form)
-                           (push `(:p :class "control is-expanded"
+                           (push `(:p :class "control"
                                       (:a :class "button is-static" ,(first (uic-base aspect))))
                                  segments))
                          ;; place the X button to remove a list item if its

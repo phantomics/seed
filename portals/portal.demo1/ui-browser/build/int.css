@@ -8,6 +8,8 @@ body{
 
 .button{
     border-width: 0 0 2px 0;
+    padding: 0 0.5rem;
+    line-height: 0.6rem;
     padding: calc(.15em - 1px) calc(.75em - 1px);;
 }
 
@@ -27,6 +29,7 @@ body{
     color: #073642;
     background-color: #fdf6e6;
     border-color: #d6dbdb;
+    box-sizing: border-box;
 }
 
 .workspace .button{
