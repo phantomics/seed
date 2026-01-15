@@ -452,12 +452,10 @@
 
 (defun build-templater (form &rest keys)
   (let ((paths) (assigners))
-    (dolist (key keys)
-      (setf (getf paths key) (seek-key form key)))
+    (dolist (key keys) (setf (getf paths key) (seek-key form key)))
     (lambda (&rest pairs)
       (let ((output (copy-tree form)))
-        (loop :for (key value) :on pairs :by #'cddr
-              :do (set-key output value (getf paths key)))
+        (loop :for (key value) :on pairs :by #'cddr :do (set-key output value (getf paths key)))
         output))))
 
 (defun get-template-metadata (path)

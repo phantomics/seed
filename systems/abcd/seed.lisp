@@ -1,6 +1,6 @@
 (defpackage #:seed.branch.abcd
   (:use #:cl)
-  (:shadowing-import-from #:seed.generate #:seed #:branch
+  (:shadowing-import-from #:seed.generate #:seed #:fx #:branch
                           #:interface-format-form #:load-seed-system
                           #:syspath #:file-to-string
                           #:system-file-to-string #:adapt-from-alist #:adapt-from-json
@@ -115,14 +115,14 @@
 (defun manifest-file-listing (is-creating path)
   (append (and is-creating
                (list (dx (uic-series :layout (:groups :rows '(2 2))
-                                       :type (:series :table-interstitial)
-                                       :role ((form)(call)))
-                           (dx (uicc-field :name :system-name :type (:string)) "")
-                           (dx (uicc-button :role ((call :n :form-input)))
-                               "create")
-                           "Testing."
-                           (dx (uicc-button :role ((call :n :form-input)))
-                               "cancel"))))
+                                     :type (:series :table-interstitial)
+                                     :role ((form)(call)))
+                         (dx (uicc-field :name :system-name :type (:string)) "")
+                         (dx (uicc-button :role ((call :n :form-input)))
+                             "create")
+                         "Testing."
+                         (dx (uicc-button :role ((call :n :form-input)))
+                             "cancel"))))
           (loop :for ix :from 0 :for dir :in (uiop:subdirectories path)
                 :append (let ((props (from-system-file *system* (format nil "~a/chart.lisp" dir)
                                                        :properties)))
@@ -203,13 +203,12 @@
                      ;;                        :in-flux nil :ratios nil)))
                      ))
 
-               (print (list :aa action (and (find-package "ABCD")
-                                            (find-symbol "CHART-TEST-USDJPY" "ABCD")
-                                            (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
-                                            (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
-                                                                                      "ABCD"))))))
-               
-               
+               ;; (print (list :aa action (and (find-package "ABCD")
+               ;;                              (find-symbol "CHART-TEST-USDJPY" "ABCD")
+               ;;                              (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
+               ;;                              (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
+               ;;                                                                        "ABCD"))))))
+                              
                (when (and (find-package "ABCD")
                           (find-symbol "CHART-TEST-USDJPY" "ABCD")
                           (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD")))
@@ -226,9 +225,9 @@
                
                (unless (of-state :- :line-templater)
                  (of-state :- :line-templater
-                          (build-templater (from-system-file *system* "sheet.lisp"
-                                                             :chart-entity-template-line)
-                                           :type :format :x-start :y-start :x-end :y-end)))
+                           (build-templater (from-system-file *system* "sheet.lisp"
+                                                              :chart-entity-template-line)
+                                            :type :x-start :y-start :x-end :y-end :weight)))
                ;; (print (list :ent entities (of-state :- :chart-entities) (of-state :- :entity-data)))
                (when (listp (first entities))
                  (dolist (espec entities)
@@ -341,49 +340,68 @@
                                   ;;                                  (list x-end   y-end))
                                   ;;       :name (format nil "obx-~a" ix)
                                   ;;       :weight weight :points-in-flux nil :in-flux nil :ratios nil)
-                                  (print `(fx
-                                    (span
-                                     (fx "line" (:fx :uicc-select) (:type :select)
-                                         (:options "line" "retraceX" "retraceY"))
-                                     (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
-                                         (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :─∘─∘─))))
-                                     (fx ,x-start (:fx :uicc-field) (:type :numeric :integer))
-                                     (fx ,y-start (:fx :uicc-field) (:type :numeric :float))
-                                     (fx ,x-end   (:fx :uicc-field) (:type :numeric :integer))
-                                     (fx ,y-end   (:fx :uicc-field) (:type :numeric :float))
-                                     (fx ,weight  (:fx :uicc-field)  (:type :numeric :float))
-                                     )
-                                    (:fx :uic-series :layout (:groups :rows (-2 4 2)))
-                                    (:role uir-call-form (uir-reducable))))))))
-          ;; (print (list :aa action asym path (and (find-package "ABCD")
-          ;;                                        (find-symbol "CHART-TEST-USDJPY" "ABCD")
-          ;;                                        (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
-          ;;                                        (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
-          ;;                                                                                  "ABCD"))))))
+                                  (print (list :sy (symbol-package 'fx)))
+                                  (funcall (of-state :- :line-templater)
+                                           :x-start x-start :x-end x-end :weight 1
+                                           :y-start y-start :y-end y-end :type "line")
+                                  
+                                  ;; (print `(fx
+                                  ;;   (span
+                                  ;;    (fx "line" (:fx :uicc-select) (:type :select)
+                                  ;;        (:options "line" "retraceX" "retraceY"))
+                                  ;;    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
+                                  ;;        (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :─∘─∘─))))
+                                  ;;    (fx ,x-start (:fx :uicc-field) (:type :numeric :integer))
+                                  ;;    (fx ,y-start (:fx :uicc-field) (:type :numeric :float))
+                                  ;;    (fx ,x-end   (:fx :uicc-field) (:type :numeric :integer))
+                                  ;;    (fx ,y-end   (:fx :uicc-field) (:type :numeric :float))
+                                  ;;    (fx ,weight  (:fx :uicc-field)  (:type :numeric :float))
+                                  ;;    )
+                                  ;;   (:fx :uic-series :layout (:groups :rows (-2 4 2)))
+                                  ;;   (:role uir-call-form (uir-reducable))))
+
+                                  ))))
+          (print (list :aa action asym path (and (find-package "ABCD")
+                                                 (find-symbol "CHART-TEST-USDJPY" "ABCD")
+                                                 (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
+                                                 (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
+                                                                                           "ABCD"))))))
           (case asym
             (:populate (at-fx-path (rest path)
                                    (lambda (form)
                                      (print (list :ff form))
-                                     (at-fx-path '(1)
-                                                 (lambda (item)
-                                                   (let ((specs (exprs-to-linespecs
-                                                                 (pathname (second (third (second item))))))
-                                                         (form-root (loop :for i :below 2
-                                                                          :for el :in (second item)
-                                                                          :collect el)))
+                                     ;; (at-fx-path '(1)
+                                     ;;             (lambda (item)
+                                     ;;               (let ((specs (exprs-to-linespecs
+                                     ;;                             (pathname (second (third (second item))))))
+                                     ;;                     (form-root (loop :for i :below 3
+                                     ;;                                      :for el :in (second item)
+                                     ;;                                      :collect el)))
                                                      
-                                                     (print (list :ee (second (third (second item)))
-                                                                  (second item)
-                                                                  specs
-                                                                  item))
-                                                     (setf (second form) (append form-root specs))
-                                                     ))
-                                                 form))
+                                     ;;                 (print (list :ee (second (third (second item)))
+                                     ;;                              (second item)
+                                     ;;                              specs
+                                     ;;                              item))
+                                     ;;                 (print (list :item item))
+                                     ;;                 ;; (setf (second item) (append form-root specs))
+                                     ;;                 ;; (setf (cdr item) (cons (second item) specs))
+                                     ;;                 item))
+                                     ;;             form)
+                                     (print (list :tt (second form) (second (cadadr form))))
+                                     ;; (let ((specs (exprs-to-linespecs
+                                     ;;               (pathname (second (third (second (cadadr form))))))))
+                                       ;; (print (list :ooo item))
+                                     (setf (cdadr form)
+                                           (cons (cadadr form)
+                                                 (exprs-to-linespecs
+                                                  (pathname (second (third (second (cadadr form))))))))
+                                     )
                                    (of-state :- :chart-entities))
              (print (list :sst (of-state :- :chart-entities)))))))
       input))
   (lambda (state input)
     (destructuring-bind (&key data path sort remove &allow-other-keys) input
+      (print (list :inp input remove))
       (or (and state (let ((entities (of-state :- :chart-entities)))
                        (let ((elist (second entities)))
                          (and path (cond (sort (destructuring-bind (index move-to) sort
@@ -397,9 +415,11 @@
                                                                                    elist))))))
                                                (of-state :- :chart-entities entities)
                                                (list :complete 0))
-                                         (remove (if (zerop remove) (pop elist)
+                                         (remove (print (list :xx elist))
+                                                 (if (zerop remove) (pop elist)
                                                      (rplacd (nthcdr (1- remove) elist)
                                                              (rest (nthcdr remove elist))))
+                                                 (print (list :lll elist))
                                                  (of-state :- :chart-entities entities)
                                                  (values (list :complete 0)
                                                          t)))))))
@@ -426,12 +446,14 @@
                                    (load (format nil "~a/chart.lisp" chart-path)))
                                  output))
                         (:add-span
-                         (of-state :- :line-templater
-                                   (funcall (build-templater (from-system-file *system* "sheet.lisp"
-                                                                               :chart-entity-template-line)
-                                                             :type :format)))
+                         ;; (of-state :- :line-templater
+                         ;;           (funcall (build-templater (from-system-file *system* "sheet.lisp"
+                         ;;                                                       :chart-entity-template-line)
+                         ;;                                     :type :format)))
                          (setf (cdddr (second (of-state :- :chart-entities)))
-                               (cons (of-state :- :line-templater)
+                               (cons (apply (of-state :- :line-templater)
+                                            (list :type "line" :x-start 0 :y-start 0
+                                                  :x-end 0 :y-end 0 :weight 1))
                                      (cdddr (second (of-state :- :chart-entities))))))
                          ;; (print (list :ce (of-state :- :chart-entities))))
                         (:add-set
