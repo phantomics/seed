@@ -764,23 +764,23 @@
                                (draggable drops)))))))
                 x-inits))
 
-        (when (and (typep    aspect 'ui-component)
-                   (has-role aspect 'uir-reducable))
-          (push (psl (let* ((remover) (item) (meta-path (chain $el (get-attribute "meta-path")))
-                            (interactor (lambda (element index)
-                                          (fetch-contact element mode (create path meta-path remove index)
-                                                         (lambda () (chain htmx (trigger $el "reload")))))))
-                       (dolist (n (@ $el child-nodes))
-                         (when (and (/= "undefined" (typeof (@ n class-list)))
-                                    (chain n class-list (contains "item")))
-                           ;; (chain console (log :bbb n (chain n (get-attribute "index"))
-                           ;;                     (chain n (query-selector ".control.drag-handle"))))
-                           (setf item    n
-                                 remover (chain n (query-selector ".control.to-remove")))
-                           (when remover
-                             (chain remover (add-event-listener
-                                             "click" (lambda () (funcall interactor remover 0)))))))))
-                x-inits))
+        ;; (when (and (typep    aspect 'ui-component)
+        ;;            (has-role aspect 'uir-reducable))
+        ;;   (push (psl (let* ((remover) (item) (meta-path (chain $el (get-attribute "meta-path")))
+        ;;                     (interactor (lambda (element index)
+        ;;                                   (fetch-contact element mode (create path meta-path remove index)
+        ;;                                                  (lambda () (chain htmx (trigger $el "reload")))))))
+        ;;                (dolist (n (@ $el child-nodes))
+        ;;                  (when (and (/= "undefined" (typeof (@ n class-list)))
+        ;;                             (chain n class-list (contains "item")))
+        ;;                    ;; (chain console (log :bbb n (chain n (get-attribute "index"))
+        ;;                    ;;                     (chain n (query-selector ".control.drag-handle"))))
+        ;;                    (setf item    n
+        ;;                          remover (chain n (query-selector ".control.to-remove")))
+        ;;                    (when remover
+        ;;                      (chain remover (add-event-listener
+        ;;                                      "click" (lambda () (funcall interactor remover 0)))))))))
+        ;;         x-inits))
 
         (loop :for ix :from 0 :for item :in (funcall (if (has-role aspect 'uir-call-form) #'rest #'identity)
                                                      (uic-base aspect))
@@ -812,8 +812,7 @@
                                               (uir-contact
                                                (list :|x-on:click|
                                                      (psl (fetch-contact $el mode
-                                                                         (lisp (cons 'create
-                                                                                     call-args))
+                                                                         (lisp (cons 'create call-args))
                                                                          (lisp call-post)))))))
                                           (and (and (of-root-type aspect :meta-code)
                                                     (member :sortable (uic-type aspect)))
@@ -829,36 +828,39 @@
 
         (let* ((parent-sortable (and (typep    (uic-root aspect) 'ui-component)
                                      (has-role (uic-root aspect) 'uir-sortable)))
-               (header (let ((segments))
-                         (when (and parent-sortable (of-root-type aspect :meta-code))
-                           (push '(:p :class "control drag-handle" (:a :class "button is-static" "≣"))
-                                 segments))
-                         (let ((call-role (has-role aspect 'uir-call)))
-                           (when call-role (push `(:p :class "control call-trigger"
-                                                      (:a :class "button"
-                                                          :|x-on:click|
-                                                          ,(psl (fetch-contact
-                                                                 $el mode
-                                                                 (lisp (list 'create
-                                                                             'path (cons 'list
-                                                                                         (uic-path aspect))
-                                                                             'action (lisp->camel-case
-                                                                                      (uiri-name call-role))))
-                                                                 (lisp (list 'create 'next "refresh"))))
-                                                          ,(lisp->camel-case (uiri-name call-role))))
-                                                 segments)))
-                         (when (has-role aspect 'uir-call-form)
-                           (push `(:p :class "control"
-                                      (:a :class "button is-static" ,(first (uic-base aspect))))
-                                 segments))
-                         ;; place the X button to remove a list item if its
-                         ;; parent list has the reducable role
-                         (when (and (uic-root aspect)
-                                    (has-role (uic-root aspect) 'uir-reducable))
-                           (push `(:p :class "control to-remove" (:a :class "button is-static" "X"))
-                                 segments))
-                         (if segments (list (append (list :div :class "series-heading field has-addons")
-                                                    (reverse segments)))))))
+               (header (flet ((create-interactor (action-name)
+                                (psl (fetch-contact
+                                      $el mode (lisp (list 'create
+                                                           'path (cons 'list (uic-path aspect))
+                                                           'action (lisp->camel-case action-name)))
+                                      (lisp (list 'create 'next "refresh"))))))
+                         (let ((segments))
+                           (when (and parent-sortable (of-root-type aspect :meta-code))
+                             (push '(:p :class "control drag-handle" (:a :class "button is-static" "≣"))
+                                   segments))
+                           (let ((call-role (has-role aspect 'uir-call)))
+                             (when call-role (push `(:p :class "control call-trigger"
+                                                        (:a :class "button"
+                                                            :|x-on:click|
+                                                            ,(create-interactor (uiri-name call-role))
+                                                            ,(lisp->camel-case (uiri-name call-role))))
+                                                   segments)))
+                           (when (has-role aspect 'uir-call-form)
+                             (push `(:p :class "control"
+                                        (:a :class "button is-static" ,(first (uic-base aspect))))
+                                   segments))
+                           ;; place the X button to remove a list item if its
+                           ;; parent list has the reducable role
+                           (when (and (uic-root aspect)
+                                      (has-role (uic-root aspect) 'uir-reducable))
+                             (push `(:p :class "control to-remove" (:a :class "button is-static"
+                                                                       :|x-on:click|
+                                                                       ,(create-interactor :remove)
+                                                                       ;; ,(psl (log :abcd))
+                                                                       "X"))
+                                   segments))
+                           (if segments (list (append (list :div :class "series-heading field has-addons")
+                                                      (reverse segments))))))))
 
           ;; (when (and (listp (uic-base aspect))
           ;;            (symbolp (first (uic-base aspect)))

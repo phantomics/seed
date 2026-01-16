@@ -340,7 +340,6 @@
                                   ;;                                  (list x-end   y-end))
                                   ;;       :name (format nil "obx-~a" ix)
                                   ;;       :weight weight :points-in-flux nil :in-flux nil :ratios nil)
-                                  (print (list :sy (symbol-package 'fx)))
                                   (funcall (of-state :- :line-templater)
                                            :x-start x-start :x-end x-end :weight 1
                                            :y-start y-start :y-end y-end :type "line")
@@ -361,15 +360,15 @@
                                   ;;   (:role uir-call-form (uir-reducable))))
 
                                   ))))
-          (print (list :aa action asym path (and (find-package "ABCD")
-                                                 (find-symbol "CHART-TEST-USDJPY" "ABCD")
-                                                 (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
-                                                 (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
-                                                                                           "ABCD"))))))
+          ;; (print (list :aa action asym path (and (find-package "ABCD")
+          ;;                                        (find-symbol "CHART-TEST-USDJPY" "ABCD")
+          ;;                                        (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
+          ;;                                        (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
+          ;;                                                                                  "ABCD"))))))
           (case asym
             (:populate (at-fx-path (rest path)
                                    (lambda (form)
-                                     (print (list :ff form))
+                                     ;; (print (list :ff form))
                                      ;; (at-fx-path '(1)
                                      ;;             (lambda (item)
                                      ;;               (let ((specs (exprs-to-linespecs
@@ -387,7 +386,7 @@
                                      ;;                 ;; (setf (cdr item) (cons (second item) specs))
                                      ;;                 item))
                                      ;;             form)
-                                     (print (list :tt (second form) (second (cadadr form))))
+                                     ;; (print (list :tt (second form) (second (cadadr form))))
                                      ;; (let ((specs (exprs-to-linespecs
                                      ;;               (pathname (second (third (second (cadadr form))))))))
                                        ;; (print (list :ooo item))
@@ -400,8 +399,8 @@
              (print (list :sst (of-state :- :chart-entities)))))))
       input))
   (lambda (state input)
-    (destructuring-bind (&key data path sort remove &allow-other-keys) input
-      (print (list :inp input remove))
+    (destructuring-bind (&key data path sort remove action &allow-other-keys) input
+      ;; (print (list :inp input remove action))
       (or (and state (let ((entities (of-state :- :chart-entities)))
                        (let ((elist (second entities)))
                          (and path (cond (sort (destructuring-bind (index move-to) sort
@@ -415,7 +414,10 @@
                                                                                    elist))))))
                                                (of-state :- :chart-entities entities)
                                                (list :complete 0))
-                                         (remove (print (list :xx elist))
+                                         (action
+                                          (case action
+                                            ("remove" (print :abcde))))
+                                         (remove (print (list :xx elist path remove))
                                                  (if (zerop remove) (pop elist)
                                                      (rplacd (nthcdr (1- remove) elist)
                                                              (rest (nthcdr remove elist))))
