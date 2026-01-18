@@ -853,7 +853,7 @@
                            ;; parent list has the reducable role
                            (when (and (uic-root aspect)
                                       (has-role (uic-root aspect) 'uir-reducable))
-                             (push `(:p :class "control to-remove" (:a :class "button is-static"
+                             (push `(:p :class "control to-remove" (:a :class "button" ; " is-static"
                                                                        :|x-on:click|
                                                                        ,(create-interactor :remove)
                                                                        ;; ,(psl (log :abcd))

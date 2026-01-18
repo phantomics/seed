@@ -53,7 +53,7 @@
   ((%points :accessor espan-points
             :initform nil
             :initarg  :points)
-   (%weight :accessor enspan-weight
+   (%weight :accessor espan-weight
             :initform nil
             :initarg  :weight)))
 
@@ -139,6 +139,6 @@
     `(make-instance ',class-sym :path ,path)))
 
 (defmacro span (style format xfrom yfrom xto yto &optional weight)
-  `(make-instance 'enspan-retrace :points (list ,xfrom ,yfrom ,xto ,yto)
-                                  :style ,style :weight ,weight))
+  `(make-instance 'enspan-line :points (list ,xfrom ,yfrom ,xto ,yto)
+                               :style ,style :weight ,weight))
 

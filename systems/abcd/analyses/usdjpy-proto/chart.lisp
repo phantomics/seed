@@ -24,7 +24,7 @@
       (fx 157546 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 182693.4 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 2 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -37,7 +37,7 @@
       (fx 157546 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 182693.4 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 2 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -180,7 +180,7 @@
       (fx 154393 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 155454.2 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 9 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -193,7 +193,7 @@
       (fx 160761.9 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 164771.2 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 5 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -206,7 +206,7 @@
       (fx 160761.9 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 164771.2 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 5 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -219,7 +219,7 @@
       (fx 156373.6 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 159280.3 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 5 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -232,7 +232,7 @@
       (fx 156953 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 155748.4 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 5 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -245,7 +245,7 @@
       (fx 156279.6 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 157444.5 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 4 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -258,7 +258,7 @@
       (fx 155207.8 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 151453 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 4 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -271,7 +271,7 @@
       (fx 154393 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 154476.5 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 4 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -284,7 +284,7 @@
       (fx 154950.7 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 157002.4 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 4 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -297,7 +297,7 @@
       (fx 153214.7 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 148687 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 4 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -310,7 +310,7 @@
       (fx 155994.6 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 158502 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 4 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
     (fx
@@ -323,7 +323,7 @@
       (fx 153214.7 (:fx :uicc-field) (:type :numeric :float))
       (fx 15119 (:fx :uicc-field) (:type :numeric :integer))
       (fx 148687 (:fx :uicc-field) (:type :numeric :float))
-      (fx 1 (:fx :uicc-field) (:type :numeric :float)))
+      (fx 4 (:fx :uicc-field) (:type :numeric :float)))
      (:fx :uic-series :layout (:groups :rows (-2 4)))
      (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable))))
    (:fx :uic-series :layout (:groups :rows (1)))

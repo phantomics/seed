@@ -430,12 +430,19 @@
   (if (rest path) (at-path (rest path) function (nth (first path) data))
       (funcall function (first path) data)))
 
+;; (defun at-fx-path (path function &optional data) ;; UPDATE THIS TO REMOVE (FX) FROM LAST FORM
+;;   (if (and (symbolp (first data))
+;;            (string= "FX" (string-upcase (first data))))
+;;       (at-fx-path path function (second data))
+;;       (if (rest path) (at-fx-path (rest path) function (nth (first path) data))
+;;           (funcall function (nth (first path) data)))))
+
 (defun at-fx-path (path function &optional data) ;; UPDATE THIS TO REMOVE (FX) FROM LAST FORM
   (if (and (symbolp (first data))
            (string= "FX" (string-upcase (first data))))
       (at-fx-path path function (second data))
-      (if (rest path) (at-fx-path (rest path) function (nth (first path) data))
-          (funcall function (nth (first path) data)))))
+      (if path (at-fx-path (rest path) function (nth (first path) data))
+          (funcall function data))))
 
 (defun seek-key (form key)
   (let ((to-return))

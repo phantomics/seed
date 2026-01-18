@@ -26,7 +26,7 @@
                           #:build-static-page #:concat-files #:build-styles #:build-script-pdnd
                           #:build-script-cmirror #:build-script-pmirror #:build-script-misc)
   (:shadowing-import-from #:seed.sublimate #:instantiate-priority-macro-reader)
-  (:shadowing-import-from #:app.chart #:list-entities #:eset #:essource #:span)
+  (:shadowing-import-from #:app.chart #:list-entities #:eset #:essource #:span #:espan-weight)
   (:shadowing-import-from #:seed.access #:authorize)
   (:shadowing-import-from #:cl-csv #:read-csv))
 
@@ -219,8 +219,8 @@
                                    (list :type "line" :points (list (list x-start y-start)
                                                                     (list x-end   y-end))
                                          :name (format nil "obx-~a" ix)
-                                         :weight 1 :points-in-flux nil
-                                         :in-flux nil :ratios nil))
+                                         :weight (app.chart:espan-weight line)
+                                         :points-in-flux nil :in-flux nil :ratios nil))
                                  ex-lines)))
                
                (unless (of-state :- :line-templater)
@@ -301,6 +301,20 @@
                        ,accessor))
          ,input))))
 
+(defmacro form-remove (state input accessor)
+  `(lambda (,state ,input)
+     (destructuring-bind (&key data path &allow-other-keys) ,input
+       (when (and ,state data path)
+         (at-fx-path (rest path)
+                     (lambda (,form)
+                       (let ((,dtype-spec (rest (assoc :type (cddr ,form)))))
+                         (setf (second ,form)
+                               (case (first ,dtype-spec)
+                                 (:numeric (read-from-string data))
+                                 (t data)))))
+                     ,accessor))
+       ,input)))
+
 (defmacro form-sort (state input accessor)
   (let ((index (gensym)) (move-to (gensym)) (elist (gensym)))
     `(lambda (,state ,input)
@@ -331,35 +345,15 @@
   (fx-path-access state input (of-state :- :chart-entities))
   (lambda (state input)
     (destructuring-bind (&key action path &allow-other-keys) input
+      ;; (print (list :ccc action path))
       (let ((asym (intern (string-upcase (symbol-munger::camel-case->lisp-name action)) "KEYWORD")))
         (flet ((exprs-to-linespecs (path)
                  (loop :for ix :from 0 :for line :in (read-csv path)
                        :collect (destructuring-bind (x-start y-start x-end y-end weight)
                                     (mapcar #'read-from-string line)
-                                  ;; (list :type "line" :points (list (list x-start y-start)
-                                  ;;                                  (list x-end   y-end))
-                                  ;;       :name (format nil "obx-~a" ix)
-                                  ;;       :weight weight :points-in-flux nil :in-flux nil :ratios nil)
                                   (funcall (of-state :- :line-templater)
-                                           :x-start x-start :x-end x-end :weight 1
-                                           :y-start y-start :y-end y-end :type "line")
-                                  
-                                  ;; (print `(fx
-                                  ;;   (span
-                                  ;;    (fx "line" (:fx :uicc-select) (:type :select)
-                                  ;;        (:options "line" "retraceX" "retraceY"))
-                                  ;;    (fx (nth 0 '(:none :left :right :both)) (:fx :uicc-button) (:type)
-                                  ;;        (:role (uir-toggle :symap '(:| ∘─∘ | :|─∘─∘ | :| ∘─∘─| :─∘─∘─))))
-                                  ;;    (fx ,x-start (:fx :uicc-field) (:type :numeric :integer))
-                                  ;;    (fx ,y-start (:fx :uicc-field) (:type :numeric :float))
-                                  ;;    (fx ,x-end   (:fx :uicc-field) (:type :numeric :integer))
-                                  ;;    (fx ,y-end   (:fx :uicc-field) (:type :numeric :float))
-                                  ;;    (fx ,weight  (:fx :uicc-field)  (:type :numeric :float))
-                                  ;;    )
-                                  ;;   (:fx :uic-series :layout (:groups :rows (-2 4 2)))
-                                  ;;   (:role uir-call-form (uir-reducable))))
-
-                                  ))))
+                                           :x-start x-start :x-end x-end :weight weight
+                                           :y-start y-start :y-end y-end :type "line")))))
           ;; (print (list :aa action asym path (and (find-package "ABCD")
           ;;                                        (find-symbol "CHART-TEST-USDJPY" "ABCD")
           ;;                                        (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
@@ -368,39 +362,14 @@
           (case asym
             (:populate (at-fx-path (rest path)
                                    (lambda (form)
-                                     ;; (print (list :ff form))
-                                     ;; (at-fx-path '(1)
-                                     ;;             (lambda (item)
-                                     ;;               (let ((specs (exprs-to-linespecs
-                                     ;;                             (pathname (second (third (second item))))))
-                                     ;;                     (form-root (loop :for i :below 3
-                                     ;;                                      :for el :in (second item)
-                                     ;;                                      :collect el)))
-                                                     
-                                     ;;                 (print (list :ee (second (third (second item)))
-                                     ;;                              (second item)
-                                     ;;                              specs
-                                     ;;                              item))
-                                     ;;                 (print (list :item item))
-                                     ;;                 ;; (setf (second item) (append form-root specs))
-                                     ;;                 ;; (setf (cdr item) (cons (second item) specs))
-                                     ;;                 item))
-                                     ;;             form)
-                                     ;; (print (list :tt (second form) (second (cadadr form))))
-                                     ;; (let ((specs (exprs-to-linespecs
-                                     ;;               (pathname (second (third (second (cadadr form))))))))
-                                       ;; (print (list :ooo item))
-                                     (setf (cdadr form)
-                                           (cons (cadadr form)
+                                     (setf (rest form)
+                                           (cons (second form)
                                                  (exprs-to-linespecs
-                                                  (pathname (second (third (second (cadadr form))))))))
-                                     )
-                                   (of-state :- :chart-entities))
-             (print (list :sst (of-state :- :chart-entities)))))))
+                                                  (pathname (second (third (second (second form)))))))))
+                                   (of-state :- :chart-entities))))))
       input))
   (lambda (state input)
     (destructuring-bind (&key data path sort remove action &allow-other-keys) input
-      ;; (print (list :inp input remove action))
       (or (and state (let ((entities (of-state :- :chart-entities)))
                        (let ((elist (second entities)))
                          (and path (cond (sort (destructuring-bind (index move-to) sort
@@ -415,13 +384,18 @@
                                                (of-state :- :chart-entities entities)
                                                (list :complete 0))
                                          (action
-                                          (case action
-                                            ("remove" (print :abcde))))
-                                         (remove (print (list :xx elist path remove))
-                                                 (if (zerop remove) (pop elist)
+                                          (case (intern (string-upcase action) "KEYWORD")
+                                            (:remove (let ((rindex (first (last path))))
+                                                       (at-fx-path (butlast (rest path))
+                                                                   (lambda (form)
+                                                                     (if (zerop rindex) (pop form)
+                                                                         (setf (rest (nthcdr (1- rindex) form))
+                                                                               (rest (nthcdr     rindex
+                                                                                                 form)))))
+                                                                   elist)))))
+                                         (remove (if (zerop remove) (pop elist)
                                                      (rplacd (nthcdr (1- remove) elist)
                                                              (rest (nthcdr remove elist))))
-                                                 (print (list :lll elist))
                                                  (of-state :- :chart-entities entities)
                                                  (values (list :complete 0)
                                                          t)))))))
