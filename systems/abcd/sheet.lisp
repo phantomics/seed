@@ -51,4 +51,4 @@
               (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
           )
     (:fx :uic-series :layout (:groups :rows (1 2)))
-    (:role uir-call-form (uir-call :n :populate-chart) (uir-reducable)))
+    (:role uir-call-form (uir-call :n :populate) (uir-reducable)))

@@ -289,10 +289,13 @@
 (defmacro fx-path-access (state input accessor)
   (let ((form (gensym)) (dtype-spec (gensym)))
     `(lambda (,state ,input)
+       ;; (print (list :ac ,accessor ,input ,state))
        (destructuring-bind (&key data path &allow-other-keys) ,input
+         ;; (print (list :db data path))
          (when (and ,state data path)
            (at-fx-path (rest path)
                        (lambda (,form)
+                         (print (list :fo ,form))
                          (let ((,dtype-spec (rest (assoc :type (cddr ,form)))))
                            (setf (second ,form)
                                  (case (first ,dtype-spec)
@@ -344,9 +347,11 @@
   (adapt-from-alist :system :branch :face)
   (fx-path-access state input (of-state :- :chart-entities))
   (lambda (state input)
+    ;; (and state (print (list :en (of-state :- :chart-entities))))
     (destructuring-bind (&key action path &allow-other-keys) input
       ;; (print (list :ccc action path))
       (let ((asym (intern (string-upcase (symbol-munger::camel-case->lisp-name action)) "KEYWORD")))
+        (print (list :yy asym))
         (flet ((exprs-to-linespecs (path)
                  (loop :for ix :from 0 :for line :in (read-csv path)
                        :collect (destructuring-bind (x-start y-start x-end y-end weight)
@@ -360,13 +365,16 @@
           ;;                                        (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
           ;;                                                                                  "ABCD"))))))
           (case asym
-            (:populate (at-fx-path (rest path)
-                                   (lambda (form)
-                                     (setf (rest form)
-                                           (cons (second form)
-                                                 (exprs-to-linespecs
-                                                  (pathname (second (third (second (second form)))))))))
-                                   (of-state :- :chart-entities))))))
+            (:populate
+             (at-fx-path (rest path)
+                         (lambda (form)
+                           (print (list :fff form))
+                           (setf (rest (second form))
+                                 (cons (second (second form))
+                                       (exprs-to-linespecs
+                                        ;; (pathname (second (third (second (second form)))))
+                                        (pathname (second (third (second (cadadr form)))))))))
+                         (of-state :- :chart-entities))))))
       input))
   (lambda (state input)
     (destructuring-bind (&key data path sort remove action &allow-other-keys) input

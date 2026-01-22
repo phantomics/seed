@@ -438,11 +438,11 @@
 ;;           (funcall function (nth (first path) data)))))
 
 (defun at-fx-path (path function &optional data) ;; UPDATE THIS TO REMOVE (FX) FROM LAST FORM
-  (if (and (symbolp (first data))
-           (string= "FX" (string-upcase (first data))))
-      (at-fx-path path function (second data))
-      (if path (at-fx-path (rest path) function (nth (first path) data))
-          (funcall function data))))
+  ;; (print (list :pt path data))
+  (if path (if (and (symbolp (first data)) (string= "FX" (string-upcase (first data))))
+               (at-fx-path       path  function (second data))
+               (at-fx-path (rest path) function (nth (first path) data)))
+      (funcall function data)))
 
 (defun seek-key (form key)
   (let ((to-return))
