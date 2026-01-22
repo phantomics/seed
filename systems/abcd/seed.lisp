@@ -133,32 +133,43 @@
                                                            name)
                                                        description)))))))))
 
-(branch :nav
-  (adapt-from-json :point :action :system-name :form-input)
-  (adapt-from-alist :system :branch :face)
-  (lambda (state input)
-    (destructuring-bind (&key identity action system-name uimod point form-input &allow-other-keys) input
-      (cond (identity (values nil))
-            ((eq uimod :header-controls)
-             (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
-                 (list :create)))
-            (form-input
-             (case (intern (string-upcase form-input) "KEYWORD")
-               (:create (print (list :bbb 10)))
-               (:cancel (of-state :- :creation-in-progress nil))))
-            (action
-             (case (intern (string-upcase action) "KEYWORD")
-               (:create (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress))))))
-            (state (when point
-                     (of-state :- :chart-point point)
-                     (init-chart-entities state t))
-                   (let ((template-point (of-state :- :template-point)))
-                     (destructuring-bind (&key system-name &allow-other-keys) input
-                       (render (of-state nil :medium)
-                               (dx (uic-series :type (:ui :list-table))
-                                   (manifest-file-listing (of-state :- :creation-in-progress)
-                                                          (asdf:system-relative-pathname
-                                                           *system* "./analyses/")))))))))))
+
+(let ((sys-name))
+  (branch :nav
+    (adapt-from-json :point :action :system-name :data :form-input)
+    (adapt-from-alist :system :branch :face)
+    (lambda (state input)
+      (destructuring-bind (&key identity action data system-name uimod point form-input &allow-other-keys)
+          input
+        (when data (setf sys-name data))
+        (cond (identity (values nil))
+              ((eq uimod :header-controls)
+               (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
+                   (list :create)))
+              (form-input
+               (case (intern (string-upcase form-input) "KEYWORD")
+                 (:create
+                  (let* ((tdir-path (asdf:system-relative-pathname *system* "./template/"))
+                         (index (length (uiop:subdirectories (asdf:system-relative-pathname
+                                                              *system* "./analyses/"))))
+                         (apath (asdf:system-relative-pathname
+                                 *system* (format nil "./analyses/~4,'0d/" index))))
+                    (ensure-directories-exist apath)
+                    (quickproject::rewrite-templates tdir-path apath (list :name sys-name :index index))))
+                 (:cancel (of-state :- :creation-in-progress nil))))
+              (action
+               (case (intern (string-upcase action) "KEYWORD")
+                 (:create (of-state :- :creation-in-progress (not (of-state :- :creation-in-progress))))))
+              (state (when point
+                       (of-state :- :chart-point point)
+                       (init-chart-entities state t))
+                     (let ((template-point (of-state :- :template-point)))
+                       (destructuring-bind (&key system-name &allow-other-keys) input
+                         (render (of-state nil :medium)
+                                 (dx (uic-series :type (:ui :list-table))
+                                     (manifest-file-listing (of-state :- :creation-in-progress)
+                                                            (asdf:system-relative-pathname
+                                                             *system* "./analyses/"))))))))))))
 
 (branch :chart
   (adapt-from-json :entities :action :mode ;; next line: entities properties
@@ -295,7 +306,6 @@
          (when (and ,state data path)
            (at-fx-path (rest path)
                        (lambda (,form)
-                         (print (list :fo ,form))
                          (let ((,dtype-spec (rest (assoc :type (cddr ,form)))))
                            (setf (second ,form)
                                  (case (first ,dtype-spec)
@@ -351,7 +361,6 @@
     (destructuring-bind (&key action path &allow-other-keys) input
       ;; (print (list :ccc action path))
       (let ((asym (intern (string-upcase (symbol-munger::camel-case->lisp-name action)) "KEYWORD")))
-        (print (list :yy asym))
         (flet ((exprs-to-linespecs (path)
                  (loop :for ix :from 0 :for line :in (read-csv path)
                        :collect (destructuring-bind (x-start y-start x-end y-end weight)
@@ -368,7 +377,6 @@
             (:populate
              (at-fx-path (rest path)
                          (lambda (form)
-                           (print (list :fff form))
                            (setf (rest (second form))
                                  (cons (second (second form))
                                        (exprs-to-linespecs

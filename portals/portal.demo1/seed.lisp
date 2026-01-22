@@ -42,8 +42,6 @@
       (when (integerp point)
         (of-state (of-state nil :system-point) :view-point point))
 
-      ;; (print (list :opo point))
-
       (let ((medium (make-instance 'uim-web :portal (intern (package-name *package*) "KEYWORD"))))
 
         (of-state nil :medium medium)
