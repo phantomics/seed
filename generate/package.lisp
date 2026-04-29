@@ -21,6 +21,7 @@
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->lisp-name)
   (:shadowing-import-from #:quickproject #:make-project)
   (:shadowing-import-from #:parse-number #:parse-number)
+  (:import-from #:jonathan #:parse)
   (:shadowing-import-from #:trivia #:match #:guard)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)
   (:shadowing-import-from #:spinneret #:with-html #:with-html-string #:interpret-html-tree))
