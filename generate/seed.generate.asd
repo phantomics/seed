@@ -8,7 +8,7 @@
   :serial t
   :depends-on ("cl-csv" "arrow-macros" "clack" "woo" "ningle" "symbol-munger" "parse-number"
                         "quickproject" "spinneret" "cl-who" "trivia"
-                        "parenscript" "paren6"
+                        "parenscript" "paren6" "jonathan"
                         "seed.sublimate" "symbol-munger"
                         "com.inuoe.jzon" "trivial-package-local-nicknames"
                         ;; "pla.browser.common"
