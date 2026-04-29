@@ -305,22 +305,24 @@
                                                        *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities)))))
                          (line-index -1))
-                    (file-to-string data)
+                    ;; (print (list :dd data))
+                    ;; (file-to-string data)
                     (let ((output))
-                      (setf output
-                            (cl-ppcre::regex-replace-all ;; replace dates with indices
-                             "(\\A|\\n)[^,]+," (cl-ppcre::regex-replace-all
-                                                ",[^,]+\\n" (file-to-string data)
-                                                (coerce (list #\Newline) 'string))
-                             (lambda (match &rest registers)
-                               (incf line-index)
-                               (destructuring-bind (_ _ start end &rest _) registers
-                                 ;; (print (list :ma (subseq match (1+ start) (1- end)) line-index))
-                                 (setf (gethash (read-from-string (subseq match (1+ start) (1- end)))
-                                                (of-state :- :line-map))
-                                       line-index)
-                                 (format nil "~a~a," (if (zerop line-index) "" #\Newline)
-                                         line-index)))))
+                      (unless (zerop (length data))
+                        (setf output
+                              (cl-ppcre::regex-replace-all ;; replace dates with indices
+                               "(\\A|\\n)[^,]+," (cl-ppcre::regex-replace-all
+                                                  ",[^,]+\\n" (file-to-string data)
+                                                  (coerce (list #\Newline) 'string))
+                               (lambda (match &rest registers)
+                                 (incf line-index)
+                                 (destructuring-bind (_ _ start end &rest _) registers
+                                   ;; (print (list :ma (subseq match (1+ start) (1- end)) line-index))
+                                   (setf (gethash (read-from-string (subseq match (1+ start) (1- end)))
+                                                  (of-state :- :line-map))
+                                         line-index)
+                                   (format nil "~a~a," (if (zerop line-index) "" #\Newline)
+                                           line-index))))))
                       output)))
                  (t (render (funcall state nil :medium)
                             (dx (uich-candle :type (:green-red :abc :def-ghi))
