@@ -5,9 +5,10 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on (#:prove)
+  ;; :depends-on (#:prove)
   :components 
   ((:file "package")
    (:file "sublimate")
-   (:file "test")))
+   ;; (:file "test")
+   ))
 

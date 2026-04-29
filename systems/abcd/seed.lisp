@@ -219,12 +219,12 @@
                ;;                              (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
                ;;                              (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
                ;;                                                                        "ABCD"))))))
-                              
+
                (when (and (find-package "ABCD")
-                          (find-symbol "CHART-TEST-USDJPY" "ABCD")
-                          (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD")))
+                          (find-symbol "CHART-TEST-EURCAD" "ABCD")
+                          (boundp (find-symbol "CHART-TEST-EURCAD" "ABCD")))
                  (loop :for ix :from 0
-                       :for line :in (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY" "ABCD")))
+                       :for line :in (list-entities (symbol-value (find-symbol "CHART-TEST-EURCAD" "ABCD")))
                        :do (push (destructuring-bind (x-start y-start x-end y-end)
                                      (app.chart::espan-points line)
                                    (list :type "line" :points (list (list x-start y-start)
@@ -258,7 +258,8 @@
                                (progn (push item edata)
                                       (push (funcall (of-state :- :line-templater)
                                                      :x-start x-start :x-end x-end
-                                                     :y-start y-start :y-end y-end :type type)
+                                                     :y-start y-start :y-end y-end :type type
+                                                     :weight 1)
                                             collected)))
                            (of-state :- :entity-data edata)))))))
                (let ((entities (of-state :- :chart-entities)))
@@ -266,8 +267,11 @@
                                                  (reverse collected)))
                  (of-state :- :chart-entities entities)
                  (of-state :- :entity-data)
-                 ;; (print ex-lines)
-                 ex-lines)))
+                 (print ex-lines)
+                 (or (of-state :- :entity-data)
+                     ex-lines)
+                 ;; ex-lines
+                 )))
             (action
              (let ((chart-entities (of-state :- :chart-point (getf input :point)))
                    (chart-path (namestring (nth (of-state :- :chart-point)
@@ -289,10 +293,15 @@
                                                       (of-state :- :chart-paths))))
                          (data (second (third (second (from-system-file
                                                        *system* (format nil "~a/chart.lisp" chart-path)
-                                                       :chart-entities))))))
+                                                       :chart-entities)))))
+                         (line-index -1))
                     (file-to-string data)
-                    (cl-ppcre::regex-replace-all ",[^,]+\\n" (file-to-string data)
-                                                 (coerce (list #\Newline) 'string))))
+                    (cl-ppcre::regex-replace-all ;; replace dates with indices
+                     "\\n[^,]+," (cl-ppcre::regex-replace-all ",[^,]+\\n" (file-to-string data)
+                                                              (coerce (list #\Newline) 'string))
+                     (lambda (match &rest registers)
+                       (incf line-index)
+                       (format nil "~a~a," #\Newline line-index)))))
                  (t (render (funcall state nil :medium)
                             (dx (uich-candle :type (:green-red :abc :def-ghi))
                                 *system* :chart)))))))))
@@ -381,7 +390,7 @@
                                  (cons (second (second form))
                                        (exprs-to-linespecs
                                         ;; (pathname (second (third (second (second form)))))
-                                        (pathname (second (third (second (cadadr form)))))))))
+                                        (print (pathname (second (third (second (cadadr form))))))))))
                          (of-state :- :chart-entities))))))
       input))
   (lambda (state input)

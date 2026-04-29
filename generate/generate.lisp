@@ -371,17 +371,16 @@
                               (asdf:system-relative-pathname system (format nil "./~a" file)))
 			  :direction :input)
     (let ((form-start) (form-length))
-      (loop :while (not form-start) :for item := (read stream) :while item
+      (loop :while (not form-start) :for item := (read stream nil nil) :while item
             :do (when (and (symbolp item) (eq key item))
                   (setf form-start (file-position stream))))
       (if (not form-start)
-          nil (if as-string (when form-start
-                              (read stream)
-                              (setf form-length (- (file-position stream) form-start))
-                              (let ((output (make-string form-length)))
-                                (file-position stream form-start)
-                                (read-sequence output stream)
-                                output))
+          nil (if as-string (progn (read stream)
+                                   (setf form-length (- (file-position stream) form-start))
+                                   (let ((output (make-string form-length)))
+                                     (file-position stream form-start)
+                                     (read-sequence output stream)
+                                     output))
                   (read stream))))))
 
 (defun (setf from-system-file) (new-value system file key &key as-string)
