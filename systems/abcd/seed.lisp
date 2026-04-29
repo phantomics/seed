@@ -176,8 +176,12 @@
                              :name :type :in-flux :points :points-in-flux :ratios)
   (adapt-from-alist :system :branch :face)
   (lambda (state input)
-    (unless (or (not state) (of-state :- :chart-paths)) ;; load list of analyses
-      (of-state :- :chart-paths (uiop:subdirectories (asdf:system-relative-pathname *system* "./analyses/"))))
+    (when state
+      (unless (of-state :- :chart-paths) ;; load list of analyses
+        (of-state :- :chart-paths (uiop:subdirectories
+                                   (asdf:system-relative-pathname *system* "./analyses/"))))
+      (unless (of-state :- :line-map)
+        (of-state :- :line-map (make-hash-table))))
 
     (init-chart-entities state)
 
@@ -204,21 +208,7 @@
                                              (list :save :zoom-actual)))
             (entities
              (let ((collected)
-                   (ex-lines ;; (loop :for ix :from 0 :for line :in (read-csv #P"/tmp/USDJPY.cl.csv")
-                     ;;       :collect (destructuring-bind (x-start y-start x-end y-end weight)
-                     ;;                    (mapcar #'read-from-string line)
-                     ;;                  (list :type "line" :points (list (list x-start y-start)
-                     ;;                                                   (list x-end   y-end))
-                     ;;                        :name (format nil "obx-~a" ix)
-                     ;;                        :weight weight :points-in-flux nil
-                     ;;                        :in-flux nil :ratios nil)))
-                     ))
-
-               ;; (print (list :aa action (and (find-package "ABCD")
-               ;;                              (find-symbol "CHART-TEST-USDJPY" "ABCD")
-               ;;                              (boundp (find-symbol "CHART-TEST-USDJPY" "ABCD"))
-               ;;                              (list-entities (symbol-value (find-symbol "CHART-TEST-USDJPY"
-               ;;                                                                        "ABCD"))))))
+                   (ex-lines))
 
                (when (and (find-package "ABCD")
                           (find-symbol "CHART-TEST-EURCAD" "ABCD")
@@ -227,6 +217,9 @@
                        :for line :in (list-entities (symbol-value (find-symbol "CHART-TEST-EURCAD" "ABCD")))
                        :do (push (destructuring-bind (x-start y-start x-end y-end)
                                      (app.chart::espan-points line)
+                                   ;; (print (list :sx x-start))
+                                   ;; (when (gethash x-start (of-state :- :line-map))
+                                   ;;   (print (list :llx x-start y-start x-end y-end)))
                                    (list :type "line" :points (list (list x-start y-start)
                                                                     (list x-end   y-end))
                                          :name (format nil "obx-~a" ix)
@@ -267,7 +260,7 @@
                                                  (reverse collected)))
                  (of-state :- :chart-entities entities)
                  (of-state :- :entity-data)
-                 (print ex-lines)
+                 ;; (print (list :xx (of-state :- :entity-data) ex-lines))
                  (or (of-state :- :entity-data)
                      ex-lines)
                  ;; ex-lines
@@ -296,12 +289,22 @@
                                                        :chart-entities)))))
                          (line-index -1))
                     (file-to-string data)
-                    (cl-ppcre::regex-replace-all ;; replace dates with indices
-                     "\\n[^,]+," (cl-ppcre::regex-replace-all ",[^,]+\\n" (file-to-string data)
-                                                              (coerce (list #\Newline) 'string))
-                     (lambda (match &rest registers)
-                       (incf line-index)
-                       (format nil "~a~a," #\Newline line-index)))))
+                    (let ((output))
+                      (setf output
+                            (cl-ppcre::regex-replace-all ;; replace dates with indices
+                             "(\\A|\\n)[^,]+," (cl-ppcre::regex-replace-all
+                                                ",[^,]+\\n" (file-to-string data)
+                                                (coerce (list #\Newline) 'string))
+                             (lambda (match &rest registers)
+                               (incf line-index)
+                               (destructuring-bind (_ _ start end &rest _) registers
+                                 ;; (print (list :ma (subseq match (1+ start) (1- end)) line-index))
+                                 (setf (gethash (read-from-string (subseq match (1+ start) (1- end)))
+                                                (of-state :- :line-map))
+                                       line-index)
+                                 (format nil "~a~a," (if (zerop line-index) "" #\Newline)
+                                         line-index)))))
+                      output)))
                  (t (render (funcall state nil :medium)
                             (dx (uich-candle :type (:green-red :abc :def-ghi))
                                 *system* :chart)))))))))
@@ -370,10 +373,20 @@
     (destructuring-bind (&key action path &allow-other-keys) input
       ;; (print (list :ccc action path))
       (let ((asym (intern (string-upcase (symbol-munger::camel-case->lisp-name action)) "KEYWORD")))
-        (flet ((exprs-to-linespecs (path)
+        (flet ((exprs-to-linespecs (path data-assigner)
                  (loop :for ix :from 0 :for line :in (read-csv path)
                        :collect (destructuring-bind (x-start y-start x-end y-end weight)
                                     (mapcar #'read-from-string line)
+                                  (when (gethash x-start (of-state :- :line-map))
+                                    (let ((orig-start x-start))
+                                      (setf x-start (gethash x-start (of-state :- :line-map))
+                                            x-end   (- x-end (- orig-start x-start)))
+                                      (funcall data-assigner x-start y-start x-end y-end weight)
+                                      ;; (print (list :llx x-start y-start x-end y-end))
+                                      ))
+                                  ;; (when (gethash x-end (of-state :- :line-map))
+                                  ;;   (setf x-end (gethash x-end (of-state :- :line-map))))
+                                  ;; (gethash x-start (of-state :- :line-map))
                                   (funcall (of-state :- :line-templater)
                                            :x-start x-start :x-end x-end :weight weight
                                            :y-start y-start :y-end y-end :type "line")))))
@@ -384,14 +397,26 @@
           ;;                                                                                  "ABCD"))))))
           (case asym
             (:populate
-             (at-fx-path (rest path)
-                         (lambda (form)
-                           (setf (rest (second form))
-                                 (cons (second (second form))
-                                       (exprs-to-linespecs
-                                        ;; (pathname (second (third (second (second form)))))
-                                        (print (pathname (second (third (second (cadadr form))))))))))
-                         (of-state :- :chart-entities))))))
+             (let ((edata))
+               (at-fx-path (rest path)
+                           (lambda (form)
+                             (setf (rest (second form))
+                                   (cons (second (second form))
+                                         (exprs-to-linespecs
+                                          ;; (pathname (second (third (second (second form)))))
+                                          (pathname (second (third (second (cadadr form)))))
+                                          (lambda (x-start y-start x-end y-end weight)
+                                            (push (list :type "line"
+                                                        :points (list (list x-start y-start)
+                                                                      (list x-end   y-end))
+                                                        :name (format nil "obs-~a" x-start)
+                                                        :points-in-flux nil
+                                                        :in-flux :nil :ratios nil)
+                                                  edata))))))
+                           (of-state :- :chart-entities))
+               ;; (print (list :eee edata))
+               (of-state :- :entity-data (print (append (of-state :- :entity-data) edata)))
+               )))))
       input))
   (lambda (state input)
     (destructuring-bind (&key data path sort remove action &allow-other-keys) input
