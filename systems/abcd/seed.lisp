@@ -207,14 +207,21 @@
             ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls) :map #'buttonize)
                                              (list :save :zoom-actual)))
             (entities
-             (let ((collected)
-                   (ex-lines))
+             (let* ((collected)
+                    (ex-lines)
+                    (chart-spec (and (of-state :- :chart-point) (of-state :- :chart-paths)
+                                     (from-system-file
+                                      *system* (format nil "~a/chart.lisp"
+                                                       (namestring (nth (of-state :- :chart-point)
+                                                                        (of-state :- :chart-paths))))
+                                      :chart-entities)))
+                    (chart-symbol (second (second chart-spec))))
 
-               (when (and (find-package "ABCD")
-                          (find-symbol "CHART-TEST-EURCAD" "ABCD")
-                          (boundp (find-symbol "CHART-TEST-EURCAD" "ABCD")))
+               ;; (print (list :cs chart-symbol))
+
+               (when (and chart-symbol (boundp chart-symbol))
                  (loop :for ix :from 0
-                       :for line :in (list-entities (symbol-value (find-symbol "CHART-TEST-EURCAD" "ABCD")))
+                       :for line :in (list-entities (symbol-value chart-symbol))
                        :do (push (destructuring-bind (x-start y-start x-end y-end)
                                      (app.chart::espan-points line)
                                    ;; (print (list :sx x-start))
@@ -226,6 +233,13 @@
                                          :weight (app.chart:espan-weight line)
                                          :points-in-flux nil :in-flux nil :ratios nil))
                                  ex-lines)))
+
+               ;; (print (list :ggoo))
+               ;; (setf portal.demo1::bla
+               ;;       (from-system-file *system* (format nil "~a/chart.lisp"
+               ;;                                          (namestring (nth (of-state :- :chart-point)
+               ;;                                                           (of-state :- :chart-paths))))
+               ;;                         :chart-entities))
                
                (unless (of-state :- :line-templater)
                  (of-state :- :line-templater
@@ -398,26 +412,48 @@
           (case asym
             (:populate
              (let ((edata))
-               (at-fx-path (rest path)
-                           (lambda (form)
-                             (setf (rest (second form))
-                                   (cons (second (second form))
-                                         (exprs-to-linespecs
-                                          ;; (pathname (second (third (second (second form)))))
-                                          (pathname (second (third (second (cadadr form)))))
-                                          (lambda (x-start y-start x-end y-end weight)
-                                            (push (list :type "line"
-                                                        :points (list (list x-start y-start)
-                                                                      (list x-end   y-end))
-                                                        :name (format nil "obs-~a" x-start)
-                                                        :points-in-flux nil
-                                                        :in-flux :nil :ratios nil)
-                                                  edata))))))
-                           (of-state :- :chart-entities))
+               ;; (at-fx-path (rest path)
+               ;;             (lambda (form)
+               ;;               (print (list :sc form (second form) (rest path)))
+               ;;               ;; (setf form
+               ;;               ;;       (append form
+               ;;               (setf (rest (second form))
+               ;;                     (cons (second (second form))
+               ;;                           (print  (exprs-to-linespecs
+               ;;                            ;; (pathname (second (third (second (second form)))))
+               ;;                            (pathname (second (third (second (cadadr form)))))
+               ;;                            (lambda (x-start y-start x-end y-end weight)
+               ;;                              (push (list :type "line"
+               ;;                                          :points (list (list x-start y-start)
+               ;;                                                        (list x-end   y-end))
+               ;;                                          :name (format nil "obs-~a" x-start)
+               ;;                                          :points-in-flux nil
+               ;;                                          :in-flux :nil :ratios nil)
+               ;;                                    edata)))))))
+               ;;             (of-state :- :chart-entities))
+               (let ((form (of-state :- :chart-entities)))
+                 ;; (print (list :ff form (setf portal.demo1::aae (cadr form))))
+                 (second (third (second (cadadr (fourth (cadr form))))))
+                 (setf (second (of-state :- :chart-entities))
+                       (append (second (of-state :- :chart-entities))
+                               (exprs-to-linespecs
+                                ;; (pathname (second (third (second (second form)))))
+                                ;; (pathname (second (first (first (cadadr form)))))
+                                (pathname (second (third (second (cadadr (fourth (cadr form)))))))
+                                (lambda (x-start y-start x-end y-end weight)
+                                  (push (list :type "line"
+                                              :points (list (list x-start y-start)
+                                                            (list x-end   y-end))
+                                              :name (format nil "obs-~a" x-start)
+                                              :points-in-flux nil
+                                              :in-flux :nil :ratios nil)
+                                        edata))))
+                       (cdddr (second (of-state :- :chart-entities)))
+                       (cddddr (second (of-state :- :chart-entities)))))
                ;; (print (list :eee edata))
-               (of-state :- :entity-data (print (append (of-state :- :entity-data) edata)))
-               )))))
+               (of-state :- :entity-data (append (of-state :- :entity-data) edata)))))))
       input))
+  
   (lambda (state input)
     (destructuring-bind (&key data path sort remove action &allow-other-keys) input
       (or (and state (let ((entities (of-state :- :chart-entities)))
@@ -450,6 +486,7 @@
                                                  (values (list :complete 0)
                                                          t)))))))
           input)))
+  
   (lambda (state input)
     (destructuring-bind (&key identity uimod action &allow-other-keys) input
       (cond (identity :meta-code-form)
