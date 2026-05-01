@@ -7,8 +7,8 @@
 (fx
  (chart-view chart-test-eurcad
   (fx "/tmp/EURUSD.data2.csv" (:fx :uicc-field) (:type :text))
-  (fx (:fx :uic-series :layout (:groups :rows (-2 4)))
-   (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
+  ;; (fx (:fx :uic-series :layout (:groups :rows (-2 4)))
+  ;;  (:role (uir-call-form :options (list 'line 'retrace)) (uir-reducable)))
   (fx
    (span
     (fx "line" (:fx :uicc-select) (:type :select)
