@@ -155,7 +155,9 @@
                          (apath (asdf:system-relative-pathname
                                  *system* (format nil "./analyses/~4,'0d/" index))))
                     (ensure-directories-exist apath)
-                    (quickproject::rewrite-templates tdir-path apath (list :name sys-name :index index))))
+                    (quickproject::rewrite-templates tdir-path apath (list :name sys-name :index index))
+                    (of-state :- :chart-paths (uiop:subdirectories
+                                               (asdf:system-relative-pathname *system* "./analyses/")))))
                  (:cancel (of-state :- :creation-in-progress nil))))
               (action
                (case (intern (string-upcase action) "KEYWORD")
@@ -217,7 +219,8 @@
                                       :chart-entities)))
                     (chart-symbol (second (second chart-spec))))
 
-               ;; (print (list :cs chart-symbol))
+               (print (list :cs chart-symbol (of-state :- :chart-point)
+                            (of-state :- :chart-paths)))
 
                (when (and chart-symbol (boundp chart-symbol))
                  (loop :for ix :from 0
