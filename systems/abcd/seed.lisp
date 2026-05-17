@@ -219,8 +219,8 @@
                                       :chart-entities)))
                     (chart-symbol (second (second chart-spec))))
 
-               ;; (print (list :cs chart-symbol (of-state :- :chart-point)
-               ;;              (of-state :- :chart-paths)))
+               (print (list :cs chart-symbol (of-state :- :chart-point)
+                            (of-state :- :chart-paths)))
 
                (when (and chart-symbol (boundp chart-symbol))
                  (loop :for ix :from 0
@@ -305,23 +305,22 @@
                                                        *system* (format nil "~a/chart.lisp" chart-path)
                                                        :chart-entities)))))
                          (line-index -1))
-                    ;; (file-to-string data)
+                    (file-to-string data)
                     (let ((output))
-                      (unless (zerop (length data))
-                        (setf output
-                              (cl-ppcre::regex-replace-all ;; replace dates with indices
-                               "(\\A|\\n)[^,]+," (cl-ppcre::regex-replace-all
-                                                  ",[^,]+\\n" (file-to-string data)
-                                                  (coerce (list #\Newline) 'string))
-                               (lambda (match &rest registers)
-                                 (incf line-index)
-                                 (destructuring-bind (_ _ start end &rest _) registers
-                                   ;; (print (list :ma (subseq match (1+ start) (1- end)) line-index))
-                                   (setf (gethash (read-from-string (subseq match (1+ start) (1- end)))
-                                                  (of-state :- :line-map))
-                                         line-index)
-                                   (format nil "~a~a," (if (zerop line-index) "" #\Newline)
-                                           line-index))))))
+                      (setf output
+                            (cl-ppcre::regex-replace-all ;; replace dates with indices
+                             "(\\A|\\n)[^,]+," (cl-ppcre::regex-replace-all
+                                                ",[^,]+\\n" (file-to-string data)
+                                                (coerce (list #\Newline) 'string))
+                             (lambda (match &rest registers)
+                               (incf line-index)
+                               (destructuring-bind (_ _ start end &rest _) registers
+                                 ;; (print (list :ma (subseq match (1+ start) (1- end)) line-index))
+                                 (setf (gethash (read-from-string (subseq match (1+ start) (1- end)))
+                                                (of-state :- :line-map))
+                                       line-index)
+                                 (format nil "~a~a," (if (zerop line-index) "" #\Newline)
+                                         line-index)))))
                       output)))
                  (t (render (funcall state nil :medium)
                             (dx (uich-candle :type (:green-red :abc :def-ghi))
@@ -437,7 +436,7 @@
                ;;             (of-state :- :chart-entities))
                (let ((form (of-state :- :chart-entities)))
                  ;; (print (list :ff form (setf portal.demo1::aae (cadr form))))
-                 (second (third (second (cadadr (fourth (cadr form))))))
+                 ;; (second (third (second (cadadr (fourth (cadr form))))))
                  (setf (second (of-state :- :chart-entities))
                        (append (second (of-state :- :chart-entities))
                                (exprs-to-linespecs
