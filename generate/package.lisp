@@ -2,7 +2,7 @@
 
 (defpackage #:seed.generate
   (:use #:cl #:arrow-macros ;; #:clack #:woo #:ningle
-        #:symbol-munger ;; #:jonathan
+        #:symbol-munger #:jonathan
         #:com.inuoe.jzon #:trivial-package-local-nicknames #:cl-who
         #:parenscript #:paren6 #:seed.sublimate
         )
@@ -21,7 +21,7 @@
   (:shadowing-import-from #:symbol-munger #:lisp->camel-case #:camel-case->lisp-name)
   (:shadowing-import-from #:quickproject #:make-project)
   (:shadowing-import-from #:parse-number #:parse-number)
-  (:import-from #:jonathan #:parse)
+  (:shadowing-import-from #:jonathan #:parse)
   (:shadowing-import-from #:trivia #:match #:guard)
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)
   (:shadowing-import-from #:spinneret #:with-html #:with-html-string #:interpret-html-tree))
