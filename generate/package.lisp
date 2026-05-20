@@ -2,7 +2,7 @@
 
 (defpackage #:seed.generate
   (:use #:cl #:arrow-macros ;; #:clack #:woo #:ningle
-        #:symbol-munger ;; #:jonathan
+        #:symbol-munger #:jonathan
         #:com.inuoe.jzon #:trivial-package-local-nicknames #:cl-who
         #:parenscript #:paren6 #:seed.sublimate
         )
