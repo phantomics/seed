@@ -21,4 +21,6 @@
   (:shadowing-import-from #:com.inuoe.jzon #:stringify)
   (:shadowing-import-from #:parenscript #:ps #:ps* #:ps-inline #:ps-inline* #:defpsmacro
                           #:create #:@ #:chain #:new #:getprop #:instanceof #:lisp #:regex)
-  (:shadowing-import-from #:seed.generate #:json-convert-to))
+  (:shadowing-import-from #:seed.generate #:json-convert-to)
+  ;; (:shadowing-import-from #:seed.modulate2 #:express-new)
+  )

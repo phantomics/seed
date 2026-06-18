@@ -598,6 +598,25 @@
 
 (defgeneric generate (medium component))
 
+;;; Registration hooks for the seed.modulate2 bridge. The seed.modulate2
+;;; system depends on seed.modulate, so it cannot be named here at read time.
+;;; Instead, seed.modulate exposes these hooks, which seed.modulate2 fills in
+;;; when it loads. This keeps the ASDF dependency graph acyclic
+;;; (modulate2 -> modulate) while letting modulate delegate new-grammar work.
+
+(defvar *express-foreign* nil
+  "Hook for delegating expression of non-native (new-grammar) fx forms.
+   When set by seed.modulate2, a function of (form &key params path processors)
+   that returns a manifestation tree.")
+
+(defvar *generate-foreign* nil
+  "Hook for delegating generation of non-native components (manifestations).
+   When set by seed.modulate2, a function of (medium component).")
+
+(defvar *generate-bouncing* nil
+  "Guard against infinite mutual delegation between generate and
+   *generate-foreign* when a component is handled by neither system.")
+
 (defgeneric locate (medium component index item))
 
 (defmethod locate ((medium uim-web) (comp t) index item)
@@ -619,6 +638,16 @@
   (declare (ignore medium))
   ;; (list :raw aspect)
   aspect)
+
+(defmethod generate ((medium uim-web) (aspect t))
+  "Fallback: a component with no native generate method. If the foreign hook
+   is set (seed.modulate2 loaded), delegate to it — this is how manifestation
+   objects embedded in an old-grammar tree get rendered. The bouncing guard
+   prevents an infinite loop should neither system recognize the component."
+  (if (and *generate-foreign* (not *generate-bouncing*))
+      (let ((*generate-bouncing* t))
+        (funcall *generate-foreign* medium aspect))
+      (error "No generate method for component ~s on medium ~s." aspect medium)))
 
 (defmethod generate ((medium uim-web) (aspect uic-page))
   (list :div :class "stuff page-container"
@@ -1602,7 +1631,18 @@
           :do (push property to-append))
     (append form to-append)))
 
-(defun express (form &optional params path) ;; TODO: this will not grow well with the metaform topology
+(defun express-new-grammar-p (form)
+  "Detect whether an fx form uses the new IS/AS/BY grammar rather than the
+   legacy (:fx :class ...) grammar. A new-grammar form carries at least one
+   of :is/:as/:by in its metadata and no :fx entry. All existing data files
+   use :fx, so this disambiguates cleanly."
+  (let ((metadata (cddr form)))
+    (and (not (assoc :fx metadata))
+         (loop :for entry :in metadata
+               :thereis (and (consp entry)
+                             (member (first entry) '(:is :as :by)))))))
+
+(defun express (form &optional params path &key processors) ;; TODO: this will not grow well with the metaform topology
   (if (atom form)
       form (let ((path (or path '(0))))
              ;; (print (list :ff form))
@@ -1612,41 +1652,45 @@
                                             :base (loop :for i :from 0 :for f :in form
                                                         :collect (express f params (cons i path))))
                  ;; TODO: URGENT: remove 2 explicit interns below
-                 (let* ((form (if (not (assoc :template (cddr form)))
-                                  form (let ((out form))
-                                         (loop :for template :in (rest (assoc :template (cddr form)))
-                                               :do (setf out (meta-combine
-                                                              out (symbol-value (intern (string template)
-                                                                                        "DEMO.SHEET")))))
-                                         out)))
-                        (fx-property (rest (assoc :fx (cddr form))))
-                        (fx-class (first fx-property))
-                        (class (when fx-class (intern (string fx-class) "SEED.MODULATE")))
-                        (props (list :base (if (eql class 'uic-series)
-                                               (loop :for i :from 0 :for f :in (second form)
-                                                     :collect (express f params (cons i path)))
-                                               (second form))
-                                     :path (reverse path)
-                                     :name (rest (assoc :name (cddr form)))
-                                     :type (rest (assoc :type (cddr form)))
-                                     :role (loop :for r :in (rest (assoc :role (cddr form)))
-                                                 :collect (if (atom r)
-                                                              (make-instance
-                                                               (intern (string r) (package-name *package*)))
-                                                              (apply #'make-instance
-                                                                     (intern (string (first r))
-                                                                             (package-name *package*))
-                                                                     (rest r))))))
-                        (out))
-                   ;; (when roles (setf portal.demo1::iioo out))
-                   (setf out (apply #'make-instance class (append props (rest fx-property))))
-                   ;; (when layout
-                   ;;   (if (typep out 'uic-series)
-                   ;;       (setf (uic-series-layout out) layout)
-                   ;;       (error "Assigned layout to a component that's not a uic-series.")))
-                   (when (eql class 'uicc-select)
-                     (setf (uics-options out) (rest (assoc :options (cddr form)))))
-                   out)))))
+                 (if (and *express-foreign* (express-new-grammar-p form))
+                     ;; New-grammar fx form: delegate to seed.modulate2.
+                     (funcall *express-foreign* form :params params :path path
+                                                     :processors processors)
+                     (let* ((form (if (not (assoc :template (cddr form)))
+                                      form (let ((out form))
+                                             (loop :for template :in (rest (assoc :template (cddr form)))
+                                                   :do (setf out (meta-combine
+                                                                  out (symbol-value (intern (string template)
+                                                                                            "DEMO.SHEET")))))
+                                             out)))
+                            (fx-property (rest (assoc :fx (cddr form))))
+                            (fx-class (first fx-property))
+                            (class (when fx-class (intern (string fx-class) "SEED.MODULATE")))
+                            (props (list :base (if (eql class 'uic-series)
+                                                   (loop :for i :from 0 :for f :in (second form)
+                                                         :collect (express f params (cons i path)))
+                                                   (second form))
+                                         :path (reverse path)
+                                         :name (rest (assoc :name (cddr form)))
+                                         :type (rest (assoc :type (cddr form)))
+                                         :role (loop :for r :in (rest (assoc :role (cddr form)))
+                                                     :collect (if (atom r)
+                                                                  (make-instance
+                                                                   (intern (string r) (package-name *package*)))
+                                                                  (apply #'make-instance
+                                                                         (intern (string (first r))
+                                                                                 (package-name *package*))
+                                                                         (rest r))))))
+                            (out))
+                       ;; (when roles (setf portal.demo1::iioo out))
+                       (setf out (apply #'make-instance class (append props (rest fx-property))))
+                       ;; (when layout
+                       ;;   (if (typep out 'uic-series)
+                       ;;       (setf (uic-series-layout out) layout)
+                       ;;       (error "Assigned layout to a component that's not a uic-series.")))
+                       (when (eql class 'uicc-select)
+                         (setf (uics-options out) (rest (assoc :options (cddr form)))))
+                       out))))))
 
 (defvar *giface-output-stream*)
 

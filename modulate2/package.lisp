@@ -2,10 +2,17 @@
 
 (defpackage #:seed.modulate2
   (:use #:cl #:symbol-munger #:spinneret)
-  (:export ;; core expression
+  (:export ;; core expression / pipeline
            #:express-new
+           #:manifest
+           #:apply-named-processors
+           #:apply-modality-defaults
+           #:make-control
            #:generate
            #:render
+           ;; metadata / spec parsing
+           #:parse-fx-metadata
+           #:parse-by-spec
            ;; manifestation classes
            #:manifestation
            #:mfn-atom
@@ -20,10 +27,13 @@
            #:mfn-path
            #:mfn-members
            #:mfn-valence
+           #:mfn-adapting
+           #:mfn-controls
            ;; IS vocabulary
            #:infer-data-character
            ;; AS vocabulary - program element roles
            #:+as-program-roles+
+           #:+as-atomic-roles+
            ;; AS vocabulary - interface modality roles (for dx)
            #:+as-interface-roles+
            ;; BY vocabulary
