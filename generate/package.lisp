@@ -14,7 +14,7 @@
            #:psl #:astr
            #:adapt-from-alist #:adapt-from-json
            #:syspath #:file-to-string
-           #:system-file-to-string #:from-system-file #:at-path
+           #:system-file-to-string #:from-system-file #:philo #:at-path
            #:build-templater #:get-template-metadata
            #:text-wrap #:setf-value #:of-array-spec
            #:spec-graph-interface #:of-graph-spec)

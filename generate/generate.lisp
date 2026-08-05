@@ -423,7 +423,7 @@
                                            :if-does-not-exist :create :if-exists :overwrite)
                      (file-position output form-end)
                      (write-sequence after-bytes output))
-                   new-value))))
+                    new-value))))
 
 (defun at-path (path function &optional data)
   (if (rest path) (at-path (rest path) function (nth (first path) data))

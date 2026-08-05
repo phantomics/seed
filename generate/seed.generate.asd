@@ -15,4 +15,5 @@
                         )
   :components ((:file "package")
                (:file "setup")
-               (:file "generate")))
+               (:file "generate")
+               (:file "philo")))
