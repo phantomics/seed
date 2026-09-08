@@ -285,12 +285,133 @@ Result: **41 checks, 0 failures.** Separately, the exact edited region of
 with no warnings.
 
 
+## Region Reads and Insertion
+
+After the initial file+list accessor stabilized, the code was extracted
+from `generate/generate.lisp` into its own file, `generate/philo.lisp`
+(registered in `generate/seed.generate.asd` after `generate`), and the
+expansion was renamed from *Positional Homing In Lisp Objects* to
+**Positional Heuristic Interaction for Lisp Objects** -- "Heuristic"
+because an offset or range is itself a simple positional heuristic, and a
+predicate key opens the door to arbitrarily complex ones.
+
+The next feature was appending a value to a key -- adding an item to the
+run of forms that follow a key. This turned out to be more subtle than it
+looks, because it forced a concept philo had deliberately avoided.
+
+### The tension: append needs a "region"; philo was key-blind
+
+Every prior operation (`:offset`, `:range`, replace) is **count-based and
+key-blind**: offsets count forms and pass straight through intervening
+keys. "Append to a key" instead needs to know where that key's **value
+region ends** -- i.e. what the *next key* is. That single requirement is
+the source of the design's only real ambiguity.
+
+### The root ambiguity: symbol-valued items vs. the next key
+
+philo's premise is "loose structure, not strict key/value," and values
+may themselves be symbols. In
+
+```
+:items
+:a
+:b
+:main
+(progn ...)
+```
+
+is `:a` the first *value* of `:items`, or the *next key*? The data cannot
+answer this -- only the caller knows which symbols are keys. So the
+region boundary is exposed rather than inferred:
+
+- **Default:** the region ends at the next top-level **keyword**
+  (`keywordp`), which matches how Seed's data files actually use keys.
+- **Override:** `:until x` bounds the region at the next form matching a
+  symbol (`eql`) or predicate -- the same symbol/predicate duality philo
+  already uses for `key`.
+
+The boundary being a *heuristic* the caller can tune is, fittingly, what
+the renamed acronym now advertises.
+
+### Three further decisions
+
+1. **A distinct index keyword, `:at`.** In replace mode `:offset 2` means
+   "third form after the key, counting across keys"; for insertion it
+   would have to mean "third slot *within* the region." Rather than give
+   `:offset` two counting bases, insertion uses its own `:at n` (0-based,
+   in-region, clamped to `[0, region-size]`), leaving `:offset` its
+   existing key-blind meaning untouched.
+
+2. **Separate operators, not `(setf philo)`.** `(setf philo)` *replaces* a
+   span; insertion *grows* the sequence. Overloading one form to sometimes
+   replace and sometimes insert would be ambiguous, so insertion is
+   `philo-insert` (with `:at`) and `philo-append` (a wrapper that omits
+   `:at`, appending at the region's end).
+
+3. **A read dual.** The natural counterpart to "append into a region" is
+   "read a region," so the reader gained `:region t` (and `:until`, which
+   implies it): both return the region's forms as a list, sharing the
+   boundary machinery.
+
+### Implementation
+
+Three small helpers carry the region concept, working identically over a
+file's segment vector and a list via an index-to-form accessor:
+
+- **`philo-boundary-test`** turns `until` into a predicate (`keywordp`
+  when NIL).
+- **`philo-boundary-index`** scans forward for the first boundary form,
+  or the end of the sequence.
+- **`philo-region-bounds`** returns the `[rstart, rend)` region span.
+
+The readers (`philo-from-file` / `philo-from-list`) short-circuit to a
+region read when `:region` or `:until` is present. Insertion resolves an
+absolute index with **`philo-insert-position`** (`:at` clamped to the
+region size, defaulting to the region end) and then:
+
+- **files** splice the printed form plus a newline at the character
+  position of the form currently occupying that index (or at end-of-file
+  when the region runs to EOF), then rewrite atomically;
+- **lists** destructively splice a fresh cons at the interior position --
+  always safe, since a region index is never the list head.
+
+### Defined behaviors for the edges
+
+- **Empty region** (key immediately followed by a keyword): the sole item
+  is inserted between them; a region read returns `NIL`.
+- **Key at EOF:** the region runs to end-of-file and append lands there.
+- **Trailing comments** before the boundary belong (per the parser's
+  segment model) to the boundary form, so an append lands *before* them --
+  a defined, documented consequence rather than a surprise.
+- **`:at` past the last item** clamps to the region end (appends) instead
+  of spilling into the next key.
+- **Missing key / nil target:** nil no-op, consistent with reads.
+- Insertion is **single-item**; list-spread is deferred.
+
+
+## Verification (region + insertion)
+
+The standalone harness was refocused on the region features (its function
+bodies are extracted verbatim from `generate/philo.lisp`, with only the
+`in-package` form removed, so it exercises the shipped code). Coverage:
+default-keyword and `:until` boundaries; region reads as forms and as
+source text; append at region end (not disturbing the next key); `:at`
+insertion mid-region, at 0, and clamped past the end; empty-region and
+EOF-region append; destructive list append observed through a bound
+variable; and missing-key no-ops -- across both file and list modes.
+
+Result: **36 checks, 0 failures.** The full `philo.lisp` (with
+`in-package` stripped) also `compile-file`d in a bare SBCL with
+`WARNINGS-P = NIL` and `FAILURE-P = NIL`.
+
+
 ## Files
 
 | File | Action | Description |
 |------|--------|-------------|
-| `generate/generate.lisp` | Modified | Added `philo-read-file-string`, `philo-write-file-atomically`, `philo-parse-segments`, `philo-find-anchor`, `philo-target-indices`, `philo-from-file`, `philo-from-list`, `philo-set-file`, `philo-set-list`, and the dispatching `philo` / `(setf philo)`. `from-system-file` left intact. |
-| `generate/package.lisp` | Modified | Exported `#:philo`. |
+| `generate/philo.lisp` | New | The complete `philo` implementation (extracted from `generate/generate.lisp`): read/write/parse helpers, `philo-find-anchor`, `philo-target-indices`, the boundary machinery (`philo-boundary-test`, `philo-boundary-index`, `philo-region-bounds`), the readers, `(setf philo)` writers, and the insertion operators `philo-insert` / `philo-append`. |
+| `generate/seed.generate.asd` | Modified | Registered the `philo` component after `generate`. |
+| `generate/package.lisp` | Modified | Exported `#:philo`, `#:philo-insert`, `#:philo-append`. |
 | `doc/DevLog.Philo.md` | New | This log. |
 
 

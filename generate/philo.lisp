@@ -10,12 +10,22 @@
 ;;;   (philo path key)                  ; first form after KEY (as an atom)
 ;;;   (philo path key :offset 2)        ; third form after KEY (as an atom)
 ;;;   (philo path key :range '(2 5))    ; forms at offsets 2,3,4 (as a list)
+;;;   (philo path key :region t)        ; all forms in KEY's region (as a list)
 ;;;   (philo path key :as-string t)     ; raw source text instead of parsed form
 ;;;   (setf (philo path key) new-form)  ; replace that form
+;;;   (philo-append path key new-form)  ; add a form to the end of KEY's region
+;;;   (philo-insert path key new-form :at 1)  ; insert within KEY's region
 ;;;
 ;;; The whole file is read into a string, parsed once, spliced in string space,
 ;;; and written back atomically (temp file + rename), so there is no byte/char
 ;;; position arithmetic and no partial-write corruption window.
+;;;
+;;; Offsets and ranges are count-based and KEY-BLIND: they count forms and pass
+;;; straight through intervening keys.  A "value region", by contrast, is the run
+;;; of forms after a key up to the next BOUNDARY form -- the next keyword by
+;;; default, or the next form matching :UNTIL.  Region reads (:REGION / :UNTIL)
+;;; and the insertion operators (PHILO-INSERT / PHILO-APPEND, indexed within the
+;;; region by :AT) are region-based; everything else is key-blind.
 ;;; --------------------------------------------------------------------------
 
 (in-package #:seed.generate)
@@ -78,13 +88,49 @@ Returns (values LO HI): the absolute [LO, HI) span addressed after the anchor
       (let ((ti (+ anchor 1 (or offset 0))))
         (values ti (1+ ti)))))
 
-(defun philo-from-file (path key offset range as-string)
+(defun philo-boundary-test (until)
+  "Return a predicate deciding whether a form ends a key's value region.  With
+UNTIL NIL the boundary is any keyword; a symbol UNTIL matches that symbol with
+EQL; a function UNTIL is used directly."
+  (cond ((null until) #'keywordp)
+        ((functionp until) until)
+        (t (lambda (form) (eql form until)))))
+
+(defun philo-boundary-index (form-at len start test)
+  "First index in [START, LEN) whose form satisfies TEST, else LEN.
+FORM-AT maps an index to its top-level form."
+  (loop :for i :from start :below len
+        :when (funcall test (funcall form-at i))
+          :do (return i)
+        :finally (return len)))
+
+(defun philo-region-bounds (form-at len anchor until)
+  "Return (values RSTART REND): the [RSTART, REND) index span of the value
+region following the key at ANCHOR, bounded by the next boundary form (see
+PHILO-BOUNDARY-TEST) or the end of the sequence."
+  (let ((rstart (1+ anchor)))
+    (values rstart
+            (philo-boundary-index form-at len rstart (philo-boundary-test until)))))
+
+(defun philo-from-file (path key offset range as-string region until)
   "Read form(s) from the file at PATH (see PHILO)."
   (let ((string (philo-read-file-string path)))
     (when string
       (let* ((segments (philo-parse-segments string))
+             (len (length segments))
              (anchor (philo-find-anchor segments key)))
         (when anchor
+          (when (or region until)
+            (return-from philo-from-file
+              (multiple-value-bind (rstart rend)
+                  (philo-region-bounds (lambda (i) (first (aref segments i))) len anchor until)
+                (when (< rstart rend)
+                  (if as-string
+                      (subseq string
+                              (second (aref segments rstart))
+                              (third (aref segments (1- rend))))
+                      (loop :for i :from rstart :below rend
+                            :collect (first (aref segments i))))))))
           (multiple-value-bind (lo hi)
               (philo-target-indices anchor :offset offset :range range)
             (if range
@@ -105,7 +151,7 @@ Returns (values LO HI): the absolute [LO, HI) span addressed after the anchor
                                 (third (aref segments ti)))
                         (first (aref segments ti))))))))))))
 
-(defun philo-from-list (list key offset range as-string)
+(defun philo-from-list (list key offset range as-string region until)
   "Read form(s) from the in-memory LIST (see PHILO).  Non-destructive."
   (when as-string
     (error "PHILO: :as-string does not apply to list targets"))
@@ -114,6 +160,12 @@ Returns (values LO HI): the absolute [LO, HI) span addressed after the anchor
                     (position key list :test #'eql))))
     (when anchor
       (let ((len (length list)))
+        (when (or region until)
+          (return-from philo-from-list
+            (multiple-value-bind (rstart rend)
+                (philo-region-bounds (lambda (i) (nth i list)) len anchor until)
+              (when (< rstart rend)
+                (subseq list rstart rend)))))
         (multiple-value-bind (lo hi)
             (philo-target-indices anchor :offset offset :range range)
           (if range
@@ -125,7 +177,7 @@ Returns (values LO HI): the absolute [LO, HI) span addressed after the anchor
                 (when (and (>= ti 0) (< ti len))
                   (nth ti list)))))))))
 
-(defun philo (target key &key offset range as-string any-offset)
+(defun philo (target key &key offset range as-string any-offset region until)
   "Positional Heuristic Interaction for Lisp Objects.
 Read form(s) anchored at the first form matching KEY.  TARGET is either a file
 (a pathname or namestring) or an in-memory list of forms; the mode is chosen by
@@ -135,15 +187,20 @@ predicate to each form.  Offsets are 0-based relative to the form following KEY.
 
   :OFFSET n    return the single form at offset N (an atom; default offset 0).
   :RANGE (s e) return the forms at offsets [S, E) as a list.
+  :REGION t    return all the forms in KEY's value region as a list.
+  :UNTIL x     region read bounded by the next form matching X (a symbol, EQL,
+               or a predicate function); implies :REGION.  Defaults to the next
+               keyword.
   :AS-STRING t (files only) return the raw source text spanning the target.
 
-RANGE supersedes OFFSET.  Returns NIL when the file/key is missing or the target
-is out of range.  :AS-STRING with a list target signals an error.  ANY-OFFSET is
-accepted for symmetry with the writer and ignored on read."
+REGION/UNTIL supersede RANGE, which supersedes OFFSET.  Returns NIL when the
+file/key is missing or the target is out of range.  :AS-STRING with a list
+target signals an error.  ANY-OFFSET is accepted for symmetry with the writer
+and ignored on read."
   (declare (ignore any-offset))
   (if (listp target)
-      (philo-from-list target key offset range as-string)
-      (philo-from-file target key offset range as-string)))
+      (philo-from-list target key offset range as-string region until)
+      (philo-from-file target key offset range as-string region until)))
 
 (defun philo-set-file (new-value path key offset range as-string any-offset)
   "Replace form(s) anchored at KEY in the file at PATH (see (SETF PHILO))."
@@ -266,3 +323,64 @@ signals an error."
           (error "PHILO: :as-string does not apply to list targets"))
         (philo-set-list new-value target key offset range any-offset))
       (philo-set-file new-value target key offset range as-string any-offset)))
+
+(defun philo-insert-position (rstart rend at)
+  "Resolve the absolute segment index at which to insert within a value region
+spanning [RSTART, REND).  AT is the 0-based in-region index (NIL means the end);
+it is clamped to [0, region-size]."
+  (let ((size (- rend rstart)))
+    (+ rstart (max 0 (min (or at size) size)))))
+
+(defun philo-insert-file (new-value path key at until)
+  "Insert NEW-VALUE as one form into KEY's value region in the file at PATH."
+  (let ((string (philo-read-file-string path)))
+    (when string
+      (let* ((segments (philo-parse-segments string))
+             (len (length segments))
+             (anchor (philo-find-anchor segments key)))
+        (when anchor
+          (multiple-value-bind (rstart rend)
+              (philo-region-bounds (lambda (i) (first (aref segments i))) len anchor until)
+            (let* ((p (philo-insert-position rstart rend at))
+                   (printed (let ((*print-case* :downcase)) (prin1-to-string new-value)))
+                   (pos (if (< p len) (second (aref segments p)) (length string)))
+                   (text (if (< p len)
+                             (concatenate 'string printed (string #\Newline))
+                             (concatenate 'string (string #\Newline) printed))))
+              (philo-write-file-atomically
+               path (concatenate 'string (subseq string 0 pos) text (subseq string pos)))
+              new-value)))))))
+
+(defun philo-insert-list (new-value list key at until)
+  "Destructively insert NEW-VALUE as one form into KEY's value region in LIST."
+  (let ((anchor (if (functionp key)
+                    (position-if key list)
+                    (position key list :test #'eql))))
+    (when anchor
+      (let ((len (length list)))
+        (multiple-value-bind (rstart rend)
+            (philo-region-bounds (lambda (i) (nth i list)) len anchor until)
+          (let* ((p (philo-insert-position rstart rend at))
+                 (pre (nthcdr (1- p) list)))
+            (setf (cdr pre) (cons new-value (cdr pre)))
+            new-value))))))
+
+(defun philo-insert (target key new-value &key at until)
+  "Insert NEW-VALUE as a single new form into KEY's value region in TARGET (a
+file pathname/namestring or an in-memory list).  The region runs from the form
+after KEY up to the next boundary form (the next keyword by default, or the next
+form matching :UNTIL).  :AT is the 0-based in-region insertion index; it defaults
+to the region's end (append) and is clamped to the region size, so a value past
+the last item appends rather than crossing into the next key.
+
+List targets are edited DESTRUCTIVELY in place; file targets are rewritten
+atomically.  Returns NEW-VALUE, or NIL when the file/key is missing."
+  (if (listp target)
+      (philo-insert-list new-value target key at until)
+      (philo-insert-file new-value target key at until)))
+
+(defun philo-append (target key new-value &key until)
+  "Append NEW-VALUE as a single new form at the end of KEY's value region in
+TARGET (before the next boundary form; see PHILO-INSERT).  A convenience wrapper
+over PHILO-INSERT with the insertion point at the region's end."
+  (philo-insert target key new-value :until until))
