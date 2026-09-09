@@ -16,6 +16,7 @@
                "seed.access"
                "seed.generate"
                "seed.modulate"
+               "seed.modulate2"
                "seed.sublimate"
                "seed.contact.http"
                "pla.browser.maple"

@@ -6,7 +6,7 @@
   (:access :to-grow grow :systems systems
            :ctaccess (*contacts* . make-contacts) :staccess (state of-state state-accessor)))
 
-(defvar *contacts* (list :demo.sheet :abcd))
+(defvar *contacts* (list :demo.sheet :abcd :demo.access))
 
 (defvar *seed-templates* (list (cons :template.chart (asdf:system-relative-pathname
                                                       :portal.demo1 "../../templates/template.charts/"))))
