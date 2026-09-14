@@ -30,8 +30,8 @@
                       (footer-controls (grow *system* name nil (list :uimod :footer-controls))))
       (list (aspect pane-series (:name :catalog :role (patching))
               (let ((name :catalog) (title :catalog-view))
-                (aspect dual-bank-pane :name name :title title :role (pro-form)
-                  :system *system* :controls (list header-controls footer-controls))))))))
+                (list (aspect dual-bank-pane :name name :title title :role (pro-form)
+                        :system *system* :controls (list header-controls footer-controls)))))))))
 
 (branch :view
   (adapt-from-json :path :session)
@@ -50,12 +50,15 @@
 ;; modulate2 bridge.
 (branch :catalog
   (adapt-from-alist :system :branch :face)
+  (adapt-from-json :height :width)
   (lambda (state input)
-    (destructuring-bind (&key identity uimod &allow-other-keys) input
+    (destructuring-bind (&key identity uimod height width &allow-other-keys) input
+      (when (or height width)
+        (print (list :hh height width)))
       (cond
         (identity :meta-code-form)
-        ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)) (list)))
-        ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls)) (list)))
+        ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)) (list :one)))
+        ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls)) (list :one)))
         (t (let* ((path *catalog-path*)
                   (members
                     (append
