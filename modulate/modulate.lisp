@@ -423,27 +423,48 @@
           (cons (find-role-sym (first form))
                 (loop :for item :in (rest form) :collect (if (atom item) item (format-list item))))))))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun dx-new-grammar-p (specs)
+    "Detect whether a dx spec list uses the new IS/AS/BY grammar rather than
+     the legacy (class-name &rest params) grammar. New-grammar specs are a
+     keyword plist (starting with :as, :by, :is, or :name); legacy specs start
+     with a class symbol."
+    (keywordp (first specs))))
+
 (defmacro dx (specs &rest form)
-  "Specify a form expression; this is how data structures intended entirely as interface elements that are not typically composed into code for compilation are formatted."
-  (labels ((format-params (items)
-             (loop :for (ikey ival) :on items :by #'cddr
-                   :append (list ikey (case ikey
-                                        (:role (if (not (listp ival))
-                                                   ival (cons 'list (role-cast (mapcar #'format-role-spec ival)))))
-                                        (t (format-list ival))))))
-           (process-spec (item spec-list)
-             (let ((generated))
-               (destructuring-bind (class &rest params) spec-list
-                 ;; (print (list :prr params))
-                 (setf generated `(make-instance ',class :base ,item ,@(format-params params))))
-               ;; (if (not (rest spec-list))
-               ;;     generated (process-spec generated (rest spec-list)))
-               generated
-               )))
-    (let ((evaluated-form (gensym)))
-      `(let ((,evaluated-form ,(if (not (second form))
-                                   (first form) (cons 'list form))))
-         ,(process-spec evaluated-form specs)))))
+  "Specify a form expression; this is how data structures intended entirely as
+   interface elements that are not typically composed into code for compilation
+   are formatted.  When the spec list uses IS/AS/BY keywords (new grammar) and
+   the *dx-foreign* hook is set, delegates to seed.modulate2 to produce a
+   manifestation; otherwise uses the legacy class-based path."
+  (if (dx-new-grammar-p specs)
+      ;; New grammar: delegate to *dx-foreign* at runtime.
+      ;; Specs is a keyword plist like (:as :workspace :by :provision-text :name :main).
+      ;; Structured sub-forms like (:layout ...) must be quoted so they don't
+      ;; get evaluated as function calls.
+      (let ((children-form (if (not (second form))
+                               (first form) (cons 'list form)))
+            (quoted-specs (loop :for item :in specs
+                                :collect (if (consp item) `(quote ,item) item))))
+        `(if *dx-foreign*
+             (funcall *dx-foreign* (list ,@quoted-specs) ,children-form)
+             (error "New-grammar dx form requires seed.modulate2 to be loaded.")))
+      ;; Legacy grammar: original path unchanged.
+      (labels ((format-params (items)
+                 (loop :for (ikey ival) :on items :by #'cddr
+                       :append (list ikey (case ikey
+                                            (:role (if (not (listp ival))
+                                                       ival (cons 'list (role-cast (mapcar #'format-role-spec ival)))))
+                                            (t (format-list ival))))))
+               (process-spec (item spec-list)
+                 (let ((generated))
+                   (destructuring-bind (class &rest params) spec-list
+                     (setf generated `(make-instance ',class :base ,item ,@(format-params params))))
+                   generated)))
+        (let ((evaluated-form (gensym)))
+          `(let ((,evaluated-form ,(if (not (second form))
+                                       (first form) (cons 'list form))))
+             ,(process-spec evaluated-form specs))))))
 
 (defmacro aspect (slug &body args)
   (let ((params (if (not (listp (first args))) args (first args)))
@@ -612,6 +633,11 @@
 (defvar *generate-foreign* nil
   "Hook for delegating generation of non-native components (manifestations).
    When set by seed.modulate2, a function of (medium component).")
+
+(defvar *dx-foreign* nil
+  "Hook for delegating new-grammar dx construction to seed.modulate2.
+   When set, a function of (spec-plist children) that returns a manifestation.
+   The spec-plist carries parsed :is/:as/:by keyword arguments.")
 
 (defvar *generate-bouncing* nil
   "Guard against infinite mutual delegation between generate and

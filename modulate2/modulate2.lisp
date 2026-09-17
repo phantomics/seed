@@ -102,7 +102,11 @@
   '(:fn-called :macro-spec :definition :binding-form :iteration :code :data-literal)
   "AS roles whose list values are treated as a single atom, not a sequence.")
 
-;;; Interface-modality roles (for dx forms describing live interface objects):
+;;; Interface-structural roles (for dx forms describing live interface objects).
+;;; AS in dx answers the same question as in fx — "what is your role in the
+;;; containing whole?" — but the containing whole is the interface rather than
+;;; the program.  Layout directives are structured sub-forms under :as,
+;;; parsed out by parse-as-spec, e.g. (:as :workspace (:layout :horizontal :even)).
 
 (defparameter +as-interface-roles+
   '(:navigation     ; helps the user find/traverse content
@@ -114,7 +118,9 @@
     :notification   ; alerts and transient messages
     :decoration     ; purely aesthetic, non-functional element
     )
-  "The vocabulary of interface-modality semantic roles for the :as axis (dx forms).")
+  "The vocabulary of interface-structural semantic roles for the :as axis (dx forms).
+   Layout directives appear as structured sub-forms: (:layout ...).  The layout
+   vocabulary grows from usage; no fixed enumeration is imposed.")
 
 ;;; ===================================================================
 ;;; SECTION: BY vocabulary — interaction modality and presentation
@@ -138,10 +144,18 @@
     :reducing             ; items can be removed
     :extending            ; items can be added
 
+    ;; Provisioning — abstract engagement modes for rich content.  The medium's
+    ;; generate methods choose the concrete widget (CodeMirror, dygraph, etc.).
+    :provision-text       ; engage with character data through an editor
+    :provision-sheet      ; engage with tabular data
+    :provision-chart      ; engage with time-series / plotted data
+    :provision-graph      ; engage with a node-link network
+    :provision-form       ; engage with structured fields as a submittable unit
+
     ;; Suppression
     :bare                 ; suppress Tier-1 default affordances for this node
     )
-  "The vocabulary of interaction modalities for the :by axis. Structured
+  "The vocabulary of interaction modalities for the :by axis.  Structured
    sub-forms (:valence ...) and (:adapting ...) are parsed out separately.")
 
 ;;; ===================================================================
@@ -210,7 +224,13 @@
              :initform nil
              :initarg  :valence
              :documentation "Valence spec: grouping structure for display. E.g., (-2 4) means
-                            first 2 items are header, rest group by 4."))
+                            first 2 items are header, rest group by 4.")
+   (%layout  :accessor mfn-layout
+             :initform nil
+             :initarg  :layout
+             :documentation "Layout directive from an (:as (:layout ...)) sub-form. E.g.,
+                            (:horizontal :even) or (:vertical :of 3 1 1 1). The vocabulary
+                            is open-ended and interpreted by the medium's generate methods."))
   (:documentation
    "A sequence manifestation — an ordered collection of child manifestations.
     Corresponds to lists, series of form fields, sortable collections, etc."))
@@ -219,7 +239,11 @@
   ((%members :accessor mfn-members
              :initform nil
              :initarg  :members
-             :documentation "Named or structured child manifestations."))
+             :documentation "Named or structured child manifestations.")
+   (%layout  :accessor mfn-layout
+             :initform nil
+             :initarg  :layout
+             :documentation "Layout directive, as for mfn-sequence."))
   (:documentation
    "A container manifestation — holds structured content with named regions or slots.
     Used for frames, panels, binding-form bodies, and other compound structures."))
@@ -244,6 +268,19 @@
         (by-val  (extract-axis raw-metadata :by))
         (name    (extract-axis raw-metadata :name)))
     (list :is is-val :as as-val :by by-val :name name)))
+
+(defun parse-as-spec (as-spec)
+  "Separate an :as spec into its components. An :as spec mixes flat role
+   keywords with structured sub-forms, e.g.
+     (:workspace (:layout :horizontal :even))
+   Returns two values: the flat role keyword list and the layout directive
+   (or nil).  The layout vocabulary is open-ended and not enumerated."
+  (let ((roles) (layout))
+    (dolist (item as-spec)
+      (cond ((keywordp item) (push item roles))
+            ((and (consp item) (eq :layout (first item)))
+             (setf layout (rest item)))))
+    (values (nreverse roles) layout)))
 
 (defun parse-by-spec (by-spec)
   "Separate a :by spec into its components. A :by spec mixes flat modality
@@ -314,45 +351,47 @@
               (metadata (cddr form))
               (parsed   (parse-fx-metadata metadata))
               (is-spec  (getf parsed :is))
-              (as-spec  (getf parsed :as))
+              (as-raw   (getf parsed :as))
               (by-raw   (getf parsed :by))
               (name     (getf parsed :name))
               (resolved-is (resolve-is value is-spec)))
-         (multiple-value-bind (modalities valence adapting) (parse-by-spec by-raw)
-           (let* ((resolved-by (resolve-by modalities context-interactive-p))
-                  ;; A context becomes interactive for children when an explicit
-                  ;; interactive modality (anything other than :observing) is present.
-                  (children-interactive-p
-                    (or context-interactive-p
-                        (and modalities (not (member :observing modalities)))))
-                  ;; A list value is a sequence unless its :as role marks it atomic.
-                  (sequence-p (and (listp value)
-                                   (not (atomic-as-p as-spec)))))
-             (if sequence-p
-                 (let ((members (loop :for i :from 0
-                                      :for item :in value
-                                      :collect (express-new item
-                                                            :path (cons i path)
-                                                            :context-interactive-p
-                                                            children-interactive-p))))
-                   (make-instance 'mfn-sequence
+         (multiple-value-bind (as-roles layout) (parse-as-spec as-raw)
+           (multiple-value-bind (modalities valence adapting) (parse-by-spec by-raw)
+             (let* ((resolved-by (resolve-by modalities context-interactive-p))
+                    ;; A context becomes interactive for children when an explicit
+                    ;; interactive modality (anything other than :observing) is present.
+                    (children-interactive-p
+                      (or context-interactive-p
+                          (and modalities (not (member :observing modalities)))))
+                    ;; A list value is a sequence unless its :as role marks it atomic.
+                    (sequence-p (and (listp value)
+                                     (not (atomic-as-p as-roles)))))
+               (if sequence-p
+                   (let ((members (loop :for i :from 0
+                                        :for item :in value
+                                        :collect (express-new item
+                                                              :path (cons i path)
+                                                              :context-interactive-p
+                                                              children-interactive-p))))
+                     (make-instance 'mfn-sequence
+                                    :value value
+                                    :is resolved-is
+                                    :as as-roles
+                                    :by resolved-by
+                                    :name name
+                                    :path (reverse path)
+                                    :adapting adapting
+                                    :members members
+                                    :valence valence
+                                    :layout layout))
+                   (make-instance 'mfn-atom
                                   :value value
                                   :is resolved-is
-                                  :as as-spec
+                                  :as as-roles
                                   :by resolved-by
                                   :name name
-                                  :path (reverse path)
                                   :adapting adapting
-                                  :members members
-                                  :valence valence))
-                 (make-instance 'mfn-atom
-                                :value value
-                                :is resolved-is
-                                :as as-spec
-                                :by resolved-by
-                                :name name
-                                :adapting adapting
-                                :path (reverse path)))))))
+                                  :path (reverse path))))))))
 
       ;; Plain list of forms (no fx wrapper) — treat as implicit sequence
       ((and (listp form) (some #'fx-form-p form))
@@ -504,6 +543,149 @@
     (setf (mfn-defaults-applied m) t))
   (call-next-method))
 
+;;; ===================================================================
+;;; SECTION: Provisioning — generate methods for BY :provision-* modalities
+;;; ===================================================================
+
+;;; Provisioning modalities describe abstract modes of human engagement with
+;;; rich content.  The generate methods here are specialized per medium; the
+;;; uim-web methods emit the HTML structure and JavaScript setup for the
+;;; concrete browser widgets.
+
+(defun provisioning-modality (by-spec)
+  "Return the first :provision-* keyword found in a :by modality list, or nil."
+  (find-if (lambda (k) (and (keywordp k)
+                             (> (length (string k)) 10)
+                             (string= "PROVISION-" (string k) :end2 10)))
+           by-spec))
+
+(defun provision-token (name system branch)
+  "Build an element-id token from NAME, SYSTEM and BRANCH keywords, matching
+   the naming convention used by the existing Seed client-side code."
+  (format nil "~@[~a-~]~a~@[-~a~]"
+          (when name (string-downcase (string name)))
+          (if system (string-downcase (string system)) "local")
+          (when branch (string-downcase (string branch)))))
+
+(defun generate-provisioned (medium m)
+  "Generate HTML for a provisioned manifestation.  Called from the mfn-atom
+   and mfn-sequence primary methods when a :provision-* modality is present."
+  (let* ((prov (provisioning-modality (mfn-by m)))
+         (name (mfn-name m))
+         (value (mfn-value m)))
+    (case prov
+      (:provision-text
+       ;; CodeMirror text editor.  Value is (system branch) for server-fetched
+       ;; content, or a string for direct content.
+       (let* ((sys-branch (and (listp value) (= 2 (length value)) value))
+              (system (first sys-branch))
+              (branch (second sys-branch))
+              (token  (if sys-branch
+                          (format nil "cm-texteditor-~a-~a"
+                                  (string-downcase (string system))
+                                  (string-downcase (string branch)))
+                          (format nil "cm-~a" (or (and name (string-downcase (string name)))
+                                                  "editor")))))
+         (if sys-branch
+             ;; Server-fetched: emit x-init that calls fetch-contact then creates CodeMirror.
+             ;; The JavaScript is built at runtime via ps* to avoid compile-time
+             ;; package issues with Parenscript pseudo-variables.
+             (let ((branch-str (string-downcase (string branch))))
+               `(:div :id ,token
+                      :class "mfn-provision provision-text"
+                      :x-init ,(ps* `(progn (setf (@ window codemirror) nil)
+                                            (setf (getprop (@ window seed-elements) ,branch-str)
+                                                  $el)
+                                            (fetch-contact
+                                             $el mode (create text (list 0))
+                                             (lambda (data)
+                                               (setf (getprop (@ window seed-data) ,token)
+                                                     (create-codemirror
+                                                      (chain document (get-element-by-id ,token))
+                                                      (@ data text)))))))))
+             ;; Direct content: emit a div that CodeMirror attaches to, with the
+             ;; text as initial content.
+             `(:div :id ,token
+                    :class "mfn-provision provision-text"
+                    :data-content ,(if (stringp value) value "")))))
+
+      (:provision-sheet
+       ;; Stub: canvas-datagrid.
+       `(:div :class "mfn-provision provision-sheet"
+              ,@(when name (list :id (string-downcase (string name))))))
+
+      (:provision-chart
+       ;; Stub: dygraph.
+       `(:div :class "mfn-provision provision-chart"
+              ,@(when name (list :id (string-downcase (string name))))))
+
+      (:provision-graph
+       ;; Stub: SVG graph editor.
+       `(:div :class "mfn-provision provision-graph"
+              ,@(when name (list :id (string-downcase (string name))))))
+
+      (:provision-form
+       ;; Stub: submittable form.
+       `(:form :class "mfn-provision provision-form"
+               ,@(when name (list :id (string-downcase (string name))))))
+
+      (otherwise nil))))
+
+;;; ===================================================================
+;;; SECTION: Layout — CSS grid positioning for sequence items
+;;; ===================================================================
+
+(defun locate-item (layout index total-members item-html)
+  "Apply CSS grid positioning to a rendered item according to a LAYOUT
+   directive.  LAYOUT is e.g. (:horizontal :even) or (:vertical :of 3 1 1 1).
+   INDEX is the item's position; TOTAL-MEMBERS is the count.  ITEM-HTML is
+   the spinneret tree for the item.  Returns the tree with :style added."
+  (when (and layout (consp layout) (>= (length layout) 2))
+    (destructuring-bind (direction style &rest props) layout
+      (when (member direction '(:horizontal :vertical))
+        (let ((default-segments 12))
+          (case style
+            ((:even :of)
+             (let* ((divisions (or (first props) default-segments))
+                    (width (/ divisions total-members))
+                    (start-index index)
+                    (next-index 0))
+               (if (eq :of style)
+                   ;; Proportional: each item gets its declared proportion.
+                   ;; Props = (total p1 p2 p3 ...) where p1+p2+... = total.
+                   (setf width 1
+                         start-index (loop :for i :in (rest props)
+                                           :for x :below index
+                                           :summing i)
+                         next-index (if (= index (1- total-members))
+                                        (first props)
+                                        (+ start-index (nth index (rest props)))))
+                   ;; Even: each item gets equal width.
+                   (setf start-index (floor (* width index))
+                         next-index  (floor (* width (1+ index)))))
+               ;; Splice :style into the item-html tree. The tree is
+               ;; (:div :class "..." ... content) — we insert after the tag.
+               (let* ((grid-prop (if (eq direction :horizontal)
+                                     "grid-column" "grid-row"))
+                      (style-val (format nil "~a-start: ~a; ~a-end: ~a;"
+                                         grid-prop (1+ start-index)
+                                         grid-prop (1+ next-index))))
+                 ;; Find existing :style in the item's plist and extend it,
+                 ;; or insert a new one.
+                 (if (and (consp item-html) (keywordp (first item-html)))
+                     (let ((rest-items (rest item-html))
+                           (existing-style-pos (position :style (rest item-html))))
+                       (if existing-style-pos
+                           (setf (nth (1+ existing-style-pos) rest-items)
+                                 (format nil "~a ~a"
+                                         (nth (1+ existing-style-pos) rest-items)
+                                         style-val))
+                           ;; Insert :style after the tag keyword.
+                           (setf rest-items (list* :style style-val rest-items)))
+                       (cons (first item-html) rest-items))
+                     item-html))))))))))
+
+
 (defun emit-header (medium node &optional header-members)
   "Produce the header div for NODE if it has injected controls or designated
    header members, else NIL. Controls and valence header members share the
@@ -522,8 +704,11 @@
          (by   (mfn-by m))
          (as   (mfn-as m))
          (modality (first by))
+         (provisioned (and (provisioning-modality by)
+                           (generate-provisioned medium m)))
          (body
-           (case modality
+           (or provisioned
+            (case modality
              (:activating
               ;; An injected control: render as a button.
               (destructuring-bind (&key action label target) value
@@ -582,44 +767,57 @@
 
              (otherwise
               `(:span :class "mfn-atom"
-                      ,(if value (princ-to-string value) ""))))))
+                      ,(if value (princ-to-string value) "")))))))
     (let ((header (emit-header medium m)))
       (if header
           `(:div :class "mfn-item-wrap" ,header ,body)
           body))))
 
+(defun generate-item-list (medium items layout)
+  "Generate a list of mfn-item divs from ITEMS, applying CSS grid positioning
+   via LAYOUT when present."
+  (let ((total (length items)))
+    (loop :for item :in items
+          :for ix :from 0
+          :collect (let ((rendered `(:div :class "mfn-item" :index ,ix
+                                         ,(generate medium item))))
+                    (if layout
+                        (or (locate-item layout ix total rendered) rendered)
+                        rendered)))))
+
 (defmethod generate ((medium seed.modulate::uim-web) (m mfn-sequence))
   "Generate HTML for a sequence manifestation. Items carrying their own
    injected controls render those in their own headers; the sequence itself
    renders a header for any controls injected at its level (plus valence
-   header members)."
+   header members). When a layout directive is present, items are positioned
+   via CSS grid within each body group (or the whole member list if no
+   valence)."
   (let* ((by (mfn-by m))
          (valence (mfn-valence m))
+         (layout  (and (typep m 'mfn-sequence) (mfn-layout m)))
          (members (mfn-members m))
+         (provisioned (and (provisioning-modality by)
+                           (generate-provisioned medium m)))
          (class-parts (list "mfn-sequence"))
          (is-sorting  (member :sorting by))
          (is-reducing (member :reducing by)))
 
     (when is-sorting  (push "sortable" class-parts))
     (when is-reducing (push "reducable" class-parts))
+    (when layout      (push "grid-layout" class-parts))
 
-    (let ((class-string (format nil "~{~a~^ ~}" (reverse class-parts))))
-      (if valence
-          (multiple-value-bind (header-members body-groups) (split-by-valence members valence)
-            `(:div :class ,class-string
-                   ,@(let ((h (emit-header medium m header-members))) (when h (list h)))
-                   ,@(loop :for group :in body-groups
-                           :collect `(:div :class "mfn-body-group"
-                                           ,@(loop :for item :in group
-                                                   :collect `(:div :class "mfn-item"
-                                                                   ,(generate medium item)))))))
-          `(:div :class ,class-string
-                 ,@(let ((h (emit-header medium m))) (when h (list h)))
-                 ,@(loop :for member :in members
-                         :for ix :from 0
-                         :collect `(:div :class "mfn-item"
-                                         :index ,ix
-                                         ,(generate medium member))))))))
+    (or provisioned
+        (let ((class-string (format nil "~{~a~^ ~}" (reverse class-parts))))
+          (if valence
+              (multiple-value-bind (header-members body-groups) (split-by-valence members valence)
+                `(:div :class ,class-string
+                       ,@(let ((h (emit-header medium m header-members))) (when h (list h)))
+                       ,@(loop :for group :in body-groups
+                               :collect `(:div :class "mfn-body-group"
+                                               ,@(generate-item-list medium group layout)))))
+              `(:div :class ,class-string
+                     ,@(let ((h (emit-header medium m))) (when h (list h)))
+                     ,@(generate-item-list medium members layout)))))))
 
 (defmethod generate ((medium seed.modulate::uim-web) (m mfn-container))
   "Generate HTML for a container manifestation."
@@ -674,6 +872,97 @@
             (nreverse body-groups))))
 
 ;;; ===================================================================
+;;; SECTION: Construction — building manifestations from dx-style specs
+;;; ===================================================================
+
+;;; construct is the runtime counterpart of express-new.  Where express-new
+;;; walks a stored (fx) form, construct builds from live values in the branch's
+;;; lexical scope.  It is called by the *dx-foreign* hook when the dx macro
+;;; encounters a new-grammar (IS/AS/BY keyword) spec list.
+
+(defun parse-dx-spec (spec-list)
+  "Parse a dx spec list into its axis components. The spec list is a flat
+   interleaving of axis keywords and their values, where values may be atoms
+   or structured sub-forms:
+     (:as :workspace (:layout :horizontal :even) :by :provision-text :name :main)
+   Returns a plist of (:is ... :as-raw ... :by-raw ... :name ...) where the
+   -raw values are lists ready for parse-as-spec / parse-by-spec."
+  (let ((is) (as-parts) (by-parts) (name) (current-axis nil))
+    (dolist (item spec-list)
+      (cond
+        ;; An axis keyword: switch the current axis.
+        ((member item '(:is :as :by :name))
+         (setf current-axis item))
+        ;; A structured sub-form (list): append to the current axis.
+        ((and (consp item) current-axis)
+         (case current-axis
+           (:as (push item as-parts))
+           (:by (push item by-parts))
+           (:is (push item is))
+           (:name (setf name item))))
+        ;; An atom value: assign/append to the current axis.
+        (current-axis
+         (case current-axis
+           (:as   (push item as-parts))
+           (:by   (push item by-parts))
+           (:is   (push item is))
+           (:name (setf name item))))))
+    (list :is (nreverse is) :as-raw (nreverse as-parts)
+          :by-raw (nreverse by-parts) :name name)))
+
+(defun construct (spec-plist children)
+  "Build a manifestation from a dx-style spec list and child values.
+   SPEC-PLIST is the evaluated spec list from the dx macro, e.g.
+     (:as :workspace (:layout :horizontal :even) :by :provision-text :name :main).
+   CHILDREN is the content: nil, a single value, or a list of values (which may
+   themselves be manifestations, strings, symbols, or other objects).
+
+   Classification rules:
+     - If CHILDREN is nil or atomic, build an mfn-atom.
+     - If CHILDREN is a list, build an mfn-sequence with each element as a member.
+       Elements that are already manifestations pass through; other values are
+       wrapped as mfn-atoms."
+  (let* ((parsed (parse-dx-spec spec-plist))
+         (is-spec (getf parsed :is))
+         (as-raw  (getf parsed :as-raw))
+         (by-raw  (getf parsed :by-raw))
+         (name    (getf parsed :name)))
+    (multiple-value-bind (as-roles layout) (parse-as-spec as-raw)
+      (multiple-value-bind (modalities valence adapting) (parse-by-spec by-raw)
+        (let ((resolved-by (or modalities (list :observing))))
+          (if (and children (listp children))
+              ;; Sequence: each child is a member.
+              (make-instance 'mfn-sequence
+                             :value children
+                             :is (or is-spec (list :list))
+                             :as as-roles
+                             :by resolved-by
+                             :name name
+                             :adapting adapting
+                             :members (loop :for child :in children
+                                            :collect (ensure-manifestation child))
+                             :valence valence
+                             :layout layout)
+              ;; Atom: single value or nil.
+              (make-instance 'mfn-atom
+                             :value children
+                             :is (or is-spec (list (infer-data-character children)))
+                             :as as-roles
+                             :by resolved-by
+                             :name name
+                             :adapting adapting)))))))
+
+(defun ensure-manifestation (value)
+  "If VALUE is already a manifestation, return it unchanged.  Otherwise wrap
+   it as an mfn-atom with inferred IS.  This lets dx children mix
+   manifestations, strings, symbols, and other values freely."
+  (if (typep value 'manifestation)
+      value
+      (make-instance 'mfn-atom
+                     :value value
+                     :is (list (infer-data-character value)))))
+
+;;; ===================================================================
 ;;; SECTION: Render method — produces HTML string from manifestation tree
 ;;; ===================================================================
 
@@ -703,3 +992,7 @@
 (setf seed.modulate::*generate-foreign*
       (lambda (medium component)
         (generate medium component)))
+
+(setf seed.modulate::*dx-foreign*
+      (lambda (spec-plist children)
+        (construct spec-plist children)))

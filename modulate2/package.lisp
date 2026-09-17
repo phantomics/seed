@@ -4,6 +4,8 @@
   (:use #:cl #:symbol-munger #:spinneret)
   (:export ;; core expression / pipeline
            #:express-new
+           #:construct
+           #:ensure-manifestation
            #:manifest
            #:apply-named-processors
            #:apply-modality-defaults
@@ -12,7 +14,9 @@
            #:render
            ;; metadata / spec parsing
            #:parse-fx-metadata
+           #:parse-as-spec
            #:parse-by-spec
+           #:parse-dx-spec
            ;; manifestation classes
            #:manifestation
            #:mfn-atom
@@ -27,6 +31,7 @@
            #:mfn-path
            #:mfn-members
            #:mfn-valence
+           #:mfn-layout
            #:mfn-adapting
            #:mfn-controls
            ;; IS vocabulary
