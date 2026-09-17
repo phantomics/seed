@@ -1,4 +1,5 @@
 ;;;; package.lisp
 
 (defpackage #:demo.access
-  (:use #:cl))
+  (:use #:cl)
+  (:export #:*blog* #:*default-account*))

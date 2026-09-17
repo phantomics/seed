@@ -19,9 +19,10 @@
                "seed.modulate2"
                "seed.sublimate"
                "seed.contact.http"
-               "pla.browser.maple"
-               "app.chart"
-               )
+                "pla.browser.maple"
+                "app.chart"
+                "classic.models.common"
+                )
   :components ((:file "package")
                (:file "setup")
                (:file "demo1")
