@@ -8,14 +8,14 @@ component:     modulate2
 language:      en
 status:        Draft
 provenance:
-  assistant:   claude-opus-4-8
+  assistant:   claude-opus-4-6
 decisions:
-  - SEED-D1
-  - SEED-D2
-  - SEED-D3
-  - SEED-D4
-  - SEED-D5
-  - SEED-D6
+  - SEED-DRAFT-tripleontology-D1
+  - SEED-DRAFT-tripleontology-D2
+  - SEED-DRAFT-tripleontology-D3
+  - SEED-DRAFT-tripleontology-D4
+  - SEED-DRAFT-tripleontology-D5
+  - SEED-DRAFT-tripleontology-D6
 ---
 
 # IS/AS/BY Ontology and Manifestation Pipeline: Development Log
@@ -126,7 +126,7 @@ than an annotation axis, leaving IS/AS/BY as the annotation ontology.
 
 ## Design Decisions
 
-### SEED-D1 — Three-axis IS/AS/BY ontology
+### SEED-DRAFT-tripleontology-D1 — Three-axis IS/AS/BY ontology
 
 **Status:** Accepted
 **Context:** `(fx)` annotations needed to answer "what is this / why is it here /
@@ -139,7 +139,7 @@ by the manifestation object's class, not by a fourth annotation axis.
 already implied by whether a value is atomic or a collection, so encoding it
 twice (as class and as annotation) invited drift.
 
-### SEED-D2 — IS carries two strata; stratum 2 is never presumptuously inferred
+### SEED-DRAFT-tripleontology-D2 — IS carries two strata; stratum 2 is never presumptuously inferred
 
 **Status:** Accepted
 **Context:** Sub-classifications like "plist" or "pathname" are developer
@@ -153,7 +153,7 @@ presumptuous — the packed-decimal analogy. A contextual-directive mechanism th
 *authorizes* such inference in a marked code region is noted as future work, not
 built now.
 
-### SEED-D3 — Manifestation class hierarchy with IS/AS/BY as slot data
+### SEED-DRAFT-tripleontology-D3 — Manifestation class hierarchy with IS/AS/BY as slot data
 
 **Status:** Accepted
 **Context:** The object tree needed a small structural spine while keeping the
@@ -166,7 +166,7 @@ as, by, name, path, adapting, and controls; specialize it as `mfn-atom`
 original `uic-*`/`uicc-*` catalogue did) was rejected as combinatorial and
 brittle.
 
-### SEED-D4 — Two-tier processor pipeline
+### SEED-DRAFT-tripleontology-D4 — Two-tier processor pipeline
 
 **Status:** Accepted
 **Context:** Some affordances belong to any element of a given modality
@@ -183,7 +183,7 @@ additions can be picked up by Tier 1.
 branch fills) was rejected in favour of postprocessors that inspect the whole
 tree and respond to discovered conditions.
 
-### SEED-D5 — Registration-hook bridge between modulate and modulate2
+### SEED-DRAFT-tripleontology-D5 — Registration-hook bridge between modulate and modulate2
 
 **Status:** Accepted
 **Context:** `seed.modulate2` depends on `seed.modulate` (for `uim-web` and
@@ -199,7 +199,7 @@ generics (the "most correct" long-term shape) was deferred as churn that would b
 discarded when `modulate` is retired. Merging the two systems was rejected: the
 migration requires them separate.
 
-### SEED-D6 — `:bare` suppresses Tier-1 defaults
+### SEED-DRAFT-tripleontology-D6 — `:bare` suppresses Tier-1 defaults
 
 **Status:** Accepted
 **Context:** A form may want a modality's semantics without its auto-generated
@@ -221,18 +221,18 @@ The bridge from the original system to the new one lives here, entirely in
 additive terms — no existing behaviour changed.
 
 - Three hook variables were added after the `generate` generic:
-  `seed.modulate::*express-foreign*@aeedefb` and
-  `seed.modulate::*generate-foreign*@aeedefb` are filled by `modulate2` at load
-  time; `seed.modulate::*generate-bouncing*@aeedefb` guards against infinite
-  mutual delegation.
-- `seed.modulate::express-new-grammar-p@aeedefb` detects a new-grammar form: an
-  `(fx)` form whose metadata carries at least one of `:is`/`:as`/`:by` and no
-  `:fx`. Because every existing data file uses `:fx`, this disambiguates
+  `modulate/modulate.lisp:*express-foreign*@aeedefb` and
+  `modulate/modulate.lisp:*generate-foreign*@aeedefb` are filled by `modulate2`
+  at load time; `modulate/modulate.lisp:*generate-bouncing*@aeedefb` guards
+  against infinite mutual delegation.
+- `modulate/modulate.lisp:express-new-grammar-p@aeedefb` detects a new-grammar
+  form: an `(fx)` form whose metadata carries at least one of `:is`/`:as`/`:by`
+  and no `:fx`. Because every existing data file uses `:fx`, this disambiguates
   cleanly.
-- `seed.modulate::express@aeedefb` gained a `&key processors` parameter and a
-  branch that, when the hook is set and the form is new-grammar, delegates to
-  `*express-foreign*`; otherwise it runs the unchanged legacy path.
-- A catch-all method `seed.modulate::generate@aeedefb` specialized on
+- `modulate/modulate.lisp:express@aeedefb` gained a `&key processors` parameter
+  and a branch that, when the hook is set and the form is new-grammar, delegates
+  to `*express-foreign*`; otherwise it runs the unchanged legacy path.
+- A catch-all method `modulate/modulate.lisp:generate@aeedefb` specialized on
   `(uim-web t)` delegates any component with no native method to
   `*generate-foreign*`, so a manifestation embedded in a legacy tree still
   renders; the bouncing guard turns an unrecognized component into a clean error
@@ -240,7 +240,7 @@ additive terms — no existing behaviour changed.
 
 ### `modulate2/package.lisp`
 
-`seed.modulate2` (`modulate2/package.lisp@aeedefb`) uses `cl`, `symbol-munger`,
+The `seed.modulate2` package (`modulate2/package.lisp@aeedefb`) uses `cl`, `symbol-munger`,
 and `spinneret`; shadow-imports `uim-web` and `render` from `seed.modulate`; and
 exports the pipeline entry points (`express-new`, `manifest`,
 `apply-named-processors`, `apply-modality-defaults`, `make-control`, `generate`),
@@ -251,41 +251,50 @@ the vocabulary constants.
 
 The subsystem proper.
 
-- **IS inference.** `seed.modulate2::infer-data-character@aeedefb` maps a value
-  to a stratum-1 keyword by `typecase`.
-- **Vocabularies.** `+as-program-roles+`, `+as-atomic-roles+`,
-  `+as-interface-roles+`, and `+by-modalities+` (all `@aeedefb`) enumerate the
-  AS and BY vocabularies; `+by-modalities+` includes `:bare`.
-- **Classes.** `seed.modulate2::manifestation@aeedefb` and its subclasses
-  `mfn-atom`, `mfn-sequence`, `mfn-container` (all `@aeedefb`).
-- **Spec parsing.** `seed.modulate2::parse-by-spec@aeedefb` separates flat
-  modality keywords from the structured `(:valence ...)` and `(:adapting ...)`
-  sub-forms; `parse-fx-metadata@aeedefb` splits an `(fx)` form's metadata into
-  the axis values.
-- **Expression.** `seed.modulate2::express-new@aeedefb` walks a form into a
-  manifestation tree, inferring IS, resolving BY defaults by context, and using
-  `atomic-as-p@aeedefb` so that a list value with an atomic `:as` role
-  (`:fn-called`, `:definition`, `:code`, …) stays an `mfn-atom` rather than being
-  read as a sequence.
-- **Tier 2.** `seed.modulate2::apply-named-processors@aeedefb` walks the tree
-  depth-first (children before parent) applying `:adapting` closures from the
-  lexicon; `manifest@aeedefb` composes `express-new` then Tier 2.
-- **Tier 1.** `seed.modulate2::apply-modality-defaults@aeedefb` is a generic on
-  `(medium node)`; the `(uim-web mfn-sequence)` method injects affordances unless
-  the node is `:bare`. `:reducing` is implemented end to end by
-  `apply-reducing-default@aeedefb`, which pushes a remove control (built by
-  `make-control@aeedefb`, targeting the member's path) into each member's header.
-  `apply-sorting-default@aeedefb` and `apply-extending-default@aeedefb` are
-  stubs.
+- **IS inference.** `modulate2/modulate2.lisp:infer-data-character@aeedefb`
+  maps a value to a stratum-1 keyword by `typecase`.
+- **Vocabularies.** `modulate2/modulate2.lisp:+as-program-roles+@aeedefb`,
+  `modulate2/modulate2.lisp:+as-atomic-roles+@aeedefb`,
+  `modulate2/modulate2.lisp:+as-interface-roles+@aeedefb`, and
+  `modulate2/modulate2.lisp:+by-modalities+@aeedefb` enumerate the AS and BY
+  vocabularies; `+by-modalities+` includes `:bare`.
+- **Classes.** `modulate2/modulate2.lisp:manifestation@aeedefb` and its
+  subclasses `modulate2/modulate2.lisp:mfn-atom@aeedefb`,
+  `modulate2/modulate2.lisp:mfn-sequence@aeedefb`,
+  `modulate2/modulate2.lisp:mfn-container@aeedefb`.
+- **Spec parsing.** `modulate2/modulate2.lisp:parse-by-spec@aeedefb` separates
+  flat modality keywords from the structured `(:valence ...)` and
+  `(:adapting ...)` sub-forms;
+  `modulate2/modulate2.lisp:parse-fx-metadata@aeedefb` splits an `(fx)` form's
+  metadata into the axis values.
+- **Expression.** `modulate2/modulate2.lisp:express-new@aeedefb` walks a form
+  into a manifestation tree, inferring IS, resolving BY defaults by context, and
+  using `modulate2/modulate2.lisp:atomic-as-p@aeedefb` so that a list value with
+  an atomic `:as` role (`:fn-called`, `:definition`, `:code`, …) stays an
+  `mfn-atom` rather than being read as a sequence.
+- **Tier 2.** `modulate2/modulate2.lisp:apply-named-processors@aeedefb` walks
+  the tree depth-first (children before parent) applying `:adapting` closures
+  from the lexicon; `modulate2/modulate2.lisp:manifest@aeedefb` composes
+  `express-new` then Tier 2.
+- **Tier 1.** `modulate2/modulate2.lisp:apply-modality-defaults@aeedefb` is a
+  generic on `(medium node)`; the `(uim-web mfn-sequence)` method injects
+  affordances unless the node is `:bare`. `:reducing` is implemented end to end
+  by `modulate2/modulate2.lisp:apply-reducing-default@aeedefb`, which pushes a
+  remove control (built by `modulate2/modulate2.lisp:make-control@aeedefb`,
+  targeting the member's path) into each member's header.
+  `modulate2/modulate2.lisp:apply-sorting-default@aeedefb` and
+  `modulate2/modulate2.lisp:apply-extending-default@aeedefb` are stubs.
 - **Rendering.** A `generate :around` method on `(uim-web manifestation)`
-  (`@aeedefb`) applies Tier-1 defaults once, then the primary methods render.
-  `emit-header@aeedefb` places injected controls and valence header members in a
-  shared `mfn-header`; `split-by-valence@aeedefb` divides members into header and
-  body groups. The `render` method on `manifestation` (`@aeedefb`) serializes the
-  tree via spinneret.
+  (`modulate2/modulate2.lisp@aeedefb`) applies Tier-1 defaults once, then the
+  primary methods render. `modulate2/modulate2.lisp:emit-header@aeedefb` places
+  injected controls and valence header members in a shared `mfn-header`;
+  `modulate2/modulate2.lisp:split-by-valence@aeedefb` divides members into
+  header and body groups. The `render` method on `manifestation`
+  (`modulate2/modulate2.lisp@aeedefb`) serializes the tree via spinneret.
 - **Bridge registration.** At load time the file sets
-  `seed.modulate::*express-foreign*` to a closure over `manifest` and
-  `seed.modulate::*generate-foreign*` to a closure over `generate`.
+  `modulate/modulate.lisp:*express-foreign*@aeedefb` to a closure over
+  `manifest` and `modulate/modulate.lisp:*generate-foreign*@aeedefb` to a
+  closure over `generate`.
 
 
 ## Verification
@@ -335,7 +344,8 @@ Files touched by this work. `New` marks files first written for the subsystem;
 - **Deep mixed-grammar nesting.** The bounce guard makes new-inside-old and
   old-inside-new render correctly at one level, but pathological deep alternation
   can reach the guard and error rather than render. Acceptable during migration;
-  revisit if it arises, likely by extracting the shared base of SEED-D5.
+  revisit if it arises, likely by extracting the shared base of
+  SEED-DRAFT-tripleontology-D5.
 - **Contextual IS inference directives.** The mechanism to let a marked code
   region authorize stratum-2 inference (e.g. "here, key/value lists are plists")
   is designed-for but not built.
@@ -344,4 +354,5 @@ Files touched by this work. `New` marks files first written for the subsystem;
   concrete use case.
 - **Retirement of `seed.modulate`.** The bridge is transitional. As forms migrate
   to the new grammar, the legacy expression and component classes are to be
-  removed, at which point SEED-D5's shared-base option should be reconsidered.
+  removed, at which point SEED-DRAFT-tripleontology-D5's shared-base option
+  should be reconsidered.

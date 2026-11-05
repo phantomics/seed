@@ -12,11 +12,11 @@ provenance:
 relates-to:
   - SEED-DRAFT-tripleontology
 decisions:
-  - SEED-D7
-  - SEED-D8
-  - SEED-D9
-  - SEED-D10
-  - SEED-D11
+  - SEED-DRAFT-dxontologyupdate-D1
+  - SEED-DRAFT-dxontologyupdate-D2
+  - SEED-DRAFT-dxontologyupdate-D3
+  - SEED-DRAFT-dxontologyupdate-D4
+  - SEED-DRAFT-dxontologyupdate-D5
 ---
 
 # Unifying (dx) Forms Under IS/AS/BY: Development Log
@@ -69,7 +69,7 @@ real-world interface construction:
 
 ## Design Decisions
 
-### SEED-D7 — (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations
+### SEED-DRAFT-dxontologyupdate-D1 — (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations
 
 **Status:** Accepted
 **Context:** The `(fx)` pipeline was producing manifestations classified by
@@ -82,7 +82,7 @@ manifestation objects. The difference is temporal, not ontological.
 rejected as it would perpetuate two parallel object models and prevent the
 retirement of the aspect system.
 
-### SEED-D8 — AS has two sub-vocabularies; layout is a structured AS sub-form
+### SEED-DRAFT-dxontologyupdate-D2 — AS has two sub-vocabularies; layout is a structured AS sub-form
 
 **Status:** Accepted
 **Context:** AS answers "what is your role in the containing whole?" — but
@@ -103,7 +103,7 @@ engages with it. The orthogonality test confirmed they vary independently: a
 horizontal series (AS: layout) can contain text editors or charts (BY:
 provisioning).
 
-### SEED-D9 — Provisioning widgets are abstract BY modalities
+### SEED-DRAFT-dxontologyupdate-D3 — Provisioning widgets are abstract BY modalities
 
 **Status:** Accepted
 **Context:** Rich content widgets (CodeMirror, dygraph, canvas-datagrid) needed
@@ -121,7 +121,7 @@ editor. The vocabulary: `:provision-text`, `:provision-sheet`,
 **Alternatives:** Naming concrete widgets in BY was rejected as it would tie the
 ontology to specific browser libraries and break medium-independence.
 
-### SEED-D10 — The dx macro gains a grammar-detection branch
+### SEED-DRAFT-dxontologyupdate-D4 — The dx macro gains a grammar-detection branch
 
 **Status:** Accepted
 **Context:** The `dx` macro in `seed.modulate` needed to support both old-grammar
@@ -135,7 +135,7 @@ being evaluated as function calls.
 **Alternatives:** A separate `dx2` macro in `modulate2` was considered but
 rejected in favour of extending the existing `dx` macro for seamless migration.
 
-### SEED-D11 — Layout positioning is applied per body group within valence
+### SEED-DRAFT-dxontologyupdate-D5 — Layout positioning is applied per body group within valence
 
 **Status:** Accepted
 **Context:** Layout (CSS grid positioning) and valence (header/body grouping)
@@ -156,16 +156,16 @@ All code references are pinned to revision `53907b6`.
 
 ### `modulate/modulate.lisp`
 
-- **`*dx-foreign*` hook** (`seed.modulate::*dx-foreign*@53907b6`): added
-  alongside the existing `*express-foreign*` and `*generate-foreign*`. Accepts a
-  spec plist and children list, returns a manifestation.
-- **`dx-new-grammar-p@53907b6`**: compile-time predicate (wrapped in
-  `eval-when`) that detects new-grammar specs by checking whether the first
-  element is a keyword.
-- **`dx` macro** (`seed.modulate::dx@53907b6`): gains a detection branch. When
-  `dx-new-grammar-p` returns true, the macro quotes structured sub-forms to
-  prevent evaluation, then emits a runtime call to `*dx-foreign*`. The legacy
-  path is unchanged.
+- **`*dx-foreign*` hook** (`modulate/modulate.lisp:*dx-foreign*@53907b6`):
+  added alongside the existing `*express-foreign*` and `*generate-foreign*`.
+  Accepts a spec plist and children list, returns a manifestation.
+- `modulate/modulate.lisp:dx-new-grammar-p@53907b6`: compile-time predicate
+  (wrapped in `eval-when`) that detects new-grammar specs by checking whether
+  the first element is a keyword.
+- **`dx` macro** (`modulate/modulate.lisp:dx@53907b6`): gains a detection
+  branch. When `dx-new-grammar-p` returns true, the macro quotes structured
+  sub-forms to prevent evaluation, then emits a runtime call to `*dx-foreign*`.
+  The legacy path is unchanged.
 
 ### `modulate2/package.lisp`
 
@@ -176,41 +176,43 @@ Updated exports (`modulate2/package.lisp@53907b6`): added `construct`,
 
 **Vocabulary updates:**
 
-- `+as-interface-roles+@53907b6`: updated docstring clarifying that AS in `(dx)`
-  describes structural role in the interface, and that layout directives are
-  structured sub-forms.
-- `+by-modalities+@53907b6`: added `:provision-text`, `:provision-sheet`,
-  `:provision-chart`, `:provision-graph`, `:provision-form`.
-- `parse-as-spec@53907b6`: new function separating flat AS role keywords from
-  `(:layout ...)` sub-forms, returning two values.
-- `%layout` slot added to both `mfn-sequence@53907b6` and
-  `mfn-container@53907b6`.
+- `modulate2/modulate2.lisp:+as-interface-roles+@53907b6`: updated docstring
+  clarifying that AS in `(dx)` describes structural role in the interface, and
+  that layout directives are structured sub-forms.
+- `modulate2/modulate2.lisp:+by-modalities+@53907b6`: added `:provision-text`,
+  `:provision-sheet`, `:provision-chart`, `:provision-graph`, `:provision-form`.
+- `modulate2/modulate2.lisp:parse-as-spec@53907b6`: new function separating
+  flat AS role keywords from `(:layout ...)` sub-forms, returning two values.
+- `%layout` slot added to both `modulate2/modulate2.lisp:mfn-sequence@53907b6`
+  and `modulate2/modulate2.lisp:mfn-container@53907b6`.
 
 **Expression updates:**
 
-- `express-new@53907b6`: updated to call `parse-as-spec` on the AS spec and
+- `modulate2/modulate2.lisp:express-new@53907b6`: updated to call `parse-as-spec` on the AS spec and
   thread the parsed layout directive into sequences via the `:layout` initarg.
 
 **Construction (the dx-side counterpart of expression):**
 
-- `parse-dx-spec@53907b6`: walks the evaluated spec list from the `dx` macro,
-  separating axis keywords and their values (including nested sub-forms like
-  `(:layout ...)` and `(:valence ...)`) into a structured result. Unlike
-  `parse-fx-metadata` which operates on alist-shaped metadata, this handles the
-  flat interleaved keyword syntax that `(list ,@specs)` produces.
-- `construct@53907b6`: the runtime counterpart of `express-new`. Builds a
-  manifestation directly from a parsed spec and child values. Lists of children
-  become `mfn-sequence`; single values become `mfn-atom`. Children that are
-  already manifestations pass through unchanged; other values are wrapped by
-  `ensure-manifestation@53907b6`.
+- `modulate2/modulate2.lisp:parse-dx-spec@53907b6`: walks the evaluated spec
+  list from the `dx` macro, separating axis keywords and their values (including
+  nested sub-forms like `(:layout ...)` and `(:valence ...)`) into a structured
+  result. Unlike `parse-fx-metadata` which operates on alist-shaped metadata,
+  this handles the flat interleaved keyword syntax that `(list ,@specs)` produces.
+- `modulate2/modulate2.lisp:construct@53907b6`: the runtime counterpart of
+  `express-new`. Builds a manifestation directly from a parsed spec and child
+  values. Lists of children become `mfn-sequence`; single values become
+  `mfn-atom`. Children that are already manifestations pass through unchanged;
+  other values are wrapped by
+  `modulate2/modulate2.lisp:ensure-manifestation@53907b6`.
 - Bridge registration: `seed.modulate::*dx-foreign*` is set at load time to a
   closure over `construct`.
 
 **Provisioning generate methods:**
 
-- `provisioning-modality@53907b6`: scans a BY spec for the first `:provision-*`
-  keyword.
-- `generate-provisioned@53907b6`: dispatches on provisioning modality. Called
+- `modulate2/modulate2.lisp:provisioning-modality@53907b6`: scans a BY spec for
+  the first `:provision-*` keyword.
+- `modulate2/modulate2.lisp:generate-provisioned@53907b6`: dispatches on
+  provisioning modality. Called
   from both the `mfn-atom` and `mfn-sequence` primary `generate` methods when a
   provisioning modality is present.
 - `:provision-text` (full implementation): emits a CodeMirror container div.
@@ -226,14 +228,15 @@ Updated exports (`modulate2/package.lisp@53907b6`): added `construct`,
 
 **Layout rendering:**
 
-- `locate-item@53907b6`: ports the CSS grid positioning logic from
-  `seed.modulate::locate`. Handles `(:horizontal :even)`, `(:vertical :even)`,
-  `(:horizontal :of N p1 p2 ...)`, and `(:vertical :of N p1 p2 ...)`. Injects
-  `grid-column-start`/`grid-column-end` (or row equivalents) style attributes
-  into the item's HTML tree.
-- `generate-item-list@53907b6`: helper that renders members with layout applied
-  per-item.
-- `generate (uim-web mfn-sequence)@53907b6`: updated to add a `grid-layout` CSS
+- `modulate2/modulate2.lisp:locate-item@53907b6`: ports the CSS grid positioning
+  logic from `modulate/modulate.lisp:locate@aeedefb`. Handles `(:horizontal :even)`,
+  `(:vertical :even)`, `(:horizontal :of N p1 p2 ...)`, and
+  `(:vertical :of N p1 p2 ...)`. Injects `grid-column-start`/`grid-column-end`
+  (or row equivalents) style attributes into the item's HTML tree.
+- `modulate2/modulate2.lisp:generate-item-list@53907b6`: helper that renders
+  members with layout applied per-item.
+- `modulate2/modulate2.lisp:generate@53907b6` for `(uim-web mfn-sequence)`:
+  updated to add a `grid-layout` CSS
   class when a layout directive is present, and to apply layout positioning per
   body group within valence via `generate-item-list`.
 

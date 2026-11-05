@@ -7,7 +7,7 @@ scope:         component
 project:       seed.generate
 component:     philo
 language:      en
-status:        Current
+status:        Draft
 api-version:   0.0.1
 provenance:
   assistant:   claude

@@ -1,3 +1,25 @@
+---
+id:            SEED-DRAFT-philo-log
+title:         "PHILO (Positional Heuristic Interaction for Lisp Objects): Development Log"
+genre:         Log
+scope:         component
+project:       Seed
+component:     philo
+language:      en
+status:        Draft
+provenance:
+  assistant:   claude-opus-4-6
+decisions:
+  - SEED-DRAFT-philo-log-D1
+  - SEED-DRAFT-philo-log-D2
+  - SEED-DRAFT-philo-log-D3
+  - SEED-DRAFT-philo-log-D4
+  - SEED-DRAFT-philo-log-D5
+  - SEED-DRAFT-philo-log-D6
+  - SEED-DRAFT-philo-log-D7
+  - SEED-DRAFT-philo-log-D8
+---
+
 # PHILO (Positional Heuristic Interaction for Lisp Objects): Development Log
 
 This document chronicles the design and implementation of `philo` --
@@ -8,8 +30,6 @@ plist-like read/write model but fixes its robustness defects, decouples
 it from ASDF system organization, and generalizes its addressing from
 "the single form after a key" to positional offsets, ranges, and
 predicate anchors.
-
-**Date:** 2026-08-04
 
 
 ## Problem
@@ -75,7 +95,9 @@ being an implementation detail of the target rather than a separate API.
 
 The following were settled through discussion before implementation.
 
-### 1. Pathname-first, not system-first
+### SEED-DRAFT-philo-log-D1 — Pathname-first, not system-first
+
+**Status:** Accepted
 
 `philo` takes a *pathname* (or namestring), never an ASDF system. System
 resolution is a separate, composable concern (a branch-scoped
@@ -86,7 +108,9 @@ paths, and scratch files. `from-system-file` is retained unchanged as a
 thin compatibility surface; migrating its call sites and de-duplicating
 the `modulate.lisp` copy are deferred.
 
-### 2. A function, not a macro
+### SEED-DRAFT-philo-log-D2 — A function, not a macro
+
+**Status:** Accepted
 
 `philo` is a plain function with a companion `(setf philo)`. This is what
 makes `(setf (philo path key) value)` compose for free; a macro would
@@ -94,7 +118,9 @@ have required a hand-written setf-expander. The extra selectors are
 ordinary `&key` arguments, so the reader and the setf-writer share one
 lambda list.
 
-### 3. Whole-file string splice + atomic rename
+### SEED-DRAFT-philo-log-D3 — Whole-file string splice + atomic rename
+
+**Status:** Accepted
 
 The core reads the entire file into a UTF-8 string, parses it *once* into
 segments, splices in string space, and writes the whole file back via a
@@ -104,7 +130,9 @@ three of the original defects at once: there is no byte/char arithmetic
 and EOF is simply "the end of the segment vector." For the KB-scale
 config files involved, reading and rewriting the whole file is free.
 
-### 4. 0-based, count-based, half-open addressing
+### SEED-DRAFT-philo-log-D4 — 0-based, count-based, half-open addressing
+
+**Status:** Accepted
 
 Offsets are 0-based relative to the form *following* the key (offset 0 =
 the first following form, matching the old default). Ranges are half-open
@@ -114,7 +142,9 @@ An out-of-range **write** signals an error by default; `:any-offset t`
 lifts the guard so a caller may deliberately skip past following keys
 (appending at the end). An out-of-range **read** returns `NIL`.
 
-### 5. Atoms vs. lists: `:offset` and `:range` are semantically distinct
+### SEED-DRAFT-philo-log-D5 — Atoms vs. lists: `:offset` and `:range` are semantically distinct
+
+**Status:** Accepted
 
 This was the subtlest decision. `:offset n` (and the bare default) treat
 the target as a single **atom**: a read returns that one form; a write
@@ -128,7 +158,9 @@ Assigning `'(:x :y :z)` to `:range '(2 5)` writes `:x`, `:y`, `:z` to
 positions 2, 3, 4; assigning it to `:offset 2` writes the whole list
 `(:x :y :z)` into position 2.
 
-### 6. Key as symbol or predicate
+### SEED-DRAFT-philo-log-D6 — Key as symbol or predicate
+
+**Status:** Accepted
 
 A `key` that is a symbol is matched with `eql` (keywords, the common
 case, compare correctly regardless of package). A `key` that is a
@@ -137,13 +169,17 @@ first form for which it returns true is the anchor. This directly
 addresses the fragility of the old `eq` symbol match and opens the door
 to structural anchors (e.g. "the first `defvar` form").
 
-### 7. Files and lists behind one interface, dispatched by type
+### SEED-DRAFT-philo-log-D7 — Files and lists behind one interface, dispatched by type
+
+**Status:** Accepted
 
 `philo` and `(setf philo)` accept either a pathname/namestring (file
 mode) or a list (in-memory mode), chosen by `listp` on the target. `NIL`
 is a list (empty, no anchor -> `NIL`). Everything else is a file.
 
-### 8. In-memory writes are destructive
+### SEED-DRAFT-philo-log-D8 — In-memory writes are destructive
+
+**Status:** Accepted
 
 `(setf (philo place key) v)` expands to `(funcall #'(setf philo) v place
 key)` -- the setf-function receives the list's *value*, not the *place*,
@@ -412,7 +448,7 @@ Result: **36 checks, 0 failures.** The full `philo.lisp` (with
 | `generate/philo.lisp` | New | The complete `philo` implementation (extracted from `generate/generate.lisp`): read/write/parse helpers, `philo-find-anchor`, `philo-target-indices`, the boundary machinery (`philo-boundary-test`, `philo-boundary-index`, `philo-region-bounds`), the readers, `(setf philo)` writers, and the insertion operators `philo-insert` / `philo-append`. |
 | `generate/seed.generate.asd` | Modified | Registered the `philo` component after `generate`. |
 | `generate/package.lisp` | Modified | Exported `#:philo`, `#:philo-insert`, `#:philo-append`. |
-| `doc/DevLog.Philo.md` | New | This log. |
+| `doc/Log.Philo.md` | New | This log. |
 
 
 ## Outstanding Work
