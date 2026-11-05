@@ -22,6 +22,7 @@
                 "pla.browser.maple"
                 "app.chart"
                 "classic.models.common"
+                "demo.access"
                 )
   :components ((:file "package")
                (:file "setup")
