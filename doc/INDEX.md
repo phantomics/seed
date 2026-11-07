@@ -11,6 +11,7 @@ Table: Documents in the SEED namespace.
 | ID | Title | Genre | Scope | Status | Component |
 |---|---|---|---|---|---|
 | [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
+| [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
 | [SEED-DRAFT-philo-guide](Guide.Philo.md) | Philo Guide | Guide (tutorial) | component | Draft | philo |
 | [SEED-DRAFT-philo-log](Log.Philo.md) | PHILO (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Draft | philo |
