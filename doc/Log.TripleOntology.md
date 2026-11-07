@@ -9,6 +9,7 @@ language:      en
 status:        Draft
 provenance:
   assistant:   claude-opus-4-6
+  session:     ses_1ffba4ccdffebiWc572stLkOTO
 decisions:
   - SEED-DRAFT-tripleontology-D1
   - SEED-DRAFT-tripleontology-D2

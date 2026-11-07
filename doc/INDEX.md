@@ -11,6 +11,7 @@ Table: Documents in the SEED namespace.
 | ID | Title | Genre | Scope | Status | Component |
 |---|---|---|---|---|---|
 | [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
+| [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
 | [SEED-DRAFT-philo-guide](Guide.Philo.md) | Philo Guide | Guide (tutorial) | component | Draft | philo |
 | [SEED-DRAFT-philo-log](Log.Philo.md) | PHILO (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Draft | philo |
 | [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline Development Log | Log | component | Draft | modulate2 |
@@ -38,3 +39,7 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-tripleontology-D4](Log.TripleOntology.md#seed-draft-tripleontology-d4--two-tier-processor-pipeline) | Decision | Two-tier processor pipeline | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D5](Log.TripleOntology.md#seed-draft-tripleontology-d5--registration-hook-bridge-between-modulate-and-modulate2) | Decision | Registration-hook bridge between modulate and modulate2 | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D6](Log.TripleOntology.md#seed-draft-tripleontology-d6--bare-suppresses-tier-1-defaults) | Decision | :bare suppresses Tier-1 defaults | Accepted | SEED-DRAFT-tripleontology |
+| [SEED-DRAFT-interfacemodels-O1](Survey.InterfaceModels.md#seed-draft-interfacemodels-o1--can-isasby-serve-as-a-narrow-waist-for-inter-domain-composition) | Open question | Can IS/AS/BY serve as a narrow waist for inter-domain composition? | — | SEED-DRAFT-interfacemodels |
+| [SEED-DRAFT-interfacemodels-O2](Survey.InterfaceModels.md#seed-draft-interfacemodels-o2--how-do-derived-interfaces-reach-hand-crafted-quality) | Open question | How do derived interfaces reach hand-crafted quality? | — | SEED-DRAFT-interfacemodels |
+| [SEED-DRAFT-interfacemodels-O3](Survey.InterfaceModels.md#seed-draft-interfacemodels-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-DRAFT-interfacemodels |
+| [SEED-DRAFT-interfacemodels-O4](Survey.InterfaceModels.md#seed-draft-interfacemodels-o4--how-should-vocabulary-growth-be-governed) | Open question | How should vocabulary growth be governed? | — | SEED-DRAFT-interfacemodels |
