@@ -10,6 +10,7 @@ Table: Documents in the SEED namespace.
 
 | ID | Title | Genre | Scope | Status | Component |
 |---|---|---|---|---|---|
+| [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
 | [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
@@ -42,6 +43,11 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-tripleontology-D4](Log.TripleOntology.md#seed-draft-tripleontology-d4--two-tier-processor-pipeline) | Decision | Two-tier processor pipeline | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D5](Log.TripleOntology.md#seed-draft-tripleontology-d5--registration-hook-bridge-between-modulate-and-modulate2) | Decision | Registration-hook bridge between modulate and modulate2 | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D6](Log.TripleOntology.md#seed-draft-tripleontology-d6--bare-suppresses-tier-1-defaults) | Decision | :bare suppresses Tier-1 defaults | Accepted | SEED-DRAFT-tripleontology |
+| [SEED-DRAFT-branches-O1](Survey.Branches.md#seed-draft-branches-o1--should-stages-be-named-and-introspectable) | Open question | Should stages be named and introspectable? | — | SEED-DRAFT-branches |
+| [SEED-DRAFT-branches-O2](Survey.Branches.md#seed-draft-branches-o2--should-the-adapterhandler-contract-be-unified) | Open question | Should the adapter/handler contract be unified? | — | SEED-DRAFT-branches |
+| [SEED-DRAFT-branches-O3](Survey.Branches.md#seed-draft-branches-o3--how-should-branch-state-ownership-work) | Open question | How should branch state ownership work? | — | SEED-DRAFT-branches |
+| [SEED-DRAFT-branches-O4](Survey.Branches.md#seed-draft-branches-o4--what-transaction-model-fits-branches) | Open question | What transaction model fits branches? | — | SEED-DRAFT-branches |
+| [SEED-DRAFT-branches-O5](Survey.Branches.md#seed-draft-branches-o5--should-grow-become-network-transparent) | Open question | Should grow become network-transparent? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-interfacemodels-O1](Survey.InterfaceModels.md#seed-draft-interfacemodels-o1--can-isasby-serve-as-a-narrow-waist-for-inter-domain-composition) | Open question | Can IS/AS/BY serve as a narrow waist for inter-domain composition? | — | SEED-DRAFT-interfacemodels |
 | [SEED-DRAFT-interfacemodels-O2](Survey.InterfaceModels.md#seed-draft-interfacemodels-o2--how-do-derived-interfaces-reach-hand-crafted-quality) | Open question | How do derived interfaces reach hand-crafted quality? | — | SEED-DRAFT-interfacemodels |
 | [SEED-DRAFT-interfacemodels-O3](Survey.InterfaceModels.md#seed-draft-interfacemodels-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-DRAFT-interfacemodels |
