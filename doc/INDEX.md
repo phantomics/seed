@@ -15,6 +15,7 @@ Table: Documents in the SEED namespace.
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
 | [SEED-DRAFT-philo-guide](Guide.Philo.md) | Philo Guide | Guide (tutorial) | component | Draft | philo |
 | [SEED-DRAFT-philo-log](Log.Philo.md) | PHILO (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Draft | philo |
+| [SEED-DRAFT-smalltalk](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
 
