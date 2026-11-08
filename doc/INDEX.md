@@ -16,6 +16,7 @@ Table: Documents in the SEED namespace.
 | [SEED-DRAFT-philo-guide](Guide.Philo.md) | Philo Guide | Guide (tutorial) | component | Draft | philo |
 | [SEED-DRAFT-philo-log](Log.Philo.md) | PHILO (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Draft | philo |
 | [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline Development Log | Log | component | Draft | modulate2 |
+| [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
 
@@ -44,3 +45,8 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-interfacemodels-O2](Survey.InterfaceModels.md#seed-draft-interfacemodels-o2--how-do-derived-interfaces-reach-hand-crafted-quality) | Open question | How do derived interfaces reach hand-crafted quality? | — | SEED-DRAFT-interfacemodels |
 | [SEED-DRAFT-interfacemodels-O3](Survey.InterfaceModels.md#seed-draft-interfacemodels-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-DRAFT-interfacemodels |
 | [SEED-DRAFT-interfacemodels-O4](Survey.InterfaceModels.md#seed-draft-interfacemodels-o4--how-should-vocabulary-growth-be-governed) | Open question | How should vocabulary growth be governed? | — | SEED-DRAFT-interfacemodels |
+| [SEED-DRAFT-verticality-O1](Survey.Verticality.md#seed-draft-verticality-o1--how-should-leverage-be-measured) | Open question | How should leverage be measured? | — | SEED-DRAFT-verticality |
+| [SEED-DRAFT-verticality-O2](Survey.Verticality.md#seed-draft-verticality-o2--what-does-the-configurator-tier-actually-need) | Open question | What does the configurator tier actually need? | — | SEED-DRAFT-verticality |
+| [SEED-DRAFT-verticality-O3](Survey.Verticality.md#seed-draft-verticality-o3--how-should-an-llm-be-given-the-vocabulary) | Open question | How should an LLM be given the vocabulary? | — | SEED-DRAFT-verticality |
+| [SEED-DRAFT-verticality-O4](Survey.Verticality.md#seed-draft-verticality-o4--how-can-key-person-risk-be-reduced-without-flattening-the-pyramid) | Open question | How can key-person risk be reduced without flattening the pyramid? | — | SEED-DRAFT-verticality |
+| [SEED-DRAFT-verticality-O5](Survey.Verticality.md#seed-draft-verticality-o5--does-the-leverage-argument-apply-to-april-as-well) | Open question | Does the leverage argument apply to April as well? | — | SEED-DRAFT-verticality |
