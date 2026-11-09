@@ -11,6 +11,7 @@ Table: Documents in the SEED namespace.
 | ID | Title | Genre | Scope | Status | Component |
 |---|---|---|---|---|---|
 | [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
+| [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
