@@ -7,7 +7,7 @@ project:       Seed
 language:      en
 status:        Draft
 provenance:
-  assistant:   claude-opus-4-6
+  assistant:   claude-opus-5-5
 relates-to:
   - SEED-DRAFT-tripleontology
   - SEED-DRAFT-dxontologyupdate

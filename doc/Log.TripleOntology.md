@@ -8,7 +8,7 @@ component:     modulate2
 language:      en
 status:        Draft
 provenance:
-  assistant:   claude-opus-4-6
+  assistant:   claude-opus-5-5
   session:     ses_1ffba4ccdffebiWc572stLkOTO
 decisions:
   - SEED-DRAFT-tripleontology-D1

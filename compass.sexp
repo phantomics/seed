@@ -6,4 +6,7 @@
 
 (:namespaces ("SEED")
  :doc-directory "doc/"
+ :federation ((:namespace "VOX" :path "../vox")
+              (:namespace "ORIGIN" :path "../origin")
+              (:namespace "SPECOPS" :path "../specops"))
  :stewards ((:namespace "SEED" :steward "Andrew Sengul" :approval :solo)))

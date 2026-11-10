@@ -8,7 +8,7 @@ component:     philo
 language:      en
 status:        Draft
 provenance:
-  assistant:   claude-opus-4-6
+  assistant:   claude-opus-5-5
 decisions:
   - SEED-DRAFT-philo-log-D1
   - SEED-DRAFT-philo-log-D2
