@@ -8,5 +8,6 @@
  :doc-directory "doc/"
  :federation ((:namespace "VOX" :path "../vox")
               (:namespace "ORIGIN" :path "../origin")
-              (:namespace "SPECOPS" :path "../specops"))
+              (:namespace "SPECOPS" :path "../specops")
+              (:namespace "CLASSIC" :path "../classic"))
  :stewards ((:namespace "SEED" :steward "Andrew Sengul" :approval :solo)))

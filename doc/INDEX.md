@@ -12,6 +12,7 @@ Table: Documents in the SEED namespace.
 |---|---|---|---|---|---|
 | [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
 | [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
+| [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
 | [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
@@ -53,6 +54,15 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-branches-O7](Survey.Branches.md#seed-draft-branches-o7--should-manifestations-ever-cross-as-instances) | Open question | Should manifestations ever cross as Instances? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O8](Survey.Branches.md#seed-draft-branches-o8--how-does-describe-relate-to-isasby) | Open question | How does describe relate to IS/AS/BY? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O9](Survey.Branches.md#seed-draft-branches-o9--how-should-the-in-image-effect-executor-work-before-vox-exists) | Open question | How should the in-image effect executor work before Vox exists? | — | SEED-DRAFT-branches |
+| [SEED-DRAFT-classicinterface-O1](Survey.ClassicInterface.md#seed-draft-classicinterface-o1--bridge-granularity) | Open question | Bridge granularity | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O2](Survey.ClassicInterface.md#seed-draft-classicinterface-o2--format-migration-ux) | Open question | Format migration UX | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O3](Survey.ClassicInterface.md#seed-draft-classicinterface-o3--codemirror-mode-switching) | Open question | CodeMirror mode switching | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O4](Survey.ClassicInterface.md#seed-draft-classicinterface-o4--wiki-link-completion-source) | Open question | Wiki-link completion source | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O5](Survey.ClassicInterface.md#seed-draft-classicinterface-o5--lexis-reader-hardening) | Open question | Lexis reader hardening | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O6](Survey.ClassicInterface.md#seed-draft-classicinterface-o6--the-as-vocabulary-for-formats) | Open question | The AS vocabulary for formats | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O7](Survey.ClassicInterface.md#seed-draft-classicinterface-o7--preview-rendering-location) | Open question | Preview rendering location | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O8](Survey.ClassicInterface.md#seed-draft-classicinterface-o8--revision-history-model) | Open question | Revision history model | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-classicinterface-O9](Survey.ClassicInterface.md#seed-draft-classicinterface-o9--the-target-resolution-rule) | Open question | The [[target]] resolution rule | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-interfacemodels-O1](Survey.InterfaceModels.md#seed-draft-interfacemodels-o1--can-isasby-serve-as-a-narrow-waist-for-inter-domain-composition) | Open question | Can IS/AS/BY serve as a narrow waist for inter-domain composition? | — | SEED-DRAFT-interfacemodels |
 | [SEED-DRAFT-interfacemodels-O2](Survey.InterfaceModels.md#seed-draft-interfacemodels-o2--how-do-derived-interfaces-reach-hand-crafted-quality) | Open question | How do derived interfaces reach hand-crafted quality? | — | SEED-DRAFT-interfacemodels |
 | [SEED-DRAFT-interfacemodels-O3](Survey.InterfaceModels.md#seed-draft-interfacemodels-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-DRAFT-interfacemodels |
