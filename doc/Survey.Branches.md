@@ -583,7 +583,7 @@ Within the Seed corpus:
   SEED-O1 (inter-domain composition) bears on
   cross-instance branch contact and on whether IS/AS/BY can serve as a shared
   vocabulary between Seed instances.
-- SEED-DRAFT-verticality — the Verticality Survey, whose leverage-pyramid model
+- SEED-0007 — the Verticality Survey, whose leverage-pyramid model
   depends on the branch system's ability to serve configurators through derived
   interfaces.
 

@@ -16,11 +16,11 @@ Table: Documents in the SEED namespace.
 | [SEED-0004](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY: Development Log | Log | component | Implemented | modulate2 |
 | [SEED-0005](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Accepted | — |
 | [SEED-0006](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, Common Lisp Environments, and Seed as Prior Art | Eval (prior-art) | project | Accepted | — |
+| [SEED-0007](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Accepted | — |
 | [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
 | [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
 | [SEED-DRAFT-smalltalk](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Draft | — |
-| [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
 
@@ -55,6 +55,11 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-O3](Survey.InterfaceModels.md#seed-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-0005 |
 | [SEED-O4](Survey.InterfaceModels.md#seed-o4--how-should-vocabulary-growth-be-governed) | Open question | How should vocabulary growth be governed? | — | SEED-0005 |
 | [SEED-O5](Survey.InterfaceModels.md#seed-o5--should-tier-2-processing-depend-on-order) | Open question | Should Tier-2 processing depend on order? | — | SEED-0005 |
+| [SEED-O6](Survey.Verticality.md#seed-o6--how-should-leverage-be-measured) | Open question | How should leverage be measured? | — | SEED-0007 |
+| [SEED-O7](Survey.Verticality.md#seed-o7--what-does-the-configurator-tier-actually-need) | Open question | What does the configurator tier actually need? | — | SEED-0007 |
+| [SEED-O8](Survey.Verticality.md#seed-o8--how-should-an-llm-be-given-the-vocabulary) | Open question | How should an LLM be given the vocabulary? | — | SEED-0007 |
+| [SEED-O9](Survey.Verticality.md#seed-o9--how-can-key-person-risk-be-reduced-without-flattening-the-pyramid) | Open question | How can key-person risk be reduced without flattening the pyramid? | — | SEED-0007 |
+| [SEED-O10](Survey.Verticality.md#seed-o10--does-the-leverage-argument-apply-to-april-as-well) | Open question | Does the leverage argument apply to April as well? | — | SEED-0007 |
 | [SEED-DRAFT-branches-O1](Survey.Branches.md#seed-draft-branches-o1--should-stages-be-named-and-introspectable) | Open question | Should stages be named and introspectable? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O2](Survey.Branches.md#seed-draft-branches-o2--should-the-adapterhandler-contract-be-unified) | Open question | Should the adapter/handler contract be unified? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O3](Survey.Branches.md#seed-draft-branches-o3--how-should-branch-state-ownership-work) | Open question | How should branch state ownership work? | — | SEED-DRAFT-branches |
@@ -73,8 +78,3 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-classicinterface-O7](Survey.ClassicInterface.md#seed-draft-classicinterface-o7--preview-rendering-location) | Open question | Preview rendering location | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O8](Survey.ClassicInterface.md#seed-draft-classicinterface-o8--revision-history-model) | Open question | Revision history model | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O9](Survey.ClassicInterface.md#seed-draft-classicinterface-o9--the-target-resolution-rule) | Open question | The [[target]] resolution rule | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-verticality-O1](Survey.Verticality.md#seed-draft-verticality-o1--how-should-leverage-be-measured) | Open question | How should leverage be measured? | — | SEED-DRAFT-verticality |
-| [SEED-DRAFT-verticality-O2](Survey.Verticality.md#seed-draft-verticality-o2--what-does-the-configurator-tier-actually-need) | Open question | What does the configurator tier actually need? | — | SEED-DRAFT-verticality |
-| [SEED-DRAFT-verticality-O3](Survey.Verticality.md#seed-draft-verticality-o3--how-should-an-llm-be-given-the-vocabulary) | Open question | How should an LLM be given the vocabulary? | — | SEED-DRAFT-verticality |
-| [SEED-DRAFT-verticality-O4](Survey.Verticality.md#seed-draft-verticality-o4--how-can-key-person-risk-be-reduced-without-flattening-the-pyramid) | Open question | How can key-person risk be reduced without flattening the pyramid? | — | SEED-DRAFT-verticality |
-| [SEED-DRAFT-verticality-O5](Survey.Verticality.md#seed-draft-verticality-o5--does-the-leverage-argument-apply-to-april-as-well) | Open question | Does the leverage argument apply to April as well? | — | SEED-DRAFT-verticality |

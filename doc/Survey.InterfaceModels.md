@@ -20,7 +20,7 @@ relates-to:
   - SEED-DRAFT-branches
   - SEED-DRAFT-classicinterface
   - SEED-DRAFT-smalltalk
-  - SEED-DRAFT-verticality
+  - SEED-0007
   - SEED-0006
   - CLASSIC-0010
   - CLASSIC-0011
@@ -880,7 +880,7 @@ Within the Seed corpus, this survey relates to:
 - SEED-0006 — the editor-models evaluation, which scores Emacs,
   VS Code, the Common Lisp editing environments and Seed against a shared
   rubric, including edit round-trip and medium independence.
-- SEED-DRAFT-verticality — the abstraction-verticality survey, whose leverage
+- SEED-0007 — the abstraction-verticality survey, whose leverage
   pyramid depends on the data–interface unification discussed here.
 
 In the federated Classic corpus, CLASSIC-0011 (the theme reference) and

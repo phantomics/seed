@@ -22,7 +22,7 @@ relates-to:
   - SEED-DRAFT-branches
   - SEED-DRAFT-branchmodels
   - SEED-DRAFT-classicinterface
-  - SEED-DRAFT-verticality
+  - SEED-0007
 cites:
   - title:     "EMACS: The Extensible, Customizable, Self-Documenting Display Editor"
     locator:   "Stallman, R. M. AI Memo 519a, MIT AI Lab, March 1981"

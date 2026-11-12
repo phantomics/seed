@@ -1,11 +1,16 @@
 ---
-id:            SEED-DRAFT-verticality
+id:            SEED-0007
 title:         "Abstraction Verticality, Leverage Pyramids, and the LLM Inflection"
 genre:         Survey
 scope:         program
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-12
+
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
@@ -48,11 +53,11 @@ cites:
     locator:   "Winestock, R. winestockwebdesign.com/Essays/Lisp_Curse.html, April 2011"
     external:  true
 open-questions:
-  - SEED-DRAFT-verticality-O1
-  - SEED-DRAFT-verticality-O2
-  - SEED-DRAFT-verticality-O3
-  - SEED-DRAFT-verticality-O4
-  - SEED-DRAFT-verticality-O5
+  - SEED-O6
+  - SEED-O7
+  - SEED-O8
+  - SEED-O9
+  - SEED-O10
 ---
 
 # Abstraction Verticality, Leverage Pyramids, and the LLM Inflection: Survey
@@ -567,7 +572,7 @@ External works cited are listed in the front-matter `cites:` block.
 
 ## Open Questions
 
-### SEED-DRAFT-verticality-O1 — How should leverage be measured?
+### SEED-O6 — How should leverage be measured?
 
 The power-law claim needs grounding. What metrics would demonstrate that the
 tiered model produces more output per unit of core-developer effort than a
@@ -575,14 +580,14 @@ conventional stack? Candidates: vocabulary size to expressible-interface ratio,
 configurators supported per system developer, time to add a new data kind at
 each tier, defect rate per tier.
 
-### SEED-DRAFT-verticality-O2 — What does the configurator tier actually need?
+### SEED-O7 — What does the configurator tier actually need?
 
 The configurator's interface is the derived `fx` form editor. What derived
 interfaces are sufficient for real configurator work, and where do they fall
 short? Which patterns migrate from text editing to structural editing first?
 This question is answerable through the development of real portals.
 
-### SEED-DRAFT-verticality-O3 — How should an LLM be given the vocabulary?
+### SEED-O8 — How should an LLM be given the vocabulary?
 
 Compass skills supply vocabulary through in-context instructions. Seed could do
 the same for IS/AS/BY. The question is whether in-context vocabulary is
@@ -590,13 +595,13 @@ sufficient for reliable generation, or whether fine-tuning on a corpus of
 well-formed `fx`/`dx` examples is needed — and if so, how large that corpus
 must be.
 
-### SEED-DRAFT-verticality-O4 — How can key-person risk be reduced without flattening the pyramid?
+### SEED-O9 — How can key-person risk be reduced without flattening the pyramid?
 
 Documentation, LLM-assisted continuity, and progressive revelation are proposed
 mitigations. Are they sufficient? What would a "bus factor" assessment for an
 abstraction tower look like, and what threshold is acceptable?
 
-### SEED-DRAFT-verticality-O5 — Does the leverage argument apply to April as well?
+### SEED-O10 — Does the leverage argument apply to April as well?
 
 The tiered model is described here for Seed (interface specification), but the
 same logic applies to April (array-oriented computation): a small number of

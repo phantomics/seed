@@ -12,7 +12,7 @@ provenance:
 relates-to:
   - SEED-0005
   - SEED-0006
-  - SEED-DRAFT-verticality
+  - SEED-0007
 cites:
   - title:     "Design Principles Behind Smalltalk"
     locator:   "Ingalls, D. H. H. BYTE 6(8), August 1981"
@@ -217,7 +217,7 @@ VisualWorks, IBM VisualAge). Java's rise in the late 1990s reduced it severely.
 Pharo maintains an active open-source community with a curated package
 catalogue, but the ecosystem is small compared to mainstream languages. The
 adoption history demonstrates the Worse-is-Better dynamic discussed in
-`SEED-DRAFT-verticality`: a more powerful but less accessible system lost to a
+`SEED-0007`: a more powerful but less accessible system lost to a
 simpler but more widely adopted one.
 
 **Steal:** The debugger culture — edit-and-continue, inspect-anything,
