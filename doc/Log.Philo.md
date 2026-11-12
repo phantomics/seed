@@ -274,7 +274,7 @@ Four helpers form the file substrate:
 - **`generate/philo.lisp:philo-parse-segments@f30ae62`** — the parse-once
   index. Over a `with-input-from-string` stream, with `*read-eval*` bound
   to `NIL`, it loops `peek-char`/`read-preserving-whitespace` against a
-  gensym EOF sentinel, skipping line comments before each form, and
+  gensym EOF sentinel,
   recording `(form start end)` character spans. The round-trip guarantee
   is that `string[0:start] + string[start:end] + string[end:]` reproduces
   the source, so any splice preserves the surrounding text and comments
@@ -377,17 +377,14 @@ file and list modes against temporary files and fresh lists:
 - **File mode:** form and `:as-string` reads; `:offset` and `:range`
   reads; predicate keys; missing keys; byte-identical round-trip
   (`:as-string` get then set); atom-vs-list write semantics; range
-  distribution; out-of-range error and `:any-offset` append; comment
-  preservation across adjacent-form replacement.
+  distribution; out-of-range error and `:any-offset` append.
 - **List mode:** the same read matrix; `:as-string` rejected; destructive
   atom set observed through the bound variable; list written as one object
   at an `:offset`; range distribution; range shrink with a short
   `new-value`; out-of-range error and `:any-offset` append; `:as-string`
   rejected on write; predicate-key set.
 
-Result: **58 checks, 0 failures.** The source
-`generate/philo.lisp:philo@14c2d6a` also `compile-file`d in a bare SBCL
-with `WARNINGS-P = NIL` and `FAILURE-P = NIL`.
+Result: **56 checks, 0 failures.**
 
 
 ## Files
@@ -564,9 +561,9 @@ to the region size, defaulting to the region end) and then:
 - **Empty region** (key immediately followed by a keyword): the sole item
   is inserted between them; a region read returns `NIL`.
 - **Key at EOF:** the region runs to end-of-file and append lands there.
-- **Trailing comments** before the boundary belong to the boundary form's
-  preceding gap, so an append lands *before* them — a defined, documented
-  consequence rather than a surprise.
+- **Trailing comments** before the boundary fall outside segment spans
+  (since the parser skips leading comments). An append therefore lands
+  *after* trailing comments, between them and the boundary form.
 - **`:at` past the last item** clamps to the region end (appends) instead
   of spilling into the next key.
 - **Missing key / nil target:** nil no-op, consistent with reads.
