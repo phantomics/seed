@@ -16,8 +16,8 @@ Table: Documents in the SEED namespace.
 | [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
-| [SEED-DRAFT-philo-guide](Guide.Philo.md) | Philo Guide | Guide (tutorial) | component | Draft | philo |
-| [SEED-DRAFT-philo-log](Log.Philo.md) | PHILO (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Draft | philo |
+| [SEED-DRAFT-philo-guide](Guide.Philo.md) | Philo: Tutorial Guide | Guide (tutorial) | component | Draft | philo |
+| [SEED-DRAFT-philo-log](Log.Philo.md) | Philo (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Draft | philo |
 | [SEED-DRAFT-smalltalk](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
@@ -39,6 +39,10 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-philo-log-D6](Log.Philo.md#seed-draft-philo-log-d6--key-as-symbol-or-predicate) | Decision | Key as symbol or predicate | Accepted | SEED-DRAFT-philo-log |
 | [SEED-DRAFT-philo-log-D7](Log.Philo.md#seed-draft-philo-log-d7--files-and-lists-behind-one-interface-dispatched-by-type) | Decision | Files and lists behind one interface, dispatched by type | Accepted | SEED-DRAFT-philo-log |
 | [SEED-DRAFT-philo-log-D8](Log.Philo.md#seed-draft-philo-log-d8--in-memory-writes-are-destructive) | Decision | In-memory writes are destructive | Accepted | SEED-DRAFT-philo-log |
+| [SEED-DRAFT-philo-log-D9](Log.Philo.md#seed-draft-philo-log-d9--keyword-default-region-boundary-with-until-override) | Decision | Keyword-default region boundary with :until override | Accepted | SEED-DRAFT-philo-log |
+| [SEED-DRAFT-philo-log-D10](Log.Philo.md#seed-draft-philo-log-d10--a-distinct-index-keyword-at) | Decision | A distinct index keyword, :at | Accepted | SEED-DRAFT-philo-log |
+| [SEED-DRAFT-philo-log-D11](Log.Philo.md#seed-draft-philo-log-d11--separate-operators-for-insertion) | Decision | Separate operators for insertion | Accepted | SEED-DRAFT-philo-log |
+| [SEED-DRAFT-philo-log-D12](Log.Philo.md#seed-draft-philo-log-d12--a-read-dual-for-regions) | Decision | A read dual for regions | Accepted | SEED-DRAFT-philo-log |
 | [SEED-DRAFT-tripleontology-D1](Log.TripleOntology.md#seed-draft-tripleontology-d1--three-axis-isasby-ontology) | Decision | Three-axis IS/AS/BY ontology | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D2](Log.TripleOntology.md#seed-draft-tripleontology-d2--is-carries-two-strata-stratum-2-is-never-presumptuously-inferred) | Decision | IS carries two strata; stratum 2 is never presumptuously inferred | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D3](Log.TripleOntology.md#seed-draft-tripleontology-d3--manifestation-class-hierarchy-with-isasby-as-slot-data) | Decision | Manifestation class hierarchy with IS/AS/BY as slot data | Accepted | SEED-DRAFT-tripleontology |

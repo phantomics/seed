@@ -1,21 +1,21 @@
 ---
 id:            SEED-DRAFT-philo-guide
-title:         Philo Guide
+title:         "Philo: Tutorial Guide"
 genre:         Guide
 subtype:       tutorial
 scope:         component
-project:       seed.generate
+project:       Seed
 component:     philo
 language:      en
 status:        Draft
 api-version:   0.0.1
 provenance:
-  assistant:   claude
+  assistant:   claude-opus-5-5
 relates-to:
   - SEED-DRAFT-philo-log
 ---
 
-# Philo Guide
+# Philo: Tutorial Guide
 
 This tutorial introduces **philo** (Positional Heuristic Interaction for Lisp
 Objects), the keyed accessor in `seed.generate` for reading and writing the
@@ -34,6 +34,8 @@ same against an in-memory list — using the exported operators `philo`,
   same shape.
 - Basic REPL familiarity. Examples below show the form and its result with an
   inline `;; =>` comment.
+- Seed's `generate/` and `test/` directories are on the ASDF central registry,
+  e.g. via `(push #p"/path/to/seed/generate/" asdf:*central-registry*)`.
 
 ## Design Goals
 
@@ -83,6 +85,9 @@ counting models coexist:
   form — the next keyword by default, or the next form matching `:until`.
 
 Throughout this tutorial, `p` is the pathname of the file above.
+
+Each section below assumes a fresh copy of this file. If you are following
+along at the REPL, re-create the file before each section's examples.
 
 ## Reading Forms
 
@@ -145,6 +150,21 @@ A missing key (or an out-of-range target) reads as `NIL`:
 ```
 
 ## Writing Forms
+
+### What writes change
+
+`(setf philo)` replaces the addressed span in string space and rewrites the
+file atomically. Two side-effects to be aware of:
+
+- **Reprinted forms are downcased.** `*print-case*` is bound to `:downcase`
+  during the write, so `(PROGN (FOO))` becomes `(progn (foo))`. Use
+  `:as-string t` to write raw text and avoid reprinting.
+- **Comments inside a replaced span are lost.** The splice replaces everything
+  between the segment's start and end character positions. Comments that fall
+  *between* segments (e.g. above the replaced form) are preserved.
+
+These are accepted contracts, not bugs. For formatting-preserving edits, read
+with `:as-string t` and write the modified string back.
 
 ### Replacing a single form
 
@@ -319,7 +339,7 @@ philo's behavior is pinned by the FiveAM suite in `test/`:
 ```lisp
 (ql:quickload :seed.generate.test)
 (asdf:test-system :seed.generate.test)
-;; => 56 checks, 0 failures
+;; => 58 checks, 0 failures
 
 (seed.generate.test:run-suite :philo-region)  ; a single suite
 ```
@@ -328,4 +348,4 @@ You have now used every philo capability: key-blind reads (`:offset`, `:range`,
 `:as-string`, predicate keys), replacement via `(setf philo)`, region reads
 (`:region`, `:until`), the insertion operators (`philo-append`, `philo-insert`
 with `:at`), and in-memory list mode. For the design rationale and engineering
-history behind these features, see the philo development log (`SEED-DRAFT-philo-log`).
+history behind these features, see the Philo development log (SEED-DRAFT-philo-log).
