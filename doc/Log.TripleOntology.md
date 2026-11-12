@@ -1,12 +1,17 @@
 ---
-id:            SEED-DRAFT-tripleontology
+id:            SEED-0003
 title:         "IS/AS/BY Ontology and Manifestation Pipeline: Development Log"
 genre:         Log
 scope:         component
 project:       Seed
 component:     modulate2
 language:      en
-status:        Draft
+status:        Implemented
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-12
+
 provenance:
   assistant:   claude-opus-5-5
   session:     ses_1ffba4ccdffebiWc572stLkOTO
@@ -31,13 +36,13 @@ cites:
     locator:   "Bertin, J. University of Wisconsin Press, 1983 (French original 1967)"
     external:  true
 decisions:
-  - SEED-DRAFT-tripleontology-D1
-  - SEED-DRAFT-tripleontology-D2
-  - SEED-DRAFT-tripleontology-D3
-  - SEED-DRAFT-tripleontology-D4
-  - SEED-DRAFT-tripleontology-D5
-  - SEED-DRAFT-tripleontology-D6
-  - SEED-DRAFT-tripleontology-D7
+  - SEED-D13
+  - SEED-D14
+  - SEED-D15
+  - SEED-D16
+  - SEED-D17
+  - SEED-D18
+  - SEED-D19
 ---
 
 # IS/AS/BY Ontology and Manifestation Pipeline: Development Log
@@ -148,9 +153,9 @@ than an annotation axis, leaving IS/AS/BY as the annotation ontology.
 
 ## Design Decisions
 
-### SEED-DRAFT-tripleontology-D1 — Three-axis IS/AS/BY ontology
+### SEED-D13 — Three-axis IS/AS/BY ontology
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** `(fx)` annotations needed to answer "what is this / why is it here /
 how is it accessed" independently. A four-axis scheme (adding a separate
 compositional-structure axis) was on the table.
@@ -161,9 +166,9 @@ by the manifestation object's class, not by a fourth annotation axis.
 already implied by whether a value is atomic or a collection, so encoding it
 twice (as class and as annotation) invited drift.
 
-### SEED-DRAFT-tripleontology-D2 — IS carries two strata; stratum 2 is never presumptuously inferred
+### SEED-D14 — IS carries two strata; stratum 2 is never presumptuously inferred
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** Sub-classifications like "plist" or "pathname" are developer
 assertions, not facts derivable from the value.
 **Decision:** Split IS into stratum-1 structural identity (inferred from the
@@ -175,9 +180,9 @@ presumptuous — the packed-decimal analogy. A contextual-directive mechanism th
 *authorizes* such inference in a marked code region is noted as future work, not
 built now.
 
-### SEED-DRAFT-tripleontology-D3 — Manifestation class hierarchy with IS/AS/BY as slot data
+### SEED-D15 — Manifestation class hierarchy with IS/AS/BY as slot data
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** The object tree needed a small structural spine while keeping the
 three axes as data consulted at render time.
 **Decision:** Define `manifestation` as the base class with slots for value, is,
@@ -188,9 +193,9 @@ as, by, name, path, adapting, and controls; specialize it as `mfn-atom`
 original `uic-*`/`uicc-*` catalogue did) was rejected as combinatorial and
 brittle.
 
-### SEED-DRAFT-tripleontology-D4 — Two-tier processor pipeline
+### SEED-D16 — Two-tier processor pipeline
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** Some affordances belong to any element of a given modality
 (a removable list wants remove buttons); others are branch-specific (an upload
 dialog for an empty entity list). Wrapping nil values to serve buttons was
@@ -205,9 +210,9 @@ additions can be picked up by Tier 1.
 branch fills) was rejected in favour of postprocessors that inspect the whole
 tree and respond to discovered conditions.
 
-### SEED-DRAFT-tripleontology-D5 — Registration-hook bridge between modulate and modulate2
+### SEED-D17 — Registration-hook bridge between modulate and modulate2
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** `seed.modulate2` depends on `seed.modulate` (for `uim-web` and
 `render`). Making `seed.modulate` call into `seed.modulate2` would close a
 dependency cycle that ASDF forbids.
@@ -221,9 +226,9 @@ generics (the "most correct" long-term shape) was deferred as churn that would b
 discarded when `modulate` is retired. Merging the two systems was rejected: the
 migration requires them separate.
 
-### SEED-DRAFT-tripleontology-D6 — `:bare` suppresses Tier-1 defaults
+### SEED-D18 — `:bare` suppresses Tier-1 defaults
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** A form may want a modality's semantics without its auto-generated
 controls.
 **Decision:** A `:bare` keyword in a node's `:by` spec suppresses all Tier-1
@@ -381,7 +386,7 @@ several commits; `aeedefb` is the pinned snapshot.
   old-inside-new render correctly at one level, but pathological deep alternation
   can reach the guard and error rather than render. Acceptable during migration;
   revisit if it arises, likely by extracting the shared base of
-  SEED-DRAFT-tripleontology-D5.
+  SEED-D17.
 - **Contextual IS inference directives.** The mechanism to let a marked code
   region authorize stratum-2 inference (e.g. "here, key/value lists are plists")
   is designed-for but not built.
@@ -390,7 +395,7 @@ several commits; `aeedefb` is the pinned snapshot.
   concrete use case.
 - **Retirement of `seed.modulate`.** The bridge is transitional. As forms migrate
   to the new grammar, the legacy expression and component classes are to be
-  removed, at which point SEED-DRAFT-tripleontology-D5's shared-base option
+  removed, at which point SEED-D17's shared-base option
   should be reconsidered.
 
 
@@ -402,16 +407,16 @@ sit in the IS/AS taxonomy? Classic's `:format` slot option assigns a source
 format to body data, and the Classic→fx bridge must map this to one of the
 axes.
 
-### SEED-DRAFT-tripleontology-D7 — IS stratum-2 is for CL-level structural properties; external-language formats are AS program-semantic roles
+### SEED-D19 — IS stratum-2 is for CL-level structural properties; external-language formats are AS program-semantic roles
 
-**Status:** Accepted
+**Status:** Implemented
 
 **Context:** IS stratum-2 was defined as "conventional interpretation the
-developer asserts" (SEED-DRAFT-tripleontology-D2), with examples `:properties`, `:associations` and
+developer asserts" (SEED-D14), with examples `:properties`, `:associations` and
 `:pathname`. Format annotations like `:markdown`, `:lexis` and `:sql`
 also describe a datum beyond its Lisp type. The boundary between IS
 stratum-2 and AS needed to be made explicit. This decision refines
-SEED-DRAFT-tripleontology-D2.
+SEED-D14.
 
 **Decision:** The distinguishing test is whether Common Lisp itself has
 native vocabulary for the property. IS stratum-2 covers structural

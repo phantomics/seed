@@ -11,7 +11,7 @@ provenance:
   assistant:   claude-opus-5-5
 relates-to:
   - SEED-DRAFT-interfacemodels
-  - SEED-DRAFT-tripleontology
+  - SEED-0003
   - SEED-DRAFT-dxontologyupdate
 cites:
   - title:     "EMACS: The Extensible, Customizable, Self-Documenting Display Editor"

@@ -12,14 +12,14 @@ Table: Documents in the SEED namespace.
 |---|---|---|---|---|---|
 | [SEED-0001](Log.Philo.md) | Philo (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Implemented | philo |
 | [SEED-0002](Guide.Philo.md) | Philo: Tutorial Guide | Guide (tutorial) | component | Current | philo |
+| [SEED-0003](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline: Development Log | Log | component | Implemented | modulate2 |
 | [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
 | [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
-| [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY: Development Log | Log | component | Draft | modulate2 |
+| [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY: Development Log | Log | component | Implemented | modulate2 |
 | [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
 | [SEED-DRAFT-smalltalk](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Draft | — |
-| [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline: Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
@@ -38,18 +38,18 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-D10](Log.Philo.md#seed-d10--a-distinct-index-keyword-at) | Decision | A distinct index keyword, :at | Accepted | SEED-0001 |
 | [SEED-D11](Log.Philo.md#seed-d11--separate-operators-for-insertion) | Decision | Separate operators for insertion | Accepted | SEED-0001 |
 | [SEED-D12](Log.Philo.md#seed-d12--a-read-dual-for-regions) | Decision | A read dual for regions | Accepted | SEED-0001 |
-| [SEED-DRAFT-dxontologyupdate-D1](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d1--fx-and-dx-share-the-isasby-ontology-both-produce-manifestations) | Decision | (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations | Accepted | SEED-DRAFT-dxontologyupdate |
-| [SEED-DRAFT-dxontologyupdate-D2](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d2--as-has-two-sub-vocabularies-layout-is-a-structured-as-sub-form) | Decision | AS has two sub-vocabularies; layout is a structured AS sub-form | Accepted | SEED-DRAFT-dxontologyupdate |
-| [SEED-DRAFT-dxontologyupdate-D3](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d3--provisioning-widgets-are-abstract-by-modalities) | Decision | Provisioning widgets are abstract BY modalities | Accepted | SEED-DRAFT-dxontologyupdate |
-| [SEED-DRAFT-dxontologyupdate-D4](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d4--the-dx-macro-gains-a-grammar-detection-branch) | Decision | The dx macro gains a grammar-detection branch | Accepted | SEED-DRAFT-dxontologyupdate |
-| [SEED-DRAFT-dxontologyupdate-D5](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d5--layout-positioning-is-applied-per-body-group-within-valence) | Decision | Layout positioning is applied per body group within valence | Accepted | SEED-DRAFT-dxontologyupdate |
-| [SEED-DRAFT-tripleontology-D1](Log.TripleOntology.md#seed-draft-tripleontology-d1--three-axis-isasby-ontology) | Decision | Three-axis IS/AS/BY ontology | Accepted | SEED-DRAFT-tripleontology |
-| [SEED-DRAFT-tripleontology-D2](Log.TripleOntology.md#seed-draft-tripleontology-d2--is-carries-two-strata-stratum-2-is-never-presumptuously-inferred) | Decision | IS carries two strata; stratum 2 is never presumptuously inferred | Accepted | SEED-DRAFT-tripleontology |
-| [SEED-DRAFT-tripleontology-D3](Log.TripleOntology.md#seed-draft-tripleontology-d3--manifestation-class-hierarchy-with-isasby-as-slot-data) | Decision | Manifestation class hierarchy with IS/AS/BY as slot data | Accepted | SEED-DRAFT-tripleontology |
-| [SEED-DRAFT-tripleontology-D4](Log.TripleOntology.md#seed-draft-tripleontology-d4--two-tier-processor-pipeline) | Decision | Two-tier processor pipeline | Accepted | SEED-DRAFT-tripleontology |
-| [SEED-DRAFT-tripleontology-D5](Log.TripleOntology.md#seed-draft-tripleontology-d5--registration-hook-bridge-between-modulate-and-modulate2) | Decision | Registration-hook bridge between modulate and modulate2 | Accepted | SEED-DRAFT-tripleontology |
-| [SEED-DRAFT-tripleontology-D6](Log.TripleOntology.md#seed-draft-tripleontology-d6--bare-suppresses-tier-1-defaults) | Decision | :bare suppresses Tier-1 defaults | Accepted | SEED-DRAFT-tripleontology |
-| [SEED-DRAFT-tripleontology-D7](Log.TripleOntology.md#seed-draft-tripleontology-d7--is-stratum-2-is-for-cl-level-structural-properties-external-language-formats-are-as-program-semantic-roles) | Decision | IS stratum-2 is for CL-level structural properties; external-language formats are AS program-semantic roles | Accepted | SEED-DRAFT-tripleontology |
+| [SEED-D13](Log.TripleOntology.md#seed-d13--three-axis-isasby-ontology) | Decision | Three-axis IS/AS/BY ontology | Implemented | SEED-0003 |
+| [SEED-D14](Log.TripleOntology.md#seed-d14--is-carries-two-strata-stratum-2-is-never-presumptuously-inferred) | Decision | IS carries two strata; stratum 2 is never presumptuously inferred | Implemented | SEED-0003 |
+| [SEED-D15](Log.TripleOntology.md#seed-d15--manifestation-class-hierarchy-with-isasby-as-slot-data) | Decision | Manifestation class hierarchy with IS/AS/BY as slot data | Implemented | SEED-0003 |
+| [SEED-D16](Log.TripleOntology.md#seed-d16--two-tier-processor-pipeline) | Decision | Two-tier processor pipeline | Implemented | SEED-0003 |
+| [SEED-D17](Log.TripleOntology.md#seed-d17--registration-hook-bridge-between-modulate-and-modulate2) | Decision | Registration-hook bridge between modulate and modulate2 | Implemented | SEED-0003 |
+| [SEED-D18](Log.TripleOntology.md#seed-d18--bare-suppresses-tier-1-defaults) | Decision | :bare suppresses Tier-1 defaults | Implemented | SEED-0003 |
+| [SEED-D19](Log.TripleOntology.md#seed-d19--is-stratum-2-is-for-cl-level-structural-properties-external-language-formats-are-as-program-semantic-roles) | Decision | IS stratum-2 is for CL-level structural properties; external-language formats are AS program-semantic roles | Implemented | SEED-0003 |
+| [SEED-DRAFT-dxontologyupdate-D1](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d1--fx-and-dx-share-the-isasby-ontology-both-produce-manifestations) | Decision | (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations | Implemented | SEED-DRAFT-dxontologyupdate |
+| [SEED-DRAFT-dxontologyupdate-D2](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d2--as-has-two-sub-vocabularies-layout-is-a-structured-as-sub-form) | Decision | AS has two sub-vocabularies; layout is a structured AS sub-form | Implemented | SEED-DRAFT-dxontologyupdate |
+| [SEED-DRAFT-dxontologyupdate-D3](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d3--provisioning-widgets-are-abstract-by-modalities) | Decision | Provisioning widgets are abstract BY modalities | Implemented | SEED-DRAFT-dxontologyupdate |
+| [SEED-DRAFT-dxontologyupdate-D4](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d4--the-dx-macro-gains-a-grammar-detection-branch) | Decision | The dx macro gains a grammar-detection branch | Implemented | SEED-DRAFT-dxontologyupdate |
+| [SEED-DRAFT-dxontologyupdate-D5](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d5--layout-positioning-is-applied-per-body-group-within-valence) | Decision | Layout positioning is applied per body group within valence | Implemented | SEED-DRAFT-dxontologyupdate |
 | [SEED-DRAFT-branches-O1](Survey.Branches.md#seed-draft-branches-o1--should-stages-be-named-and-introspectable) | Open question | Should stages be named and introspectable? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O2](Survey.Branches.md#seed-draft-branches-o2--should-the-adapterhandler-contract-be-unified) | Open question | Should the adapter/handler contract be unified? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O3](Survey.Branches.md#seed-draft-branches-o3--how-should-branch-state-ownership-work) | Open question | How should branch state ownership work? | — | SEED-DRAFT-branches |

@@ -9,7 +9,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-tripleontology
+  - SEED-0003
   - SEED-DRAFT-dxontologyupdate
   - SEED-DRAFT-interfacemodels
   - SEED-DRAFT-editormodels
@@ -75,7 +75,7 @@ separate Survey.
 
 Seed's IS/AS/BY ontology claims that a datum can carry enough metadata to
 derive its own interface. The claim is documented in
-SEED-DRAFT-tripleontology and SEED-DRAFT-dxontologyupdate and exercised by
+SEED-0003 and SEED-DRAFT-dxontologyupdate and exercised by
 the Philo demo. But Philo is a catalog of static values with no persistence,
 no workflow and no user identity. A CMS is where these forces converge:
 
@@ -628,7 +628,7 @@ identifier management and the interaction with `compass check`.
 
 ## Relationship to Other Work
 
-- **SEED-DRAFT-tripleontology and SEED-DRAFT-dxontologyupdate** define
+- **SEED-0003 and SEED-DRAFT-dxontologyupdate** define
   IS/AS/BY. This Survey is the first real-world test of those definitions.
 - **SEED-DRAFT-interfacemodels** places Seed's approach in the landscape
   of interface models. The Classic bridge is the Magritte-like pattern

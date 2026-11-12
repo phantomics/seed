@@ -9,7 +9,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-tripleontology
+  - SEED-0003
   - SEED-DRAFT-dxontologyupdate
 cites:
   - title:     "CLIM II Specification"
@@ -57,7 +57,7 @@ approach inherits. The survey is exploratory and non-normative; it surfaces
 questions for later Plans and Evals rather than prescribing answers.
 
 The IS/AS/BY ontology and the manifestation pipeline documented in
-SEED-DRAFT-tripleontology and SEED-DRAFT-dxontologyupdate are assumed as
+SEED-0003 and SEED-DRAFT-dxontologyupdate are assumed as
 context.
 
 
@@ -122,7 +122,7 @@ diagram, or a text editor view, depending on what the inspector deems
 appropriate.
 
 **Relevance to Seed:** The multi-view principle directly informed the IS/AS/BY
-design (SEED-DRAFT-tripleontology). Seed's medium dispatch is analogous to GT's
+design (SEED-0003). Seed's medium dispatch is analogous to GT's
 per-type inspector views, with the additional property that the view
 specification travels with the data rather than being registered separately
 on the inspector.
@@ -177,7 +177,7 @@ to be all-or-nothing.
 
 **Relevance to Seed:** Naked Objects is the strongest single influence on
 Seed's design philosophy. The two-tier processor model
-(SEED-DRAFT-tripleontology, decision SEED-DRAFT-tripleontology-D4) is Seed's
+(SEED-0003, decision SEED-D16) is Seed's
 answer to the quality ceiling that pure auto-generation hits: Tier-1 defaults
 provide the Naked-Objects-style automatic affordances, and Tier-2 `:adapting`
 processors inject the domain-specific refinements that move a generic interface
@@ -350,7 +350,7 @@ second interface, derived from the same source, projected through a different
 medium (a screen reader rather than a visual display).
 
 **Relevance to Seed:** ARIA's role vocabulary directly informed the AS axis of
-the IS/AS/BY ontology (SEED-DRAFT-tripleontology). ARIA also demonstrates that
+the IS/AS/BY ontology (SEED-0003). ARIA also demonstrates that
 medium dispatch is already an established pattern: the same semantic structure
 is projected visually for sighted users and audially for screen-reader users.
 Seed's `uim-web` / `uim-terminal` dispatch is the same idea, extended beyond
@@ -610,7 +610,7 @@ proof is incomplete.
 
 Within the Seed corpus, this survey relates to:
 
-- SEED-DRAFT-tripleontology — the design and implementation of the IS/AS/BY
+- SEED-0003 — the design and implementation of the IS/AS/BY
   ontology, including the five-source research (CLIM, ARIA, Naked Objects, GT,
   Bertin) that this survey expands upon.
 - SEED-DRAFT-dxontologyupdate — the extension of IS/AS/BY to `(dx)` forms,

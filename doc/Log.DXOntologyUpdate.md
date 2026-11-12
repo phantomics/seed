@@ -6,12 +6,16 @@ scope:         component
 project:       Seed
 component:     modulate2
 language:      en
-status:        Draft
+status:        Implemented
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-12
 provenance:
   assistant:   claude-opus-5-5
   session:     ses_1ffba4ccdffebiWc572stLkOTO
 relates-to:
-  - SEED-DRAFT-tripleontology
+  - SEED-0003
   - SEED-DRAFT-interfacemodels
   - SEED-DRAFT-classicinterface
 decisions:
@@ -32,7 +36,7 @@ CodeMirror integration for `:provision-text`) and CSS grid layout rendering for
 manifestation sequences.
 
 This work follows directly from the initial IS/AS/BY implementation documented
-in `SEED-DRAFT-tripleontology`.
+in `SEED-0003`.
 
 
 ## Problem
@@ -74,7 +78,7 @@ real-world interface construction:
 
 ### SEED-DRAFT-dxontologyupdate-D1 — (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** The `(fx)` pipeline was producing manifestations classified by
 IS/AS/BY. The `(dx)` pipeline was producing `uic-*` instances classified by
 class name and role mixins. Branch code needed a unified object model.
@@ -87,7 +91,7 @@ retirement of the aspect system.
 
 ### SEED-DRAFT-dxontologyupdate-D2 — AS has two sub-vocabularies; layout is a structured AS sub-form
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** AS answers "what is your role in the containing whole?" — but
 the containing whole differs between `(fx)` and `(dx)`. In `(fx)`, it is the
 program; in `(dx)`, it is the interface. Layout directives describe how an
@@ -108,7 +112,7 @@ provisioning).
 
 ### SEED-DRAFT-dxontologyupdate-D3 — Provisioning widgets are abstract BY modalities
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** Rich content widgets (CodeMirror, dygraph, canvas-datagrid) needed
 a place in the ontology. They could sit under AS (the element's role is to be a
 code editor) or BY (the element is engaged through a code editor).
@@ -126,7 +130,7 @@ ontology to specific browser libraries and break medium-independence.
 
 ### SEED-DRAFT-dxontologyupdate-D4 — The dx macro gains a grammar-detection branch
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** The `dx` macro in `seed.modulate` needed to support both old-grammar
 (class-name-based) and new-grammar (IS/AS/BY keyword) specs during migration.
 **Decision:** Follow the same pattern as `express`: the `dx` macro checks
@@ -140,7 +144,7 @@ rejected in favour of extending the existing `dx` macro for seamless migration.
 
 ### SEED-DRAFT-dxontologyupdate-D5 — Layout positioning is applied per body group within valence
 
-**Status:** Accepted
+**Status:** Implemented
 **Context:** Layout (CSS grid positioning) and valence (header/body grouping)
 can coexist on the same sequence. The question was whether layout applies
 globally to all members or per group.

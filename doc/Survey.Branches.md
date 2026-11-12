@@ -9,7 +9,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-tripleontology
+  - SEED-0003
   - SEED-DRAFT-dxontologyupdate
   - SEED-DRAFT-interfacemodels
   - SEED-DRAFT-editormodels
@@ -53,7 +53,7 @@ what prior art informs them, and how Vox and Impulse shape the design.
 
 Seed's branch system is the counterpart to its rendering pipeline. On the output
 side, `fx` forms are expressed into manifestation trees and rendered through
-medium-dispatched `generate` methods — documented in SEED-DRAFT-tripleontology
+medium-dispatched `generate` methods — documented in SEED-0003
 and SEED-DRAFT-dxontologyupdate. On the input side, branches receive requests,
 normalise them through adapter stages, and pass them to handler lambdas that
 produce responses.
@@ -163,7 +163,7 @@ A branch typically returns a rendered HTML string by calling
 `(render medium (dx ...))` or `(render medium (express ...))`. With modulate2
 loaded, the branch can also produce manifestations: `(dx (:as :workspace ...) ...)`
 returns a manifestation, and the `:adapting` processor mechanism
-(SEED-DRAFT-tripleontology, decision SEED-DRAFT-tripleontology-D4) lets the
+(SEED-0003, decision SEED-D16) lets the
 branch supply lambdas that adapt the expressed tree before rendering. This
 creates a second pipeline on the output side: the branch builds a tree, named
 processors modify it, Tier-1 modality defaults add affordances, and `generate`
@@ -568,7 +568,7 @@ shared-structure mutation exists in the running code.
 
 Within the Seed corpus:
 
-- SEED-DRAFT-tripleontology — the IS/AS/BY ontology and the `:adapting`
+- SEED-0003 — the IS/AS/BY ontology and the `:adapting`
   processor pipeline, which is the output-side counterpart of the input-side
   adapter pipeline.
 - SEED-DRAFT-dxontologyupdate — the `(dx)` extension that lets branches

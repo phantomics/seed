@@ -498,7 +498,7 @@ Within the Seed corpus:
 - SEED-DRAFT-editormodels — the editor-models Eval, whose finding on metadata
   verification (G2) is cited here as the key gap for both human and LLM
   reliability.
-- SEED-DRAFT-tripleontology — the IS/AS/BY ontology that defines the vocabulary
+- SEED-0003 — the IS/AS/BY ontology that defines the vocabulary
   the tiers work with.
 - SEED-DRAFT-dxontologyupdate — the extension of IS/AS/BY to `(dx)` forms,
   which enables the configurator tier to work with runtime-constructed

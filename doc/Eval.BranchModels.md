@@ -11,7 +11,7 @@ provenance:
   assistant:   claude-opus-5-5
 relates-to:
   - SEED-DRAFT-branches
-  - SEED-DRAFT-tripleontology
+  - SEED-0003
   - SEED-DRAFT-editormodels
   - SEED-DRAFT-smalltalk
 cites:
