@@ -35,3 +35,4 @@
 (:id "SEED-O3" :kind :open-question :draft "SEED-DRAFT-interfacemodels-O3" :host "SEED-0005" :date "2026-11-12" :by "Andrew Sengul")
 (:id "SEED-O4" :kind :open-question :draft "SEED-DRAFT-interfacemodels-O4" :host "SEED-0005" :date "2026-11-12" :by "Andrew Sengul")
 (:id "SEED-O5" :kind :open-question :draft "SEED-DRAFT-interfacemodels-O5" :host "SEED-0005" :date "2026-11-12" :by "Andrew Sengul")
+(:id "SEED-0006" :kind :document :draft "SEED-DRAFT-editormodels" :path "doc/Eval.EditorModels.md" :date "2026-11-12" :by "Andrew Sengul")

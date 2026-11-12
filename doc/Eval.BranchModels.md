@@ -12,7 +12,7 @@ provenance:
 relates-to:
   - SEED-DRAFT-branches
   - SEED-0003
-  - SEED-DRAFT-editormodels
+  - SEED-0006
   - SEED-DRAFT-smalltalk
 cites:
   - title:     "CICS Transaction Server for z/OS Documentation"

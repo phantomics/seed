@@ -12,7 +12,7 @@ relates-to:
   - SEED-0003
   - SEED-0004
   - SEED-0005
-  - SEED-DRAFT-editormodels
+  - SEED-0006
   - SEED-DRAFT-smalltalk
   - VOX-DRAFT-vox
 cites:
@@ -314,7 +314,7 @@ rendering.
 
 ### A validation stage
 
-The editor-models Eval (SEED-DRAFT-editormodels, criterion G2) identified
+The editor-models Eval (SEED-0006, criterion G2) identified
 Seed's most significant gap: metadata is asserted, not checked. A validation
 stage in the decode phase could close this gap on the input side:
 
@@ -521,7 +521,7 @@ The following are known rough edges, flagged to inform future Plans.
 2. **A unified input declaration per operation.** One declaration generates the
    decode whitelist, the handler's destructuring, and the validation constraints.
 3. **A validation stage driven by IS metadata.** Closing the verification gap
-   (SEED-DRAFT-editormodels, G2) on the input side.
+   (SEED-0006, G2) on the input side.
 4. **The caller chooses the encoding.** Act returns Lisp data; encode turns it
    into the representation the caller needs.
 5. **Effects as queued words.** Act queues effects as descriptors; they execute
@@ -573,7 +573,7 @@ Within the Seed corpus:
   adapter pipeline.
 - SEED-0004 — the `(dx)` extension that lets branches
   produce manifestation trees directly.
-- SEED-DRAFT-editormodels — the editor-models Eval, whose criterion G2
+- SEED-0006 — the editor-models Eval, whose criterion G2
   (metadata verification) motivates the validation stage, and whose criterion G9
   (isolation) motivates the transaction stage.
 - SEED-DRAFT-smalltalk — the Smalltalk Eval, whose Seaside rendition describes

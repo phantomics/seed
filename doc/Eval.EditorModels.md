@@ -1,5 +1,5 @@
 ---
-id:            SEED-DRAFT-editormodels
+id:            SEED-0006
 title:         "Editor Models: Emacs, VS Code, Common Lisp Environments, and Seed as Prior Art"
 genre:         Eval
 subtype:       prior-art

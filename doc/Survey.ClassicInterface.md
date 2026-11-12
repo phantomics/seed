@@ -12,7 +12,7 @@ relates-to:
   - SEED-0003
   - SEED-0004
   - SEED-0005
-  - SEED-DRAFT-editormodels
+  - SEED-0006
   - SEED-DRAFT-branches
   - SEED-DRAFT-smalltalk
   - VOX-DRAFT-vox
@@ -640,7 +640,7 @@ identifier management and the interaction with `compass check`.
 - **SEED-0005** places Seed's approach in the landscape
   of interface models. The Classic bridge is the Magritte-like pattern
   that survey anticipated.
-- **SEED-DRAFT-editormodels** covers editor strategies. The three editing
+- **SEED-0006** covers editor strategies. The three editing
   views (raw Lexis, Markdown, ProseMirror) correspond to its taxonomy.
 - **SEED-DRAFT-branches** defines the branch-object model that step E
   migrates to. The stage model (decode/act/encode), operations with

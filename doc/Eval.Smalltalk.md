@@ -11,7 +11,7 @@ provenance:
   assistant:   claude-opus-5-5
 relates-to:
   - SEED-0005
-  - SEED-DRAFT-editormodels
+  - SEED-0006
   - SEED-DRAFT-verticality
 cites:
   - title:     "Design Principles Behind Smalltalk"
@@ -109,7 +109,7 @@ data type to an LLM and get a working editor back.
 ## The Rubric
 
 Table: Evaluation criteria E1–E12. Where a criterion corresponds to one in the
-editor-models Eval (`SEED-DRAFT-editormodels`), the mapping is noted.
+editor-models Eval (`SEED-0006`), the mapping is noted.
 
 | Code | Criterion | Editor Eval mapping |
 |------|-----------|-------------------|
@@ -420,7 +420,7 @@ Magritte's most important lesson is that metadata descriptions can be *checked*
 against the objects they describe. A `MANumberDescription` for a property that
 is actually a string is caught. A range constraint that specifies `min > max`
 is caught. Seed's IS/AS/BY metadata is currently asserted without verification
-— the gap identified in `SEED-DRAFT-editormodels` (criterion G2). Magritte
+— the gap identified in `SEED-0006` (criterion G2). Magritte
 demonstrates that this gap is closable: the same descriptions that drive form
 generation can also drive validation. Seed should build a metadata validator
 that checks IS annotations against Lisp types, BY annotations against available

@@ -21,7 +21,7 @@ relates-to:
   - SEED-DRAFT-classicinterface
   - SEED-DRAFT-smalltalk
   - SEED-DRAFT-verticality
-  - SEED-DRAFT-editormodels
+  - SEED-0006
   - CLASSIC-0010
   - CLASSIC-0011
 cites:
@@ -251,7 +251,7 @@ of interfaces from metadata, and the contrasts are precise:
   the same structure can carry different metadata.
 - **Checking.** Magritte validates input against its descriptions before
   accepting it. Seed's annotations are asserted, not checked — the gap
-  SEED-DRAFT-editormodels identifies under its rubric criterion G2.
+  SEED-0006 identifies under its rubric criterion G2.
 - **Medium.** Magritte renders to the web through Seaside; Seed dispatches on
   the medium.
 
@@ -877,7 +877,7 @@ Within the Seed corpus, this survey relates to:
   through which Seed proves its thesis.
 - SEED-DRAFT-smalltalk — the Smalltalk evaluation, which examines Glamorous
   Toolkit and Magritte in more depth than the family entries here.
-- SEED-DRAFT-editormodels — the editor-models evaluation, which scores Emacs,
+- SEED-0006 — the editor-models evaluation, which scores Emacs,
   VS Code, the Common Lisp editing environments and Seed against a shared
   rubric, including edit round-trip and medium independence.
 - SEED-DRAFT-verticality — the abstraction-verticality survey, whose leverage

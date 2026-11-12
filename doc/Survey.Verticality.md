@@ -10,7 +10,7 @@ provenance:
   assistant:   claude-opus-5-5
 relates-to:
   - SEED-0005
-  - SEED-DRAFT-editormodels
+  - SEED-0006
 cites:
   - title:     "The Mythical Man-Month"
     locator:   "Brooks, F. P. Addison-Wesley, 1975; Anniversary Edition, 1995. Ch. 3: The Surgical Team"
@@ -379,7 +379,7 @@ mutability alone would not provide.
 The feedback is real but limited. It catches *structural* flaws (missing methods,
 incoherent metadata) but not *semantic* flaws (a well-formed annotation that
 describes the wrong thing). The editor-models Eval
-(`SEED-DRAFT-editormodels`) found that Seed's metadata is asserted rather than
+(`SEED-0006`) found that Seed's metadata is asserted rather than
 checked — a verification layer would close this gap and make the self-referential
 feedback stronger.
 
@@ -484,7 +484,7 @@ expressiveness could fragment its community in the same way, and the mitigations
 (documentation, shared vocabulary, LLM tooling) are proposed but unproven.
 
 **The LLM case depends on a verification layer that does not yet exist.**
-The editor-models Eval (`SEED-DRAFT-editormodels`) identified metadata
+The editor-models Eval (`SEED-0006`) identified metadata
 verification as Seed's most significant gap. Until that gap is closed, the
 argument that LLMs can work reliably within the vocabulary is incomplete.
 
@@ -495,7 +495,7 @@ Within the Seed corpus:
 
 - SEED-0005 — the interface-models Survey, which covers the
   data–interface unification that the leverage pyramid depends on.
-- SEED-DRAFT-editormodels — the editor-models Eval, whose finding on metadata
+- SEED-0006 — the editor-models Eval, whose finding on metadata
   verification (G2) is cited here as the key gap for both human and LLM
   reliability.
 - SEED-0003 — the IS/AS/BY ontology that defines the vocabulary
