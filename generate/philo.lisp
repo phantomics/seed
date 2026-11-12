@@ -53,14 +53,18 @@
 
 (defun philo-parse-segments (string)
   "Parse STRING into a vector of (FORM START END) top-level segments, where
-START and END are character indices delimiting the source of FORM.  Forms are
-read with *READ-EVAL* disabled for safety."
+START and END are character indices delimiting the source of FORM.  Comments
+between forms fall outside any segment's span and are preserved by splices.
+Forms are read with *READ-EVAL* disabled for safety."
   (let ((segments (make-array 0 :adjustable t :fill-pointer 0))
         (eof '#:eof)
         (*read-eval* nil))
     (with-input-from-string (stream string)
       (loop
-        (let ((next (peek-char t stream nil eof)))
+        (let ((next (loop for ch = (peek-char t stream nil eof)
+                          when (or (eq ch eof) (not (eql ch #\;)))
+                            return ch
+                          do (read-line stream nil nil))))
           (when (eq next eof) (return))
           (let* ((start (file-position stream))
                  (form (read-preserving-whitespace stream nil eof)))

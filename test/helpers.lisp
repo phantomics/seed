@@ -57,6 +57,17 @@ pathname, run BODY, and delete the file on exit."
 "
   "A key-then-forms source in the shape of Seed's interface files.")
 
+(defparameter *commented-source*
+  ":key
+(a)
+;; comment before b
+(b)
+(c)
+:next
+(end)
+"
+  "A source with a comment between two value forms under :key.")
+
 (defparameter *empty-region-source*
   ":k1
 :k2

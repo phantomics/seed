@@ -79,6 +79,13 @@ byte-identical."
     (is (equal '(y) (philo p :items :offset 1)))
     (is (equal '(z) (philo p :items :offset 2)))))
 
+(def-test replace-preserves-adjacent-comments ()
+  "Replacing a form preserves comments between it and the preceding form."
+  (with-philo-file (p *commented-source*)
+    (setf (philo p :key :offset 1) '(bb))
+    (is (equal '(bb) (philo p :key :offset 1)))
+    (is (search ";; comment before b" (slurp p)))))
+
 (def-test replace-out-of-range-errors ()
   "An out-of-range write signals an error by default."
   (with-philo-file (p *sample-source*)
