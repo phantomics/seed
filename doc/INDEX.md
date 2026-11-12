@@ -18,7 +18,7 @@ Table: Documents in the SEED namespace.
 | [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
 | [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
-| [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Accepted | — |
+| [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, Common Lisp Environments, and Seed as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-DRAFT-smalltalk](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
 

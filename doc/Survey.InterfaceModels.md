@@ -878,8 +878,8 @@ Within the Seed corpus, this survey relates to:
 - SEED-DRAFT-smalltalk — the Smalltalk evaluation, which examines Glamorous
   Toolkit and Magritte in more depth than the family entries here.
 - SEED-DRAFT-editormodels — the editor-models evaluation, which scores Emacs,
-  VS Code and Seed against a shared rubric, including edit round-trip and
-  medium independence.
+  VS Code, the Common Lisp editing environments and Seed against a shared
+  rubric, including edit round-trip and medium independence.
 - SEED-DRAFT-verticality — the abstraction-verticality survey, whose leverage
   pyramid depends on the data–interface unification discussed here.
 

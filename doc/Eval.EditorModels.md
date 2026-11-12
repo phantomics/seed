@@ -1,6 +1,6 @@
 ---
 id:            SEED-DRAFT-editormodels
-title:         "Editor Models: Emacs, VS Code, and Seed as Prior Art"
+title:         "Editor Models: Emacs, VS Code, Common Lisp Environments, and Seed as Prior Art"
 genre:         Eval
 subtype:       prior-art
 scope:         project
@@ -45,6 +45,9 @@ cites:
   - title:     "Extension Marketplace"
     locator:   "Microsoft, https://code.visualstudio.com/docs/configure/extensions/extension-marketplace (consulted November 2026)"
     external:  true
+  - title:     "Accessibility"
+    locator:   "VS Code documentation, https://code.visualstudio.com/docs/configure/accessibility/accessibility (consulted November 2026)"
+    external:  true
   - title:     "15 Best VS Code Extensions for Developers in 2026"
     locator:   "Rockstar Developer University, rockstardeveloperuniversity.com/best-vscode-extensions (Marketplace search API count, October 2026)"
     external:  true
@@ -54,13 +57,33 @@ cites:
   - title:     "Emacspeak — The Complete Audio Desktop"
     locator:   "Raman, T. V. https://github.com/tvraman/emacspeak"
     external:  true
+  - title:     "SLIME User Manual"
+    locator:   "Version 2.32, https://elpa.nongnu.org/nongnu-devel/doc/slime.html; NEWS, https://github.com/slime/slime/blob/master/NEWS"
+    external:  true
+  - title:     "SLY: Sylvester the Cat's Common Lisp IDE"
+    locator:   "Távora, J. https://github.com/joaotavora/sly (README, consulted November 2026)"
+    external:  true
+  - title:     "Lem: a general-purpose editor/IDE extensible in Common Lisp"
+    locator:   "https://lem-project.github.io/; https://github.com/lem-project/lem"
+    external:  true
+  - title:     "xyzzy 0.2.2 series"
+    locator:   "https://github.com/xyzzy-022; Mado no Mori news, https://forest.watch.impress.co.jp/docs/news/522756.html (Japanese)"
+    external:  true
+  - title:     "Second Climacs"
+    locator:   "Strandh, R. https://github.com/robert-strandh/Second-Climacs"
+    external:  true
+  - title:     "Incremental Parsing of Common Lisp Code"
+    locator:   "Durand, I. and Strandh, R. Proc. 11th European Lisp Symposium (ELS 2018), Marbella, pp. 16-22"
+    external:  true
 ---
 
-# Editor Models: Emacs, VS Code, and Seed as Prior Art
+# Editor Models: Emacs, VS Code, Common Lisp Environments, and Seed as Prior Art
 
-This evaluation examines GNU Emacs and Visual Studio Code as prior art for
+This evaluation examines GNU Emacs, Visual Studio Code and the Common Lisp
+editing environments (SLIME and SLY, xyzzy, Lem, and Climacs) as prior art for
 Seed's approach to editing and interface derivation. The purpose is to learn
-from two dominant, well-documented editor architectures — not to rank products.
+from two dominant, well-documented editor architectures, and from the
+environments closest to Seed's own language — not to rank products.
 Seed is scored against the same rubric so that its strengths and weaknesses are
 on the record alongside the established systems.
 
@@ -71,8 +94,8 @@ Evidence is drawn from published documentation and specifications, cited in the
 front-matter. No hands-on benchmarks or user studies were conducted. Seed is
 assessed at revision `be41753`.
 
-The stance is **learning from prior art**: what design decisions in Emacs and
-VS Code have proven durable, what problems they solve and leave unsolved, and
+The stance is **learning from prior art**: what design decisions in the
+prior-art renditions have proven durable, what problems they solve and leave unsolved, and
 what Seed should adopt, adapt, or deliberately reject.
 
 Emacs is examined through Stallman's 1981 AI Memo 519a, the GNU Emacs Manual,
@@ -81,7 +104,13 @@ the Customize interface and widget library, Org-mode, and the LSP client
 documentation, the Language Server Protocol specification, the Custom Editor and
 Notebook APIs, and the Marketplace ecosystem (described by Microsoft as
 "thousands of extensions"; a third-party count from the Marketplace's search API
-found about 120,000 in October 2026).
+found about 120,000 in October 2026). The Common Lisp environments are examined
+through the SLIME manual and NEWS file, the SLY README, the Lem project site,
+Japanese-language sources and the community repositories for xyzzy, and the
+Second Climacs repository together with Durand and Strandh's paper on
+incremental parsing (ELS 2018); they are treated as one rendition because they
+are variations on one idea — editing Common Lisp from tooling connected to, or
+written in, Lisp.
 
 
 ## The Shared Scenario
@@ -231,8 +260,10 @@ but do not change the fundamental model.
   Lisp mode, with `paredit` keeping the structure balanced. Customize could
   build a form only if the parameters were `defcustom` settings, which they
   are not; a bespoke form would mean writing widget-library code by hand.
-- **S2 — a free-form function.** The strongest case: Lisp editing in Emacs is
-  the benchmark the other systems are measured against.
+- **S2 — a free-form function.** Strong. Emacs alone — a Lisp mode with
+  `paredit` and structural motion — sets the benchmark for editing Lisp as
+  text. Editing connected to a running Common Lisp image (SLIME, SLY) belongs
+  to the Common Lisp rendition below.
 - **S3 — a new data kind and its editor.** A new major mode, or a widget-based
   form, written imperatively in Emacs Lisp. Nothing derives the editor from a
   description of the data.
@@ -249,7 +280,7 @@ docstrings on every public symbol. The proof, via `wdired` and friends, that
 editing through a text projection and writing back works. Emacspeak's rendering
 of application semantics, not screen pixels, into speech.
 
-**Reject:** The single-threaded, shared-global-state model. The character-grid
+**Reject:** The shared-global-state model, with redisplay on one main thread. The character-grid
 display assumption. The implicit contract where extensions depend on
 undocumented internals.
 
@@ -318,15 +349,14 @@ Microsoft describes the Marketplace as offering "thousands of extensions
 supporting hundreds of programming languages and tasks"; a third-party count
 using the Marketplace's search API found about 120,000 VS Code extensions in
 October 2026. The extension API is versioned and has a formal stability
-contract. Third-party
-extensions are more reliable than Emacs packages on average because the
-contribution-point model constrains what they can do.
+contract. Because the contribution-point model constrains what extensions can
+do, a faulty extension tends to be more contained than a faulty Emacs package.
 
 **G9 — Isolation and robustness: strong.**
 Extensions run in a separate process (the extension host). A crashed extension
 does not crash the editor. Workspace Trust restricts what extensions can do in
 untrusted folders. The rendering process (Chromium) is separate from the
-extension host. This is the most robust isolation model of the three systems
+extension host. This is the most robust isolation model of the four renditions
 compared here.
 
 **G10 — Medium independence: partial.**
@@ -334,13 +364,20 @@ VS Code renders to a desktop Electron shell and to a browser (vscode.dev /
 github.dev). The Remote Development extensions split the UI (local) from the
 workspace (remote server), which parallels Seed's server-rendered, thin-client
 design. But the rendering target is always a Chromium-based surface — there is
-no terminal mode, no native-widget mode, and no accessibility-first medium.
+no terminal mode and no native-widget mode. Accessibility is well supported,
+in a different way from Emacspeak: when VS Code detects a screen reader
+(NVDA, JAWS, VoiceOver or Orca) it switches to a "Screen Reader Optimized"
+mode, presents the editor to it through text pagination, and offers an
+Accessible View of workbench features and editor state. This serves an
+external screen reader through the platform's accessibility interfaces — the
+accessibility-tree projection SEED-0005 describes under ARIA — rather than
+rendering the application's own semantics into speech.
 
 **G11 — Gradual entry: excellent.**
 VS Code is immediately usable as a text editor out of the box. Complexity is
 revealed progressively: install an extension to add a language, open the
 settings UI to customize, use the command palette to discover features. The
-entry cost is the lowest of the three systems compared here.
+entry cost is the lowest of the four renditions compared here.
 
 **Scenario walk-through.**
 
@@ -371,6 +408,123 @@ The tight coupling to Chromium as the rendering substrate. The assumption that
 all intelligence must be reconstructed from text by an external process.
 
 
+## Rendition: Common Lisp Environments (SLIME/SLY, xyzzy, Lem, Climacs)
+
+These environments edit Common Lisp from tooling connected to, or written in,
+Lisp. They form a progression away from Emacs Lisp:
+
+- **SLIME and SLY** keep Emacs as the editor and connect it to a running Lisp
+  image. SLIME (Eric Marsden, Luke Gorrie, Helmut Eller and others) talks to
+  the Swank server inside the image over a socket. Its *presentations* contrib
+  associates text in the REPL with the Lisp objects it represents: the text is
+  clickable, and the object behind it can be inspected or reused as input — the
+  CLIM presentation idea (SEED-0005) carried into Emacs. SLY, João Távora's fork,
+  replaces presentations with *backreferences* that stay stable throughout a
+  REPL session, adds *stickers* — live annotations that record values as code
+  passes through them — and offers multiple inspectors and REPLs.
+- **xyzzy** keeps the Emacs model and changes the extension language. Written
+  by KAMEI Tetsuya for Windows, with Emacs-like keybindings, it is extended in
+  its own Lisp, which Japanese sources describe as "almost conforming to
+  Common Lisp". It was continued by its community as the 0.2.2 series (latest
+  release in the archive: 2014). It is little known outside Japan, where it
+  was long a common Windows substitute for Emacs.
+- **Lem** is an Emacs-like editor and IDE written and extended in Common Lisp
+  itself, with built-in LSP support and several frontends: ncurses for the
+  terminal, SDL2, and a webview frontend the project intends to replace SDL2.
+- **Climacs**, begun by Robert Strandh, is an Emacs-like editor built on
+  McCLIM. Its successor, Second Climacs, reads the buffer with Eclector, an
+  extensible implementation of the Common Lisp reader, and keeps that
+  structural view up to date as the text changes, using an incremental parsing
+  library, Incrementalist; Durand and Strandh (ELS 2018) describe the approach.
+
+**G1 — Source of truth: text, with structure from the image or the reader.**
+Text remains authoritative in every case. What distinguishes these
+environments is where structure comes from: SLIME and SLY consult the running
+image, and Second Climacs recovers structure with the real Common Lisp reader
+rather than a separate grammar, incrementally as the text is edited.
+
+**G2 — Semantic knowledge: checked against the running image.**
+For Lisp, SLIME and SLY's knowledge is stronger than a language server's: it
+is checked against the live image itself — the compiler's notes, the actual
+definitions, the cross-references the implementation records. Lem offers the
+same for Lisp and adds LSP for other languages. Like LSP, the knowledge
+vanishes when the connection does.
+
+**G3 — Extension model: the Emacs model, increasingly in Common Lisp.**
+SLIME and SLY extend Emacs and inherit its modes, hooks and advice. xyzzy and
+Lem keep that model but move it into a Common Lisp or near-Common Lisp
+dialect, so extensions are written in the language being edited.
+
+**G4 — Audience reach: programmers only.**
+These are tools for Lisp programmers. Nothing here derives an editing surface
+for a non-programmer.
+
+**G5 — Edit round-trip: faithful, for text.**
+As with Emacs: the buffer is the file. SLIME's inspector edits live objects
+in the image, not the source, so changes made there do not round-trip to a
+file.
+
+**G6 — Free-form text: strong.**
+SLIME and SLY inherit Emacs's text editing; Lem and xyzzy reproduce much of it.
+For Common Lisp specifically, these are the best editing environments that
+exist.
+
+**G7 — Introspection: exemplary for the Lisp image.**
+The inspectors, presentations, backreferences and stickers make the running
+image visible and navigable from the editor. SLIME's presentations are the
+closest existing case of an editor knowing what a piece of text *is* in the
+image, not only what it says.
+
+**G8 — Ecosystem: small but durable.**
+SLIME is the long-standing standard for Common Lisp development and SLY its
+main alternative; Lem has a growing community; xyzzy has an established,
+mostly Japanese-speaking user base. All are small beside Emacs and VS Code.
+
+**G9 — Isolation and robustness: partial.**
+SLIME and SLY run the Lisp in a separate process from Emacs, so a crashed
+image does not take the editor with it. Lem's editor and its extensions share
+one image, as Emacs does. For Lisp development it connects through Micros, its
+fork of Swank, either to its own image (`start-lisp-repl`), where a mistake can
+break the running editor, or to a separate Lisp process, which keeps the
+editor safe.
+
+**G10 — Medium independence: partial, through Lem.**
+Lem renders one editor through ncurses, SDL2 and a webview — a working case of
+a single Common Lisp program targeting several media. The others are tied to
+their host's display.
+
+**G11 — Gradual entry: steep, eased by Lem.**
+SLIME and SLY require learning Emacs as well as Common Lisp. Lem is ready for
+Common Lisp development out of the box, which lowers the entry cost.
+
+**Scenario walk-through.**
+
+- **S1 — structured parameters.** Edited as text. SLY's stickers can show the
+  values that flow through the code that uses them, and the inspector shows the
+  live objects, but no form is derived from the data.
+- **S2 — a free-form function.** The strongest case of any rendition for Common
+  Lisp: text editing, plus compilation, cross-references and inspection against
+  the running image.
+- **S3 — a new data kind and its editor.** An editor mode or command written in
+  Lisp — in Common Lisp itself for Lem. Nothing derives the editor from a
+  description of the data.
+- **S4 — a non-programmer.** Not served.
+- **S5 — a second medium.** Lem's ncurses frontend shows the same editor in a
+  terminal. That is the editor's own interface in a second medium, not the
+  data's.
+
+**Steal:** SLIME's presentations and SLY's backreferences, as the model for
+linking what Seed renders to the objects behind it (G7). The SLIME/SLY split
+between the editor and the Lisp image, as a precedent for isolating the image
+(G9). Lem's several frontends, as a pattern for Seed's second medium (G10).
+Second Climacs's use of the real Common Lisp reader for incremental structure,
+as a path to checking `fx` metadata while it is written (G2). CLIM itself is
+covered in SEED-0005.
+
+**Reject:** Text as the source of truth, which these environments share with
+Emacs and VS Code. The dependence of SLIME and SLY on one host editor.
+
+
 ## Rendition: Seed
 
 Seed is a Common Lisp system where data carries its own interface specification
@@ -384,7 +538,7 @@ a serialization — `read` recovers the structure, and the structure is what
 `express-new` and `construct` operate on. There is no parsing step, no
 synchronisation between text and a semantic model. Editing a field in the
 derived interface mutates the structure directly. This is the strongest position
-among the three systems on this criterion.
+among the four renditions on this criterion.
 
 **G2 — Semantic knowledge: intrinsic but asserted, not checked.**
 An `fx` form annotated with `(:by :entering)` or `(:is :- :properties)` does
@@ -393,7 +547,7 @@ identity. The metadata *is* the knowledge. But — and this is a correction of a
 overclaim in earlier discussion — this metadata is **asserted by the author**,
 not derived or verified. A wrong annotation produces a confidently wrong
 interface. There is no equivalent of a type checker that catches `(:is :integer)`
-on a string value. This is the weakest position among the three on verification.
+on a string value. This is the weakest position among the four on verification.
 
 **G3 — Extension model: vocabulary enrichment and method dispatch.**
 Adding a new data kind means annotating it with IS/AS/BY metadata. Adding a new
@@ -442,7 +596,7 @@ to the user through the derived interface.
 There is no extension marketplace, no third-party packages, no community of
 contributors. The IS/AS/BY vocabulary is provisional. The `generate` methods
 are implemented for one medium (`uim-web`). The extension points are not yet
-documented for external use. This is the weakest position among the three on
+documented for external use. This is the weakest position among the four on
 this criterion.
 
 **G9 — Isolation and robustness: weak.**
@@ -500,19 +654,19 @@ process isolation (G9), and a second medium to prove G10.
 
 Table: Summary scores per criterion. ● strong; ◐ partial; ○ weak.
 
-| Criterion | Emacs | VS Code | Seed |
-|-----------|-------|---------|------|
-| G1 Source of truth | ◐ text + overlays | ◐ text + LSP | ● structure |
-| G2 Semantic knowledge | ● checked (LSP) | ● checked (LSP) | ○ asserted |
-| G3 Extension model | ◐ flexible, unstructured | ● declarative, isolated | ◐ principled, small |
-| G4 Audience reach | ○ programmers | ○ programmers | ● end users |
-| G5 Edit round-trip | ● faithful (text) | ◐ (custom editors need work) | ◐ functional, not textual |
-| G6 Free-form text | ● best in class | ● excellent | ◐ via CodeMirror |
-| G7 Introspection | ● exemplary | ○ limited | ◐ nascent |
-| G8 Ecosystem | ● mature | ● massive | ○ none |
-| G9 Isolation | ○ single-threaded | ● process isolation | ○ single image |
-| G10 Medium independence | ◐ character grid + speech | ◐ Chromium + remote | ◐ architecture only |
-| G11 Gradual entry | ○ steep | ● excellent | ◐ moderate |
+| Criterion | Emacs | VS Code | CL environments | Seed |
+|-----------|-------|---------|-----------------|------|
+| G1 Source of truth | ◐ text + overlays | ◐ text + LSP | ◐ text + image/reader | ● structure |
+| G2 Semantic knowledge | ● checked (LSP) | ● checked (LSP) | ● checked (live image) | ○ asserted |
+| G3 Extension model | ◐ flexible, unstructured | ● declarative, isolated | ◐ Emacs model, in CL | ◐ principled, small |
+| G4 Audience reach | ○ programmers | ○ programmers | ○ programmers | ● end users |
+| G5 Edit round-trip | ● faithful (text) | ◐ (custom editors need work) | ● faithful (text) | ◐ functional, not textual |
+| G6 Free-form text | ● best in class | ● excellent | ● strong | ◐ via CodeMirror |
+| G7 Introspection | ● exemplary | ○ limited | ● exemplary (image) | ◐ nascent |
+| G8 Ecosystem | ● mature | ● massive | ◐ small, durable | ○ none |
+| G9 Isolation | ○ shared global state | ● process isolation | ◐ separate image (SLIME/SLY) | ○ single image |
+| G10 Medium independence | ◐ character grid + speech | ◐ Chromium + remote | ◐ Lem's frontends | ◐ architecture only |
+| G11 Gradual entry | ○ steep | ● excellent | ○ steep (eased by Lem) | ◐ moderate |
 
 Seed is strongest where the established editors are weakest (G1, G4) and weakest
 where they are strongest (G2, G8, G9). This is not accidental — Seed is
@@ -549,9 +703,9 @@ that come with not yet being a mature editing platform.
    modifies the running image.
 2. **Process isolation.** Branch handlers and `:adapting` processors run code
    supplied by system developers, possibly third parties. In a multi-user
-   portal, a misbehaving processor should
-   not crash the server. VS Code's extension-host model — separate processes
-   communicating through messages — is the proven solution.
+   portal, a misbehaving processor should not crash the server. VS Code's
+   extension-host model — separate processes communicating through messages —
+   is the proven solution.
 3. **The Custom Editors API as precedent.** VS Code proved that a text-editor
    platform can host derived editing surfaces for non-text content, with
    round-trip serialisation to a backing document. This validates the approach
@@ -560,10 +714,31 @@ that come with not yet being a mature editing platform.
    reveals complexity only when the user seeks it. Seed's incremental
    migration strategy aspires to this but doesn't yet deliver it in practice.
 
+**From the Common Lisp environments:**
+1. **Presentations and backreferences.** SLIME's presentations and SLY's
+   backreferences link displayed text to the live objects behind it. Seed's
+   manifestations already know which datum and which processor produced each
+   element; linking them the same way would give the derived interface the
+   `describe-*` capability above (G7).
+2. **The editor–image split.** SLIME and SLY keep the Lisp image in a
+   separate process from the editor and talk to it over a socket. That is a
+   Lisp-native form of the isolation VS Code achieves with its extension host,
+   and a closer fit for Seed (G9).
+3. **Several frontends from one program.** Lem renders one Common Lisp program
+   through ncurses, SDL2 and a webview. It is the nearest working example of
+   what Seed's `uim-*` media are meant to do, and a pattern for the second
+   medium that would prove G10.
+4. **Reader-based incremental structure.** Second Climacs keeps a structural
+   view of the buffer current by reading it with the real Common Lisp reader.
+   The same technique could check `fx` metadata while it is being written,
+   closing part of the G2 gap below.
+
 ### What Seed should reject
 
-- **Text as authoritative representation.** Both Emacs and VS Code treat the
-  character stream as ground truth and reconstruct structure from it. Seed's
+- **Text as authoritative representation.** Emacs, VS Code and the Common Lisp
+  environments all treat the character stream as ground truth and reconstruct
+  structure from it — even Second Climacs, which uses the real reader to do
+  so. Seed's
   commitment to structure-as-source is its defining architectural choice and
   should not be compromised, even though it means delegating free-form text
   editing to an external component (CodeMirror).
