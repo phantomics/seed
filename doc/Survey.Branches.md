@@ -10,7 +10,7 @@ provenance:
   assistant:   claude-opus-5-5
 relates-to:
   - SEED-0003
-  - SEED-DRAFT-dxontologyupdate
+  - SEED-0004
   - SEED-DRAFT-interfacemodels
   - SEED-DRAFT-editormodels
   - SEED-DRAFT-smalltalk
@@ -54,7 +54,7 @@ what prior art informs them, and how Vox and Impulse shape the design.
 Seed's branch system is the counterpart to its rendering pipeline. On the output
 side, `fx` forms are expressed into manifestation trees and rendered through
 medium-dispatched `generate` methods — documented in SEED-0003
-and SEED-DRAFT-dxontologyupdate. On the input side, branches receive requests,
+and SEED-0004. On the input side, branches receive requests,
 normalise them through adapter stages, and pass them to handler lambdas that
 produce responses.
 
@@ -571,7 +571,7 @@ Within the Seed corpus:
 - SEED-0003 — the IS/AS/BY ontology and the `:adapting`
   processor pipeline, which is the output-side counterpart of the input-side
   adapter pipeline.
-- SEED-DRAFT-dxontologyupdate — the `(dx)` extension that lets branches
+- SEED-0004 — the `(dx)` extension that lets branches
   produce manifestation trees directly.
 - SEED-DRAFT-editormodels — the editor-models Eval, whose criterion G2
   (metadata verification) motivates the validation stage, and whose criterion G9

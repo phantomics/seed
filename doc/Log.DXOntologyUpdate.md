@@ -1,5 +1,5 @@
 ---
-id:            SEED-DRAFT-dxontologyupdate
+id:            SEED-0004
 title:         "Unifying (dx) Forms Under IS/AS/BY: Development Log"
 genre:         Log
 scope:         component
@@ -19,11 +19,11 @@ relates-to:
   - SEED-DRAFT-interfacemodels
   - SEED-DRAFT-classicinterface
 decisions:
-  - SEED-DRAFT-dxontologyupdate-D1
-  - SEED-DRAFT-dxontologyupdate-D2
-  - SEED-DRAFT-dxontologyupdate-D3
-  - SEED-DRAFT-dxontologyupdate-D4
-  - SEED-DRAFT-dxontologyupdate-D5
+  - SEED-D20
+  - SEED-D21
+  - SEED-D22
+  - SEED-D23
+  - SEED-D24
 ---
 
 # Unifying (dx) Forms Under IS/AS/BY: Development Log
@@ -76,7 +76,7 @@ real-world interface construction:
 
 ## Design Decisions
 
-### SEED-DRAFT-dxontologyupdate-D1 — (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations
+### SEED-D20 — (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations
 
 **Status:** Implemented
 **Context:** The `(fx)` pipeline was producing manifestations classified by
@@ -89,7 +89,7 @@ manifestation objects. The difference is temporal, not ontological.
 rejected as it would perpetuate two parallel object models and prevent the
 retirement of the aspect system.
 
-### SEED-DRAFT-dxontologyupdate-D2 — AS has two sub-vocabularies; layout is a structured AS sub-form
+### SEED-D21 — AS has two sub-vocabularies; layout is a structured AS sub-form
 
 **Status:** Implemented
 **Context:** AS answers "what is your role in the containing whole?" — but
@@ -110,7 +110,7 @@ engages with it. The orthogonality test confirmed they vary independently: a
 horizontal series (AS: layout) can contain text editors or charts (BY:
 provisioning).
 
-### SEED-DRAFT-dxontologyupdate-D3 — Provisioning widgets are abstract BY modalities
+### SEED-D22 — Provisioning widgets are abstract BY modalities
 
 **Status:** Implemented
 **Context:** Rich content widgets (CodeMirror, dygraph, canvas-datagrid) needed
@@ -128,7 +128,7 @@ editor. The vocabulary: `:provision-text`, `:provision-sheet`,
 **Alternatives:** Naming concrete widgets in BY was rejected as it would tie the
 ontology to specific browser libraries and break medium-independence.
 
-### SEED-DRAFT-dxontologyupdate-D4 — The dx macro gains a grammar-detection branch
+### SEED-D23 — The dx macro gains a grammar-detection branch
 
 **Status:** Implemented
 **Context:** The `dx` macro in `seed.modulate` needed to support both old-grammar
@@ -142,7 +142,7 @@ being evaluated as function calls.
 **Alternatives:** A separate `dx2` macro in `modulate2` was considered but
 rejected in favour of extending the existing `dx` macro for seamless migration.
 
-### SEED-DRAFT-dxontologyupdate-D5 — Layout positioning is applied per body group within valence
+### SEED-D24 — Layout positioning is applied per body group within valence
 
 **Status:** Implemented
 **Context:** Layout (CSS grid positioning) and valence (header/body grouping)

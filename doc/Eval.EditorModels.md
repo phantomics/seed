@@ -12,7 +12,7 @@ provenance:
 relates-to:
   - SEED-DRAFT-interfacemodels
   - SEED-0003
-  - SEED-DRAFT-dxontologyupdate
+  - SEED-0004
 cites:
   - title:     "EMACS: The Extensible, Customizable, Self-Documenting Display Editor"
     locator:   "Stallman, R. M. AI Memo 519a, MIT AI Lab, March 1981"

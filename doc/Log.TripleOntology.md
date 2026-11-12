@@ -16,7 +16,7 @@ provenance:
   assistant:   claude-opus-5-5
   session:     ses_1ffba4ccdffebiWc572stLkOTO
 relates-to:
-  - SEED-DRAFT-dxontologyupdate
+  - SEED-0004
   - SEED-DRAFT-interfacemodels
   - SEED-DRAFT-classicinterface
 cites:

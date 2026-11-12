@@ -10,7 +10,7 @@ provenance:
   assistant:   claude-opus-5-5
 relates-to:
   - SEED-0003
-  - SEED-DRAFT-dxontologyupdate
+  - SEED-0004
 cites:
   - title:     "CLIM II Specification"
     locator:   "Part VI: Extended Stream Input Facilities, §23 Presentation Types"
@@ -57,7 +57,7 @@ approach inherits. The survey is exploratory and non-normative; it surfaces
 questions for later Plans and Evals rather than prescribing answers.
 
 The IS/AS/BY ontology and the manifestation pipeline documented in
-SEED-0003 and SEED-DRAFT-dxontologyupdate are assumed as
+SEED-0003 and SEED-0004 are assumed as
 context.
 
 
@@ -294,7 +294,7 @@ boundary between "using" and "programming" is invisible.
 data–interface boundary is viable and enormously productive. Seed aims for the
 same collapse in a more general setting — structured data of any shape, not
 just two-dimensional grids of cells. The `:provision-sheet` modality
-(SEED-DRAFT-dxontologyupdate) is Seed's way of hosting the spreadsheet pattern
+(SEED-0004) is Seed's way of hosting the spreadsheet pattern
 within the manifestation framework.
 
 ### Malleable Software and End-User Environments
@@ -613,7 +613,7 @@ Within the Seed corpus, this survey relates to:
 - SEED-0003 — the design and implementation of the IS/AS/BY
   ontology, including the five-source research (CLIM, ARIA, Naked Objects, GT,
   Bertin) that this survey expands upon.
-- SEED-DRAFT-dxontologyupdate — the extension of IS/AS/BY to `(dx)` forms,
+- SEED-0004 — the extension of IS/AS/BY to `(dx)` forms,
   provisioning, and layout, which realises the "same ontology for data at rest
   and data in motion" principle this survey discusses.
 - SEED-0001 — the keyed accessor that enables round-trip editing,

@@ -500,7 +500,7 @@ Within the Seed corpus:
   reliability.
 - SEED-0003 — the IS/AS/BY ontology that defines the vocabulary
   the tiers work with.
-- SEED-DRAFT-dxontologyupdate — the extension of IS/AS/BY to `(dx)` forms,
+- SEED-0004 — the extension of IS/AS/BY to `(dx)` forms,
   which enables the configurator tier to work with runtime-constructed
   interfaces.
 
