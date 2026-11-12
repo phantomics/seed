@@ -13,10 +13,17 @@ reviewed:      2026-11-12
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
+  - SEED-0001
+  - SEED-0002
   - SEED-0003
   - SEED-0004
   - SEED-DRAFT-branches
   - SEED-DRAFT-classicinterface
+  - SEED-DRAFT-smalltalk
+  - SEED-DRAFT-verticality
+  - SEED-DRAFT-editormodels
+  - CLASSIC-0010
+  - CLASSIC-0011
 cites:
   - title:     "CLIM II Specification"
     locator:   "Part VI: Extended Stream Input Facilities, §23 Presentation Types"
@@ -62,6 +69,18 @@ cites:
     external:  true
   - title:     "Computational Information Design"
     locator:   "Fry, B. PhD dissertation, MIT Media Laboratory, 2004"
+    external:  true
+  - title:     "Magritte — Meta-Described Web Application Development"
+    locator:   "Renggli, L. Master's thesis, University of Bern, June 2006"
+    external:  true
+  - title:     "Magritte — A Meta-Driven Approach to Empower Developers and End Users"
+    locator:   "Renggli, L., Ducasse, S. and Kuhn, A. MODELS 2007, LNCS 4735, pp. 106-120"
+    external:  true
+  - title:     "Fresnel: A Browser-Independent Presentation Vocabulary for RDF"
+    locator:   "Pietriga, E., Bizer, C., Karger, D. and Lee, R. ISWC 2006, LNCS 4273"
+    external:  true
+  - title:     "Fresnel — Display Vocabulary for RDF"
+    locator:   "W3C Semantic Web Interest Group, w3.org/2005/04/fresnel-info"
     external:  true
 open-questions:
   - SEED-O1
@@ -208,6 +227,40 @@ provide the Naked-Objects-style automatic affordances, and Tier-2 `:adapting`
 processors inject the domain-specific refinements that move a generic interface
 toward a crafted one.
 
+#### Magritte
+
+Magritte (Renggli, master's thesis, Bern, 2006; Renggli, Ducasse and Kuhn,
+MODELS 2007) is a meta-description framework for Smalltalk, built on the
+Seaside web framework. A class carries *description* objects for its
+attributes — `MAStringDescription`, `MANumberDescription`,
+`MAToOneRelationDescription` and so on — and Magritte generates forms,
+validation, tables and reports from them, with no rendering code written by
+hand. The descriptions are themselves described by Magritte, so they can be
+inspected and changed at run time, even by end users. It is the Naked Objects
+principle implemented more flexibly than the original.
+
+Renggli's thesis also presents Pier, "a meta-described content management and
+Wiki system" built on Magritte: a CMS and a wiki whose authoring interface is
+generated from descriptions.
+
+**Relevance to Seed:** Magritte is the nearest neighbour to Seed's derivation
+of interfaces from metadata, and the contrasts are precise:
+
+- **Granularity.** Magritte describes classes: every instance of `Person`
+  shares one description. `fx` describes individual values: two integers in
+  the same structure can carry different metadata.
+- **Checking.** Magritte validates input against its descriptions before
+  accepting it. Seed's annotations are asserted, not checked — the gap
+  SEED-DRAFT-editormodels identifies under its rubric criterion G2.
+- **Medium.** Magritte renders to the web through Seaside; Seed dispatches on
+  the medium.
+
+Classic's lenses play Magritte's role inside the Seed and Classic pair: they
+are class-level defaults, and the Classic→fx bridge (SEED-DRAFT-classicinterface)
+turns them into per-value `fx` annotations that individual values can override.
+Pier is the direct precedent for that work. SEED-DRAFT-smalltalk treats Seaside
+and Magritte at greater length.
+
 ### Model-Based UI Research (CAMELEON)
 
 The CAMELEON Reference Framework (Calvary et al., 2002) structures the
@@ -244,6 +297,46 @@ They demonstrate that type metadata can drive interface derivation, but the
 schema lives apart from the data — it is a separate artifact that must be kept
 in sync. `fx` forms internalise the schema as metadata on the datum itself,
 eliminating the sync problem.
+
+### Presentation Vocabularies (Fresnel)
+
+Fresnel is a browser-independent vocabulary for specifying how RDF graphs are
+presented, developed in the W3C Semantic Web Interest Group from 2004
+(specifications published in 2005) and presented at ISWC 2006 by Pietriga,
+Bizer, Karger and Lee. It rests on two concepts:
+
+- **Lenses** select which properties of a resource are shown and in what
+  order. A *sublens* renders a related resource inside its parent, and a lens
+  can declare a purpose, such as a compact label lens for use inside other
+  lenses.
+- **Formats** decide how resources and property values are rendered — as an
+  image, an external link, a URI or text — and provide hooks to CSS.
+
+*Groups* bundle lenses and formats meant to work together. Fresnel is purely
+declarative and split into modules, so that a browser can support a
+well-defined subset; it was implemented by several RDF browsers, including
+IsaViz, Longwell and Piggy Bank, and Horus. A lens can target a class of
+resources (`fresnel:classLensDomain`) or specific resources
+(`fresnel:instanceLensDomain`).
+
+Fresnel is the ancestor of Classic's theme lenses: CLASSIC-0011 states that
+its lens concept "is borrowed from the W3C Fresnel display vocabulary", and
+CLASSIC-0010 maps Fresnel's lenses, formats, groups and sublenses onto
+Classic's themes and records Classic's decision to support class-level lenses
+only (CLASSIC-D33).
+
+**Relevance to Seed:** Fresnel is the grandparent of the Classic→fx bridge:
+Fresnel lenses became Classic lenses, which the bridge turns into `fx`
+annotations. Its split between *what to show* (lenses) and *how to show it*
+(formats) is close to Seed's split between the IS/AS/BY annotation and the
+medium's `generate` methods, and like Seed it is medium-independent by design.
+The difference is where the presentation knowledge lives. Fresnel's lenses are
+separate documents that point at the data — at a class, or even at a single
+resource by its URI. Seed's annotations sit on the value itself and travel
+with it, in the same representation as the program. Fresnel's instance lenses
+show that per-resource presentation specifications are not new; what Seed
+adds is that the specification is part of the value (see "Calibrating the
+claim").
 
 ### Declarative and Reactive UI
 
@@ -286,8 +379,8 @@ al., 2011), which extends Datalog — itself a subset of Prolog — with time.
 The interface in Eve is records too. Committing a `#div` record to the
 `@browser` database draws a `div`; a todo list is a block that searches for
 todo records and binds one `#div` per todo. Because everything is a record,
-Eve's inspector could take a rendered element back to the blocks and records
-that produced it ("why is this here?", "why is this blank?"). Errors and
+Eve's inspector let a user click on whatever was going wrong and traced it
+back to the blocks and records responsible. Errors and
 integrity constraints were records as well, enforced globally by ordinary
 blocks. Eve went through more than thirty prototypes — visual, tabular, wiki,
 notebook and textual — before shutting down in early 2018 without finding a
@@ -309,7 +402,8 @@ representations. Specific parallels and contrasts:
 - **Where the interface specification lives.** Eve's UI rules live beside the
   domain records, in separate blocks; Seed's annotations live on the datum
   itself. Eve is in this respect closer to Naked Objects with queries, and
-  Seed closer to a per-value Magritte.
+  Seed closer to a per-value Magritte (see "Interfaces Generated from a
+  Model").
 - **Transient and committed facts.** Eve's `bind`/`commit` distinction is the
   language-level form of the split SEED-DRAFT-branches makes between safe
   operations and effects queued for commit.
@@ -503,10 +597,12 @@ Table: Comparison of interface models along six axes.
 | Live image | Inspector / class | Programmer | Run time | No (environment-specific) | Yes (image persistence) | Object |
 | CLIM presentations | Presentation-type methods | Programmer | Run time | No (CLIM streams) | Partially (accept/present) | Type lattice |
 | Naked Objects | Domain class | Programmer | Run time | No (Java framework) | N/A (views generated) | Object |
+| Magritte | Description objects on classes | Programmer, editable at run time | Run time | No (Seaside) | N/A (views generated) | Description |
 | CAMELEON | Separate models per level | Designer/tool | Design/run | Yes (by design) | Only via abstraction | Model |
 | Schema-driven forms | External schema | Programmer | Run time | No (web-specific) | No | Schema |
+| Fresnel | Separate lens and format documents | Programmer/designer | Run time | Yes (by design) | No (presentation only) | Lens |
 | Reactive UI | Component render function | Programmer | Compile/run | Partially (cross-platform frameworks) | No | Virtual DOM |
-| Relational (Eve) | Rule blocks over a record database | Programmer | Run time (reactive) | No (browser database) | Partially (committed records persist) | Record / pattern |
+| Relational (Eve) | Rule blocks over a record database | Programmer | Run time (reactive) | No (browser database) | Yes for data (records are the state); no for program text | Record / pattern |
 | Hypermedia / htmx | Response document | Server code | Run time | No (HTML-specific) | Server round-trip | Document fragment |
 | Structure / projectional editors | AST + editor config | Tool author | Edit time | No (editor-specific) | Yes (AST is source) | AST node |
 | Spreadsheets | Grid cell | End user | Run time | No (spreadsheet app) | Yes (cell = source) | Cell |
@@ -570,9 +666,17 @@ same pipeline that renders the program's other interfaces, and writes back to
 the same source format.** In MPS, the projection logic lives in the editor
 configuration, not in the program. In Mathematica, `Manipulate` lives in the
 notebook system, not in general-purpose Lisp data. In Smalltalk, the inspector
-is a generic tool, not a data-specific derived interface. Seed is the system
-where the data's own metadata specifies its editing surface, and that metadata
-is ordinary data in the same representation as the rest of the program.
+is a generic tool, not a data-specific derived interface.
+
+Two further precedents narrow the claim again. Magritte derives editing
+surfaces from descriptions, but the descriptions belong to classes. Fresnel
+can address a single resource with an instance lens, so a presentation
+specification for one datum is not itself new — but that lens is a separate
+document that points at the datum from outside. The distinguishing property is
+therefore not per-value granularity alone. It is that the annotation lives on
+the value and travels with it: Seed is the system where the data's own
+metadata specifies its editing surface, and that metadata is ordinary data in
+the same representation as the rest of the program.
 
 
 ## Matching Tasks to Software Structure
@@ -771,6 +875,17 @@ Within the Seed corpus, this survey relates to:
   `bind`/`commit` and Fry's seven stages.
 - SEED-DRAFT-classicinterface — the Classic CMS, the concrete application
   through which Seed proves its thesis.
+- SEED-DRAFT-smalltalk — the Smalltalk evaluation, which examines Glamorous
+  Toolkit and Magritte in more depth than the family entries here.
+- SEED-DRAFT-editormodels — the editor-models evaluation, which scores Emacs,
+  VS Code and Seed against a shared rubric, including edit round-trip and
+  medium independence.
+- SEED-DRAFT-verticality — the abstraction-verticality survey, whose leverage
+  pyramid depends on the data–interface unification discussed here.
+
+In the federated Classic corpus, CLASSIC-0011 (the theme reference) and
+CLASSIC-0010 (the theme-ontology log) record how Classic adopted Fresnel's
+lenses, the lineage the Fresnel entry traces.
 
 External work cited is listed in the front-matter `cites:` block.
 
@@ -821,8 +936,9 @@ run — for instance, a node a parent's processor adds to a child is not seen
 by the child's hooks. Eve took the opposite position: its blocks have no
 order and are re-evaluated until nothing changes. Order independence makes
 processors compose freely and lets each be read alone, at the cost of a
-fixed-point evaluator, rules that must not oscillate, and the incremental
-evaluation Eve rebuilt its runtime several times to make fast. Is Seed's order
+fixed-point evaluator, rules that must not oscillate, and fast incremental
+evaluation — a demand that led Eve to move its runtime to Rust in v0.4. Is
+Seed's order
 dependence a deliberate feature — predictable, cheap and easy to trace — or
 an accident to remove? If deliberate, should processors declare what they
 depend on, so that an order can be checked rather than assumed?

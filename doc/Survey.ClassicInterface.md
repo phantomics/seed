@@ -28,7 +28,7 @@ cites:
     locator:   "~/src/lisp/lexis/doc/spec.md"
     external:  true
   - title:     "Magritte — Meta-Described Web Application Development"
-    locator:   "Renggli, L. PhD thesis, University of Bern, 2009"
+    locator:   "Renggli, L. Master's thesis, University of Bern, June 2006"
     external:  true
   - title:     "3bmd — Markdown Processor in CL Using Esrap"
     locator:   "https://github.com/3b/3bmd"
@@ -218,6 +218,13 @@ be presented. The bridge between Classic and Seed is an adapter that reads a
 Classic instance's slot metadata, lens specs and workflow state, and produces
 annotated `fx` data for `express-new`. Seed then derives the interface
 without hand-written rendering code for each view.
+
+There is a direct precedent. Renggli's thesis presents, alongside Magritte,
+Pier: "a meta-described content management and Wiki system" whose authoring
+interface is generated from Magritte descriptions. Pier shows that a CMS and
+wiki can be built this way; the Classic interface mode differs in reading
+Classic's slot metadata and lenses rather than Smalltalk descriptions, and in
+letting individual values override the class-level defaults.
 
 ### The mapping
 

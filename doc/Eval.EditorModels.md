@@ -6,7 +6,12 @@ subtype:       prior-art
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-12
+
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
