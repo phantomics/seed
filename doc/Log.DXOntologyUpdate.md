@@ -1,6 +1,6 @@
 ---
 id:            SEED-DRAFT-dxontologyupdate
-title:         Unifying (dx) Forms Under IS/AS/BY — Development Log
+title:         "Unifying (dx) Forms Under IS/AS/BY: Development Log"
 genre:         Log
 scope:         component
 project:       Seed
@@ -12,6 +12,8 @@ provenance:
   session:     ses_1ffba4ccdffebiWc572stLkOTO
 relates-to:
   - SEED-DRAFT-tripleontology
+  - SEED-DRAFT-interfacemodels
+  - SEED-DRAFT-classicinterface
 decisions:
   - SEED-DRAFT-dxontologyupdate-D1
   - SEED-DRAFT-dxontologyupdate-D2
@@ -236,7 +238,8 @@ Updated exports (`modulate2/package.lisp@53907b6`): added `construct`,
   (or row equivalents) style attributes into the item's HTML tree.
 - `modulate2/modulate2.lisp:generate-item-list@53907b6`: helper that renders
   members with layout applied per-item.
-- `modulate2/modulate2.lisp:generate@53907b6` for `(uim-web mfn-sequence)`:
+- The `generate` method on `(uim-web mfn-sequence)` at
+  `modulate2/modulate2.lisp@53907b6` (line 788):
   updated to add a `grid-layout` CSS
   class when a layout directive is present, and to apply layout positioning per
   body group within valence via `generate-item-list`.
@@ -272,8 +275,13 @@ confirmed:
 Result: all checks passed. Rendered HTML inspected for CodeMirror provisioning,
 horizontal-even layout, and layout-plus-valence; all matched intended structure.
 
+The test script was not kept; a modulate2 test suite is listed in
+Outstanding Work.
+
 
 ## Files
+
+Table: Files changed or created for the dx ontology unification.
 
 | File | Action | Description |
 |------|--------|-------------|
@@ -297,6 +305,10 @@ horizontal-even layout, and layout-plus-valence; all matched intended structure.
   implemented. Grid patterns and other layout directives will be added as usage
   demands.
 - **Portal development with new dx.** The next milestone is developing
-  `demo.access` using the new `(dx)` ontology end-to-end, which will exercise
-  provisioning, layout, and the full expression/construction pipeline in a real
-  portal.
+  `demo.access` using the new `(dx)` ontology end-to-end, which will
+  exercise provisioning, layout, and the full expression/construction
+  pipeline in a real portal. SEED-DRAFT-classicinterface surveys this
+  work and proposes an increment ladder.
+- **`:provision-document`.** A rich-document editing modality
+  (ProseMirror with a Lexis-mirroring schema) is anticipated as a later
+  BY vocabulary addition; see SEED-DRAFT-classicinterface.

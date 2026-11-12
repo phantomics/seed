@@ -15,11 +15,11 @@ Table: Documents in the SEED namespace.
 | [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
 | [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
-| [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
+| [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY: Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
 | [SEED-DRAFT-smalltalk](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Draft | — |
-| [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline Development Log | Log | component | Draft | modulate2 |
+| [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline: Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
@@ -49,6 +49,7 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-tripleontology-D4](Log.TripleOntology.md#seed-draft-tripleontology-d4--two-tier-processor-pipeline) | Decision | Two-tier processor pipeline | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D5](Log.TripleOntology.md#seed-draft-tripleontology-d5--registration-hook-bridge-between-modulate-and-modulate2) | Decision | Registration-hook bridge between modulate and modulate2 | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D6](Log.TripleOntology.md#seed-draft-tripleontology-d6--bare-suppresses-tier-1-defaults) | Decision | :bare suppresses Tier-1 defaults | Accepted | SEED-DRAFT-tripleontology |
+| [SEED-DRAFT-tripleontology-D7](Log.TripleOntology.md#seed-draft-tripleontology-d7--is-stratum-2-is-for-cl-level-structural-properties-external-language-formats-are-as-program-semantic-roles) | Decision | IS stratum-2 is for CL-level structural properties; external-language formats are AS program-semantic roles | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-branches-O1](Survey.Branches.md#seed-draft-branches-o1--should-stages-be-named-and-introspectable) | Open question | Should stages be named and introspectable? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O2](Survey.Branches.md#seed-draft-branches-o2--should-the-adapterhandler-contract-be-unified) | Open question | Should the adapter/handler contract be unified? | — | SEED-DRAFT-branches |
 | [SEED-DRAFT-branches-O3](Survey.Branches.md#seed-draft-branches-o3--how-should-branch-state-ownership-work) | Open question | How should branch state ownership work? | — | SEED-DRAFT-branches |

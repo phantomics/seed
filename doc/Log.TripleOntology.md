@@ -1,6 +1,6 @@
 ---
 id:            SEED-DRAFT-tripleontology
-title:         IS/AS/BY Ontology and Manifestation Pipeline Development Log
+title:         "IS/AS/BY Ontology and Manifestation Pipeline: Development Log"
 genre:         Log
 scope:         component
 project:       Seed
@@ -10,6 +10,26 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
   session:     ses_1ffba4ccdffebiWc572stLkOTO
+relates-to:
+  - SEED-DRAFT-dxontologyupdate
+  - SEED-DRAFT-interfacemodels
+  - SEED-DRAFT-classicinterface
+cites:
+  - title:     "CLIM II Specification"
+    locator:   "Part VI: Extended Stream Input Facilities, §23 Presentation Types"
+    external:  true
+  - title:     "WAI-ARIA 1.2"
+    locator:   "W3C Recommendation, 2023"
+    external:  true
+  - title:     "Naked Objects"
+    locator:   "Pawson, R. PhD thesis, Trinity College Dublin, 2004"
+    external:  true
+  - title:     "Glamorous Toolkit"
+    locator:   "Girba, T. feenk.com"
+    external:  true
+  - title:     "Semiology of Graphics"
+    locator:   "Bertin, J. University of Wisconsin Press, 1983 (French original 1967)"
+    external:  true
 decisions:
   - SEED-DRAFT-tripleontology-D1
   - SEED-DRAFT-tripleontology-D2
@@ -17,6 +37,7 @@ decisions:
   - SEED-DRAFT-tripleontology-D4
   - SEED-DRAFT-tripleontology-D5
   - SEED-DRAFT-tripleontology-D6
+  - SEED-DRAFT-tripleontology-D7
 ---
 
 # IS/AS/BY Ontology and Manifestation Pipeline: Development Log
@@ -279,19 +300,23 @@ The subsystem proper.
   `express-new` then Tier 2.
 - **Tier 1.** `modulate2/modulate2.lisp:apply-modality-defaults@aeedefb` is a
   generic on `(medium node)`; the `(uim-web mfn-sequence)` method injects
-  affordances unless the node is `:bare`. `:reducing` is implemented end to end
+  affordances unless the node is `:bare`. `:reducing` is injected and rendered
   by `modulate2/modulate2.lisp:apply-reducing-default@aeedefb`, which pushes a
   remove control (built by `modulate2/modulate2.lisp:make-control@aeedefb`,
-  targeting the member's path) into each member's header.
+  targeting the member's path) into each member's header. The rendered controls
+  carry `data-action` and `data-target` attributes; client-side dispatch to
+  make them functional is not yet wired.
   `modulate2/modulate2.lisp:apply-sorting-default@aeedefb` and
   `modulate2/modulate2.lisp:apply-extending-default@aeedefb` are stubs.
-- **Rendering.** A `generate :around` method on `(uim-web manifestation)`
-  (`modulate2/modulate2.lisp@aeedefb`) applies Tier-1 defaults once, then the
-  primary methods render. `modulate2/modulate2.lisp:emit-header@aeedefb` places
-  injected controls and valence header members in a shared `mfn-header`;
+- **Rendering.** The `generate :around` method on `(uim-web manifestation)` at
+  `modulate2/modulate2.lisp@aeedefb` (line 501) applies Tier-1 defaults once,
+  then the primary methods render.
+  `modulate2/modulate2.lisp:emit-header@aeedefb` places injected controls and
+  valence header members in a shared `mfn-header`;
   `modulate2/modulate2.lisp:split-by-valence@aeedefb` divides members into
-  header and body groups. The `render` method on `manifestation`
-  (`modulate2/modulate2.lisp@aeedefb`) serializes the tree via spinneret.
+  header and body groups. The `render` method on `(uim-web manifestation)` at
+  `modulate2/modulate2.lisp@aeedefb` (line 680) serializes the tree via
+  spinneret.
 - **Bridge registration.** At load time the file sets
   `modulate/modulate.lisp:*express-foreign*@aeedefb` to a closure over
   `manifest` and `modulate/modulate.lisp:*generate-foreign*@aeedefb` to a
@@ -321,27 +346,37 @@ confirmed, per case:
 
 Result: all checks passed; the legacy expression path was confirmed unchanged.
 Rendered HTML for the `:reducing` and `:valence (-1 2)` cases was inspected and
-matched the intended header/body structure.
+matched the intended header/body structure. The test script was not kept; a
+modulate2 test suite is listed in Outstanding Work.
 
 
 ## Files
 
-Files touched by this work. `New` marks files first written for the subsystem;
-`Modified` marks additive changes to the original system.
+Table: Files changed or created for the IS/AS/BY ontology. The work spans
+several commits; `aeedefb` is the pinned snapshot.
 
 | File | Action | Description |
 |------|--------|-------------|
+| `modulate2/modulate2.lisp` | **New** | IS/AS/BY ontology, manifestation classes, expression, two-tier pipeline, generate/render, bridge registration. |
 | `modulate2/package.lisp` | **New** | `seed.modulate2` package: pipeline exports, classes, vocabularies. |
 | `modulate2/seed.modulate2.asd` | **New** | ASDF system, depending on `seed.modulate`. |
-| `modulate2/modulate2.lisp` | **New** | IS/AS/BY ontology, manifestation classes, expression, two-tier pipeline, generate/render, bridge registration. |
 | `modulate/modulate.lisp` | Modified | Registration-hook variables, `express-new-grammar-p`, new-grammar delegation branch in `express`, catch-all `generate`. |
+| `modulate/package.lisp` | Modified | Exports updated for bridge symbols. |
+| `modulate/seed.modulate.asd` | Modified | Component list updated. |
 
 
 ## Outstanding Work
 
+- **Client-side dispatch for `:activating` controls.** The rendered
+  `data-action`/`data-target` attributes have no listener. This is the
+  first prerequisite for the Classic interface mode
+  (SEED-DRAFT-classicinterface, step A1).
 - **Tier-1 `:sorting` and `:extending`.** Both are stubs. `:sorting` should
   inject a per-item drag-handle wrapper (uim-web: htmx/Alpine drag-and-drop);
   `:extending` should inject an add-item control into the sequence's own header.
+- **A modulate2 test suite.** The functional test script used during
+  verification was not kept. A FiveAM suite should be created to pin the
+  pipeline's behaviour.
 - **Deep mixed-grammar nesting.** The bounce guard makes new-inside-old and
   old-inside-new render correctly at one level, but pathological deep alternation
   can reach the guard and error rather than render. Acceptable during migration;
@@ -357,3 +392,42 @@ Files touched by this work. `New` marks files first written for the subsystem;
   to the new grammar, the legacy expression and component classes are to be
   removed, at which point SEED-DRAFT-tripleontology-D5's shared-base option
   should be reconsidered.
+
+
+## Update 2026-11-12 — The IS/AS boundary for formats and languages
+
+During the design of the Classic interface mode (SEED-DRAFT-classicinterface),
+a question arose: where do format annotations like `:markdown` and `:lexis`
+sit in the IS/AS taxonomy? Classic's `:format` slot option assigns a source
+format to body data, and the Classic→fx bridge must map this to one of the
+axes.
+
+### SEED-DRAFT-tripleontology-D7 — IS stratum-2 is for CL-level structural properties; external-language formats are AS program-semantic roles
+
+**Status:** Accepted
+
+**Context:** IS stratum-2 was defined as "conventional interpretation the
+developer asserts" (SEED-DRAFT-tripleontology-D2), with examples `:properties`, `:associations` and
+`:pathname`. Format annotations like `:markdown`, `:lexis` and `:sql`
+also describe a datum beyond its Lisp type. The boundary between IS
+stratum-2 and AS needed to be made explicit. This decision refines
+SEED-DRAFT-tripleontology-D2.
+
+**Decision:** The distinguishing test is whether Common Lisp itself has
+native vocabulary for the property. IS stratum-2 covers structural
+properties the Lisp program traverses through CL-level APIs:
+`:properties` (plist access via `getf`), `:associations` (alist access
+via `assoc`), `:pathname` (pathname operations via `namestring`,
+`merge-pathnames`). External-language formats — `:markdown` (needs a
+parser like 3bmd), `:lexis` (needs the Lexis reader), `:sql` (needs a
+database driver) — require external software or specialised libraries to
+interpret. They describe the datum's role in the application's topology
+of software utilities: what the string is *for* within the program at the
+application level. They are therefore **AS program-semantic roles**,
+extending the existing `+as-program-roles+` vocabulary.
+
+**Alternatives:** Placing formats under IS stratum-2 (rejected: it would
+make IS a catch-all for any assertion about a value, erasing the boundary
+with AS). Creating a third AS sub-vocabulary for formats (rejected:
+formats describe program-level role, the same concern as the existing
+program-semantic sub-vocabulary).
