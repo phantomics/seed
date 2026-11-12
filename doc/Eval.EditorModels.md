@@ -10,7 +10,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-interfacemodels
+  - SEED-0005
   - SEED-0003
   - SEED-0004
 cites:

@@ -11,7 +11,7 @@ provenance:
 relates-to:
   - SEED-0003
   - SEED-0004
-  - SEED-DRAFT-interfacemodels
+  - SEED-0005
   - SEED-DRAFT-editormodels
   - SEED-DRAFT-smalltalk
   - VOX-DRAFT-vox
@@ -579,8 +579,8 @@ Within the Seed corpus:
 - SEED-DRAFT-smalltalk — the Smalltalk Eval, whose Seaside rendition describes
   the closest prior art for Seed's server-side component model, and whose
   synthesis recommends a pipeline inspector based on GT's moldable debugger.
-- SEED-DRAFT-interfacemodels — the interface-models Survey, whose open question
-  SEED-DRAFT-interfacemodels-O1 (inter-domain composition) bears on
+- SEED-0005 — the interface-models Survey, whose open question
+  SEED-O1 (inter-domain composition) bears on
   cross-instance branch contact and on whether IS/AS/BY can serve as a shared
   vocabulary between Seed instances.
 - SEED-DRAFT-verticality — the Verticality Survey, whose leverage-pyramid model

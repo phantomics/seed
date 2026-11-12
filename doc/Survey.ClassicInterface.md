@@ -11,7 +11,7 @@ provenance:
 relates-to:
   - SEED-0003
   - SEED-0004
-  - SEED-DRAFT-interfacemodels
+  - SEED-0005
   - SEED-DRAFT-editormodels
   - SEED-DRAFT-branches
   - SEED-DRAFT-smalltalk
@@ -630,7 +630,7 @@ identifier management and the interaction with `compass check`.
 
 - **SEED-0003 and SEED-0004** define
   IS/AS/BY. This Survey is the first real-world test of those definitions.
-- **SEED-DRAFT-interfacemodels** places Seed's approach in the landscape
+- **SEED-0005** places Seed's approach in the landscape
   of interface models. The Classic bridge is the Magritte-like pattern
   that survey anticipated.
 - **SEED-DRAFT-editormodels** covers editor strategies. The three editing

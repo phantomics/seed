@@ -1,5 +1,5 @@
 ---
-id:            SEED-DRAFT-interfacemodels
+id:            SEED-0005
 title:         Interface Models and Data–Interface Unification
 genre:         Survey
 scope:         project
@@ -15,6 +15,8 @@ provenance:
 relates-to:
   - SEED-0003
   - SEED-0004
+  - SEED-DRAFT-branches
+  - SEED-DRAFT-classicinterface
 cites:
   - title:     "CLIM II Specification"
     locator:   "Part VI: Extended Stream Input Facilities, §23 Presentation Types"
@@ -43,11 +45,30 @@ cites:
   - title:     "Semiology of Graphics"
     locator:   "Bertin, J. University of Wisconsin Press, 1983 (French original 1967)"
     external:  true
+  - title:     "The IDE as a value"
+    locator:   "Granger, C. chris-granger.com, 24 January 2013"
+    external:  true
+  - title:     "Eve: Programming designed for humans"
+    locator:   "Granger, C. et al. witheve.com, 2016 (Eve v0.2)"
+    external:  true
+  - title:     "A Visual History of Eve: 2014–2018"
+    locator:   "Krouse, S. Future of Coding, 2 April 2018"
+    external:  true
+  - title:     "Dedalus: Datalog in Time and Space"
+    locator:   "Alvaro, P. et al. Datalog Reloaded, LNCS 6702, 2011"
+    external:  true
+  - title:     "Processing: A Programming Handbook for Visual Designers and Artists"
+    locator:   "Reas, C. and Fry, B. MIT Press, 2007"
+    external:  true
+  - title:     "Computational Information Design"
+    locator:   "Fry, B. PhD dissertation, MIT Media Laboratory, 2004"
+    external:  true
 open-questions:
-  - SEED-DRAFT-interfacemodels-O1
-  - SEED-DRAFT-interfacemodels-O2
-  - SEED-DRAFT-interfacemodels-O3
-  - SEED-DRAFT-interfacemodels-O4
+  - SEED-O1
+  - SEED-O2
+  - SEED-O3
+  - SEED-O4
+  - SEED-O5
 ---
 
 # Interface Models and Data–Interface Unification: Survey
@@ -239,6 +260,70 @@ it in component code that the developer writes; Seed derives it from IS/AS/BY
 metadata on the data, selecting render methods by generic function dispatch
 rather than by explicit component selection.
 
+### Relational Environments (Light Table and Eve)
+
+Chris Granger's Light Table (2012–2016, written in ClojureScript) was built on
+a *Behavior–Object–Tag* (BOT) architecture, described in "The IDE as a value"
+(2013). Objects are plain data; tags are attached to objects; behaviours are
+attached to tags, not to classes. Adding a tag to an object gives it every
+behaviour registered for that tag, and the whole editor is therefore one
+introspectable data structure. BOT is an entity–component design: capability
+comes from declarations attached to data, not from an inheritance hierarchy.
+
+Eve (2014–2018), the Light Table team's successor project, carried the idea
+from the editor into the language. Its public version (v0.2, 2016) was a
+literate programming environment: programs are documents of prose with
+embedded code blocks. Every datum is a *record* — a set of attribute/value
+pairs with an identity — held in one of several databases (`@session`,
+`@browser`, `@event`). Each block declares "when I see these patterns, do
+these things": a `search` pattern-matches records, then `bind` or `commit`
+adds records. A `bind`ed record lives only while its search still matches and
+is retracted automatically when it stops matching; a `commit`ed record
+persists. Blocks have no order: the program is a set of rules, re-evaluated
+incrementally as records change. The design descends from Dedalus (Alvaro et
+al., 2011), which extends Datalog — itself a subset of Prolog — with time.
+
+The interface in Eve is records too. Committing a `#div` record to the
+`@browser` database draws a `div`; a todo list is a block that searches for
+todo records and binds one `#div` per todo. Because everything is a record,
+Eve's inspector could take a rendered element back to the blocks and records
+that produced it ("why is this here?", "why is this blank?"). Errors and
+integrity constraints were records as well, enforced globally by ordinary
+blocks. Eve went through more than thirty prototypes — visual, tabular, wiki,
+notebook and textual — before shutting down in early 2018 without finding a
+commercial footing.
+
+**Relevance to Seed:** Light Table and Eve are the closest peer to Seed's
+thesis from the logic-programming side of the language family, as Seed is from
+the Lisp side. Both deny that data and interface need separate
+representations. Specific parallels and contrasts:
+
+- **Behaviours attached by declaration.** BOT attaches behaviours to tags;
+  Seed's Tier-1 defaults attach affordances to BY modalities. The `:bare`
+  modality (SEED-D18) is the equivalent of removing a tag.
+- **Pattern-matching postprocessors.** Seed's Tier-2 `:adapting` processors
+  were chosen over point-to-point attachment so that they could inspect a
+  tree and respond to discovered conditions (SEED-D16). That is Eve's
+  `search … bind` shape, applied to a manifestation tree rather than a
+  database.
+- **Where the interface specification lives.** Eve's UI rules live beside the
+  domain records, in separate blocks; Seed's annotations live on the datum
+  itself. Eve is in this respect closer to Naked Objects with queries, and
+  Seed closer to a per-value Magritte.
+- **Transient and committed facts.** Eve's `bind`/`commit` distinction is the
+  language-level form of the split SEED-DRAFT-branches makes between safe
+  operations and effects queued for commit.
+- **Order.** Eve's blocks are order-independent and evaluated to a fixed
+  point; Seed's processors run in a single pass, in declared order
+  (SEED-O5).
+- **Provenance.** Manifestations already record the path back to their `fx`
+  source and which processor injected each control, so an Eve-style "why is
+  this here?" query is within reach for Seed.
+- **Concreteness.** Eve's search for a general audience ("programming for
+  humans") produced many prototypes and no settled application. Seed proves
+  itself through a concrete one, the Classic CMS
+  (SEED-DRAFT-classicinterface).
+
 ### Hypermedia (REST and htmx)
 
 Roy Fielding's REST dissertation (UC Irvine, 2000) defined the principle of
@@ -345,6 +430,49 @@ Common Lisp reader macros, open to extension. And Mathematica notebooks are
 tied to the Mathematica front end; Seed's IS/AS/BY annotations are
 medium-independent.
 
+### Creative-Coding Environments (Processing)
+
+Processing was started in 2001 by Casey Reas and Ben Fry in the Aesthetics +
+Computation Group at the MIT Media Lab, descending from John Maeda's Design By
+Numbers. It is a simplified dialect of Java with a minimal editor: a program
+is a *sketch*, usually a `setup()` function run once and a `draw()` function
+run every frame, and pressing Run shows the result at once. Drawing is
+immediate-mode: each frame, the sketch issues drawing commands and nothing on
+screen persists as a description of the data behind it. The project grew into
+an ecosystem — p5.js, Processing.py, Android and other *modes*, and the
+Wiring and Arduino environments, whose editor descends from Processing's — and
+it reached millions of users through workshops, books and classrooms.
+
+Fry's dissertation, *Computational Information Design* (MIT, 2004), presents
+Processing as the tool for a process of seven stages: acquire, parse, filter,
+mine, represent, refine and interact. Its "represent" stage is a catalogue of
+representations matched to the shape of the data, in Bertin's tradition; its
+"refine" stage is the graphic designer's work of improving that first
+representation.
+
+**Relevance to Seed:** Processing is the opposite pole from Seed on the axis
+of how an interface comes to exist. A sketch *draws* its interface by hand
+each frame; Seed *derives* its interface from declarations on the data. The
+comparison is instructive in both directions:
+
+- **The floor.** Processing's floor is very low: a few lines draw something,
+  and feedback is immediate. Seed's declarative derivation offers a higher
+  ceiling at the price of a higher floor (see Honest Limits).
+- **Modes as media.** Processing's modes run one sketch on several runtimes
+  (Java, JavaScript, Python, Android), the same structure as Seed's
+  `uim-web` and `uim-terminal` media, and a durable working example of the
+  medium independence Seed claims.
+- **A pipeline from data to interaction.** Fry's seven stages line up with
+  Seed's decode, act and encode stages (SEED-DRAFT-branches), with
+  "represent" corresponding to IS/AS/BY choosing a rendering and "refine" to
+  Tier-2 `:adapting` processors. It is the most direct comparator for Seed's
+  chart editing.
+- **The unit of work.** "Sketch" is a unit anyone can grasp. Seed's
+  equivalent, a system with branches, is less obvious; an audience beyond
+  programmers would need a comparably simple unit.
+- **Adoption through teaching.** Processing spread through teaching material
+  rather than technical novelty — a lesson for after Seed has proved itself.
+
 ### Accessibility Trees (ARIA)
 
 WAI-ARIA defines a vocabulary of roles (`widget`, `structure`, `landmark`,
@@ -378,11 +506,13 @@ Table: Comparison of interface models along six axes.
 | CAMELEON | Separate models per level | Designer/tool | Design/run | Yes (by design) | Only via abstraction | Model |
 | Schema-driven forms | External schema | Programmer | Run time | No (web-specific) | No | Schema |
 | Reactive UI | Component render function | Programmer | Compile/run | Partially (cross-platform frameworks) | No | Virtual DOM |
+| Relational (Eve) | Rule blocks over a record database | Programmer | Run time (reactive) | No (browser database) | Partially (committed records persist) | Record / pattern |
 | Hypermedia / htmx | Response document | Server code | Run time | No (HTML-specific) | Server round-trip | Document fragment |
 | Structure / projectional editors | AST + editor config | Tool author | Edit time | No (editor-specific) | Yes (AST is source) | AST node |
 | Spreadsheets | Grid cell | End user | Run time | No (spreadsheet app) | Yes (cell = source) | Cell |
 | Boxer | Box structure | End user | Run time | No (Boxer environment) | Yes (box = source) | Box |
 | Notebooks / Mathematica | Notebook expression | Programmer/user | Run time | No (Mathematica front end) | Yes (expression = source) | Expression |
+| Creative coding (Processing) | Imperative draw loop | Programmer/artist | Run time, every frame | Partially (modes) | No | Sketch |
 | ARIA / accessibility | Semantic attributes | Programmer/tool | Run time | Yes (medium is the point) | No | Attribute |
 | **Seed (fx/dx)** | **Data's own metadata** | **Programmer** | **Write time** | **Yes (medium dispatch)** | **Yes (express/philo)** | **Data** |
 
@@ -497,7 +627,9 @@ an operating-system facility.
 Genera (Symbolics Lisp Machine), Oberon (Wirth), and Smalltalk images are
 environments where a single language serves as the operating system, the
 development environment, and the application platform. Everything is accessible
-and modifiable from within the language.
+and modifiable from within the language. Eve aimed at the same unity from the
+logic-programming side: one record model for program state, external systems
+and the interface, queried and changed by one small set of operations.
 
 **Relevance to Seed:** Seed aspires to this within the interface domain but not
 as a general-purpose OS. The IS/AS/BY ontology governs interface specification
@@ -508,8 +640,8 @@ stack, or the window manager.
 
 Spreadsheets (tabular data and computation), CAD systems (geometric design),
 Mathematica (symbolic and numeric computation), APL/April (array-oriented
-computation), and Seed (interface specification and rendering) are each
-comprehensive for one domain. They allow the full range of functionality
+computation), Processing (visual and interactive sketching), and Seed
+(interface specification and rendering) are each comprehensive for one domain. They allow the full range of functionality
 within that domain while not absorbing unrelated concerns.
 
 The discipline that distinguishes a domain-comprehensive system from a
@@ -556,7 +688,10 @@ CLIM showed that presentation types on output make the display a typed,
 interactive surface. Naked Objects showed that behaviourally complete domain
 objects can derive their own interface. CAMELEON showed that a chain of
 reification from abstract to final UI can target multiple platforms. Boxer showed
-that a computational medium can be directly reconstructible by its users.
+that a computational medium can be directly reconstructible by its users. Eve
+showed that an interface can be data produced by the same rules as any other
+data, and that a system whose output is data can explain where its output came
+from.
 
 Seed synthesises these insights under a single design: data carries three-axis
 metadata (IS/AS/BY); that metadata drives a generic expression pipeline; the
@@ -576,6 +711,13 @@ branch code inject domain-specific refinements — but this mechanism is new and
 unproven at scale. The risk is that the escape hatch becomes the default, and
 the programmer ends up writing as much adaptation code as they would have
 written interface code.
+
+**A higher floor.** Processing shows what an imperative, immediate-mode
+environment gives a beginner: a few lines draw something, and the result
+appears at once. Deriving an interface from declarations asks more of the
+author before anything appears — an ontology to learn, and a pipeline between
+the data and what is drawn. Seed trades a lower floor for a higher ceiling.
+The trade is legitimate, but it should be stated, not hidden.
 
 **Fidelity of round-tripping.** When an edit through a derived interface writes
 back to an S-expression file via `philo`, the reprinted forms are downcased,
@@ -624,13 +766,18 @@ Within the Seed corpus, this survey relates to:
   which this survey cites under the round-tripping limitation.
 - SEED-0002 — the tutorial for `philo`, the accessor that
   implements the round-trip.
+- SEED-DRAFT-branches — the branch system's stage model and its split between
+  safe operations and effects queued for commit, compared here with Eve's
+  `bind`/`commit` and Fry's seven stages.
+- SEED-DRAFT-classicinterface — the Classic CMS, the concrete application
+  through which Seed proves its thesis.
 
 External work cited is listed in the front-matter `cites:` block.
 
 
 ## Open Questions
 
-### SEED-DRAFT-interfacemodels-O1 — Can IS/AS/BY serve as a narrow waist for inter-domain composition?
+### SEED-O1 — Can IS/AS/BY serve as a narrow waist for inter-domain composition?
 
 The Unix byte stream is universal because it is trivial. S-expressions with
 IS/AS/BY metadata are richer but require agreement on the vocabulary. Can the
@@ -639,7 +786,7 @@ domain-comprehensive systems (Seed, April, and any future systems), or will each
 domain inevitably need its own vocabulary extension, recreating the translation
 problem at a higher level?
 
-### SEED-DRAFT-interfacemodels-O2 — How do derived interfaces reach hand-crafted quality?
+### SEED-O2 — How do derived interfaces reach hand-crafted quality?
 
 The `:adapting` processor model lets branch code inject domain-specific
 refinements into a derived interface. What is the practical ratio of automatic
@@ -647,17 +794,35 @@ derivation to manual adaptation in a real application, and does the processor
 model keep that ratio favourable — or does it tend toward "mostly manual" as
 applications grow more complex?
 
-### SEED-DRAFT-interfacemodels-O3 — Which media should be targeted after the web?
+### SEED-O3 — Which media should be targeted after the web?
 
 `uim-terminal` is the obvious next medium. Beyond that: native desktop widgets,
 mobile, API generation, print/PDF, and accessibility (screen reader). Which
 medium would most strongly validate the medium-independence claim, and which
 would most usefully serve real users?
 
-### SEED-DRAFT-interfacemodels-O4 — How should vocabulary growth be governed?
+### SEED-O4 — How should vocabulary growth be governed?
 
 The IS/AS/BY vocabulary is explicitly provisional and open-ended. As it grows
 from usage, what prevents it from becoming an unwieldy DSL? Should there be a
 formal extension mechanism (namespace-scoped vocabulary additions), a review
 process, or a maximum vocabulary size beyond which new terms must replace
 rather than supplement existing ones?
+
+### SEED-O5 — Should Tier-2 processing depend on order?
+
+`modulate2/modulate2.lisp:apply-named-processors@25dff56` makes one pass over
+the manifestation tree, children before parents, applying each node's
+`:adapting` hooks in the order they are declared; each processor sees the
+output of the one before, and Tier 2 always runs before Tier 1 (SEED-D16).
+The result can therefore depend on the order in which hooks are listed, and a
+change one processor makes is never revisited by processors that have already
+run — for instance, a node a parent's processor adds to a child is not seen
+by the child's hooks. Eve took the opposite position: its blocks have no
+order and are re-evaluated until nothing changes. Order independence makes
+processors compose freely and lets each be read alone, at the cost of a
+fixed-point evaluator, rules that must not oscillate, and the incremental
+evaluation Eve rebuilt its runtime several times to make fast. Is Seed's order
+dependence a deliberate feature — predictable, cheap and easy to trace — or
+an accident to remove? If deliberate, should processors declare what they
+depend on, so that an order can be checked rather than assumed?

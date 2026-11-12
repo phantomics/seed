@@ -10,7 +10,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-interfacemodels
+  - SEED-0005
   - SEED-DRAFT-editormodels
   - SEED-DRAFT-verticality
 cites:
@@ -372,7 +372,7 @@ GT is explicitly a developer tool. Its moldable views serve the person who
 is building and debugging, not the person who uses the finished product. This
 is the key difference from Seed, which derives interfaces for end users.
 
-The interface-models Survey (`SEED-DRAFT-interfacemodels`) discusses GT's
+The interface-models Survey (`SEED-0005`) discusses GT's
 multi-view principle and its influence on IS/AS/BY in more detail.
 
 **Steal:** The `<gtView>` pragma as proof that metadata on methods can drive

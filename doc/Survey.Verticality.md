@@ -9,7 +9,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-interfacemodels
+  - SEED-0005
   - SEED-DRAFT-editormodels
 cites:
   - title:     "The Mythical Man-Month"
@@ -493,7 +493,7 @@ argument that LLMs can work reliably within the vocabulary is incomplete.
 
 Within the Seed corpus:
 
-- SEED-DRAFT-interfacemodels — the interface-models Survey, which covers the
+- SEED-0005 — the interface-models Survey, which covers the
   data–interface unification that the leverage pyramid depends on.
 - SEED-DRAFT-editormodels — the editor-models Eval, whose finding on metadata
   verification (G2) is cited here as the key gap for both human and LLM

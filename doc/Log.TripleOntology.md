@@ -17,7 +17,7 @@ provenance:
   session:     ses_1ffba4ccdffebiWc572stLkOTO
 relates-to:
   - SEED-0004
-  - SEED-DRAFT-interfacemodels
+  - SEED-0005
   - SEED-DRAFT-classicinterface
 cites:
   - title:     "CLIM II Specification"
