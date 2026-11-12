@@ -11,13 +11,18 @@ authors:
   - Andrew Sengul
 approved-by:   Andrew Sengul
 reviewed:      2026-11-12
-
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
   - SEED-0005
   - SEED-0003
   - SEED-0004
+  - SEED-0001
+  - SEED-DRAFT-smalltalk
+  - SEED-DRAFT-branches
+  - SEED-DRAFT-branchmodels
+  - SEED-DRAFT-classicinterface
+  - SEED-DRAFT-verticality
 cites:
   - title:     "EMACS: The Extensible, Customizable, Self-Documenting Display Editor"
     locator:   "Stallman, R. M. AI Memo 519a, MIT AI Lab, March 1981"
@@ -37,6 +42,18 @@ cites:
   - title:     "VS Code Custom Editor API"
     locator:   "Microsoft, https://code.visualstudio.com/api/extension-guides/custom-editors"
     external:  true
+  - title:     "Extension Marketplace"
+    locator:   "Microsoft, https://code.visualstudio.com/docs/configure/extensions/extension-marketplace (consulted November 2026)"
+    external:  true
+  - title:     "15 Best VS Code Extensions for Developers in 2026"
+    locator:   "Rockstar Developer University, rockstardeveloperuniversity.com/best-vscode-extensions (Marketplace search API count, October 2026)"
+    external:  true
+  - title:     "Emacspeak—a speech interface"
+    locator:   "Raman, T. V. Proc. ACM CHI '96, Vancouver, pp. 66-71"
+    external:  true
+  - title:     "Emacspeak — The Complete Audio Desktop"
+    locator:   "Raman, T. V. https://github.com/tvraman/emacspeak"
+    external:  true
 ---
 
 # Editor Models: Emacs, VS Code, and Seed as Prior Art
@@ -52,7 +69,7 @@ on the record alongside the established systems.
 
 Evidence is drawn from published documentation and specifications, cited in the
 front-matter. No hands-on benchmarks or user studies were conducted. Seed is
-assessed at its current revision (`be41753`).
+assessed at revision `be41753`.
 
 The stance is **learning from prior art**: what design decisions in Emacs and
 VS Code have proven durable, what problems they solve and leave unsolved, and
@@ -62,8 +79,9 @@ Emacs is examined through Stallman's 1981 AI Memo 519a, the GNU Emacs Manual,
 the Customize interface and widget library, Org-mode, and the LSP client
 (Eglot, built-in since Emacs 29). VS Code is examined through its extension API
 documentation, the Language Server Protocol specification, the Custom Editor and
-Notebook APIs, and the Marketplace ecosystem (over 100,000 extensions as of May
-2025 per Microsoft's milestone announcement).
+Notebook APIs, and the Marketplace ecosystem (described by Microsoft as
+"thousands of extensions"; a third-party count from the Marketplace's search API
+found about 120,000 in October 2026).
 
 
 ## The Shared Scenario
@@ -163,7 +181,8 @@ projection write back to the underlying artifact. These are the closest Emacs
 gets to Seed's derived editors, and they work well.
 
 **G6 — Free-form text: the best in class.**
-Emacs has forty-five years of refinement as a text editor. Syntax highlighting,
+Emacs has fifty years of refinement as a text editor (since the original
+TECO-based EMACS of 1976; GNU Emacs dates from 1985). Syntax highlighting,
 structured editing (`paredit`, `smartparens`), multi-cursor editing, regexp
 search-and-replace, keyboard macros, Org-mode's outline/table/executable-block
 model — the text-editing surface is unmatched in depth.
@@ -182,24 +201,53 @@ weakness: packages depend on undocumented internals, and Emacs upgrades
 sometimes break them. There is no formal stability contract for most interfaces.
 
 **G9 — Isolation and robustness: weak.**
-Emacs is single-threaded with a shared global environment. A misbehaving
-package can block the UI, corrupt global state, or crash the session. There is
-no process isolation, no sandboxing, and no workspace trust model.
+Emacs runs Lisp in a shared global environment on one main thread. Since Emacs
+26 it has had cooperative Lisp threads, and it can run asynchronous
+subprocesses, but redisplay and most packages still run on the main thread. A
+misbehaving package can block the UI, corrupt global state, or crash the
+session. There is no process isolation, no sandboxing, and no workspace trust
+model.
 
-**G10 — Medium independence: weak.**
-Emacs renders to a terminal or a graphical frame, both character-grid based. It
-cannot render to a browser, a mobile device, or a screen reader as a first-class
-medium. The display model is tied to the character grid.
+**G10 — Medium independence: partial.**
+Emacs renders to a terminal or a graphical frame, both character-grid based, and
+cannot render to a browser or a mobile device. Speech is the exception.
+Emacspeak (T. V. Raman, first released 1995; CHI '96) is an *audio desktop*
+built into Emacs rather than a separate screen reader: instead of reading what
+is drawn on the screen, it speaks each application's own content and
+structure, using "audio formatting" — voice, pitch and auditory icons that set
+syntactic units apart — and W3C Aural CSS. This is semantic rendering into a
+second medium, the same idea as Seed's medium dispatch, achieved by advising
+Emacs commands to produce speech from the information they already hold. The
+visual display model remains tied to the character grid.
 
 **G11 — Gradual entry: steep then rewarding.**
 The learning curve is notoriously steep. Emacs rewards investment heavily but
 demands it upfront. Starter kits (Doom, Spacemacs) lower the initial barrier
 but do not change the fundamental model.
 
+**Scenario walk-through.**
+
+- **S1 — structured parameters.** The chart entities are edited as text in a
+  Lisp mode, with `paredit` keeping the structure balanced. Customize could
+  build a form only if the parameters were `defcustom` settings, which they
+  are not; a bespoke form would mean writing widget-library code by hand.
+- **S2 — a free-form function.** The strongest case: Lisp editing in Emacs is
+  the benchmark the other systems are measured against.
+- **S3 — a new data kind and its editor.** A new major mode, or a widget-based
+  form, written imperatively in Emacs Lisp. Nothing derives the editor from a
+  description of the data.
+- **S4 — a non-programmer.** The sound engineer must work inside Emacs.
+  Customize-style forms soften this, but the environment remains a
+  programmer's tool.
+- **S5 — a second medium.** The terminal case succeeds trivially: Emacs runs in
+  a terminal frame, and Emacspeak can voice the same buffer. A browser or
+  mobile rendering is out of reach.
+
 **Steal:** The `describe-*` culture of runtime introspection. The `defcustom`
 pattern of type-annotated settings that derive a form editor. The discipline of
 docstrings on every public symbol. The proof, via `wdired` and friends, that
-editing through a text projection and writing back works.
+editing through a text projection and writing back works. Emacspeak's rendering
+of application semantics, not screen pixels, into speech.
 
 **Reject:** The single-threaded, shared-global-state model. The character-grid
 display assumption. The implicit contract where extensions depend on
@@ -266,9 +314,11 @@ internals are opaque. The system is *usable* without introspection but not
 *transparent* in the way Emacs is.
 
 **G8 — Ecosystem: massive.**
-The Marketplace hosts over 100,000 extensions (Microsoft milestone, May 2025),
-with 36,000 language extensions, 9,400 debuggers, and 13,000 linters. The
-extension API is versioned and has a formal stability contract. Third-party
+Microsoft describes the Marketplace as offering "thousands of extensions
+supporting hundreds of programming languages and tasks"; a third-party count
+using the Marketplace's search API found about 120,000 VS Code extensions in
+October 2026. The extension API is versioned and has a formal stability
+contract. Third-party
 extensions are more reliable than Emacs packages on average because the
 contribution-point model constrains what they can do.
 
@@ -291,6 +341,24 @@ VS Code is immediately usable as a text editor out of the box. Complexity is
 revealed progressively: install an extension to add a language, open the
 settings UI to customize, use the command palette to discover features. The
 entry cost is the lowest of the three systems compared here.
+
+**Scenario walk-through.**
+
+- **S1 — structured parameters.** By default the chart entities are edited as
+  text with a Lisp extension. A form-based editor is possible as a Custom
+  Editor: an extension that renders a webview and serialises it back to the
+  file, written specifically for this format.
+- **S2 — a free-form function.** Strong, given a Common Lisp extension with
+  language-server support: completion, diagnostics and navigation, though
+  without Emacs's depth of structural editing.
+- **S3 — a new data kind and its editor.** An extension declares a custom
+  editor in its manifest and implements the webview interface and its
+  serialisation by hand — principled, but per-format work.
+- **S4 — a non-programmer.** The custom editor shields the sound engineer
+  from the text, but they must still install VS Code and the extension, and
+  the host remains a developer's tool.
+- **S5 — a second medium.** No terminal rendering: the browser and remote
+  variants are still Chromium surfaces.
 
 **Steal:** The declarative extension manifest — extensions declare what they
 contribute rather than injecting code imperatively. The Custom Editors API as
@@ -350,11 +418,14 @@ ranges are lost, and whitespace may change. This is a documented, accepted
 contract (`SEED-0001`), but it means that collaborative development
 where source formatting matters faces friction.
 
-**G6 — Free-form text: delegated to CodeMirror.**
-Seed does not implement its own text editor. Free-form code editing is handled
-by CodeMirror instances provisioned through the `:provision-text` BY modality.
-This is adequate but means Seed depends on an external JavaScript library for
-a core capability. The strategy is explicitly incremental: text editing handles
+**G6 — Free-form text: partial, through CodeMirror.**
+Seed does not implement its own text editor. Free-form code and prose are
+edited in CodeMirror instances provisioned through the `:provision-text` BY
+modality, so Seed handles them reasonably well: syntax highlighting, bracket
+matching and the other conveniences of a modern browser editor. The cost is a
+dependency: a core capability rests on an external JavaScript library, outside
+the IS/AS/BY pipeline, and does not reach Emacs's depth of keyboard-driven
+structural editing. The strategy is explicitly incremental: text editing handles
 what has not yet migrated to structural editing, and the boundary moves as
 patterns in text-editing workflows become apparent.
 
@@ -377,8 +448,9 @@ this criterion.
 **G9 — Isolation and robustness: weak.**
 The Seed server is a single Common Lisp image. A bug in a branch handler, an
 `fx` annotation, or a `generate` method can crash the server. There is no
-process isolation between branches, no sandboxing of user-supplied `:adapting`
-processors, and no workspace trust model. The `seed.access` module gates
+process isolation between branches, no sandboxing of the `:adapting`
+processors that system developers supply in branch code, and no workspace
+trust model. The `seed.access` module gates
 branch-level access but not field-level access.
 
 **G10 — Medium independence: architecturally strong, practically unproven.**
@@ -394,6 +466,26 @@ progressive adoption. But the initial setup requires loading a Common Lisp
 system, understanding ASDF, and navigating a codebase with no tutorial beyond
 the Philo Guide. The entry cost is lower than Emacs for someone already in
 Common Lisp, but higher than VS Code for anyone else.
+
+**Scenario walk-through.**
+
+- **S1 — structured parameters.** The design case. The chart entities carry
+  `fx` annotations, and the derived interface presents fields, a select among
+  line types, and a sortable list with per-item remove controls, with edits
+  written back to the file. At this revision the Tier-1 `:sorting` default is
+  a stub and the rendered `:reducing` controls are not yet wired to the
+  client.
+- **S2 — a free-form function.** Handled by CodeMirror through
+  `:provision-text` (G6): adequate, and outside the structural pipeline.
+- **S3 — a new data kind and its editor.** Annotate the audio-annotation data
+  with IS/AS/BY metadata; the editor is derived, not written. Only an
+  affordance the vocabulary lacks needs new work: a BY modality and its
+  `generate` methods.
+- **S4 — a non-programmer.** Seed's strongest case. The sound engineer meets
+  a web interface derived from the data, with no Lisp, editor or extension to
+  install.
+- **S5 — a second medium.** Not yet possible: `uim-terminal` has no `generate`
+  methods. The architecture provides the place for them (G10).
 
 **Steal from Seed's own architecture:** the principle that the data's own
 metadata specifies its editing surface. The medium-dispatch model. The
@@ -415,15 +507,15 @@ Table: Summary scores per criterion. ● strong; ◐ partial; ○ weak.
 | G3 Extension model | ◐ flexible, unstructured | ● declarative, isolated | ◐ principled, small |
 | G4 Audience reach | ○ programmers | ○ programmers | ● end users |
 | G5 Edit round-trip | ● faithful (text) | ◐ (custom editors need work) | ◐ functional, not textual |
-| G6 Free-form text | ● best in class | ● excellent | ○ delegated |
+| G6 Free-form text | ● best in class | ● excellent | ◐ via CodeMirror |
 | G7 Introspection | ● exemplary | ○ limited | ◐ nascent |
 | G8 Ecosystem | ● mature | ● massive | ○ none |
 | G9 Isolation | ○ single-threaded | ● process isolation | ○ single image |
-| G10 Medium independence | ○ character grid | ◐ Chromium + remote | ◐ architecture only |
+| G10 Medium independence | ◐ character grid + speech | ◐ Chromium + remote | ◐ architecture only |
 | G11 Gradual entry | ○ steep | ● excellent | ◐ moderate |
 
 Seed is strongest where the established editors are weakest (G1, G4) and weakest
-where they are strongest (G2, G6, G8, G9). This is not accidental — Seed is
+where they are strongest (G2, G8, G9). This is not accidental — Seed is
 solving a different problem (data–interface unification) and inherits the gaps
 that come with not yet being a mature editing platform.
 
@@ -436,7 +528,9 @@ that come with not yet being a mature editing platform.
 1. **The `describe-*` culture.** Every public symbol should have a docstring,
    and there should be a Seed-native command that explains any element of the
    derived interface by tracing it back to its IS/AS/BY metadata and its source
-   location. This is the highest-leverage improvement for G7.
+   location. This is the highest-leverage improvement for G7. Eve's
+   inspector, discussed in SEED-0005, is a precedent from a system whose
+   output, like Seed's manifestations, records where it came from.
 2. **The `defcustom` / Customize pattern.** Emacs proved that type-annotated
    declarations can drive a form-based editor within a programmer's
    environment. Seed's `fx` is the generalisation of this idea to arbitrary
@@ -453,8 +547,9 @@ that come with not yet being a mature editing platform.
    contribute (new BY modalities, new `generate` methods, new medium classes)
    in a structured, inspectable format, not only by loading code that
    modifies the running image.
-2. **Process isolation.** Branch handlers and `:adapting` processors run
-   user-supplied code. In a multi-user portal, a misbehaving processor should
+2. **Process isolation.** Branch handlers and `:adapting` processors run code
+   supplied by system developers, possibly third parties. In a multi-user
+   portal, a misbehaving processor should
    not crash the server. VS Code's extension-host model — separate processes
    communicating through messages — is the proven solution.
 3. **The Custom Editors API as precedent.** VS Code proved that a text-editor
