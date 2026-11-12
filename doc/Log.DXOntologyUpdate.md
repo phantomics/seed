@@ -242,9 +242,8 @@ Updated exports (`modulate2/package.lisp@53907b6`): added `construct`,
   (or row equivalents) style attributes into the item's HTML tree.
 - `modulate2/modulate2.lisp:generate-item-list@53907b6`: helper that renders
   members with layout applied per-item.
-- The `generate` method on `(uim-web mfn-sequence)` at
-  `modulate2/modulate2.lisp@53907b6` (line 788):
-  updated to add a `grid-layout` CSS
+- The method of `modulate2/modulate2.lisp:generate@53907b6` on
+  `(uim-web mfn-sequence)`: updated to add a `grid-layout` CSS
   class when a layout directive is present, and to apply layout positioning per
   body group within valence via `generate-item-list`.
 

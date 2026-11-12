@@ -313,15 +313,15 @@ The subsystem proper.
   make them functional is not yet wired.
   `modulate2/modulate2.lisp:apply-sorting-default@aeedefb` and
   `modulate2/modulate2.lisp:apply-extending-default@aeedefb` are stubs.
-- **Rendering.** The `generate :around` method on `(uim-web manifestation)` at
-  `modulate2/modulate2.lisp@aeedefb` (line 501) applies Tier-1 defaults once,
-  then the primary methods render.
+- **Rendering.** The `:around` method of
+  `modulate2/modulate2.lisp:generate@aeedefb` on `(uim-web manifestation)`
+  applies Tier-1 defaults once, then the primary methods render.
   `modulate2/modulate2.lisp:emit-header@aeedefb` places injected controls and
   valence header members in a shared `mfn-header`;
   `modulate2/modulate2.lisp:split-by-valence@aeedefb` divides members into
-  header and body groups. The `render` method on `(uim-web manifestation)` at
-  `modulate2/modulate2.lisp@aeedefb` (line 680) serializes the tree via
-  spinneret.
+  header and body groups. The `seed.modulate::render` method on
+  `(uim-web manifestation)`, defined in `modulate2/modulate2.lisp@aeedefb`,
+  serializes the tree via spinneret.
 - **Bridge registration.** At load time the file sets
   `modulate/modulate.lisp:*express-foreign*@aeedefb` to a closure over
   `manifest` and `modulate/modulate.lisp:*generate-foreign*@aeedefb` to a
@@ -366,8 +366,8 @@ several commits; `aeedefb` is the pinned snapshot.
 | `modulate2/package.lisp` | **New** | `seed.modulate2` package: pipeline exports, classes, vocabularies. |
 | `modulate2/seed.modulate2.asd` | **New** | ASDF system, depending on `seed.modulate`. |
 | `modulate/modulate.lisp` | Modified | Registration-hook variables, `express-new-grammar-p`, new-grammar delegation branch in `express`, catch-all `generate`. |
-| `modulate/package.lisp` | Modified | Exports updated for bridge symbols. |
-| `modulate/seed.modulate.asd` | Modified | Component list updated. |
+| `modulate/package.lisp` | Modified | Commented-out import from `seed.modulate2`, superseded by the registration-hook bridge (SEED-D17). |
+| `modulate/seed.modulate.asd` | Modified | Commented-out dependency on `seed.modulate2`, superseded by the registration-hook bridge (SEED-D17). |
 
 
 ## Outstanding Work
