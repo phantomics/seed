@@ -616,9 +616,9 @@ Within the Seed corpus, this survey relates to:
 - SEED-DRAFT-dxontologyupdate — the extension of IS/AS/BY to `(dx)` forms,
   provisioning, and layout, which realises the "same ontology for data at rest
   and data in motion" principle this survey discusses.
-- SEED-DRAFT-philo-log — the keyed accessor that enables round-trip editing,
+- SEED-0001 — the keyed accessor that enables round-trip editing,
   which this survey cites under the round-tripping limitation.
-- SEED-DRAFT-philo-guide — the tutorial for `philo`, the accessor that
+- SEED-0002 — the tutorial for `philo`, the accessor that
   implements the round-trip.
 
 External work cited is listed in the front-matter `cites:` block.

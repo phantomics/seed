@@ -342,7 +342,7 @@ Edits through the derived interface write back to S-expression files via
 `philo`. The round-trip is *functionally* faithful (the data is correct) but not
 *textually* faithful: reprinted forms are downcased, comments within replaced
 ranges are lost, and whitespace may change. This is a documented, accepted
-contract (`SEED-DRAFT-philo-log`), but it means that collaborative development
+contract (`SEED-0001`), but it means that collaborative development
 where source formatting matters faces friction.
 
 **G6 — Free-form text: delegated to CodeMirror.**

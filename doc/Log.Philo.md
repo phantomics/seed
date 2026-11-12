@@ -1,29 +1,34 @@
 ---
-id:            SEED-DRAFT-philo-log
+id:            SEED-0001
 title:         "Philo (Positional Heuristic Interaction for Lisp Objects): Development Log"
 genre:         Log
 scope:         component
 project:       Seed
 component:     philo
 language:      en
-status:        Draft
+status:        Implemented
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-12
+
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-philo-guide
+  - SEED-0002
 decisions:
-  - SEED-DRAFT-philo-log-D1
-  - SEED-DRAFT-philo-log-D2
-  - SEED-DRAFT-philo-log-D3
-  - SEED-DRAFT-philo-log-D4
-  - SEED-DRAFT-philo-log-D5
-  - SEED-DRAFT-philo-log-D6
-  - SEED-DRAFT-philo-log-D7
-  - SEED-DRAFT-philo-log-D8
-  - SEED-DRAFT-philo-log-D9
-  - SEED-DRAFT-philo-log-D10
-  - SEED-DRAFT-philo-log-D11
-  - SEED-DRAFT-philo-log-D12
+  - SEED-D1
+  - SEED-D2
+  - SEED-D3
+  - SEED-D4
+  - SEED-D5
+  - SEED-D6
+  - SEED-D7
+  - SEED-D8
+  - SEED-D9
+  - SEED-D10
+  - SEED-D11
+  - SEED-D12
 ---
 
 # Philo (Positional Heuristic Interaction for Lisp Objects): Development Log
@@ -101,7 +106,7 @@ being an implementation detail of the target rather than a separate API.
 
 The following were settled through discussion before implementation.
 
-### SEED-DRAFT-philo-log-D1 — Pathname-first, not system-first
+### SEED-D1 — Pathname-first, not system-first
 
 **Status:** Accepted
 
@@ -121,7 +126,7 @@ overload. Rejected: it preserves the coupling and widens the API surface.
 Migrating `from-system-file` call sites and de-duplicating the
 `modulate.lisp` copy are deferred.
 
-### SEED-DRAFT-philo-log-D2 — A function, not a macro
+### SEED-D2 — A function, not a macro
 
 **Status:** Accepted
 
@@ -136,7 +141,7 @@ setf-writer share one lambda list.
 **Alternatives:** A macro, which would require a hand-written
 setf-expander. Rejected: it adds complexity for no gain.
 
-### SEED-DRAFT-philo-log-D3 — Whole-file string splice + atomic rename
+### SEED-D3 — Whole-file string splice + atomic rename
 
 **Status:** Accepted
 
@@ -155,7 +160,7 @@ Rejected: it inherits the byte/character conflation and requires crash
 recovery. For the KB-scale config files involved, reading and rewriting
 the whole file is free.
 
-### SEED-DRAFT-philo-log-D4 — 0-based, count-based, half-open addressing
+### SEED-D4 — 0-based, count-based, half-open addressing
 
 **Status:** Accepted
 
@@ -174,7 +179,7 @@ the guard. An out-of-range **read** returns `NIL`.
 Lisp conventions), or key-delimited regions as the only addressing mode
 (rejected: too restrictive for cross-key access).
 
-### SEED-DRAFT-philo-log-D5 — Atoms vs. lists: `:offset` and `:range` are semantically distinct
+### SEED-D5 — Atoms vs. lists: `:offset` and `:range` are semantically distinct
 
 **Status:** Accepted
 
@@ -194,7 +199,7 @@ address one position — the former is atomic, the latter list-valued.
 cover one position. Rejected: it makes the behaviour of writing a list
 ambiguous (store the list, or spread it?).
 
-### SEED-DRAFT-philo-log-D6 — Key as symbol or predicate
+### SEED-D6 — Key as symbol or predicate
 
 **Status:** Accepted
 
@@ -211,7 +216,7 @@ which it returns true is the anchor.
 structural anchors, which the "heuristic" in the name is meant to
 support.
 
-### SEED-DRAFT-philo-log-D7 — Files and lists behind one interface, dispatched by type
+### SEED-D7 — Files and lists behind one interface, dispatched by type
 
 **Status:** Accepted
 
@@ -227,7 +232,7 @@ Everything else is a file.
 **Alternatives:** Separate APIs for files and lists. Rejected: it
 duplicates addressing logic and forces callers to choose the right API.
 
-### SEED-DRAFT-philo-log-D8 — In-memory writes are destructive
+### SEED-D8 — In-memory writes are destructive
 
 **Status:** Accepted
 
@@ -450,7 +455,7 @@ the source of the design's only real ambiguity.
 
 ### Design decisions
 
-### SEED-DRAFT-philo-log-D9 — Keyword-default region boundary with `:until` override
+### SEED-D9 — Keyword-default region boundary with `:until` override
 
 **Status:** Accepted
 
@@ -481,7 +486,7 @@ for symbol-valued items) or require the caller to specify the boundary
 every time (rejected: verbose for the common case where keys are
 keywords).
 
-### SEED-DRAFT-philo-log-D10 — A distinct index keyword, `:at`
+### SEED-D10 — A distinct index keyword, `:at`
 
 **Status:** Accepted
 
@@ -498,7 +503,7 @@ untouched.
 Rejected: the two counting bases (key-blind vs. in-region) would make
 the same number mean different things in read and insert contexts.
 
-### SEED-DRAFT-philo-log-D11 — Separate operators for insertion
+### SEED-D11 — Separate operators for insertion
 
 **Status:** Accepted
 
@@ -513,7 +518,7 @@ philo)` remains a pure replacement.
 sometimes insert. Rejected: it would be ambiguous whether a write at
 the region end replaces or appends.
 
-### SEED-DRAFT-philo-log-D12 — A read dual for regions
+### SEED-D12 — A read dual for regions
 
 **Status:** Accepted
 

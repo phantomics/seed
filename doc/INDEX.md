@@ -10,14 +10,14 @@ Table: Documents in the SEED namespace.
 
 | ID | Title | Genre | Scope | Status | Component |
 |---|---|---|---|---|---|
+| [SEED-0001](Log.Philo.md) | Philo (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Implemented | philo |
+| [SEED-0002](Guide.Philo.md) | Philo: Tutorial Guide | Guide (tutorial) | component | Current | philo |
 | [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
 | [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
 | [SEED-DRAFT-dxontologyupdate](Log.DXOntologyUpdate.md) | Unifying (dx) Forms Under IS/AS/BY — Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-editormodels](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, and Seed as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-interfacemodels](Survey.InterfaceModels.md) | Interface Models and Data–Interface Unification | Survey | project | Draft | — |
-| [SEED-DRAFT-philo-guide](Guide.Philo.md) | Philo: Tutorial Guide | Guide (tutorial) | component | Draft | philo |
-| [SEED-DRAFT-philo-log](Log.Philo.md) | Philo (Positional Heuristic Interaction for Lisp Objects): Development Log | Log | component | Draft | philo |
 | [SEED-DRAFT-smalltalk](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-tripleontology](Log.TripleOntology.md) | IS/AS/BY Ontology and Manifestation Pipeline Development Log | Log | component | Draft | modulate2 |
 | [SEED-DRAFT-verticality](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Draft | — |
@@ -26,23 +26,23 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 
 | ID | Kind | Title | Status | Host |
 |---|---|---|---|---|
+| [SEED-D1](Log.Philo.md#seed-d1--pathname-first-not-system-first) | Decision | Pathname-first, not system-first | Accepted | SEED-0001 |
+| [SEED-D2](Log.Philo.md#seed-d2--a-function-not-a-macro) | Decision | A function, not a macro | Accepted | SEED-0001 |
+| [SEED-D3](Log.Philo.md#seed-d3--whole-file-string-splice--atomic-rename) | Decision | Whole-file string splice + atomic rename | Accepted | SEED-0001 |
+| [SEED-D4](Log.Philo.md#seed-d4--0-based-count-based-half-open-addressing) | Decision | 0-based, count-based, half-open addressing | Accepted | SEED-0001 |
+| [SEED-D5](Log.Philo.md#seed-d5--atoms-vs-lists-offset-and-range-are-semantically-distinct) | Decision | Atoms vs. lists: :offset and :range are semantically distinct | Accepted | SEED-0001 |
+| [SEED-D6](Log.Philo.md#seed-d6--key-as-symbol-or-predicate) | Decision | Key as symbol or predicate | Accepted | SEED-0001 |
+| [SEED-D7](Log.Philo.md#seed-d7--files-and-lists-behind-one-interface-dispatched-by-type) | Decision | Files and lists behind one interface, dispatched by type | Accepted | SEED-0001 |
+| [SEED-D8](Log.Philo.md#seed-d8--in-memory-writes-are-destructive) | Decision | In-memory writes are destructive | Accepted | SEED-0001 |
+| [SEED-D9](Log.Philo.md#seed-d9--keyword-default-region-boundary-with-until-override) | Decision | Keyword-default region boundary with :until override | Accepted | SEED-0001 |
+| [SEED-D10](Log.Philo.md#seed-d10--a-distinct-index-keyword-at) | Decision | A distinct index keyword, :at | Accepted | SEED-0001 |
+| [SEED-D11](Log.Philo.md#seed-d11--separate-operators-for-insertion) | Decision | Separate operators for insertion | Accepted | SEED-0001 |
+| [SEED-D12](Log.Philo.md#seed-d12--a-read-dual-for-regions) | Decision | A read dual for regions | Accepted | SEED-0001 |
 | [SEED-DRAFT-dxontologyupdate-D1](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d1--fx-and-dx-share-the-isasby-ontology-both-produce-manifestations) | Decision | (fx) and (dx) share the IS/AS/BY ontology; both produce manifestations | Accepted | SEED-DRAFT-dxontologyupdate |
 | [SEED-DRAFT-dxontologyupdate-D2](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d2--as-has-two-sub-vocabularies-layout-is-a-structured-as-sub-form) | Decision | AS has two sub-vocabularies; layout is a structured AS sub-form | Accepted | SEED-DRAFT-dxontologyupdate |
 | [SEED-DRAFT-dxontologyupdate-D3](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d3--provisioning-widgets-are-abstract-by-modalities) | Decision | Provisioning widgets are abstract BY modalities | Accepted | SEED-DRAFT-dxontologyupdate |
 | [SEED-DRAFT-dxontologyupdate-D4](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d4--the-dx-macro-gains-a-grammar-detection-branch) | Decision | The dx macro gains a grammar-detection branch | Accepted | SEED-DRAFT-dxontologyupdate |
 | [SEED-DRAFT-dxontologyupdate-D5](Log.DXOntologyUpdate.md#seed-draft-dxontologyupdate-d5--layout-positioning-is-applied-per-body-group-within-valence) | Decision | Layout positioning is applied per body group within valence | Accepted | SEED-DRAFT-dxontologyupdate |
-| [SEED-DRAFT-philo-log-D1](Log.Philo.md#seed-draft-philo-log-d1--pathname-first-not-system-first) | Decision | Pathname-first, not system-first | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D2](Log.Philo.md#seed-draft-philo-log-d2--a-function-not-a-macro) | Decision | A function, not a macro | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D3](Log.Philo.md#seed-draft-philo-log-d3--whole-file-string-splice--atomic-rename) | Decision | Whole-file string splice + atomic rename | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D4](Log.Philo.md#seed-draft-philo-log-d4--0-based-count-based-half-open-addressing) | Decision | 0-based, count-based, half-open addressing | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D5](Log.Philo.md#seed-draft-philo-log-d5--atoms-vs-lists-offset-and-range-are-semantically-distinct) | Decision | Atoms vs. lists: :offset and :range are semantically distinct | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D6](Log.Philo.md#seed-draft-philo-log-d6--key-as-symbol-or-predicate) | Decision | Key as symbol or predicate | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D7](Log.Philo.md#seed-draft-philo-log-d7--files-and-lists-behind-one-interface-dispatched-by-type) | Decision | Files and lists behind one interface, dispatched by type | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D8](Log.Philo.md#seed-draft-philo-log-d8--in-memory-writes-are-destructive) | Decision | In-memory writes are destructive | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D9](Log.Philo.md#seed-draft-philo-log-d9--keyword-default-region-boundary-with-until-override) | Decision | Keyword-default region boundary with :until override | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D10](Log.Philo.md#seed-draft-philo-log-d10--a-distinct-index-keyword-at) | Decision | A distinct index keyword, :at | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D11](Log.Philo.md#seed-draft-philo-log-d11--separate-operators-for-insertion) | Decision | Separate operators for insertion | Accepted | SEED-DRAFT-philo-log |
-| [SEED-DRAFT-philo-log-D12](Log.Philo.md#seed-draft-philo-log-d12--a-read-dual-for-regions) | Decision | A read dual for regions | Accepted | SEED-DRAFT-philo-log |
 | [SEED-DRAFT-tripleontology-D1](Log.TripleOntology.md#seed-draft-tripleontology-d1--three-axis-isasby-ontology) | Decision | Three-axis IS/AS/BY ontology | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D2](Log.TripleOntology.md#seed-draft-tripleontology-d2--is-carries-two-strata-stratum-2-is-never-presumptuously-inferred) | Decision | IS carries two strata; stratum 2 is never presumptuously inferred | Accepted | SEED-DRAFT-tripleontology |
 | [SEED-DRAFT-tripleontology-D3](Log.TripleOntology.md#seed-draft-tripleontology-d3--manifestation-class-hierarchy-with-isasby-as-slot-data) | Decision | Manifestation class hierarchy with IS/AS/BY as slot data | Accepted | SEED-DRAFT-tripleontology |

@@ -1,5 +1,5 @@
 ---
-id:            SEED-DRAFT-philo-guide
+id:            SEED-0002
 title:         "Philo: Tutorial Guide"
 genre:         Guide
 subtype:       tutorial
@@ -7,17 +7,22 @@ scope:         component
 project:       Seed
 component:     philo
 language:      en
-status:        Draft
+status:        Current
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-12
+
 api-version:   0.0.1
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-philo-log
+  - SEED-0001
 ---
 
 # Philo: Tutorial Guide
 
-This tutorial introduces **philo** (Positional Heuristic Interaction for Lisp
+This tutorial introduces **Philo** (Positional Heuristic Interaction for Lisp
 Objects), the keyed accessor in `seed.generate` for reading and writing the
 loose "key-then-forms" structure of Seed's interface files. By the end you will
 be able to read individual forms, ranges, and whole value regions from a file;
@@ -39,7 +44,7 @@ same against an in-memory list — using the exported operators `philo`,
 
 ## Design Goals
 
-philo treats a Lisp file (or list) as a flat sequence of top-level forms in
+Philo treats a Lisp file (or list) as a flat sequence of top-level forms in
 which a **key** — a keyword by convention — is followed by one or more value
 forms, "in the manner of a plist but not requiring a strict key/value
 structure." Its name names its three axes:
@@ -93,7 +98,7 @@ along at the REPL, re-create the file before each section's examples.
 
 ### Reading a single form
 
-With just a key, philo returns the first form after it, as an atom:
+With just a key, Philo returns the first form after it, as an atom:
 
 ```lisp
 (philo p :main)
@@ -235,7 +240,7 @@ the insertion operators below append at a **region's** end.
 
 ### Overriding with :until
 
-Because values may themselves be keywords, philo cannot always infer where a
+Because values may themselves be keywords, Philo cannot always infer where a
 region ends. `:until` names the boundary explicitly (a symbol matched with
 `eql`, or a predicate); supplying it implies a region read:
 
@@ -302,7 +307,7 @@ lands at end of file. A missing key is a `NIL` no-op that writes nothing.
 
 ## Working with In-Memory Lists
 
-philo dispatches on its first argument: a **list** (including `NIL`) is treated
+Philo dispatches on its first argument: a **list** (including `NIL`) is treated
 as an in-memory sequence of forms; anything else is a file pathname or
 namestring. `:as-string` applies only to files and signals an error for lists.
 
@@ -334,7 +339,7 @@ as for files, minus `:as-string`.
 
 ## Running the Tests
 
-philo's behavior is pinned by the FiveAM suite in `test/`:
+Philo's behavior is pinned by the FiveAM suite in `test/`:
 
 ```lisp
 (ql:quickload :seed.generate.test)
@@ -344,8 +349,8 @@ philo's behavior is pinned by the FiveAM suite in `test/`:
 (seed.generate.test:run-suite :philo-region)  ; a single suite
 ```
 
-You have now used every philo capability: key-blind reads (`:offset`, `:range`,
+You have now used every Philo capability: key-blind reads (`:offset`, `:range`,
 `:as-string`, predicate keys), replacement via `(setf philo)`, region reads
 (`:region`, `:until`), the insertion operators (`philo-append`, `philo-insert`
 with `:at`), and in-memory list mode. For the design rationale and engineering
-history behind these features, see the Philo development log (SEED-DRAFT-philo-log).
+history behind these features, see the Philo development log (SEED-0001).
