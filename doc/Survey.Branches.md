@@ -284,10 +284,14 @@ effects; it returns an *effects map* — data such as `{:db new-db :http-xhrio
 {…}}` — and the framework hands each entry to an effect handler registered
 with `reg-fx`. Inputs from the world arrive the same way, as *coeffects*
 injected into the handler's arguments. The handler stays a pure function from
-data to data, which is the property Seed's act phase needs. Seed's model adds
-two things re-frame does not attempt: a transaction boundary, so that a failure
-discards the queued effects (below), and effects shaped as Vox words, so the
-same descriptors can be executed in the image or submitted to another one. The
+data to data, which is the property Seed's act phase needs — and because the
+new state is itself one of the returned effects (`:db`), a handler that throws
+returns nothing, so neither the state change nor any other effect happens. Seed
+needs more machinery for the same guarantee, because its act phase can still
+mutate `of-state` directly: hence the snapshot in `with-transaction` (below).
+Seed's effects are also shaped as Vox words, so the same descriptors can be
+executed in the image or submitted to another one. Neither system undoes an
+effect that fails partway through execution (SEED-O14). The
 branch-models Eval (SEED-DRAFT-branchmodels) compares the related Elm
 Architecture, whose update function likewise returns commands as data.
 

@@ -12,8 +12,10 @@ provenance:
 relates-to:
   - SEED-0009
   - SEED-0003
+  - SEED-0004
   - SEED-0006
   - SEED-0008
+  - SEED-DRAFT-classicinterface
 cites:
   - title:     "CICS Transaction Server for z/OS Documentation"
     locator:   "IBM, https://www.ibm.com/docs/en/cics-ts/6.x"
@@ -32,6 +34,21 @@ cites:
     external:  true
   - title:     "The Elm Architecture"
     locator:   "https://guide.elm-lang.org/architecture/"
+    external:  true
+  - title:     "Creating the web services infrastructure"
+    locator:   "CICS TS 6.x documentation, https://www.ibm.com/docs/en/cics-ts/6.x?topic=cics-creating-web-services-infrastructure"
+    external:  true
+  - title:     "Transactions and Other Access Contexts"
+    locator:   "Mnesia User's Guide, Erlang/OTP, https://www.erlang.org/doc/apps/mnesia/mnesia_chap4.html"
+    external:  true
+  - title:     "Interceptors"
+    locator:   "re-frame documentation, https://day8.github.io/re-frame/Interceptors/"
+    external:  true
+  - title:     "Effects"
+    locator:   "re-frame documentation, https://day8.github.io/re-frame/Effects/"
+    external:  true
+  - title:     "Sagas"
+    locator:   "Garcia-Molina, H. and Salem, K. Proc. ACM SIGMOD 1987, pp. 249-259"
     external:  true
 ---
 
@@ -137,9 +154,12 @@ declares.
 `EXEC CICS LINK` calls a subprogram and returns. `EXEC CICS XCTL` transfers
 control to another program at the same level (no return). These are the CICS
 equivalents of `grow` (LINK) and a hypothetical tail-call dispatch (XCTL).
-Programs chain, but there is no middleware pipeline — each program is a
-monolithic handler. Composition is by calling subprograms, not by wrapping
-stages.
+Application programs chain this way, each a monolithic handler composed by
+calling subprograms rather than by wrapping stages. CICS's web-services layer
+is different: a **PIPELINE** resource configures a chain of one or more message
+handler programs that act on each web-service request and its response — a
+middleware pipeline in the Ring and Pedestal sense, defined by configuration
+rather than by code.
 
 **B4 — State model: transaction-scoped, with shared resources.**
 Each transaction runs in its own task, with its own working storage. Shared
@@ -149,7 +169,8 @@ concurrency-safe.
 
 **B5 — Inter-unit calls: location-transparent.**
 MRO (Multi-Region Operation) and ISC (Inter-System Communication, via APPC/LU
-6.2) let a transaction LINK to a program in another CICS region, on the same
+6.2 or, in modern CICS, IPIC over TCP/IP) let a transaction LINK to a program
+in another CICS region, on the same
 machine or across a network. The calling program does not know (or need to
 know) where the target runs. This is the gold standard for location-transparent
 dispatch, proven over decades.
@@ -171,8 +192,9 @@ a single stage.
 BMS (Basic Mapping Support) maps define terminal screen layouts declaratively,
 separate from program logic. The system derives the terminal display from the
 map definition. This is the mainframe analogue of `fx` metadata: a declarative
-interface specification that the system renders. However, BMS maps are static
-(defined at system generation time), not derived from the data at runtime.
+interface specification that the system renders. However, BMS maps are static:
+they are written as map macros and assembled ahead of time, not derived from
+the data at runtime.
 
 **B9 — Introspection: CEMT and CICS Explorer.**
 CICS provides the CEMT transaction for querying and modifying the running
@@ -186,14 +208,36 @@ CICS runs a significant fraction of the world's transaction processing. CICS
 regions cluster into CICSPlexes managed by CICSPlex SM. This is the most
 production-proven system in the evaluation.
 
+**Scenario walk-through.**
+
+- **S1 — an edit in one round trip.** The transaction receives the field
+  through its BMS map or COMMAREA, validates it in program code, updates the
+  record inside the unit of work, and sends the updated map back.
+- **S2 — undo and redo.** Not built in. The program must keep its own
+  before-images, for example in a temporary-storage queue.
+- **S3 — a shared clipboard.** Natural: two transactions can share data through
+  a temporary-storage queue or a shared file, with CICS managing access.
+- **S4 — a remote call.** The strongest case: LINK to the program in another
+  region through MRO, ISC or IPIC, unchanged from a local call.
+- **S5 — rollback after partial failure.** The strongest case: an abend, or an
+  explicit `SYNCPOINT ROLLBACK`, backs out every change to recoverable
+  resources in the unit of work.
+- **S6 — a new input source.** A new front end — a web-services pipeline, a
+  message queue trigger, a different map — can feed the same program through
+  a COMMAREA or channel, leaving the program unchanged if it was written
+  against that interface.
+
 **Steal:** Syncpoint and rollback — Seed's branches need atomic mutation
 semantics. Location-transparent LINK — the model for a network-transparent
 `grow`. BMS maps as precedent for declarative interface specifications.
 Channels and containers as a more flexible alternative to the flat COMMAREA.
+The web-services PIPELINE as precedent for a pipeline of stages declared in
+configuration.
 
 **Reject:** The COBOL-era programming model (copybook-defined data layouts,
-procedural programs). The monolithic handler — CICS programs are not composed
-of middleware stages. The static nature of BMS maps — Seed's `fx` metadata
+procedural programs). The monolithic application handler — outside the
+web-services pipeline, CICS programs are not composed of middleware stages.
+The static nature of BMS maps — Seed's `fx` metadata
 is derived at runtime.
 
 
@@ -239,6 +283,17 @@ analogous to Seed's `(values result t)`.
 Common Lisp's Lack (the foundation of Clack and ningle, which Seed's HTTP layer
 uses) follows the Ring model: middleware wraps a handler function.
 
+re-frame, the ClojureScript client framework, carries Pedestal's model into a
+different setting and joins it to Elm's (below). Its documentation credits the
+interceptor arrangement as "adapted for Clojure by the Pedestal Team": each
+event handler runs at the end of an interceptor chain with `:before` and
+`:after` phases. And its handlers registered with `reg-event-fx` do not perform
+effects: they return an *effects map* — data, including the new state under
+`:db` — which effect handlers registered with `reg-fx` then carry out.
+re-frame is the clearest precedent for the two ideas SEED-0009 combines in its
+act phase: named stages around a handler, and effects returned as data rather
+than performed.
+
 **B4 — State model: the context map (Pedestal) / the request map (Ring).**
 State flows through the pipeline as the request/context map. There is no
 separate session store in the core; session middleware adds one. The model is
@@ -271,9 +326,27 @@ execution. This is the model for Seed's proposed named stages.
 Ring and Pedestal are used in production Clojure applications. They are
 single-process; horizontal scaling uses conventional load balancing.
 
+**Scenario walk-through.**
+
+- **S1 — an edit in one round trip.** Middleware parses the parameters; the
+  handler validates them, updates state held in an atom or a database, and
+  returns the new HTML.
+- **S2 — undo and redo.** Not built in; the application keeps its own history,
+  in the session or the database.
+- **S3 — a shared clipboard.** Shared state in an atom or database that both
+  handlers read; handlers cannot address each other.
+- **S4 — a remote call.** An ordinary HTTP request to another service, not a
+  location-transparent call.
+- **S5 — rollback after partial failure.** Pedestal's `:error` phase runs back
+  from the point of failure, so each interceptor can undo its own changes; the
+  undoing is the application's work. Ring needs explicit try/catch.
+- **S6 — a new input source.** Possible if a new adapter produces the same
+  request map, but the request map is shaped around HTTP.
+
 **Steal:** Pedestal's interceptor model with enter/leave/error phases. Named
 interceptors. The terminate operation. The context map as explicit pipeline
-state. Plug's `halt` as validation of the short-circuit pattern.
+state. Plug's `halt` as validation of the short-circuit pattern. re-frame's
+effects returned as data.
 
 **Reject:** The concentric wrapping model of Ring — Seed's linear pipeline is
 more transparent. The absence of inter-handler calls and location transparency.
@@ -312,11 +385,14 @@ process or a process on a remote node. The BEAM VM's distribution protocol
 handles serialisation, routing, and failure detection transparently. This is
 the most natural model for a network-transparent `grow`.
 
-**B6 — Transactional integrity: not built-in.**
-Erlang processes do not provide database-style transactions. Atomicity is
-achieved through process isolation (a crash rolls back the process's state to
-its last known-good value) and through let-it-crash supervision (a crashed
-process is restarted from a clean state).
+**B6 — Transactional integrity: through Mnesia.**
+A process's own state is not transactional: a crash discards it, and the
+supervisor restarts the process from its initial state. But OTP ships Mnesia,
+a distributed database whose transactions have the ACID properties — a series
+of table operations runs as one atomic block, on all of the participating
+nodes or on none. Work that must commit or roll back as a unit is put inside
+an Mnesia transaction; work that need not is left to process isolation and
+let-it-crash.
 
 **B7 — Failure handling: supervision trees.**
 Supervisors monitor worker processes and restart them according to a declared
@@ -330,12 +406,31 @@ explicitly.
 
 **B9 — Introspection: observer and tracing.**
 Erlang's Observer application shows running processes, their state, message
-queues, and supervision trees. The tracing facility (`dbg`, `recon_trace`) can
-trace any function call on any process. This is strong runtime introspection.
+queues, and supervision trees. Tracing — OTP's `dbg`, or the widely used
+`recon_trace` from the third-party recon library — can trace any function call
+on any process. This is strong runtime introspection.
 
 **B10 — Deployment and scale: proven at massive scale.**
 Erlang/OTP runs telecoms, messaging systems (WhatsApp), and databases
 (CouchDB, Riak). Clusters of Erlang nodes communicate transparently.
+
+**Scenario walk-through.**
+
+- **S1 — an edit in one round trip.** A `gen_server` receives the edit as a
+  message, pattern-matches it, validates it in code, and returns the new state
+  from its callback.
+- **S2 — undo and redo.** Natural to build: the server's state is a value, so
+  it can keep a list of past states. Nothing is provided.
+- **S3 — a shared clipboard.** A registered clipboard process that both
+  editors call — the actor model's native answer.
+- **S4 — a remote call.** The strongest case: `gen_server:call` to a process on
+  another node is the same call.
+- **S5 — rollback after partial failure.** Two answers: put the change in an
+  Mnesia transaction, which aborts as a whole, or let the process crash and
+  restart from a clean state, losing the partial change along with everything
+  else in memory.
+- **S6 — a new input source.** Any process that can send the same message can
+  drive the server; the message is the contract.
 
 **Steal:** Location-transparent dispatch — the model for network-transparent
 `grow`. Supervision trees — the model for branch failure handling. Process
@@ -403,9 +498,26 @@ Phoenix LiveDashboard provides real-time monitoring of processes, Ecto queries,
 and LiveView connections. It is the LiveView equivalent of CICS's CEMT.
 
 **B10 — Deployment and scale: production-grade.**
-Phoenix/LiveView is used in production by companies including Fly.io (the
-company behind much of its development). Multi-node deployment uses distributed
-PubSub.
+Phoenix and LiveView are used in production web applications. Multi-node
+deployment uses distributed PubSub.
+
+**Scenario walk-through.**
+
+- **S1 — an edit in one round trip.** `handle_event/3` receives the field and
+  its parameters, validates them (commonly with an Ecto changeset), updates
+  the socket's assigns, and LiveView sends the rendered diff.
+- **S2 — undo and redo.** Not built in; the LiveView keeps its own history in
+  its assigns.
+- **S3 — a shared clipboard.** Two LiveViews exchange the copied entity
+  through PubSub, or through a shared process or the database.
+- **S4 — a remote call.** Through distributed PubSub or ordinary Erlang
+  distribution between nodes — workable, but not a direct call to a named
+  view.
+- **S5 — rollback after partial failure.** Database changes roll back through
+  an Ecto transaction; in-memory assigns are not rolled back, but a crash
+  discards them and `mount/3` rebuilds the view.
+- **S6 — a new input source.** Weak: events arrive from the browser over the
+  LiveView socket; other sources need their own code path.
 
 **Steal:** Server-rendered diffs — the validation that Seed's server-rendered
 model scales. Per-connection process isolation. PubSub for inter-view
@@ -484,6 +596,23 @@ enabled by the immutable-state model: every past state is preserved.
 Redux and Elm run in the browser. They do not address server deployment,
 multi-instance coordination, or database transactions.
 
+**Scenario walk-through.**
+
+- **S1 — an edit in one round trip.** An action or message carries the new
+  value; the reducer or `update` function returns the new state, and the view
+  re-renders from it. In Elm the message type is checked at compile time.
+- **S2 — undo and redo.** The strongest case: past states are values, and
+  `redux-undo` adds history by wrapping the reducer.
+- **S3 — a shared clipboard.** Trivial inside one application, where the
+  clipboard is part of the single state value; not addressed across
+  applications.
+- **S4 — a remote call.** Not addressed: a remote call is a side effect,
+  issued as an Elm command or a Redux thunk.
+- **S5 — rollback after partial failure.** Inherent: a reducer that fails
+  returns no new state, so the previous state stands.
+- **S6 — a new input source.** Strong: any source that dispatches the same
+  action or message drives the same reducer.
+
 **Steal:** Elm's compile-time-checked message types as the model for a
 validated input contract. `redux-undo` as proof that history can be a wrapper
 around a handler. Time-travel debugging. The principle that the view is a
@@ -500,10 +629,11 @@ redesign. The absence of inter-unit dispatch.
 Seed's branch system is assessed at revision `31067ad`, as documented in the
 companion Survey (SEED-0009).
 
-**B1 — Unit of dispatch: the branch.** ●
+**B1 — Unit of dispatch: the branch.** ◐
 Branches are named by keyword, registered per system, and invoked via `grow`.
-They are addressable and composable. Network transparency is architectural
-but not built.
+They are addressable and composable. But they are not independently
+deployable — every branch runs in its system's image — and network
+transparency is architectural but not built.
 
 **B2 — Input contract: adapter whitelists.** ◐
 Adapters declare accepted keys and normalise input. But the whitelist is
@@ -550,6 +680,31 @@ composed unit.
 Seed runs as a single CL image serving HTTP. There is no multi-instance
 deployment, no clustering, and no production track record.
 
+**Scenario walk-through.**
+
+- **S1 — an edit in one round trip.** The adapters decode the JSON input; the
+  generic `fx-path-access` stage navigates to the path, parses the value by
+  its `:type` metadata, and mutates it in place; the handler renders the
+  updated interface. Working in `abcd`.
+- **S2 — undo and redo.** Not built. A `with-history` stage is proposed in
+  SEED-0009.
+- **S3 — a shared clipboard.** Not built. SEED-0009 proposes a clipboard as a
+  stage or as a branch that editors reach through `grow`.
+- **S4 — a remote call.** Not possible: `grow` is local only.
+- **S5 — rollback after partial failure.** The weakest case: mutations are
+  destructive, so a condition partway through leaves the partial change in
+  place.
+- **S6 — a new input source.** The strongest case in design: a new decode
+  stage, keyed by format, delivers the same plist and the handler is
+  unchanged. Not yet demonstrated — every existing branch serves htmx.
+
+**Steal from Seed's own architecture:** metadata-derived responses (B8);
+format-keyed decode stages that leave the handler unchanged (S6); generic
+mutation stages driven by `fx` metadata.
+
+**Fix:** transactions (B6), named and inspectable stages (B9), and a path to
+deployment beyond one image (B1, B5, B10).
+
 
 ## Comparison
 
@@ -557,20 +712,21 @@ Table: Summary scores per criterion. ● strong; ◐ partial; ○ weak.
 
 | Criterion | CICS | Ring/Pedestal | OTP | LiveView | Redux/Elm | Seed |
 |-----------|------|--------------|-----|----------|-----------|------|
-| B1 Dispatch | ● | ◐ | ● | ● | ◐ | ● |
+| B1 Dispatch | ● | ◐ | ● | ● | ◐ | ◐ |
 | B2 Input contract | ◐ | ◐ | ○ | ◐ | ● (Elm) | ◐ |
-| B3 Stage composition | ○ | ● (Pedestal) | ○ | ○ | ◐ | ◐ |
+| B3 Stage composition | ◐ (web-services pipeline) | ● (Pedestal) | ○ | ○ | ◐ | ◐ |
 | B4 State model | ● | ◐ | ● | ● | ● | ◐ |
 | B5 Inter-unit calls | ● | ○ | ● | ◐ | ○ | ◐ |
-| B6 Transactions | ● | ○ | ○ | ○ | ● (inherent) | ○ |
+| B6 Transactions | ● | ○ | ◐ (Mnesia) | ○ | ● (inherent) | ○ |
 | B7 Failure handling | ◐ | ◐ (Pedestal) | ● | ◐ | ○ | ◐ |
 | B8 Response generation | ◐ (BMS) | ○ | ○ | ◐ (diffs) | ◐ (view fn) | ● |
 | B9 Introspection | ◐ | ◐ | ● | ◐ | ● | ○ |
 | B10 Scale | ● | ◐ | ● | ◐ | ○ | ○ |
 
-Seed is strongest at B8 (metadata-derived responses) and B1 (named, composable
-dispatch). Its most critical gaps are B6 (no transactions), B9 (no pipeline
-introspection), and B10 (no production deployment).
+Seed is strongest at B8 (metadata-derived responses). Its dispatch (B1) is
+named and composable but not yet independently deployable. Its most critical
+gaps are B6 (no transactions), B9 (no pipeline introspection), and B10 (no
+production deployment).
 
 
 ## Synthesis
@@ -590,7 +746,7 @@ is the missing piece that makes the CL condition system usable within the
 pipeline: when a mutation stage signals a condition, the error phase of earlier
 stages (including the transaction stage) can clean up. Named stages also enable
 the pipeline inspector that SEED-0009 proposes and that the Smalltalk
-Eval's moldable-debugger recommendation motivates.
+Eval's moldable-debugger recommendation (SEED-0008) motivates.
 
 **From OTP: location-transparent dispatch and supervision.**
 `grow` should work identically for local and remote branches. The OTP
@@ -619,6 +775,24 @@ middleware wrapper around an existing handler, without changing the handler's
 code. This validates the `with-history` pipeline stage proposed in
 SEED-0009.
 
+**From re-frame: effects as data.**
+re-frame's handlers return their effects — including the new state — as a map
+that the framework carries out, so a handler that fails performs nothing. This
+is the precedent for SEED-0009's queued effects. Seed's act phase can still
+mutate `of-state` directly, so it needs `with-transaction`'s snapshot as well;
+moving state changes into the effect queue too would give Seed re-frame's
+property without the snapshot.
+
+**From sagas: compensation after commit.**
+Neither syncpoint nor an effect queue answers what happens when an effect fails
+*after* commit, partway through execution (SEED-O14). Sagas
+(Garcia-Molina and Salem, 1987) are the classic answer: a long-running unit of
+work is a sequence of steps, each paired with a compensating step that undoes
+it, and a failure runs the compensations for the completed steps in reverse.
+Pairing each `effecting` operation with a declared compensation would give
+Seed's effect queue the same recovery path, and is the form of compensation the
+rubric's B7 names but no rendition here provides.
+
 ### What Seed should keep as its own
 
 - **Metadata-derived response generation.** No system in this evaluation
@@ -626,7 +800,7 @@ SEED-0009.
   are static. LiveView uses templates. Redux/Elm use explicit render functions.
   Seed's `fx`/`dx` → manifestation → `generate` pipeline is unique and is its
   most important architectural contribution.
-- **The adapter pipeline as input-medium normalisation.** Ring and Pedestal
+- **The adapter pipeline as input-format normalisation.** Ring and Pedestal
   normalise HTTP input; Seed's adapters normalise *any* input format (JSON,
   alist, and potentially terminal, gamepad, or voice). The pipeline's
   transport-independence is stronger than any single system in this evaluation.
