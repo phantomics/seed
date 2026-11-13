@@ -5,7 +5,11 @@ genre:         Survey
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-13
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
@@ -14,16 +18,17 @@ relates-to:
   - SEED-0005
   - SEED-0006
   - SEED-0008
+  - SEED-DRAFT-branchmodels
+  - SEED-DRAFT-classicinterface
   - VOX-DRAFT-vox
+  - ORIGIN-0006
+  - ORIGIN-0008
 cites:
-  - title:     "Vox: Declarative Work and Data Exchange Between Lisp Images"
-    locator:   "VOX-DRAFT-vox, ~/src/lisp/vox/doc/Survey.Vox.md"
-    external:  true
   - title:     "The Psyche Architecture — A Hardware Design Record for a Tagged Lisp Computing System"
     locator:   "~/src/chat/PsycheArchitecture.md, §1.2, §1.3, §5"
     external:  true
-  - title:     "Impulse: Interactive Manifold Process-Uniting Lexicon as Symbolic Expressions"
-    locator:   "ORIGIN-0006, ORIGIN-0008"
+  - title:     "Effects"
+    locator:   "re-frame documentation, https://day8.github.io/re-frame/Effects/"
     external:  true
 open-questions:
   - SEED-DRAFT-branches-O1
@@ -92,7 +97,7 @@ value. When any stage returns a truthy second value, all subsequent stages pass
 the data through unchanged — the short-circuit mechanism. The result is a linear
 pipeline:
 
-```
+```text
 raw input → adapt-from-json → adapt-from-alist → [mutation stages] → handler → output
 ```
 
@@ -234,8 +239,8 @@ Table: Effect classes and their consequences.
 Operations end with one of three explicit signals:
 - **`answer`** — stop and respond with the act phase's result;
 - **`transfer`** — hand the context to another branch or operation (the CICS
-  `XCTL` analogue, and the explicit form of the user's idea that short-circuits
-  should redirect to their own branch);
+  `XCTL` analogue, and the explicit form of redirecting a short-circuit to its
+  own branch);
 - **`fail`** — signal a condition.
 
 The `uimod` case — asking a branch for its header or footer controls — would
@@ -247,7 +252,7 @@ a distinct operation.
 Every branch answers a `describe` operation: its name, its operations, their
 input specs and their effect classes. This is borrowed from Impulse's mandatory,
 free `describe` (ORIGIN-0006), and it closes the introspection gap the
-branch-models Eval identified (criterion B9). The `describe` output is itself a
+branch-models Eval (SEED-DRAFT-branchmodels) identified (criterion B9). The `describe` output is itself a
 Datum-encodable plist, so it can be served to any caller.
 
 
@@ -255,8 +260,9 @@ Datum-encodable plist, so it can be served to any caller.
 
 ### Effects as queued words
 
-In the current system, branches perform effects (writing files through Philo,
-calling other branches, mutating `of-state`) directly during act. This makes
+In the current system, branches perform effects (writing files — through
+`from-system-file` today, Philo going forward — calling other branches,
+mutating `of-state`) directly during act. This makes
 rollback impossible: a condition signalled after a file write cannot undo the
 write.
 
@@ -272,6 +278,19 @@ work semantically, not mechanically (cited, §5). Inside one image, the executor
 is a function that runs the queued effects in order. Once Vox exists, the
 executor submits them as Vox words to the appropriate carrier.
 
+The closest existing precedent is re-frame, the ClojureScript framework.
+A re-frame event handler registered with `reg-event-fx` does not perform side
+effects; it returns an *effects map* — data such as `{:db new-db :http-xhrio
+{…}}` — and the framework hands each entry to an effect handler registered
+with `reg-fx`. Inputs from the world arrive the same way, as *coeffects*
+injected into the handler's arguments. The handler stays a pure function from
+data to data, which is the property Seed's act phase needs. Seed's model adds
+two things re-frame does not attempt: a transaction boundary, so that a failure
+discards the queued effects (below), and effects shaped as Vox words, so the
+same descriptors can be executed in the image or submitted to another one. The
+branch-models Eval (SEED-DRAFT-branchmodels) compares the related Elm
+Architecture, whose update function likewise returns commands as data.
+
 ### Transactions
 
 A `with-transaction` stage snapshots `of-state` on entry. If the act phase
@@ -281,7 +300,8 @@ condition system with restarts provides the mechanism: the transaction stage
 establishes a restart that rolls back state.
 
 The effect-queue model makes transactions considerably simpler than they
-appeared in the earlier ranking, because the only mutable state that needs
+appeared in the branch-models Eval's comparison (SEED-DRAFT-branchmodels,
+criterion B6), because the only mutable state that needs
 rollback is `of-state` (which is a plist, cheap to snapshot). File writes and
 remote calls, being queued effects, never happen if the act phase fails.
 
@@ -500,7 +520,10 @@ The following are known rough edges, flagged to inform future Plans.
    special variable at macro-expansion time.
 
 7. **No defined behaviour when a stage signals an error.** An interceptor model
-   with enter/leave/error phases would address this.
+   with enter/leave/error phases, as in Pedestal (SEED-DRAFT-branchmodels),
+   would address this. The Smalltalk Eval (SEED-0008) adds the developer's side:
+   a failing request should lead to a debugger presented through the web, with
+   the pipeline state and the manifestation tree in view.
 
 8. **Stages have no names and cannot be inspected.** A mandatory `describe`
    operation reporting a branch's stages, operations, and effect classes would
@@ -578,7 +601,17 @@ Within the Seed corpus:
   (isolation) motivates the transaction stage.
 - SEED-0008 — the Smalltalk Eval, whose Seaside rendition describes
   the closest prior art for Seed's server-side component model, and whose
-  synthesis recommends a pipeline inspector based on GT's moldable debugger.
+  synthesis recommends a web-facing debugger and a pipeline inspector based on
+  GT's moldable debugger.
+- SEED-DRAFT-branchmodels — the branch-models Eval, which compares CICS, Ring
+  and Pedestal, Erlang/OTP, Phoenix LiveView, and Redux and the Elm
+  Architecture with Seed's branches. It is the source of the prior art this
+  survey draws on: CICS `XCTL` and syncpoint, Pedestal's interceptors, and
+  Elm's commands as data.
+- SEED-DRAFT-classicinterface — the Classic interface mode, whose step E
+  migrates the `:cms` branch to branch objects with operations, effect
+  classes, and Classic writes as queued effects — the first application of
+  this design.
 - SEED-0005 — the interface-models Survey, whose open question
   SEED-O1 (inter-domain composition) bears on
   cross-instance branch contact and on whether IS/AS/BY can serve as a shared
@@ -587,13 +620,16 @@ Within the Seed corpus:
   depends on the branch system's ability to serve configurators through derived
   interfaces.
 
-External:
+Outside the Seed corpus:
 
 - VOX-DRAFT-vox — the Vox Survey, which names Seed as Vox's first consumer and
   specifies the payload profiles, encoding, carriers, completions, and security
   model that interlinks would use.
-- ORIGIN-0006 and ORIGIN-0008 — the Impulse logs, from which the effect ladder,
-  the envelope structure, and the mandatory `describe` are borrowed.
+- ORIGIN-0006 and ORIGIN-0008 — the Impulse logs in the federated Origin
+  corpus, from which the effect ladder, the envelope structure, and the
+  mandatory `describe` are borrowed.
+- re-frame (cited) — the ClojureScript framework whose effects-as-data model is
+  the closest precedent for queued effects.
 - The Psyche architecture record (cited) — the source of the Vox model, the
   centrifugal derivation methodology, and the principle that serialization is
   the redundant mechanism to derive into shared infrastructure.
