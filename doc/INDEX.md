@@ -19,7 +19,7 @@ Table: Documents in the SEED namespace.
 | [SEED-0007](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Accepted | — |
 | [SEED-0008](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Accepted | — |
 | [SEED-0009](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Accepted | — |
-| [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
+| [SEED-0010](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.

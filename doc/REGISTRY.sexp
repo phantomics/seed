@@ -53,3 +53,4 @@
 (:id "SEED-O17" :kind :open-question :draft "SEED-DRAFT-branches-O7" :host "SEED-0009" :date "2026-11-13" :by "Andrew Sengul")
 (:id "SEED-O18" :kind :open-question :draft "SEED-DRAFT-branches-O8" :host "SEED-0009" :date "2026-11-13" :by "Andrew Sengul")
 (:id "SEED-O19" :kind :open-question :draft "SEED-DRAFT-branches-O9" :host "SEED-0009" :date "2026-11-13" :by "Andrew Sengul")
+(:id "SEED-0010" :kind :document :draft "SEED-DRAFT-branchmodels" :path "doc/Eval.BranchModels.md" :date "2026-11-13" :by "Andrew Sengul")

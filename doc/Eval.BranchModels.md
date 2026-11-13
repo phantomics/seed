@@ -1,12 +1,16 @@
 ---
-id:            SEED-DRAFT-branchmodels
+id:            SEED-0010
 title:         "Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art"
 genre:         Eval
 subtype:       prior-art
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-13
 provenance:
   assistant:   claude-opus-5-5
 relates-to:

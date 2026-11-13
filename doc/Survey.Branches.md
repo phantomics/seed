@@ -18,7 +18,7 @@ relates-to:
   - SEED-0005
   - SEED-0006
   - SEED-0008
-  - SEED-DRAFT-branchmodels
+  - SEED-0010
   - SEED-DRAFT-classicinterface
   - VOX-DRAFT-vox
   - ORIGIN-0006
@@ -252,7 +252,7 @@ a distinct operation.
 Every branch answers a `describe` operation: its name, its operations, their
 input specs and their effect classes. This is borrowed from Impulse's mandatory,
 free `describe` (ORIGIN-0006), and it closes the introspection gap the
-branch-models Eval (SEED-DRAFT-branchmodels) identified (criterion B9). The `describe` output is itself a
+branch-models Eval (SEED-0010) identified (criterion B9). The `describe` output is itself a
 Datum-encodable plist, so it can be served to any caller.
 
 
@@ -292,7 +292,7 @@ mutate `of-state` directly: hence the snapshot in `with-transaction` (below).
 Seed's effects are also shaped as Vox words, so the same descriptors can be
 executed in the image or submitted to another one. Neither system undoes an
 effect that fails partway through execution (SEED-O14). The
-branch-models Eval (SEED-DRAFT-branchmodels) compares the related Elm
+branch-models Eval (SEED-0010) compares the related Elm
 Architecture, whose update function likewise returns commands as data.
 
 ### Transactions
@@ -304,7 +304,7 @@ condition system with restarts provides the mechanism: the transaction stage
 establishes a restart that rolls back state.
 
 The effect-queue model makes transactions considerably simpler than they
-appeared in the branch-models Eval's comparison (SEED-DRAFT-branchmodels,
+appeared in the branch-models Eval's comparison (SEED-0010,
 criterion B6), because the only mutable state that needs
 rollback is `of-state` (which is a plist, cheap to snapshot). File writes and
 remote calls, being queued effects, never happen if the act phase fails.
@@ -524,7 +524,7 @@ The following are known rough edges, flagged to inform future Plans.
    special variable at macro-expansion time.
 
 7. **No defined behaviour when a stage signals an error.** An interceptor model
-   with enter/leave/error phases, as in Pedestal (SEED-DRAFT-branchmodels),
+   with enter/leave/error phases, as in Pedestal (SEED-0010),
    would address this. The Smalltalk Eval (SEED-0008) adds the developer's side:
    a failing request should lead to a debugger presented through the web, with
    the pipeline state and the manifestation tree in view.
@@ -607,7 +607,7 @@ Within the Seed corpus:
   the closest prior art for Seed's server-side component model, and whose
   synthesis recommends a web-facing debugger and a pipeline inspector based on
   GT's moldable debugger.
-- SEED-DRAFT-branchmodels — the branch-models Eval, which compares CICS, Ring
+- SEED-0010 — the branch-models Eval, which compares CICS, Ring
   and Pedestal, Erlang/OTP, Phoenix LiveView, and Redux and the Elm
   Architecture with Seed's branches. It is the source of the prior art this
   survey draws on: CICS `XCTL` and syncpoint, Pedestal's interceptors, and

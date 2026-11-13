@@ -20,7 +20,7 @@ relates-to:
   - SEED-0001
   - SEED-0008
   - SEED-0009
-  - SEED-DRAFT-branchmodels
+  - SEED-0010
   - SEED-DRAFT-classicinterface
   - SEED-0007
 cites:
