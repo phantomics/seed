@@ -46,7 +46,7 @@ cites:
     locator:   "Microsoft, https://code.visualstudio.com/docs/configure/extensions/extension-marketplace (consulted November 2026)"
     external:  true
   - title:     "Accessibility"
-    locator:   "VS Code documentation, https://code.visualstudio.com/docs/configure/accessibility/accessibility (consulted November 2026)"
+    locator:   "VS Code documentation, https://code.visualstudio.com/docs/configure/accessibility/accessibility (page dated 11 November 2026; consulted 13 November 2026)"
     external:  true
   - title:     "15 Best VS Code Extensions for Developers in 2026"
     locator:   "Rockstar Developer University, rockstardeveloperuniversity.com/best-vscode-extensions (Marketplace search API count, October 2026)"
@@ -365,13 +365,20 @@ github.dev). The Remote Development extensions split the UI (local) from the
 workspace (remote server), which parallels Seed's server-rendered, thin-client
 design. But the rendering target is always a Chromium-based surface — there is
 no terminal mode and no native-widget mode. Accessibility is well supported,
-in a different way from Emacspeak: when VS Code detects a screen reader
-(NVDA, JAWS, VoiceOver or Orca) it switches to a "Screen Reader Optimized"
-mode, presents the editor to it through text pagination, and offers an
-Accessible View of workbench features and editor state. This serves an
-external screen reader through the platform's accessibility interfaces — the
-accessibility-tree projection SEED-0005 describes under ARIA — rather than
-rendering the application's own semantics into speech.
+mostly in a different way from Emacspeak. VS Code is tested with NVDA and
+JAWS on Windows, VoiceOver on macOS and Orca on Linux. When it detects a
+screen reader through the platform, it switches to a "Screen Reader
+Optimized" mode and presents the editor through text pagination; an
+Accessible View lets the user read hovers, notifications, terminal and
+notebook output, chat responses and other content character by character or
+line by line; and an Accessible Diff Viewer presents diffs as a unified
+patch. These serve an external screen reader through the platform's
+accessibility interfaces — the accessibility-tree projection SEED-0005
+describes under ARIA. VS Code's *Accessibility Signals* come closer to
+Emacspeak: sounds and announcements that mark whether the current line holds
+an error, a warning, a breakpoint, a folded region or an inline suggestion,
+conveying the editor's own semantics in sound. They cover a fixed set of
+markers, where Emacspeak renders each application's content and structure.
 
 **G11 — Gradual entry: excellent.**
 VS Code is immediately usable as a text editor out of the box. Complexity is
