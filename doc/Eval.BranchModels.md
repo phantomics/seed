@@ -10,7 +10,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-branches
+  - SEED-0009
   - SEED-0003
   - SEED-0006
   - SEED-0008
@@ -49,7 +49,7 @@ excels at one or two. The evaluation scores them against a rubric designed for
 branch-like processing units, then scores Seed against the same rubric.
 
 The branch system's design space and tensions are documented in the companion
-Survey (SEED-DRAFT-branches); this Eval assumes that document as context.
+Survey (SEED-0009); this Eval assumes that document as context.
 
 
 ## Method
@@ -498,7 +498,7 @@ redesign. The absence of inter-unit dispatch.
 ## Rendition: Seed
 
 Seed's branch system is assessed at revision `31067ad`, as documented in the
-companion Survey (SEED-DRAFT-branches).
+companion Survey (SEED-0009).
 
 **B1 — Unit of dispatch: the branch.** ●
 Branches are named by keyword, registered per system, and invoked via `grow`.
@@ -589,7 +589,7 @@ Named stages with `:enter`, `:leave`, and `:error` phases. The `:error` phase
 is the missing piece that makes the CL condition system usable within the
 pipeline: when a mutation stage signals a condition, the error phase of earlier
 stages (including the transaction stage) can clean up. Named stages also enable
-the pipeline inspector that SEED-DRAFT-branches proposes and that the Smalltalk
+the pipeline inspector that SEED-0009 proposes and that the Smalltalk
 Eval's moldable-debugger recommendation motivates.
 
 **From OTP: location-transparent dispatch and supervision.**
@@ -617,7 +617,7 @@ Seed closer to Elm's guarantee.
 `redux-undo` demonstrates that history (undo/redo) can be implemented as a
 middleware wrapper around an existing handler, without changing the handler's
 code. This validates the `with-history` pipeline stage proposed in
-SEED-DRAFT-branches.
+SEED-0009.
 
 ### What Seed should keep as its own
 

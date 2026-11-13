@@ -19,7 +19,7 @@ relates-to:
   - SEED-0003
   - SEED-0004
   - SEED-0008
-  - SEED-DRAFT-branches
+  - SEED-0009
   - SEED-DRAFT-classicinterface
 cites:
   - title:     "The Mythical Man-Month"
@@ -561,7 +561,7 @@ Within the Seed corpus:
   interfaces.
 - SEED-0008 — the Smalltalk evaluation, which cites this survey on
   a more powerful but less accessible system losing to an easier one.
-- SEED-DRAFT-branches — the branch-system survey, which notes that the
+- SEED-0009 — the branch-system survey, which notes that the
   leverage pyramid depends on the branch system serving configurators through
   derived interfaces.
 - SEED-DRAFT-classicinterface — the Classic CMS, the concrete application

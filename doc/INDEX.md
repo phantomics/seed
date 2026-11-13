@@ -18,7 +18,7 @@ Table: Documents in the SEED namespace.
 | [SEED-0006](Eval.EditorModels.md) | Editor Models: Emacs, VS Code, Common Lisp Environments, and Seed as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-0007](Survey.Verticality.md) | Abstraction Verticality, Leverage Pyramids, and the LLM Inflection | Survey | program | Accepted | — |
 | [SEED-0008](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Accepted | — |
-| [SEED-DRAFT-branches](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Draft | — |
+| [SEED-0009](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Accepted | — |
 | [SEED-DRAFT-branchmodels](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
 
@@ -60,15 +60,15 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-O8](Survey.Verticality.md#seed-o8--how-should-an-llm-be-given-the-vocabulary) | Open question | How should an LLM be given the vocabulary? | — | SEED-0007 |
 | [SEED-O9](Survey.Verticality.md#seed-o9--how-can-key-person-risk-be-reduced-without-flattening-the-pyramid) | Open question | How can key-person risk be reduced without flattening the pyramid? | — | SEED-0007 |
 | [SEED-O10](Survey.Verticality.md#seed-o10--does-the-leverage-argument-apply-to-april-as-well) | Open question | Does the leverage argument apply to April as well? | — | SEED-0007 |
-| [SEED-DRAFT-branches-O1](Survey.Branches.md#seed-draft-branches-o1--should-stages-be-named-and-introspectable) | Open question | Should stages be named and introspectable? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O2](Survey.Branches.md#seed-draft-branches-o2--should-the-adapterhandler-contract-be-unified) | Open question | Should the adapter/handler contract be unified? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O3](Survey.Branches.md#seed-draft-branches-o3--how-should-branch-state-ownership-work) | Open question | How should branch state ownership work? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O4](Survey.Branches.md#seed-draft-branches-o4--what-transaction-model-fits-branches) | Open question | What transaction model fits branches? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O5](Survey.Branches.md#seed-draft-branches-o5--how-should-grow-dispatch-across-images) | Open question | How should grow dispatch across images? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O6](Survey.Branches.md#seed-draft-branches-o6--what-are-the-rules-for-effect-classes) | Open question | What are the rules for effect classes? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O7](Survey.Branches.md#seed-draft-branches-o7--should-manifestations-ever-cross-as-instances) | Open question | Should manifestations ever cross as Instances? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O8](Survey.Branches.md#seed-draft-branches-o8--how-does-describe-relate-to-isasby) | Open question | How does describe relate to IS/AS/BY? | — | SEED-DRAFT-branches |
-| [SEED-DRAFT-branches-O9](Survey.Branches.md#seed-draft-branches-o9--how-should-the-in-image-effect-executor-work-before-vox-exists) | Open question | How should the in-image effect executor work before Vox exists? | — | SEED-DRAFT-branches |
+| [SEED-O11](Survey.Branches.md#seed-o11--should-stages-be-named-and-introspectable) | Open question | Should stages be named and introspectable? | — | SEED-0009 |
+| [SEED-O12](Survey.Branches.md#seed-o12--should-the-adapterhandler-contract-be-unified) | Open question | Should the adapter/handler contract be unified? | — | SEED-0009 |
+| [SEED-O13](Survey.Branches.md#seed-o13--how-should-branch-state-ownership-work) | Open question | How should branch state ownership work? | — | SEED-0009 |
+| [SEED-O14](Survey.Branches.md#seed-o14--what-transaction-model-fits-branches) | Open question | What transaction model fits branches? | — | SEED-0009 |
+| [SEED-O15](Survey.Branches.md#seed-o15--how-should-grow-dispatch-across-images) | Open question | How should grow dispatch across images? | — | SEED-0009 |
+| [SEED-O16](Survey.Branches.md#seed-o16--what-are-the-rules-for-effect-classes) | Open question | What are the rules for effect classes? | — | SEED-0009 |
+| [SEED-O17](Survey.Branches.md#seed-o17--should-manifestations-ever-cross-as-instances) | Open question | Should manifestations ever cross as Instances? | — | SEED-0009 |
+| [SEED-O18](Survey.Branches.md#seed-o18--how-does-describe-relate-to-isasby) | Open question | How does describe relate to IS/AS/BY? | — | SEED-0009 |
+| [SEED-O19](Survey.Branches.md#seed-o19--how-should-the-in-image-effect-executor-work-before-vox-exists) | Open question | How should the in-image effect executor work before Vox exists? | — | SEED-0009 |
 | [SEED-DRAFT-classicinterface-O1](Survey.ClassicInterface.md#seed-draft-classicinterface-o1--bridge-granularity) | Open question | Bridge granularity | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O2](Survey.ClassicInterface.md#seed-draft-classicinterface-o2--format-migration-ux) | Open question | Format migration UX | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O3](Survey.ClassicInterface.md#seed-draft-classicinterface-o3--codemirror-mode-switching) | Open question | CodeMirror mode switching | — | SEED-DRAFT-classicinterface |

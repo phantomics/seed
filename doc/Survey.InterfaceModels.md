@@ -17,7 +17,7 @@ relates-to:
   - SEED-0002
   - SEED-0003
   - SEED-0004
-  - SEED-DRAFT-branches
+  - SEED-0009
   - SEED-DRAFT-classicinterface
   - SEED-0008
   - SEED-0007
@@ -405,7 +405,7 @@ representations. Specific parallels and contrasts:
   Seed closer to a per-value Magritte (see "Interfaces Generated from a
   Model").
 - **Transient and committed facts.** Eve's `bind`/`commit` distinction is the
-  language-level form of the split SEED-DRAFT-branches makes between safe
+  language-level form of the split SEED-0009 makes between safe
   operations and effects queued for commit.
 - **Order.** Eve's blocks are order-independent and evaluated to a fixed
   point; Seed's processors run in a single pass, in declared order
@@ -557,7 +557,7 @@ comparison is instructive in both directions:
   `uim-web` and `uim-terminal` media, and a durable working example of the
   medium independence Seed claims.
 - **A pipeline from data to interaction.** Fry's seven stages line up with
-  Seed's decode, act and encode stages (SEED-DRAFT-branches), with
+  Seed's decode, act and encode stages (SEED-0009), with
   "represent" corresponding to IS/AS/BY choosing a rendering and "refine" to
   Tier-2 `:adapting` processors. It is the most direct comparator for Seed's
   chart editing.
@@ -870,7 +870,7 @@ Within the Seed corpus, this survey relates to:
   which this survey cites under the round-tripping limitation.
 - SEED-0002 — the tutorial for `philo`, the accessor that
   implements the round-trip.
-- SEED-DRAFT-branches — the branch system's stage model and its split between
+- SEED-0009 — the branch system's stage model and its split between
   safe operations and effects queued for commit, compared here with Eve's
   `bind`/`commit` and Fry's seven stages.
 - SEED-DRAFT-classicinterface — the Classic CMS, the concrete application

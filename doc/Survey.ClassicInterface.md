@@ -13,7 +13,7 @@ relates-to:
   - SEED-0004
   - SEED-0005
   - SEED-0006
-  - SEED-DRAFT-branches
+  - SEED-0009
   - SEED-0008
   - VOX-DRAFT-vox
   - CLASSIC-0007
@@ -117,7 +117,7 @@ All code references in this section are pinned to revision `6a9aa8e`.
 ### The old-grammar CMS
 
 The `:cms` branch in `systems/demo.access/seed.lisp@6a9aa8e` is a hand-written
-version of the branch-object model described in SEED-DRAFT-branches. Its
+version of the branch-object model described in SEED-0009. Its
 handler is a `cond` over string-compared `action` values (`"new"`,
 `"create"`, `"edit"`, `"back"`) plus a separate text protocol for CodeMirror
 load and save. Three helper functions produce the views:
@@ -390,7 +390,7 @@ lens spec:
 
 One `:activating` control per permitted workflow transition, filtered by
 `account-has-permission-p` for the current session's account. Each carries
-an effect class from SEED-DRAFT-branches: "publish" is `:effecting`,
+an effect class from SEED-0009: "publish" is `:effecting`,
 "archive" is `:effecting`, "delete" is `:effecting`, "restore" is
 `:idempotent`.
 
@@ -413,7 +413,7 @@ The wiki extends the CMS with:
   backlink graph).
 - Infobox rendering for typed pages through lens-driven `fx` generation.
 - Revision history (a later step, once branches support history as a
-  stage or a separate branch per SEED-DRAFT-branches).
+  stage or a separate branch per SEED-0009).
 
 
 ## The Incremental Path
@@ -450,7 +450,7 @@ it pulls in. A Plan will decide the final sequence.
 | B | Workflow: publish, archive, delete, restore as permission-filtered `:activating` controls | Account context in the session |
 | C | Rendered preview | `lexis.html` integration; for Markdown sources, the Markdown→Lexis reader |
 | D | Wiki: page list, `[[link]]` completion, backlinks, broken-link indicators, typed-page infobox | Wiki-link handling over Lexis bodies; lens-to-fx generation |
-| E | Branch-object migration: operations with effect classes, Classic writes as queued effects | SEED-DRAFT-branches first two tiers; Vox in-image stage |
+| E | Branch-object migration: operations with effect classes, Classic writes as queued effects | SEED-0009 first two tiers; Vox in-image stage |
 
 Steps A1–A3 can proceed without changes to Classic. Step B needs account
 context but uses Classic's existing workflow API. Steps C and D depend on
@@ -461,7 +461,7 @@ decoupled from the CMS feature work.
 
 ## Where Branch and Vox Work Fits
 
-Step E is where the CMS meets SEED-DRAFT-branches. The current `:cms`
+Step E is where the CMS meets SEED-0009. The current `:cms`
 handler is a `cond` over string-compared action names — it is already a
 hand-written branch-object pattern. Migrating it means:
 
@@ -642,7 +642,7 @@ identifier management and the interaction with `compass check`.
   that survey anticipated.
 - **SEED-0006** covers editor strategies. The three editing
   views (raw Lexis, Markdown, ProseMirror) correspond to its taxonomy.
-- **SEED-DRAFT-branches** defines the branch-object model that step E
+- **SEED-0009** defines the branch-object model that step E
   migrates to. The stage model (decode/act/encode), operations with
   effect classes, and queued effects all apply to the CMS.
 - **VOX-DRAFT-vox** defines the interlink that replaces `grow` in step E.
@@ -716,7 +716,7 @@ client-side fallback.
 ### SEED-DRAFT-classicinterface-O8 — Revision history model
 
 Should article history be a branch-level concern (a history stage per
-SEED-DRAFT-branches), a Classic-level concern (revision objects stored
+SEED-0009), a Classic-level concern (revision objects stored
 by the persistence backend), or both? The wiki already has revision
 objects; the branch stage model offers a uniform approach.
 

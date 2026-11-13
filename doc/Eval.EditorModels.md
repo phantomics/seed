@@ -19,7 +19,7 @@ relates-to:
   - SEED-0004
   - SEED-0001
   - SEED-0008
-  - SEED-DRAFT-branches
+  - SEED-0009
   - SEED-DRAFT-branchmodels
   - SEED-DRAFT-classicinterface
   - SEED-0007

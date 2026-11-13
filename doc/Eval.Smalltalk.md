@@ -18,7 +18,7 @@ relates-to:
   - SEED-0006
   - SEED-0007
   - SEED-DRAFT-classicinterface
-  - SEED-DRAFT-branches
+  - SEED-0009
 cites:
   - title:     "Design Principles Behind Smalltalk"
     locator:   "Ingalls, D. H. H. BYTE 6(8), August 1981"

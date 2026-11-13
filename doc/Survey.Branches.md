@@ -1,5 +1,5 @@
 ---
-id:            SEED-DRAFT-branches
+id:            SEED-0009
 title:         "The Branch System: Design Space and Future Directions"
 genre:         Survey
 scope:         project
@@ -31,15 +31,15 @@ cites:
     locator:   "re-frame documentation, https://day8.github.io/re-frame/Effects/"
     external:  true
 open-questions:
-  - SEED-DRAFT-branches-O1
-  - SEED-DRAFT-branches-O2
-  - SEED-DRAFT-branches-O3
-  - SEED-DRAFT-branches-O4
-  - SEED-DRAFT-branches-O5
-  - SEED-DRAFT-branches-O6
-  - SEED-DRAFT-branches-O7
-  - SEED-DRAFT-branches-O8
-  - SEED-DRAFT-branches-O9
+  - SEED-O11
+  - SEED-O12
+  - SEED-O13
+  - SEED-O14
+  - SEED-O15
+  - SEED-O16
+  - SEED-O17
+  - SEED-O18
+  - SEED-O19
 ---
 
 # The Branch System: Design Space and Future Directions
@@ -637,57 +637,57 @@ Outside the Seed corpus:
 
 ## Open Questions
 
-### SEED-DRAFT-branches-O1 — Should stages be named and introspectable?
+### SEED-O11 — Should stages be named and introspectable?
 
 Named stages enable a pipeline inspector, explicit dependency declarations, and
 stage-level tracing. Direction: yes, and `describe` reports them.
 
-### SEED-DRAFT-branches-O2 — Should the adapter/handler contract be unified?
+### SEED-O12 — Should the adapter/handler contract be unified?
 
 A single input declaration per operation, generating decode whitelist,
 destructuring, and validation constraints. Direction: yes, as part of the
 operation's declared input spec.
 
-### SEED-DRAFT-branches-O3 — How should branch state ownership work?
+### SEED-O13 — How should branch state ownership work?
 
 Currently `of-state` is a flat key-value store per session. Clipboard and
 history branches need their own state. Should state be scoped per branch, per
 system, or per session? Should branches declare what state they own?
 
-### SEED-DRAFT-branches-O4 — What transaction model fits branches?
+### SEED-O14 — What transaction model fits branches?
 
 Direction: the effect-queue model with `with-transaction` snapshotting state.
 The effect queue is a list of word-shaped descriptors submitted at commit. The
 remaining question is what happens when an effect fails during execution, after
 act has already committed.
 
-### SEED-DRAFT-branches-O5 — How should `grow` dispatch across images?
+### SEED-O15 — How should `grow` dispatch across images?
 
 Direction: `grow` submits a Vox word to the Vox carrier that reaches the target
 image. The in-image carrier is the first stage, built in the vox repository.
 The remaining questions are session identity across images, authentication,
 timeouts, and vocabulary versioning.
 
-### SEED-DRAFT-branches-O6 — What are the rules for effect classes?
+### SEED-O16 — What are the rules for effect classes?
 
 Each operation declares safe, idempotent, or effecting. Safe operations need no
 effect queue and can be retried freely. Effecting operations need the queue and
 must never be retried automatically. What governs the classification, and can
 the system enforce it?
 
-### SEED-DRAFT-branches-O7 — Should manifestations ever cross as Instances?
+### SEED-O17 — Should manifestations ever cross as Instances?
 
 The usual case is sending `fx`/`dx` data as Datum and rebuilding. The Instances
 profile with a registered decoder through `construct` is the alternative. When
 is the alternative justified, and what versioning rules apply?
 
-### SEED-DRAFT-branches-O8 — How does `describe` relate to IS/AS/BY?
+### SEED-O18 — How does `describe` relate to IS/AS/BY?
 
 A branch's `describe` output reports operations, input specs, and effect
 classes. The input spec could use IS annotations for types. How far should
 `describe`'s schema lean on the IS/AS/BY vocabulary?
 
-### SEED-DRAFT-branches-O9 — How should the in-image effect executor work before Vox exists?
+### SEED-O19 — How should the in-image effect executor work before Vox exists?
 
 During the transition, effects are Lisp data shaped like Vox words, run by an
 in-image executor. Should the executor be a thin function that dispatches on the
