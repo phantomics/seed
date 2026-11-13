@@ -19,7 +19,7 @@ relates-to:
   - SEED-0004
   - SEED-DRAFT-branches
   - SEED-DRAFT-classicinterface
-  - SEED-DRAFT-smalltalk
+  - SEED-0008
   - SEED-0007
   - SEED-0006
   - CLASSIC-0010
@@ -258,7 +258,7 @@ of interfaces from metadata, and the contrasts are precise:
 Classic's lenses play Magritte's role inside the Seed and Classic pair: they
 are class-level defaults, and the Classic→fx bridge (SEED-DRAFT-classicinterface)
 turns them into per-value `fx` annotations that individual values can override.
-Pier is the direct precedent for that work. SEED-DRAFT-smalltalk treats Seaside
+Pier is the direct precedent for that work. SEED-0008 treats Seaside
 and Magritte at greater length.
 
 ### Model-Based UI Research (CAMELEON)
@@ -875,7 +875,7 @@ Within the Seed corpus, this survey relates to:
   `bind`/`commit` and Fry's seven stages.
 - SEED-DRAFT-classicinterface — the Classic CMS, the concrete application
   through which Seed proves its thesis.
-- SEED-DRAFT-smalltalk — the Smalltalk evaluation, which examines Glamorous
+- SEED-0008 — the Smalltalk evaluation, which examines Glamorous
   Toolkit and Magritte in more depth than the family entries here.
 - SEED-0006 — the editor-models evaluation, which scores Emacs,
   VS Code, the Common Lisp editing environments and Seed against a shared

@@ -13,7 +13,7 @@ relates-to:
   - SEED-DRAFT-branches
   - SEED-0003
   - SEED-0006
-  - SEED-DRAFT-smalltalk
+  - SEED-0008
 cites:
   - title:     "CICS Transaction Server for z/OS Documentation"
     locator:   "IBM, https://www.ibm.com/docs/en/cics-ts/6.x"

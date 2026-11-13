@@ -42,3 +42,4 @@
 (:id "SEED-O8" :kind :open-question :draft "SEED-DRAFT-verticality-O3" :host "SEED-0007" :date "2026-11-12" :by "Andrew Sengul")
 (:id "SEED-O9" :kind :open-question :draft "SEED-DRAFT-verticality-O4" :host "SEED-0007" :date "2026-11-12" :by "Andrew Sengul")
 (:id "SEED-O10" :kind :open-question :draft "SEED-DRAFT-verticality-O5" :host "SEED-0007" :date "2026-11-12" :by "Andrew Sengul")
+(:id "SEED-0008" :kind :document :draft "SEED-DRAFT-smalltalk" :path "doc/Eval.Smalltalk.md" :date "2026-11-13" :by "Andrew Sengul")

@@ -14,7 +14,7 @@ relates-to:
   - SEED-0005
   - SEED-0006
   - SEED-DRAFT-branches
-  - SEED-DRAFT-smalltalk
+  - SEED-0008
   - VOX-DRAFT-vox
   - CLASSIC-0007
   - CLASSIC-0011
@@ -211,7 +211,7 @@ resolves them against existing pages and identifies broken links;
 
 ## The Classic→fx Bridge
 
-The Smalltalk Eval (SEED-DRAFT-smalltalk) observed that Magritte describes
+The Smalltalk Eval (SEED-0008) observed that Magritte describes
 classes while `fx` describes individual values. Classic's lenses play
 Magritte's role: they are class-level defaults that say how each slot should
 be presented. The bridge between Classic and Seed is an adapter that reads a

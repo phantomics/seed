@@ -1,12 +1,16 @@
 ---
-id:            SEED-DRAFT-smalltalk
+id:            SEED-0008
 title:         "The Smalltalk Family as Prior Art for Seed"
 genre:         Eval
 subtype:       prior-art
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-13
 provenance:
   assistant:   claude-opus-5-5
 relates-to:

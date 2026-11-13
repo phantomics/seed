@@ -13,7 +13,7 @@ relates-to:
   - SEED-0004
   - SEED-0005
   - SEED-0006
-  - SEED-DRAFT-smalltalk
+  - SEED-0008
   - VOX-DRAFT-vox
 cites:
   - title:     "Vox: Declarative Work and Data Exchange Between Lisp Images"
@@ -323,7 +323,7 @@ stage in the decode phase could close this gap on the input side:
 - Reject or coerce invalid input before it reaches act.
 
 This would be a generic stage working on any `fx`-annotated data, and it would
-serve the same purpose as Magritte's checked descriptions (SEED-DRAFT-smalltalk).
+serve the same purpose as Magritte's checked descriptions (SEED-0008).
 
 
 ## Branch-to-Branch Patterns
@@ -576,7 +576,7 @@ Within the Seed corpus:
 - SEED-0006 — the editor-models Eval, whose criterion G2
   (metadata verification) motivates the validation stage, and whose criterion G9
   (isolation) motivates the transaction stage.
-- SEED-DRAFT-smalltalk — the Smalltalk Eval, whose Seaside rendition describes
+- SEED-0008 — the Smalltalk Eval, whose Seaside rendition describes
   the closest prior art for Seed's server-side component model, and whose
   synthesis recommends a pipeline inspector based on GT's moldable debugger.
 - SEED-0005 — the interface-models Survey, whose open question

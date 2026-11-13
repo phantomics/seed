@@ -18,7 +18,7 @@ relates-to:
   - SEED-0003
   - SEED-0004
   - SEED-0001
-  - SEED-DRAFT-smalltalk
+  - SEED-0008
   - SEED-DRAFT-branches
   - SEED-DRAFT-branchmodels
   - SEED-DRAFT-classicinterface
