@@ -20,7 +20,10 @@ Table: Documents in the SEED namespace.
 | [SEED-0008](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Accepted | — |
 | [SEED-0009](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Accepted | — |
 | [SEED-0010](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Accepted | — |
+| [SEED-DRAFT-chartediting](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Draft | — |
+| [SEED-DRAFT-chartingplatform](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
+| [SEED-DRAFT-programmaticdrawing](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
 
@@ -69,6 +72,14 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-O17](Survey.Branches.md#seed-o17--should-manifestations-ever-cross-as-instances) | Open question | Should manifestations ever cross as Instances? | — | SEED-0009 |
 | [SEED-O18](Survey.Branches.md#seed-o18--how-does-describe-relate-to-isasby) | Open question | How does describe relate to IS/AS/BY? | — | SEED-0009 |
 | [SEED-O19](Survey.Branches.md#seed-o19--how-should-the-in-image-effect-executor-work-before-vox-exists) | Open question | How should the in-image effect executor work before Vox exists? | — | SEED-0009 |
+| [SEED-DRAFT-chartediting-O1](Survey.ChartEditing.md#seed-draft-chartediting-o1--one-provider-or-two) | Open question | One provider or two? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-chartediting-O2](Survey.ChartEditing.md#seed-draft-chartediting-o2--how-large-should-the-geometry-language-be) | Open question | How large should the geometry language be? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-chartediting-O3](Survey.ChartEditing.md#seed-draft-chartediting-o3--compile-or-interpret-on-the-client) | Open question | Compile, or interpret on the client? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-chartediting-O4](Survey.ChartEditing.md#seed-draft-chartediting-o4--time-or-bar-index) | Open question | Time or bar index? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-chartediting-O5](Survey.ChartEditing.md#seed-draft-chartediting-o5--do-anchors-need-a-by-modality) | Open question | Do anchors need a BY modality? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-chartediting-O6](Survey.ChartEditing.md#seed-draft-chartediting-o6--is-the-ruler-a-figure) | Open question | Is the ruler a figure? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-chartediting-O7](Survey.ChartEditing.md#seed-draft-chartediting-o7--what-does-snapping-mean-for-general-series) | Open question | What does snapping mean for general series? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-chartediting-O8](Survey.ChartEditing.md#seed-draft-chartediting-o8--where-do-the-existing-appchart-classes-go) | Open question | Where do the existing app.chart classes go? | — | SEED-DRAFT-chartediting |
 | [SEED-DRAFT-classicinterface-O1](Survey.ClassicInterface.md#seed-draft-classicinterface-o1--bridge-granularity) | Open question | Bridge granularity | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O2](Survey.ClassicInterface.md#seed-draft-classicinterface-o2--format-migration-ux) | Open question | Format migration UX | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O3](Survey.ClassicInterface.md#seed-draft-classicinterface-o3--codemirror-mode-switching) | Open question | CodeMirror mode switching | — | SEED-DRAFT-classicinterface |
@@ -78,3 +89,12 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-classicinterface-O7](Survey.ClassicInterface.md#seed-draft-classicinterface-o7--preview-rendering-location) | Open question | Preview rendering location | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O8](Survey.ClassicInterface.md#seed-draft-classicinterface-o8--revision-history-model) | Open question | Revision history model | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O9](Survey.ClassicInterface.md#seed-draft-classicinterface-o9--the-target-resolution-rule) | Open question | The [[target]] resolution rule | — | SEED-DRAFT-classicinterface |
+| [SEED-DRAFT-programmaticdrawing-O1](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o1--a-native-seed-interface-mode) | Open question | A native Seed interface mode | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O2](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o2--what-does-reach-mean) | Open question | What does reach mean? | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O3](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o3--which-graphs-can-the-list-show) | Open question | Which graphs can the list show? | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O4](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o4--the-colour-pipeline) | Open question | The colour pipeline | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O5](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o5--modalities-for-the-canvas) | Open question | Modalities for the canvas | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O6](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o6--where-does-the-stroke-stream-come-from) | Open question | Where does the stroke stream come from? | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O7](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o7--one-figure-form-or-two) | Open question | One figure form or two? | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O8](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o8--which-back-ends-in-which-order) | Open question | Which back ends, in which order? | — | SEED-DRAFT-programmaticdrawing |
+| [SEED-DRAFT-programmaticdrawing-O9](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o9--restricting-user-apl) | Open question | Restricting user APL | — | SEED-DRAFT-programmaticdrawing |
