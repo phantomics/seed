@@ -307,9 +307,8 @@
    otherwise inferring from the Lisp type. The :- sentinel means
    'inferred base type plus these developer-asserted specializers'."
   (if explicit-is
-      (if (eq :- (first explicit-is))
-          (cons (infer-data-character value) (rest explicit-is))
-          explicit-is)
+      (if (not (eq :- (first explicit-is)))
+          explicit-is (cons (infer-data-character value) (rest explicit-is)))
       (list (infer-data-character value))))
 
 (defun resolve-by (modalities context-interactive-p)
