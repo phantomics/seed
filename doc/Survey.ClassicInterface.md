@@ -15,6 +15,8 @@ relates-to:
   - SEED-0006
   - SEED-0009
   - SEED-0008
+  - SEED-DRAFT-chartediting
+  - SEED-DRAFT-classiccms
   - VOX-DRAFT-vox
   - CLASSIC-0007
   - CLASSIC-0011
@@ -29,6 +31,15 @@ cites:
     external:  true
   - title:     "Magritte — Meta-Described Web Application Development"
     locator:   "Renggli, L. Master's thesis, University of Bern, June 2006"
+    external:  true
+  - title:     "The Django admin site"
+    locator:   "Django documentation, https://docs.djangoproject.com/en/6.1/ref/contrib/admin/ (consulted November 2026)"
+    external:  true
+  - title:     "Content-type Builder"
+    locator:   "Strapi 5 documentation, https://docs.strapi.io/cms/features/content-type-builder (consulted November 2026)"
+    external:  true
+  - title:     "Strapi vs. Directus"
+    locator:   "Directus, https://directus.io/strapi (consulted November 2026)"
     external:  true
   - title:     "3bmd — Markdown Processor in CL Using Esrap"
     locator:   "https://github.com/3b/3bmd"
@@ -67,8 +78,9 @@ hand-written rendering code, it has proved its thesis. If it cannot, the gaps
 it reveals are the most valuable finding.
 
 Chart editing (`systems/abcd`) shares infrastructure with the CMS — especially
-Tier-1 manipulation defaults — but its specific concerns are deferred to a
-separate Survey.
+Tier-1 manipulation defaults — but its specific concerns are the subject of
+a separate Survey (SEED-DRAFT-chartediting). The work this Survey proposes
+is planned in SEED-DRAFT-classiccms.
 
 
 ## Motivation
@@ -106,13 +118,16 @@ All code references in this section are pinned to revision `6a9aa8e`.
 
 - **`:catalog`** — the Philo demonstration. It already renders new-grammar
   `fx` through the bridge into modulate2: `express` builds a manifestation
-  tree, `generate` renders it to HTML. This tab exercises `:observing`,
+  tree, `generate` renders it to HTML. It is a read-only view: the branch
+  wraps its members in `(:by :observing)`, and every member of
+  `catalog.lisp` is annotated `:by :observing`. The other modalities —
   `:entering`, `:choosing`, `:reducing`, `:sorting`, `:extending` and
-  `:activating` annotations.
-- **`:cms`** — a working Classic blog editor with an article list, a create
-  form, and a CodeMirror edit view. It is written entirely in the old
-  grammar (`dx`, `uic-series`, `uicc-button`, `uicc-field`, `uir-*` roles)
-  and is the migration target for this work.
+  `:activating` — exist in modulate2, but no demonstration uses them yet.
+- **`:cms`** — a Classic blog editor with an article list, a create form,
+  and a CodeMirror edit view. The create form's Create button does not
+  work, for a cause not yet diagnosed (step 0 of SEED-DRAFT-classiccms). It is
+  written entirely in the old grammar (`dx`, `uic-series`, `uicc-button`,
+  `uicc-field`, `uir-*` roles) and is the migration target for this work.
 
 ### The old-grammar CMS
 
@@ -138,10 +153,12 @@ debt the migration must retire.
 `modulate2/modulate2.lisp@6a9aa8e` can produce `:activating` atoms through
 `make-control`. The `generate` method renders them as `<button>` elements
 with `data-action` and `data-target` attributes. But no client-side code
-listens to those attributes. The `:reducing` remove buttons in the Philo
-demo, and any CMS controls built the same way, do nothing when clicked.
-Wiring `:activating` controls to `fetchContact` (or an equivalent) is an
-early prerequisite for any CMS work.
+listens to those attributes, so any control built this way — the remove
+buttons the `:reducing` default injects, or CMS controls written in the new
+grammar — does nothing when clicked. (The old grammar's controls, such as
+the CMS's "new", "edit" and "back" buttons, generate their own handlers and
+work.) Wiring `:activating` controls to `fetchContact` (or an equivalent)
+is an early prerequisite for any new-grammar CMS work.
 
 ### Classic's setup
 
@@ -161,6 +178,8 @@ Understanding this layer is necessary for designing the bridge.
 
 `classic-class`, Classic's metaclass, extends CLOS slot definitions with
 four custom options:
+
+Table: The slot options Classic's metaclass adds to CLOS slot definitions.
 
 | Option | Values | Purpose |
 |--------|--------|---------|
@@ -226,6 +245,32 @@ wiki can be built this way; the Classic interface mode differs in reading
 Classic's slot metadata and lenses rather than Smalltalk descriptions, and in
 letting individual values override the class-level defaults.
 
+### Other derived authoring interfaces
+
+Pier is not the only system that derives its authoring interface from a
+data model. Three widely used ones show the range of the design:
+
+- **Django's admin** reads metadata from an application's models to provide
+  a model-centric interface for managing content. A `ModelAdmin` class for
+  a model overrides the defaults — which fields appear as columns in the
+  list view (`list_display`), how the edit form groups its fields
+  (`fieldsets`). This is the closest analogue to Classic's lenses: class
+  level, with the model's own field definitions as the default.
+- **Strapi** is code-first: content types are defined as schema files (or
+  through its Content-type Builder), and its admin panel is generated from
+  them; Strapi owns and migrates the database schema.
+- **Directus** is database-first: it introspects an existing SQL schema and
+  wraps its tables in an administrative interface.
+
+All three describe at the class or table level, as Magritte and Classic's
+lenses do. What none offers is the per-value layer of `fx`: an individual
+value that carries its own annotations and overrides its class's
+presentation. That layer is what the bridge adds, and the reason
+SEED-DRAFT-classicinterface-O1 (slot-level or instance-level annotation)
+matters. The products differ also in where the description lives — in code
+(Django, Strapi) or in the database (Directus); Classic's MOP metadata is
+of the first kind.
+
 ### The mapping
 
 Table: How Classic's metadata maps to the IS/AS/BY axes.
@@ -235,12 +280,12 @@ Table: How Classic's metadata maps to the IS/AS/BY axes.
 | `:format :markdown` on a `:blob` slot | AS | `:markdown` | The format is the role the string plays; see "AS for source formats" below |
 | `:format :lexis` (proposed) | AS | `:lexis` | Lexis-native bodies |
 | `:persistence :triple` (scalar) | BY | `:entering` | Editable text field |
-| `:persistence :relation` | BY | `:choosing` or `:navigating` | Depends on whether the user selects or follows the link |
+| `:persistence :relation` | BY | `:choosing` or `:navigating` | Depends on whether the user selects or follows the link; `:navigating` is a proposed modality, not yet in modulate2's vocabulary |
 | `:persistence :derived` | BY | `:observing` | Computed values are not editable |
 | `:persistence :blob` | BY | `:provision-text` | CodeMirror, mode selected by format |
 | Workflow transitions the account may perform | BY | `:activating` | One control per permitted transition |
 | A lens for a purpose | — | Class-level defaults generating `fx` | Per-value overrides remain possible |
-| Display mode `:list` | AS | `:extending` / `:reducing` | List-valued slots |
+| Display mode `:list` | BY | `:extending` / `:reducing` | List-valued slots |
 
 ### AS for source formats
 
@@ -254,7 +299,10 @@ string and a SQL string are both strings at the IS level; their difference
 is one of role.
 
 The bridge turns Classic's `:format` into an AS annotation:
-`(:as :- :markdown)`, `(:as :- :lexis)`, `(:as :- :sql)`, and so on.
+`(:as :markdown)`, `(:as :lexis)`, `(:as :sql)`, and so on. SEED-D19 (in
+SEED-0003) settles that such formats are AS program-semantic roles,
+extending `+as-program-roles+`; the format roles are not yet in that
+vocabulary, and how far it should grow is SEED-DRAFT-classicinterface-O6.
 The provisioning system reads this annotation to select the CodeMirror
 mode, the preview renderer, and the save pipeline.
 
@@ -314,14 +362,17 @@ The fix is clear roles for each representation:
 
 ### The three editing views, in order of implementation
 
-1. **Raw Lexis in CodeMirror** with Lisp mode (`:provision-text`). This
-   comes first, defines the baseline interaction with Lexis, and serves
-   developers and power users. The demo blog starts here, with body format
-   `:lexis`.
-2. **Markdown in CodeMirror** with Markdown mode (`:provision-text`). For
-   wiki pages and text-sourced blog posts. Requires a Markdown→Lexis reader
-   for preview and link extraction; the body text itself is stored as
-   Markdown.
+1. **Markdown in CodeMirror** with Markdown mode (`:provision-text`). This
+   comes first, because Markdown is the body format Classic's articles
+   already declare (`:format :markdown`), so it needs no change to Classic.
+   It serves blog posts and, later, wiki pages. The body text is stored as
+   Markdown; a Markdown→Lexis reader is needed for preview and link
+   extraction, but not for editing. The demo blog starts here.
+2. **Raw Lexis in CodeMirror** with Lisp mode (`:provision-text`). This
+   comes later: it needs a `:lexis` body format in Classic (Suggested
+   Classic Extension 2) and the hardened reader described under "Reading
+   discipline". It defines the baseline interaction with Lexis and serves
+   developers and power users.
 3. **A ProseMirror rich editor** (`:provision-document`, later). A
    ProseMirror schema mirroring Lexis's tag vocabulary gives visual editing
    with structural fidelity. `pla.browser.maple` already bundles
@@ -364,7 +415,11 @@ A container with:
   article class's body format (Lisp mode for Lexis, Markdown mode for
   Markdown).
 - Controls: "create" (`:activating`, effect class `:effecting`) and
-  "cancel" (`:activating`, `:safe`).
+  "back" (`:activating`, `:safe`).
+
+The effect classes given for controls here and below are proposals; whether
+controls carry them before the branch-object migration is open
+(SEED-DRAFT-classiccms-O3).
 
 ### The edit view
 
@@ -381,7 +436,7 @@ lens spec:
 
 - Scalar slots (`:persistence :triple`) → `:entering` text fields.
 - Relation slots (`:persistence :relation`) → `:choosing` among related
-  entities, or `:navigating` links.
+  entities, or `:navigating` links (a proposed modality).
 - List-valued slots (e.g. categories) → `:extending`/`:reducing` sequences,
   requiring Tier-1 manipulation defaults to actually work.
 - Derived slots (`:persistence :derived`) → `:observing` displays.
@@ -440,12 +495,13 @@ The wiki extends the CMS with:
 ### Increment ladder
 
 Table: Proposed increments, what each changes, and the infrastructure
-it pulls in. A Plan will decide the final sequence.
+it pulls in. The Plan (SEED-DRAFT-classiccms) decides the final sequence;
+its SEED-DRAFT-classiccms-D1 moves the create form ahead of A1.
 
 | Step | What changes | Infrastructure pulled in |
 |------|-------------|--------------------------|
 | A1 | Article list in new-grammar `fx`, with edit controls as `:activating` atoms | Wiring `:activating` to client-side dispatch |
-| A2 | Editor uses `:provision-text` with Lisp mode; inline JS disappears; body format `:lexis` | CodeMirror mode selection through the AS annotation |
+| A2 | Editor uses `:provision-text` with Markdown mode; inline JS disappears; body format stays `:markdown` | CodeMirror mode selection through the AS annotation |
 | A3 | Metadata panel (title, categories, state) from the Classic→fx bridge | The bridge itself; Tier-1 `:extending`/`:reducing` for categories |
 | B | Workflow: publish, archive, delete, restore as permission-filtered `:activating` controls | Account context in the session |
 | C | Rendered preview | `lexis.html` integration; for Markdown sources, the Markdown→Lexis reader |
@@ -485,8 +541,10 @@ for a dedicated Classic conversation, not dependencies for early CMS work.
 
 1. **URI-keyed accessors.** Classic's `show-article`, `edit-article`,
    `publish-article` and related functions identify articles by 1-based
-   list index, which breaks when the list changes. Accessors keyed by
-   URI (the stable identity Classic already assigns) would be safer.
+   list index, which breaks when the list changes — and `edit-article`
+   counts over all articles, deleted ones included, while `get-articles`
+   by default does not (see Honest Limits). Accessors keyed by URI (the
+   stable identity Classic already assigns) would be safer.
 2. **A richer format vocabulary.** The current `:format` options —
    `:markdown`, `:html`, `:sexp` — are incomplete. `:lexis` should be
    added for Lexis-native bodies. The display mode `:html` is described
@@ -517,6 +575,8 @@ The recommended approach is to adapt an existing library rather than write
 a parser. **3bmd** (already available via Quicklisp) is a Markdown parser
 that produces a clean Lisp list structure, not HTML. Its parse tree maps
 almost node-for-node to Lexis tags:
+
+Table: 3bmd parse-tree nodes and the Lexis tags they would translate to.
 
 | 3bmd node | Lexis tag |
 |-----------|-----------|
@@ -611,16 +671,23 @@ identifier management and the interaction with `compass check`.
 1. **Classic's API uses list indices.** `show-article`, `edit-article` and
    the other article functions identify articles by 1-based position in the
    persistence store's list. Concurrent modifications or deletions can
-   shift indices and cause the wrong article to be edited. The CMS must
-   work around this until URI-keyed accessors are available.
+   shift indices and cause the wrong article to be edited. There are also
+   two different counts: the CMS builds its list from `get-articles` with
+   its default arguments, which leave deleted articles out, and counts from
+   0; `edit-article` counts from 1 over `get-articles` with
+   `:include-deleted t`. The two agree only while no article has been
+   deleted (SEED-DRAFT-classiccms records this under its risks). The CMS
+   must work around this until URI-keyed accessors are available.
 2. **The `:activating` gap is real.** Until client-side dispatch is wired,
-   no CMS control works. This is the first blocker.
+   no control written in the new grammar works; the old grammar's controls
+   do. This is the first blocker for migrating any view.
 3. **Inline JavaScript debt.** The current CMS has ~15 lines of hand-written
    JavaScript for create and save actions. These must be replaced by
    declarative `:activating` controls with server-determined payloads.
 4. **No Markdown→Lexis parser exists yet.** Preview for Markdown-sourced
    documents and the wiki's link resolution depend on it. Until it is
-   built, the demo blog is Lexis-native and wiki functionality is blocked.
+   built, the demo blog's Markdown bodies can be edited but not previewed,
+   and wiki functionality is blocked.
 5. **Lexis's link order is wrong for wikis.** The display-first
    `[[display|uri]]` conflicts with every wiki format. This must be
    resolved in Lexis before wiki `[[links]]` work as expected.
@@ -640,8 +707,11 @@ identifier management and the interaction with `compass check`.
 - **SEED-0005** places Seed's approach in the landscape
   of interface models. The Classic bridge is the Magritte-like pattern
   that survey anticipated.
-- **SEED-0006** covers editor strategies. The three editing
-  views (raw Lexis, Markdown, ProseMirror) correspond to its taxonomy.
+- **SEED-0006** evaluates editor models. Its finding that text editing
+  covers whatever has not yet moved to structural editing, at a boundary
+  that shifts over time, is the pattern of the three editing views here:
+  Markdown and raw Lexis as text, ProseMirror and a later structural Lexis
+  editor as structure.
 - **SEED-0009** defines the branch-object model that step E
   migrates to. The stage model (decode/act/encode), operations with
   effect classes, and queued effects all apply to the CMS.
@@ -656,8 +726,10 @@ identifier management and the interaction with `compass check`.
   Classic's internal representation.
 - **Chart editing** (`systems/abcd`) shares Tier-1 manipulation defaults
   (`:sorting`, `:extending`, `:reducing`) with the CMS. It exercises
-  valence and layout, which the CMS does not. A separate Survey will
-  address it.
+  valence and layout, which the CMS does not. SEED-DRAFT-chartediting
+  surveys it.
+- **SEED-DRAFT-classiccms** plans the work this Survey proposes, beginning
+  with the create form, and describes modulate2 and the CMS as they stand.
 
 
 ## Open Questions

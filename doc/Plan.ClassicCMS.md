@@ -87,8 +87,13 @@ a working CMS at every step — is already broken.
   layout. Of the provisioning modalities
   (`modulate2/modulate2.lisp:generate-provisioned@7a82b07`), only
   `:provision-text` works, creating a CodeMirror editor that loads its text
-  through the branch's text protocol; `:provision-sheet`, `:provision-chart`,
-  `:provision-graph` and `:provision-form` emit empty placeholder elements.
+  through the branch's text protocol. The editor is always in Lisp mode:
+  the client's constructor takes no language argument, and the client build
+  imports only the Lisp and Python languages
+  (`platform/browser/pla.browser.maple/maple.lisp:build-script-cmirror@7a82b07`),
+  although `@codemirror/lang-markdown` is installed in the CodeMirror npm
+  interface. `:provision-sheet`, `:provision-chart`, `:provision-graph` and
+  `:provision-form` emit empty placeholder elements.
 - **Bridges.** Old and new grammar mix in one tree in both directions, through
   the `*express-foreign*`, `*generate-foreign*` and `*dx-foreign*` hooks.
 
@@ -271,6 +276,16 @@ article's index. The body is `:provision-text` (CodeMirror) in both, loading
 its text through the text protocol — which already returns an empty string
 when no article is being edited — and submitting with the form. The text
 protocol's save path is retired once the edit view moves.
+
+The editor's mode follows the body's format, stated as an AS role on the
+body field: `(:as :markdown)` for the demo blog, whose articles declare
+`:format :markdown` in Classic, as the Survey's first editing view
+proposes. Until the Classic→fx bridge (step 7) derives the role from the
+slot's `:format`, the form function writes it directly. The
+`:provision-text` generate method reads the role and passes the matching
+language to the client's editor constructor; a body with no format role
+gets the constructor's default. Lisp mode for Lexis bodies (`(:as :lexis)`)
+follows when Classic gains a `:lexis` format.
 **Alternatives:** A plain multi-line field for Create — simpler, but the two
 views would diverge and the editor would have to be added again later.
 
@@ -304,7 +319,7 @@ constructor of SEED-DRAFT-classiccms-D3.
   (dx (:as :article-form :by :provision-form :name :article)
       (dx (:is :- :required :by :entering :name :title)
           (if article (headline article) ""))
-      (dx (:by :provision-text :name :body) (list *system* :cms))
+      (dx (:as :markdown :by :provision-text :name :body) (list *system* :cms))
       (if article
           (control :save "Save" :args (list :index index))
           (control :create "Create"))
@@ -317,6 +332,10 @@ constructor of SEED-DRAFT-classiccms-D3.
 - An exported control constructor; controls with arguments.
 - `:provision-form` rendering its members inside the form.
 - A field name on `:provision-text` elements, so the form can gather them.
+- Editor mode chosen from the field's AS format role
+  (SEED-DRAFT-classiccms-D6): a language argument to the client's
+  `create-codemirror`, which today always uses Lisp mode, and CodeMirror's
+  Markdown language imported into the client build.
 - The dispatcher, in `maple.lisp`.
 - `construct` resolving IS through `resolve-is`.
 - A representation of field errors for rendering (SEED-DRAFT-classiccms-O2).
@@ -465,7 +484,8 @@ lands.
    `:provision-text` field whose value is a list (expressed as a sequence)
    and a form with a `nil` member.
 5. **Step 4 — The create view.** The article form
-   (SEED-DRAFT-classiccms-D6) in create mode; the `:create` action with
+   (SEED-DRAFT-classiccms-D6) in create mode, its body editor in Markdown
+   mode selected through `(:as :markdown)`; the `:create` action with
    validation (SEED-DRAFT-classiccms-D4) and closed actions
    (SEED-DRAFT-classiccms-D5); `render-cms-create` and its inline script
    deleted. Create works.
