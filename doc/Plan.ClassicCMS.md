@@ -5,7 +5,11 @@ genre:         Plan
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-16
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
@@ -14,6 +18,8 @@ relates-to:
   - SEED-0004
   - SEED-0008
   - SEED-0009
+  - SEED-0012
+  - SEED-0014
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -90,9 +96,11 @@ a working CMS at every step — is already broken.
   through the branch's text protocol. The editor is always in Lisp mode:
   the client's constructor takes no language argument, and the client build
   imports only the Lisp and Python languages
-  (`platform/browser/pla.browser.maple/maple.lisp:build-script-cmirror@7a82b07`),
-  although `@codemirror/lang-markdown` is installed in the CodeMirror npm
-  interface. `:provision-sheet`, `:provision-chart`, `:provision-graph` and
+  (`platform/browser/pla.browser.maple/maple.lisp:build-script-cmirror@7a82b07`).
+  `@codemirror/lang-markdown` is present in the CodeMirror npm interface's
+  `node_modules` only as an indirect dependency, pulled in at version 6.0.0
+  by `@nextjournal/clojure-mode`; the interface's `package.json` does not
+  declare it. `:provision-sheet`, `:provision-chart`, `:provision-graph` and
   `:provision-form` emit empty placeholder elements.
 - **Bridges.** Old and new grammar mix in one tree in both directions, through
   the `*express-foreign*`, `*generate-foreign*` and `*dx-foreign*` hooks.
@@ -167,7 +175,7 @@ and an old-grammar series with the `uir-form` role renders as a `<form>`
 
 ### SEED-DRAFT-classiccms-D1 — The create form is the first view to move
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The Survey orders the views list, edit, metadata (A1–A3). But
 Create is broken, small, and needs exactly the two missing pieces —
 working controls and form submission — that every later view also needs.
@@ -181,7 +189,7 @@ Create broken longer.
 
 ### SEED-DRAFT-classiccms-D2 — How a form is submitted
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The old views assemble payloads by hand in inline scripts, and
 an old-grammar field posts each change on its own.
 **Decision:** A `:provision-form` node renders its members inside a
@@ -197,14 +205,13 @@ editors' content and the action, rather than replacing it.
 **Alternatives:** Nesting the fields under a `fields` key — workable, since
 `adapt-from-json` normalises nested keys against the same declared list, but
 rejected as the more complex shape: a flat payload matches the way the
-branch already receives its input, as one plist of declared keys. Per-field
-posting as the old
-`uicc-field` does — rejected for forms, where a partial article is not a
-meaningful state.
+branch already receives its input, as one plist of declared keys.
+Per-field posting as the old `uicc-field` does — rejected for forms, where a
+partial article is not a meaningful state.
 
 ### SEED-DRAFT-classiccms-D3 — One client dispatcher for controls
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** `:activating` controls render with `data-action` and
 `data-target` but nothing handles them.
 **Decision:** Add one function to the shared client code in `maple.lisp`,
@@ -223,7 +230,7 @@ for each element; kept open as SEED-DRAFT-classiccms-O5.
 
 ### SEED-DRAFT-classiccms-D4 — The form's description validates its submission
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The tree a form was rendered from does not exist when its
 submission arrives in a later request. Checks written separately in the
 branch would repeat what the form already states (Exact's Implied Checks,
@@ -243,7 +250,7 @@ a second description that can drift from the form.
 
 ### SEED-DRAFT-classiccms-D5 — Actions are keywords from a closed set
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The handler compares action strings in a `cond`. A mistyped or
 unknown action matches no clause and falls through to the default case,
 which renders the current view: the client sees no error, and the request
@@ -266,16 +273,17 @@ SEED-0009), which replaces it.
 
 ### SEED-DRAFT-classiccms-D6 — Create and edit are one form
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The Survey describes the edit view as "like the create form,
 but pre-populated". The old edit view saves its body through the text
 protocol and cannot change the title.
 **Decision:** One article form serves both views: empty with a "create"
 action, or filled from an article with a "save" action carrying the
-article's index. The body is `:provision-text` (CodeMirror) in both, loading
-its text through the text protocol — which already returns an empty string
-when no article is being edited — and submitting with the form. The text
-protocol's save path is retired once the edit view moves.
+article's index according to edit-article's 1-based count. The body is
+`:provision-text` (CodeMirror) in both, loading its text through the text
+protocol — which already returns an empty string when no article is being
+edited — and submitting with the form. The text protocol's save path is
+retired once the edit view moves.
 
 The editor's mode follows the body's format, stated as an AS role on the
 body field: `(:as :markdown)` for the demo blog, whose articles declare
@@ -335,7 +343,8 @@ constructor of SEED-DRAFT-classiccms-D3.
 - Editor mode chosen from the field's AS format role
   (SEED-DRAFT-classiccms-D6): a language argument to the client's
   `create-codemirror`, which today always uses Lisp mode, and CodeMirror's
-  Markdown language imported into the client build.
+  Markdown language declared as a direct dependency and imported into the
+  client build.
 - The dispatcher, in `maple.lisp`.
 - `construct` resolving IS through `resolve-is`.
 - A representation of field errors for rendering (SEED-DRAFT-classiccms-O2).
@@ -361,6 +370,11 @@ client code.
   retirement of the old aspect system; ProseMirror editing.
 - **One foundational subsystem at a time.** The steps change the rendering
   grammar only. The branch model stays a `cond` until increment E.
+- **Dependent work.** Steps 2–3 — working controls and submittable forms —
+  are prerequisites for two other documents' steps: the derived properties
+  panel of the chart-editing Survey (SEED-0012, step C7) and the layer-list
+  editor of the drawing-tool Survey (SEED-0014, step P5). Both cite these
+  steps by number, so a renumbering here should be reflected there.
 
 
 ## Tensions and Risks
@@ -376,9 +390,10 @@ default arguments and counts from 0. Classic's `edit-article` counts from 1,
 over `get-articles` with `:include-deleted t`; the old code converts with
 `(1+ edit-idx)`. The two agree only while no article has been deleted. Once
 deletion arrives (increment B), a position in the list and an index for
-`edit-article` can name different articles. The save action of
-SEED-DRAFT-classiccms-D6 must state which index it carries and how it is
-converted.
+`edit-article` can name different articles. SEED-DRAFT-classiccms-D6
+settles that the save action carries `edit-article`'s 1-based index, so the
+list's edit controls must produce that index — not their 0-based position
+among current articles — once deleted articles exist.
 
 **The CodeMirror token.** `:provision-text` names its editor after the
 system and branch, so one branch can hold only one server-fetched editor at
@@ -485,7 +500,9 @@ lands.
    and a form with a `nil` member.
 5. **Step 4 — The create view.** The article form
    (SEED-DRAFT-classiccms-D6) in create mode, its body editor in Markdown
-   mode selected through `(:as :markdown)`; the `:create` action with
+   mode selected through `(:as :markdown)`, with `@codemirror/lang-markdown`
+   declared explicitly in the `package.json` of the npm interface the client
+   build imports it from; the `:create` action with
    validation (SEED-DRAFT-classiccms-D4) and closed actions
    (SEED-DRAFT-classiccms-D5); `render-cms-create` and its inline script
    deleted. Create works.
