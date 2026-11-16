@@ -21,7 +21,7 @@ relates-to:
   - SEED-0009
   - SEED-0010
   - SEED-0011
-  - SEED-DRAFT-chartingplatform
+  - SEED-0013
   - SEED-DRAFT-programmaticdrawing
   - SEED-DRAFT-classiccms
 cites:
@@ -574,7 +574,7 @@ Within the Seed corpus:
   keeping Seed usable throughout development this survey follows.
 - SEED-DRAFT-classiccms — the CMS Plan, whose controls and forms in
   modulate2 the properties panel (C7) would use.
-- SEED-DRAFT-chartingplatform — the Eval of charting platforms for
+- SEED-0013 — the Eval of charting platforms for
   monitoring and alerts, which builds on this vocabulary: watchers refer to
   figure instances, and a figure's geometry is evaluated in Lisp against
   arriving bars — the "computation in Lisp" use above.

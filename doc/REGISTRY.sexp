@@ -73,3 +73,4 @@
 (:id "SEED-O34" :kind :open-question :draft "SEED-DRAFT-chartediting-O6" :host "SEED-0012" :date "2026-11-16" :by "Andrew Sengul")
 (:id "SEED-O35" :kind :open-question :draft "SEED-DRAFT-chartediting-O7" :host "SEED-0012" :date "2026-11-16" :by "Andrew Sengul")
 (:id "SEED-O36" :kind :open-question :draft "SEED-DRAFT-chartediting-O8" :host "SEED-0012" :date "2026-11-16" :by "Andrew Sengul")
+(:id "SEED-0013" :kind :document :draft "SEED-DRAFT-chartingplatform" :path "doc/Eval.ChartingPlatform.md" :date "2026-11-16" :by "Andrew Sengul")

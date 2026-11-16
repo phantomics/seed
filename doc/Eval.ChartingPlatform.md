@@ -1,12 +1,16 @@
 ---
-id:            SEED-DRAFT-chartingplatform
+id:            SEED-0013
 title:         "Market Monitoring and Alerts: Charting Platforms as Prior Art"
 genre:         Eval
 subtype:       prior-art
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-16
 provenance:
   assistant:   claude-opus-5-5
 relates-to:

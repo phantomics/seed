@@ -22,7 +22,7 @@ Table: Documents in the SEED namespace.
 | [SEED-0010](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-0011](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Accepted | — |
 | [SEED-0012](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Accepted | — |
-| [SEED-DRAFT-chartingplatform](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Draft | — |
+| [SEED-0013](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-DRAFT-classiccms](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Draft | — |
 | [SEED-DRAFT-programmaticdrawing](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Draft | — |
 
