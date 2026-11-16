@@ -16,6 +16,7 @@ relates-to:
   - SEED-0009
   - SEED-0012
   - SEED-0011
+  - SEED-DRAFT-classiccms
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -52,6 +53,15 @@ cites:
     external:  true
   - title:     "Vector layers"
     locator:   "Clip Studio Paint User Guide, https://help.clip-studio.com/en-us/manual_en/180_layers/Vector_layers.htm (consulted November 2026)"
+    external:  true
+  - title:     "The FX Special Effects Image Operator"
+    locator:   "ImageMagick, https://imagemagick.org/fx/ (v7.1.2, consulted November 2026)"
+    external:  true
+  - title:     "Pixel Math"
+    locator:   "PixInsight documentation, https://pixinsight.com/doc/legacy/LE/22_pixel_math/pixel_math/pixel_math.html; Siril 1.4.4 documentation, https://siril.readthedocs.io/en/stable/processing/pixelmath.html (consulted November 2026)"
+    external:  true
+  - title:     "G'MIC — GREYC's Magic for Image Computing"
+    locator:   "https://gmic.eu/; G'MIC-Qt, https://github.com/c-koi/gmic-qt; Krita Manual, G'Mic Settings (consulted November 2026)"
     external:  true
   - title:     "Halide: A Language and Compiler for Optimizing Parallelism, Locality, and Recomputation in Image Processing Pipelines"
     locator:   "Ragan-Kelley, J. et al. Proc. PLDI 2013, doi:10.1145/2491956.2462176"
@@ -126,7 +136,8 @@ existing ones, in a notation that states the arithmetic of an effect directly.
 Mainstream editors offer parts of this as "non-destructive" filters and
 adjustment layers, but, as the Prior Art section shows, each stops short: masks
 are painted pixels rather than editable strokes, the set of effects is fixed by
-the vendor or extended only through compiled plug-ins, and the semantics of
+the vendor or extended only through plug-ins (compiled, or scripts like
+G'MIC's that run outside the layer model), and the semantics of
 what a filter layer sees are left implicit. Their base models were designed
 around pixel layers, and the non-destructive features were added to them later.
 
@@ -145,7 +156,9 @@ around pixel layers, and the non-destructive features were added to them later.
 ## Prior Art
 
 The systems below were examined through their published documentation in
-November 2026, cited in the front-matter. Statements about node compositors,
+November 2026, cited in the front-matter; the account of who uses
+PixInsight's PixelMath, and for what, rests on community tutorials. Statements
+about node compositors,
 SVG filters and Shadertoy, Photoshop's adjustment layers, and the colour-space
 column for Photoshop, Krita and Affinity rest on general knowledge and were
 not re-checked for this survey.
@@ -180,8 +193,8 @@ applies a filter to one layer, in the area its painted greyscale mask selects.
 A filter layer affects all layers below it *in the same hierarchy*, so what a
 filter sees depends on grouping and on a group's pass-through setting — a
 behaviour a third-party guide (Virtual Curiosities, cited) expects many users
-to mistake for a filter that does not work. This
-is the "reach" question of this survey, answered implicitly by the layer tree.
+to mistake for a filter that does not work. This is the "reach" question of
+this survey, answered implicitly by the layer tree.
 
 **Affinity Photo.** Live filter layers are separate layers that affect
 everything below them, or only a layer or group they are clipped to. They
@@ -240,15 +253,54 @@ system, and PixelMath, first written in 1999 by Jeremy Baer, with a formula
 page and later a Python window. It is the teaching tool behind this survey's
 idea: an image editor in which an effect is a formula over pixel values.
 
+PixelMath's idea survives in three tools in active use, each of which writes
+image effects as expressions or programs:
+
+**ImageMagick's `-fx`.** The FX operator applies a mathematical expression
+to each channel of each pixel of an image. The expression language has
+variables, conditionals and loops; it reads the current pixel's channels
+(`r`, `g`, `b`, `a`), its coordinates (`i`, `j`), the image's size and
+statistics, and other pixels by relative or absolute position (`p[-1,-1]`,
+`p{12,34}`), and it can combine several images of a sequence (`u`, `v`).
+Values are normalised to 0–1. The expression is compiled once and run in
+parallel across threads. It is the closest existing match to an effect as a
+short formula — but it is a command-line operator: the region it applies to
+is the whole image, or a channel, never a stroke, and nothing records it as
+an editable layer.
+
+**PixInsight's PixelMath** (and the similar **Pixel Math** tool in Siril).
+In these astronomical image processors, PixelMath evaluates expressions —
+one for all channels, or one per channel — over a target image and other
+open images, referring to the target by a symbol (`$T`), with optional
+rescaling of the result; the result replaces the target or creates a new
+image. Astronomers use it for blending, calibration arithmetic, masks and
+channel recombination. It shows that expression-based effects are a working
+practice among technically skilled users, not only a teaching device. Like
+`-fx`, it applies to whole images and masks, not to editable strokes.
+
+**G'MIC.** G'MIC defines a scripting language for designing image-processing
+operators and pipelines, with a large library of filters written in it. Its
+G'MIC-Qt front end is a plug-in for GIMP, Krita, Paint.NET and digiKam, and
+filters a user writes in a command file can be added to that plug-in. G'MIC
+comes closest to "new tools are short programs" inside a layered editor. But
+its filters run through the plug-in on the layer's pixels: Krita's filter
+layers and masks cannot use G'MIC filters, which are applied destructively,
+so a G'MIC effect is not an editable layer, and its region is a selection,
+not a stroke.
+
 ### What the prior art establishes
 
 Each ingredient exists somewhere: editable effect layers (all the editors),
 vector masks with feathering (darktable), strokes editable after drawing (Clip
 Studio), explicit working colour spaces (darktable, compositors), effect graphs
 (compositors, SVG, GEGL), separation of algorithm from schedule (Halide), and
-effects as formulas (PixelMath, shaders). No system examined combines them: in
-none is a drawn stroke an editable object whose effect is an arbitrary program,
-applied uniformly with every other layer in a document the user can read.
+effects as formulas or programs (PixelMath, ImageMagick's `-fx`, PixInsight's
+PixelMath, G'MIC, shaders). No system examined combines them: in none is a
+drawn stroke an editable object whose effect is an arbitrary program, applied
+uniformly with every other layer in a document the user can read. The
+programmable tools apply their expressions to whole images, channels or
+selections, and record no editable layer; the layered editors record
+editable layers, but with effects from a fixed or compiled set.
 
 
 ## Finding the Joints
@@ -343,9 +395,11 @@ precision, and whether alpha is premultiplied are open
 
 The following sketches what effects and documents could look like. It is
 illustrative: April's calling convention, and how Lisp names are bound to APL
-variables, are not shown as they are. Images are taken as arrays of channel
-planes — `rgb` of shape 3 × height × width, and `a`, the alpha plane — and `s`
-is the strength at each pixel, from the profile.
+variables, are not shown as they are. An image is an array of shape
+4 × height × width — four channel planes, red, green, blue and alpha. In the
+effects below, `rgb` names its first three planes (shape 3 × height × width)
+and `a` its alpha plane (height × width); `s` is the strength at each pixel,
+from the profile, also height × width.
 
 ```lisp
 ;; Profiles: distance (⍵) to strength, parameterised by width w.
@@ -409,7 +463,8 @@ One `define-effect` would serve, in Exact's terms (Duplex):
 A drawing whose source image is left as a parameter is a function from images
 to an image. Applying it to many images is a map — darktable's pasted history
 stack, as a value. And because effects are array functions, one written for a
-single image of shape 4 × height × width applies to a stack of frames through
+single image — an array of shape 4 × height × width, as in the sketch —
+applies to a stack of frames, of shape frames × 4 × height × width, through
 APL's rank operator, with no new machinery. This is the path to the later
 video goal, with one honest limit: a global grade carries over to every frame,
 but a stroke drawn on one frame fits the others only if the content under it
@@ -497,7 +552,8 @@ vocabulary's second-instance test (SEED-DRAFT-programmaticdrawing-O7).
 ### Getting pixels to the browser
 
 On one machine, transport is unlikely to be what limits speed. A full frame of
-1920 × 1080 pixels at 8 bits per channel is about 8 MB; over a local WebSocket,
+1920 × 1080 pixels with four channels (red, green, blue and alpha) at 8 bits
+per channel is about 8 MB; over a local WebSocket,
 sent as raw binary with no image encoding, it should take a few milliseconds.
 That estimate has not been measured. Updates during a stroke need only the
 changed region. In the browser, a Worker can receive the frames and draw them
@@ -556,12 +612,15 @@ which every other back end is tested.
 
 April already contains the beginning of a kernel generator (April: x86
 effectors, cited). For a chain of structural array functions — section (take
-and drop), rotation, transposition and expansion — it fuses the chain into a
-single loop over encoded coordinates, emitted as an SBCL virtual operation in
-x86 assembly and divided among worker threads. Those functions cover the
-drawing tool's geometric operations: cropping, flipping, rotating by quarter
-turns, transposing. Arithmetic effects — compositing, profiles, blurs — are not
-yet within its reach.
+and drop), reverse and rotate (`⌽` and `⊖`), transpose (`⍉`) and expand
+(`\`) — it fuses the chain into a single loop over encoded coordinates,
+emitted as an SBCL virtual operation in x86 assembly and divided among worker
+threads. In APL's terms, rotate is a cyclic shift along an axis, not a
+geometric rotation. In the drawing tool's terms, those functions cover its
+geometric operations on whole pixels: cropping is a section, flipping is a
+reverse, a quarter turn is a transpose composed with a reverse, and a
+wrap-around offset is a rotate. Arithmetic effects — compositing, profiles,
+blurs — are not yet within its reach.
 
 The generator is being generalised into a model of assembly code as CLOS
 instances — counted and unrolled loops, function definitions, guarded
@@ -622,7 +681,10 @@ Table: A possible sequence of increments. A Plan would decide the final order.
 P1 is deliberately without an interface: it settles whether April evaluates
 effects fast enough before anything is built on the assumption. P6 should
 follow the chart Survey's C1, so that the figure vocabulary has one owner at a
-time.
+time. For the same reason, P5 should follow step 3 of the CMS Plan
+(SEED-DRAFT-classiccms): the layer list's controls (create, copy, delete,
+change effect) need the working `:activating` controls of its step 2, and a
+layer's parameters the submittable forms of its step 3.
 
 
 ## Honest Limits
@@ -672,6 +734,8 @@ Within the Seed corpus:
   recurs here.
 - SEED-0011 — the Classic interface Survey, whose rule for
   keeping Seed usable during development this survey follows.
+- SEED-DRAFT-classiccms — the CMS Plan, whose working controls and forms in
+  modulate2 the layer-list editor (P5) would use.
 
 External:
 
