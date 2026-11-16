@@ -17,6 +17,9 @@ relates-to:
   - SEED-0009
   - SEED-0010
   - SEED-0011
+  - SEED-DRAFT-chartingplatform
+  - SEED-DRAFT-programmaticdrawing
+  - SEED-DRAFT-classiccms
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -32,6 +35,12 @@ cites:
     external:  true
   - title:     "Plotly.js: layout.shapes"
     locator:   "Plotly, https://plotly.com/javascript/reference/layout/shapes/"
+    external:  true
+  - title:     "Stock tools; Advanced Annotations module"
+    locator:   "Highcharts documentation, https://www.highcharts.com/docs/stock/stock-tools and https://www.highcharts.com/docs/stock/advanced-annotations (consulted November 2026)"
+    external:  true
+  - title:     "Drag (Interaction how-to guide); mark-line options"
+    locator:   "Apache ECharts handbook and documentation, https://echarts.apache.org/handbook/en/how-to/interaction/drag (consulted November 2026)"
     external:  true
   - title:     "CLIM II Specification"
     locator:   "Part VI: Extended Stream Input Facilities, §23 Presentation Types"
@@ -111,23 +120,35 @@ them:
    points, each annotated `(:fx :uicc-field)`.
 2. **CLOS instances.** The same file is `load`ed under the priority macro
    reader (`systems/abcd/seed.lisp:init-chart-entities@bf51998`), so
-   `chart-view` and `span` (`application/app.chart/chart.lisp:chart-view@bf51998`,
+   `chart-view` and `span`
+   (`application/app.chart/chart.lisp:chart-view@bf51998`,
    `application/app.chart/chart.lisp:span@bf51998`) build `app.chart` objects:
    `chart`, `entity-set`, `enspan-line`, and `enspan-retrace`, which already
    carries an axis and a list of ratios
    (`application/app.chart/chart.lisp:enspan-retrace@bf51998`).
 3. **Session plists.** The `:chart` branch keeps `entity-data` in session
-   state, built from the file by `systems/abcd/seed.lisp:point-from-template@bf51998`
-   and from posted JSON by destructuring, and writes new figures back through a
-   string templater.
+   state, built from the file by
+   `systems/abcd/seed.lisp:point-from-template@bf51998` and from posted JSON
+   by destructuring, and writes new figures back through a string templater.
 4. **Client objects.** In the browser, each figure is a JS object with
    `points` in data coordinates, `layerPoints` in pixel coordinates, and
    `inFlux` and `pointsInFlux` flags, some of them carried as the strings
    `"false"` and `"true"`.
 
-The retracement ratios are themselves stated twice: in the client's
-`platform/browser/pla.browser.maple/maple.lisp:candlestick-chart-entity-templates@bf51998`,
-and in the `fx` `:options` of the analysis file.
+The retracement ratios are stated only once, in the client's
+`platform/browser/pla.browser.maple/maple.lisp:candlestick-chart-entity-templates@bf51998`.
+The analysis file's `:options` list figure types (`"line"`, `"retraceX"`,
+`"retraceY"`), not ratios, and the server model has a slot for ratios
+(`enspan-retrace`'s, defaulting to `nil`) that nothing fills. The client's
+price retracement uses 0, 0.236, 0.382, 0.5, 0.618, 0.764 and 1, with 0.764
+being 1 − 0.236.
+
+The conversions also lose information. When the `:chart` branch builds its
+session plists from the file,
+`systems/abcd/seed.lisp:point-from-template@bf51998` always produces
+`:type "line"` and `:ratios nil`, so a retracement read from the analysis
+file appears to arrive in the session as a plain line. This has not been
+tested in the running application.
 
 ### Interaction written by hand
 
@@ -137,9 +158,12 @@ from the `:draw-methods` element onward, implements:
 - a registry of figure types, each with `draw` and `intersect` functions
   (`platform/browser/pla.browser.maple/maple.lisp:draw-methods@bf51998`);
 - a select/draw mode machine across `mousedown`, `mousemove` and `mouseup`
-  handlers (`platform/browser/pla.browser.maple/maple.lisp:interactor-mousedown@bf51998`);
+  handlers
+  (`platform/browser/pla.browser.maple/maple.lisp:interactor-mousedown@bf51998`);
 - hit-testing with an eight-pixel margin, tracking of which endpoint is being
-  dragged, and snapping of a dragged point to a candle's high or low;
+  dragged, and snapping of a drawn or dragged point to a bar's time, by
+  rounding its time down to the bar interval; its price is left where the
+  pointer is;
 - conversion between pixel and data coordinates at each step;
 - a candlestick plotter, since dygraphs has no candlestick series
   (`platform/browser/pla.browser.maple/maple.lisp:get-candle-plotter@bf51998`),
@@ -168,7 +192,8 @@ inputs — the hand-written operations pattern SEED-0009 describes.
   a round trip per frame, and this split should be kept.
 - **Figure types are a registry,** each with its own drawing and hit-testing.
   That is the right shape, waiting for the right description.
-- **Points snap to the bars,** which traders expect.
+- **Points snap to the bars' times,** which traders expect. Snapping to a
+  bar's open, high, low or close — KLineChart's magnet — would be new.
 - **`enspan-retrace` already pairs an axis with a list of ratios** — the seed
   of the universal proposed below.
 
@@ -234,14 +259,22 @@ Table: Three familiar figures as instances of one form.
 | Channel | A segment through two anchors, offset by a third | A parallel copy, translated by the ratio times the offset | 0, 1 — or 0, 0.5, 1, 1.618 for more parallels |
 | Concentric circles | A circle with centre and rim anchors | A circle with the radius scaled by the ratio | 1 — or 0.5, 1, 1.5, 2 |
 
+The table writes ratios as fractions, for comparison across the rows; the
+vocabulary itself writes retracement levels as percentages (see "Native
+notation"). For the price retracement it lists 0.786 (the square root of
+0.618), where the client's current templates use 0.764 (1 − 0.236). Both
+conventions are common; the preset should choose one as its default and
+state it, and either is a one-number change to the ratio list.
+
 The two retracements are already one class in `app.chart`
-(`enspan-retrace`, with an axis and ratios), and the client's draw functions
-for them differ only in the axis they use and the colour they draw in. The table extends the same
-observation to parallels and concentrics. In Exact's terms this is the
-**Universals** principle: the core provides anchors, derivations and families;
-"Fibonacci retracement", "channel" and "concentric circles" are **presets** — a
-family with a base, a transform and a default ratio list. Figures no tool has
-named yet, such as parallel lines at Fibonacci offsets, come at no extra cost.
+(`enspan-retrace`, with an axis and ratios), and the client's draw
+functions for them differ only in the axis they use and the colour they draw
+in. The table extends the same observation to parallels and concentrics.
+In Exact's terms this is the **Universals** principle: the core provides
+anchors, derivations and families; "Fibonacci retracement", "channel" and
+"concentric circles" are **presets** — a family with a base, a transform and
+a default ratio list. Figures no tool has named yet, such as parallel lines
+at Fibonacci offsets, come at no extra cost.
 
 ### Native notation
 
@@ -372,6 +405,8 @@ Table: Candidate chart libraries, as documented at the time of writing.
 | **KLineChart** | Candles, with timestamps and data indices | Built in: "overlays" with handles on their points, dragging of points and of the whole overlay, and magnet modes that snap to bar prices | A template: number of steps (points), magnet mode, whether to show default point handles, and a small function that returns figures (lines, text, circles…) from the points' pixel coordinates. Built-in overlays include segments, rays, price channels and a Fibonacci line. | Apache-2.0 |
 | **Lightweight Charts** (TradingView) | Candles and general series | None built in; drawing tools are written as "series primitives" with hand-written dragging | Classes with views and renderers drawing on a canvas | Apache-2.0 |
 | **Plotly.js** | General series, including a candlestick trace | Built in for simple shapes: editable lines, rectangles, circles and paths, dragged and resized, with an event reporting new coordinates | Declarative JSON, but each shape stands alone: no linked families, no constraints, no snapping | MIT |
+| **Highcharts Stock** | Candles and general series | Built in: a Stock Tools toolbar for drawing, and draggable annotations with control points | Annotation types in configuration — including Fibonacci retracements, pitchforks and parallel channels — with custom annotation types built from point coordinates | Proprietary; a commercial licence is needed for most uses |
+| **Apache ECharts** | Candles and general series, with a WebGL extension (ECharts GL) | None for figures: mark lines and areas are static, and dragging is written by hand on `graphic` elements | Declarative options for static marks; editing must be programmed | Apache-2.0 |
 
 KLineChart's overlay templates are the closest existing match to the
 vocabulary sketched above. A template declares its number of points and its
@@ -386,6 +421,19 @@ would have to be re-derived from its anchors whenever a shape is dragged, by
 an adapter listening to Plotly's layout events. That adapter is the provider
 interface doing its job, and it is also the place where Plotly would show
 whether the vocabulary's joint is real.
+
+Highcharts Stock is the most complete of the candidates for interactive
+financial figures: its annotations include Fibonacci retracements and
+parallel channels as built-in types, with draggable control points, and new
+annotation types can be defined from point coordinates — close in shape to
+KLineChart's templates. It is excluded as a default provider by its
+licence, which a user of Seed cannot be assumed to hold; it remains a
+candidate a user could add behind the same provider interface.
+Apache ECharts has the opposite profile: a permissive licence and broad
+series support, but no figure interaction, so every handle and drag would
+be written by hand — the problem this Survey sets out to remove. It is a
+plausible general-series provider only if Plotly's adapter proves harder
+than writing interaction once against ECharts' `graphic` elements.
 
 ### The second-instance test
 
@@ -451,7 +499,10 @@ Table: A possible sequence of increments. A Plan would decide the final order.
 Steps C1 and C2 change nothing the user sees. C3 lets both renderers run side
 by side on the same data. The `:chart` branch's move to the branch-object
 model in C4 should follow the CMS's step E (SEED-0011), so
-that the branch model is not in flux in two places at once.
+that the branch model is not in flux in two places at once. For the same
+reason, C7 should follow step 3 of the CMS Plan (SEED-DRAFT-classiccms),
+which gives modulate2 the working controls and submittable forms a derived
+properties panel needs.
 
 
 ## Beyond the Browser
@@ -463,9 +514,11 @@ the browser, the joint proposed here is what makes it cheap: figure definitions
 are geometry in data space, and a native provider would interpret them as the
 web providers do. CLIM's presentations, which tie on-screen output to the
 objects it presents and support dragging of that output, are the nearest model
-for such a provider (SEED-0005). The web remains Seed's delivery medium, and
-the analyst who opens a browser and uses the chart without installing anything
-(SEED-0006, scenario S5) depends on it.
+for such a provider (SEED-0005). The web remains Seed's delivery medium. Its
+advantage is the one SEED-0006 finds in its scenario S4, where a
+non-programmer meets a web interface derived from the data with nothing to
+install; an analyst who opens a browser and uses the chart without
+installing anything depends on it in the same way.
 
 
 ## Honest Limits
@@ -515,6 +568,17 @@ Within the Seed corpus:
   and written.
 - SEED-0011 — the sibling Survey for the CMS, whose rule for
   keeping Seed usable throughout development this survey follows.
+- SEED-DRAFT-classiccms — the CMS Plan, whose controls and forms in
+  modulate2 the properties panel (C7) would use.
+- SEED-DRAFT-chartingplatform — the Eval of charting platforms for
+  monitoring and alerts, which builds on this vocabulary: watchers refer to
+  figure instances, and a figure's geometry is evaluated in Lisp against
+  arriving bars — the "computation in Lisp" use above.
+- SEED-DRAFT-programmaticdrawing — the drawing-tool Survey, whose shapes
+  are anchors with derived geometry and handles. Its open question
+  SEED-DRAFT-programmaticdrawing-O7 asks whether shapes and chart figures
+  share one figure form, which would extend this Survey's second-instance
+  test from a second chart library to a second application.
 
 External:
 
