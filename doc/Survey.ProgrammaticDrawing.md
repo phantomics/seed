@@ -1,11 +1,15 @@
 ---
-id:            SEED-DRAFT-programmaticdrawing
+id:            SEED-0014
 title:         "Programmatic Drawing: Layers and Strokes as APL Effects"
 genre:         Survey
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-16
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
@@ -85,15 +89,15 @@ cites:
     locator:   "W3C window-management repository, https://github.com/w3c/window-management/issues/68 (October 2021)"
     external:  true
 open-questions:
-  - SEED-DRAFT-programmaticdrawing-O1
-  - SEED-DRAFT-programmaticdrawing-O2
-  - SEED-DRAFT-programmaticdrawing-O3
-  - SEED-DRAFT-programmaticdrawing-O4
-  - SEED-DRAFT-programmaticdrawing-O5
-  - SEED-DRAFT-programmaticdrawing-O6
-  - SEED-DRAFT-programmaticdrawing-O7
-  - SEED-DRAFT-programmaticdrawing-O8
-  - SEED-DRAFT-programmaticdrawing-O9
+  - SEED-O37
+  - SEED-O38
+  - SEED-O39
+  - SEED-O40
+  - SEED-O41
+  - SEED-O42
+  - SEED-O43
+  - SEED-O44
+  - SEED-O45
 ---
 
 # Programmatic Drawing: Layers and Strokes as APL Effects
@@ -367,7 +371,7 @@ compositing is not linear in alpha. For a blur the difference is larger still:
 blurring two layers separately is not blurring their composite. Krita answers
 the question implicitly through grouping and pass-through; this tool should
 make the reading an explicit property of the effect or of the layer
-(SEED-DRAFT-programmaticdrawing-O2).
+(SEED-O38).
 
 ### What the list can show
 
@@ -376,7 +380,7 @@ attached to a layer, and reach. It cannot show an output used by two
 consumers, or an effect with two inputs that are not adjacent. Such nodes can
 appear in the list as reference rows — "uses :photo" — as Krita's clone layers
 do, and be edited in the graph view. Which graphs the list represents exactly,
-and how it presents the rest, is open (SEED-DRAFT-programmaticdrawing-O3).
+and how it presents the rest, is open (SEED-O39).
 
 ### Colour-space scopes
 
@@ -388,7 +392,7 @@ then found when the document is read, before anything renders (Exact's Implied
 Checks). The document as a whole has a working space and a precision, and the
 display and export each have an output transform. Which spaces, which
 precision, and whether alpha is premultiplied are open
-(SEED-DRAFT-programmaticdrawing-O4).
+(SEED-O40).
 
 
 ## A Sketch of the Vocabulary
@@ -497,7 +501,7 @@ Two things have no modality yet. The canvas — an image the user draws on — h
 no provisioning mode alongside `:provision-chart` and `:provision-graph`; and
 an anchor moved by dragging is the same unnamed modality the chart Survey asks
 about (SEED-O33). Both are open
-(SEED-DRAFT-programmaticdrawing-O5).
+(SEED-O41).
 
 
 ## The Interface
@@ -534,7 +538,7 @@ Atrament 4.6.0, the version installed, can record strokes: with
 the pointer's pressure to vary the drawn line, but does not record it. Since a
 stroke's pressure should be part of the stroke's data — darktable lets pressure
 drive width, hardness and opacity — the browser must capture it beside
-Atrament or extend it (SEED-DRAFT-programmaticdrawing-O6).
+Atrament or extend it (SEED-O42).
 
 What matters is the **stroke event stream**: points, times and pressures, in
 image coordinates, independent of what produced them. Whatever draws the
@@ -544,7 +548,7 @@ source later changes nothing downstream.
 A shape — a line, an ellipse, a rectangle — is a figure in the sense of the
 chart Survey: anchors, derived geometry, and handles for editing. Whether
 drawing shapes and chart figures share one figure form is the chart
-vocabulary's second-instance test (SEED-DRAFT-programmaticdrawing-O7).
+vocabulary's second-instance test (SEED-O43).
 
 
 ## Rendering and Display
@@ -598,7 +602,7 @@ Native windows are therefore contingent on a **native Seed interface mode**: a
 medium in which Seed itself owns the window — drawing the canvas with the GPU
 and taking the pointer directly — rather than one window laid over another.
 Whether and when Seed has such a mode is open
-(SEED-DRAFT-programmaticdrawing-O1).
+(SEED-O37).
 
 
 ## Back Ends
@@ -641,7 +645,7 @@ since Chrome 117, passing SPIR-V to WebGPU's `createShaderModule` throws an
 error unless an unsafe flag is set. A GPU preview in the browser would need
 either a WGSL target in the generator, or translation from SPIR-V to WGSL —
 Naga, the translator in the wgpu project, reads SPIR-V and writes WGSL, its
-WGSL output having secondary support (SEED-DRAFT-programmaticdrawing-O8).
+WGSL output having secondary support (SEED-O44).
 
 One consequence bears on the native interface mode. If the image renders on
 the GPU, showing the result in a browser means reading the pixels back from
@@ -654,7 +658,7 @@ template from elsewhere runs code. An effect is meant to be a pure function of
 its inputs, which is a checkable property: its evaluation should be confined to
 its arguments, with whatever reach April gives programs beyond them — system
 functions, evaluation of further strings, calls into Lisp — closed off, and with
-limits on time and memory (SEED-DRAFT-programmaticdrawing-O9).
+limits on time and memory (SEED-O45).
 
 
 ## The Incremental Path
@@ -747,41 +751,41 @@ External:
 
 ## Open Questions
 
-### SEED-DRAFT-programmaticdrawing-O1 — A native Seed interface mode
+### SEED-O37 — A native Seed interface mode
 
 A native window laid over the browser is ruled out. Should Seed have a native
 interface mode, in which it owns its window and draws with the GPU — and if so,
 is the drawing tool the occasion to build it, or a later client of it? Until
 then, the browser is the drawing tool's only medium.
 
-### SEED-DRAFT-programmaticdrawing-O2 — What does reach mean?
+### SEED-O38 — What does reach mean?
 
 Does an effect with a reach of several layers act on each layer before they
 are composited, or on their composite? Is the reading a property of the effect
 (an erasure might default to per layer, a blur to the composite), of the layer,
 or chosen by the user? How is it shown in the list?
 
-### SEED-DRAFT-programmaticdrawing-O3 — Which graphs can the list show?
+### SEED-O39 — Which graphs can the list show?
 
 The list shows chains, groups, masks and reach. Which further graph structures
 can it show, and how are the others presented — as reference rows, as a
 notice that the graph view is needed, or by forbidding them outside the graph
 view?
 
-### SEED-DRAFT-programmaticdrawing-O4 — The colour pipeline
+### SEED-O40 — The colour pipeline
 
 Which working space by default, and which others for scopes? Single or double
 float? Premultiplied alpha or not? ICC conversions through LittleCMS for
 display and export, and OpenColorIO if video arrives? Where does the display
 transform run — in the image, or in the browser?
 
-### SEED-DRAFT-programmaticdrawing-O5 — Modalities for the canvas
+### SEED-O41 — Modalities for the canvas
 
 Is a canvas a new provisioning mode — a `:provision-image`, beside
 `:provision-chart` — and does dragging an anchor need a modality of its own,
 shared with charts and graphs (SEED-O33)?
 
-### SEED-DRAFT-programmaticdrawing-O6 — Where does the stroke stream come from?
+### SEED-O42 — Where does the stroke stream come from?
 
 Atrament 4.6.0 records points and times but not pressure. Should the browser
 capture pressure from pointer events beside Atrament, extend Atrament, or
@@ -790,7 +794,7 @@ are raw points smoothed and simplified into editable anchors — darktable
 converts a brush stroke into nodes with a smoothing setting — and is the raw
 stream kept?
 
-### SEED-DRAFT-programmaticdrawing-O7 — One figure form or two?
+### SEED-O43 — One figure form or two?
 
 Should drawing shapes and chart figures be instances of one general figure
 form, with `define-chart-figure` as its charting preset? Anchors in image
@@ -798,14 +802,14 @@ pixels and anchors in time and price differ in their coordinates and their
 snapping; the question is whether that difference belongs to the space a
 figure lives in or to the figure.
 
-### SEED-DRAFT-programmaticdrawing-O8 — Which back ends, in which order?
+### SEED-O44 — Which back ends, in which order?
 
 Beyond the interpreter: x86 kernels for which effects first; SPIR-V for Vulkan
 in the image; and, for a GPU preview in the browser, a WGSL target of the
 generator or translation through Naga? How is an effect's eligibility for each
 back end stated and checked?
 
-### SEED-DRAFT-programmaticdrawing-O9 — Restricting user APL
+### SEED-O45 — Restricting user APL
 
 What restricted mode of April evaluation do shared effects run in, how are
 time and memory limited, and is purity — dependence only on an effect's

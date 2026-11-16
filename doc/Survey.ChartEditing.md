@@ -22,7 +22,7 @@ relates-to:
   - SEED-0010
   - SEED-0011
   - SEED-0013
-  - SEED-DRAFT-programmaticdrawing
+  - SEED-0014
   - SEED-DRAFT-classiccms
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
@@ -578,9 +578,9 @@ Within the Seed corpus:
   monitoring and alerts, which builds on this vocabulary: watchers refer to
   figure instances, and a figure's geometry is evaluated in Lisp against
   arriving bars — the "computation in Lisp" use above.
-- SEED-DRAFT-programmaticdrawing — the drawing-tool Survey, whose shapes
+- SEED-0014 — the drawing-tool Survey, whose shapes
   are anchors with derived geometry and handles. Its open question
-  SEED-DRAFT-programmaticdrawing-O7 asks whether shapes and chart figures
+  SEED-O43 asks whether shapes and chart figures
   share one figure form, which would extend this Survey's second-instance
   test from a second chart library to a second application.
 

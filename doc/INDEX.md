@@ -23,8 +23,8 @@ Table: Documents in the SEED namespace.
 | [SEED-0011](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Accepted | — |
 | [SEED-0012](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Accepted | — |
 | [SEED-0013](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Accepted | — |
+| [SEED-0014](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Accepted | — |
 | [SEED-DRAFT-classiccms](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Draft | — |
-| [SEED-DRAFT-programmaticdrawing](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
 
@@ -96,6 +96,15 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-O34](Survey.ChartEditing.md#seed-o34--is-the-ruler-a-figure) | Open question | Is the ruler a figure? | — | SEED-0012 |
 | [SEED-O35](Survey.ChartEditing.md#seed-o35--what-does-snapping-mean-for-general-series) | Open question | What does snapping mean for general series? | — | SEED-0012 |
 | [SEED-O36](Survey.ChartEditing.md#seed-o36--where-do-the-existing-appchart-classes-go) | Open question | Where do the existing app.chart classes go? | — | SEED-0012 |
+| [SEED-O37](Survey.ProgrammaticDrawing.md#seed-o37--a-native-seed-interface-mode) | Open question | A native Seed interface mode | — | SEED-0014 |
+| [SEED-O38](Survey.ProgrammaticDrawing.md#seed-o38--what-does-reach-mean) | Open question | What does reach mean? | — | SEED-0014 |
+| [SEED-O39](Survey.ProgrammaticDrawing.md#seed-o39--which-graphs-can-the-list-show) | Open question | Which graphs can the list show? | — | SEED-0014 |
+| [SEED-O40](Survey.ProgrammaticDrawing.md#seed-o40--the-colour-pipeline) | Open question | The colour pipeline | — | SEED-0014 |
+| [SEED-O41](Survey.ProgrammaticDrawing.md#seed-o41--modalities-for-the-canvas) | Open question | Modalities for the canvas | — | SEED-0014 |
+| [SEED-O42](Survey.ProgrammaticDrawing.md#seed-o42--where-does-the-stroke-stream-come-from) | Open question | Where does the stroke stream come from? | — | SEED-0014 |
+| [SEED-O43](Survey.ProgrammaticDrawing.md#seed-o43--one-figure-form-or-two) | Open question | One figure form or two? | — | SEED-0014 |
+| [SEED-O44](Survey.ProgrammaticDrawing.md#seed-o44--which-back-ends-in-which-order) | Open question | Which back ends, in which order? | — | SEED-0014 |
+| [SEED-O45](Survey.ProgrammaticDrawing.md#seed-o45--restricting-user-apl) | Open question | Restricting user APL | — | SEED-0014 |
 | [SEED-DRAFT-classiccms-O1](Plan.ClassicCMS.md#seed-draft-classiccms-o1--how-are-constraints-written) | Open question | How are constraints written? | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O2](Plan.ClassicCMS.md#seed-draft-classiccms-o2--how-are-errors-represented) | Open question | How are errors represented? | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O3](Plan.ClassicCMS.md#seed-draft-classiccms-o3--effect-classes-on-controls-now) | Open question | Effect classes on controls now? | — | SEED-DRAFT-classiccms |
@@ -103,12 +112,3 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-classiccms-O5](Plan.ClassicCMS.md#seed-draft-classiccms-o5--generated-handlers-or-one-listener) | Open question | Generated handlers or one listener? | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O6](Plan.ClassicCMS.md#seed-draft-classiccms-o6--addressing-articles) | Open question | Addressing articles | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O7](Plan.ClassicCMS.md#seed-draft-classiccms-o7--context-without-the-old-panes) | Open question | Context without the old panes | — | SEED-DRAFT-classiccms |
-| [SEED-DRAFT-programmaticdrawing-O1](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o1--a-native-seed-interface-mode) | Open question | A native Seed interface mode | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O2](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o2--what-does-reach-mean) | Open question | What does reach mean? | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O3](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o3--which-graphs-can-the-list-show) | Open question | Which graphs can the list show? | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O4](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o4--the-colour-pipeline) | Open question | The colour pipeline | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O5](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o5--modalities-for-the-canvas) | Open question | Modalities for the canvas | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O6](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o6--where-does-the-stroke-stream-come-from) | Open question | Where does the stroke stream come from? | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O7](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o7--one-figure-form-or-two) | Open question | One figure form or two? | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O8](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o8--which-back-ends-in-which-order) | Open question | Which back ends, in which order? | — | SEED-DRAFT-programmaticdrawing |
-| [SEED-DRAFT-programmaticdrawing-O9](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o9--restricting-user-apl) | Open question | Restricting user APL | — | SEED-DRAFT-programmaticdrawing |
