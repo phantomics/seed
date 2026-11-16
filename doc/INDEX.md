@@ -20,10 +20,10 @@ Table: Documents in the SEED namespace.
 | [SEED-0008](Eval.Smalltalk.md) | The Smalltalk Family as Prior Art for Seed | Eval (prior-art) | project | Accepted | — |
 | [SEED-0009](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Accepted | — |
 | [SEED-0010](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Accepted | — |
+| [SEED-0011](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Accepted | — |
 | [SEED-DRAFT-chartediting](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Draft | — |
 | [SEED-DRAFT-chartingplatform](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classiccms](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Draft | — |
-| [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
 | [SEED-DRAFT-programmaticdrawing](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
@@ -79,6 +79,15 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-O17](Survey.Branches.md#seed-o17--should-manifestations-ever-cross-as-instances) | Open question | Should manifestations ever cross as Instances? | — | SEED-0009 |
 | [SEED-O18](Survey.Branches.md#seed-o18--how-does-describe-relate-to-isasby) | Open question | How does describe relate to IS/AS/BY? | — | SEED-0009 |
 | [SEED-O19](Survey.Branches.md#seed-o19--how-should-the-in-image-effect-executor-work-before-vox-exists) | Open question | How should the in-image effect executor work before Vox exists? | — | SEED-0009 |
+| [SEED-O20](Survey.ClassicInterface.md#seed-o20--bridge-granularity) | Open question | Bridge granularity | — | SEED-0011 |
+| [SEED-O21](Survey.ClassicInterface.md#seed-o21--format-migration-ux) | Open question | Format migration UX | — | SEED-0011 |
+| [SEED-O22](Survey.ClassicInterface.md#seed-o22--codemirror-mode-switching) | Open question | CodeMirror mode switching | — | SEED-0011 |
+| [SEED-O23](Survey.ClassicInterface.md#seed-o23--wiki-link-completion-source) | Open question | Wiki-link completion source | — | SEED-0011 |
+| [SEED-O24](Survey.ClassicInterface.md#seed-o24--lexis-reader-hardening) | Open question | Lexis reader hardening | — | SEED-0011 |
+| [SEED-O25](Survey.ClassicInterface.md#seed-o25--the-as-vocabulary-for-formats) | Open question | The AS vocabulary for formats | — | SEED-0011 |
+| [SEED-O26](Survey.ClassicInterface.md#seed-o26--preview-rendering-location) | Open question | Preview rendering location | — | SEED-0011 |
+| [SEED-O27](Survey.ClassicInterface.md#seed-o27--revision-history-model) | Open question | Revision history model | — | SEED-0011 |
+| [SEED-O28](Survey.ClassicInterface.md#seed-o28--the-target-resolution-rule) | Open question | The [[target]] resolution rule | — | SEED-0011 |
 | [SEED-DRAFT-chartediting-O1](Survey.ChartEditing.md#seed-draft-chartediting-o1--one-provider-or-two) | Open question | One provider or two? | — | SEED-DRAFT-chartediting |
 | [SEED-DRAFT-chartediting-O2](Survey.ChartEditing.md#seed-draft-chartediting-o2--how-large-should-the-geometry-language-be) | Open question | How large should the geometry language be? | — | SEED-DRAFT-chartediting |
 | [SEED-DRAFT-chartediting-O3](Survey.ChartEditing.md#seed-draft-chartediting-o3--compile-or-interpret-on-the-client) | Open question | Compile, or interpret on the client? | — | SEED-DRAFT-chartediting |
@@ -94,15 +103,6 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-classiccms-O5](Plan.ClassicCMS.md#seed-draft-classiccms-o5--generated-handlers-or-one-listener) | Open question | Generated handlers or one listener? | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O6](Plan.ClassicCMS.md#seed-draft-classiccms-o6--addressing-articles) | Open question | Addressing articles | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O7](Plan.ClassicCMS.md#seed-draft-classiccms-o7--context-without-the-old-panes) | Open question | Context without the old panes | — | SEED-DRAFT-classiccms |
-| [SEED-DRAFT-classicinterface-O1](Survey.ClassicInterface.md#seed-draft-classicinterface-o1--bridge-granularity) | Open question | Bridge granularity | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O2](Survey.ClassicInterface.md#seed-draft-classicinterface-o2--format-migration-ux) | Open question | Format migration UX | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O3](Survey.ClassicInterface.md#seed-draft-classicinterface-o3--codemirror-mode-switching) | Open question | CodeMirror mode switching | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O4](Survey.ClassicInterface.md#seed-draft-classicinterface-o4--wiki-link-completion-source) | Open question | Wiki-link completion source | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O5](Survey.ClassicInterface.md#seed-draft-classicinterface-o5--lexis-reader-hardening) | Open question | Lexis reader hardening | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O6](Survey.ClassicInterface.md#seed-draft-classicinterface-o6--the-as-vocabulary-for-formats) | Open question | The AS vocabulary for formats | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O7](Survey.ClassicInterface.md#seed-draft-classicinterface-o7--preview-rendering-location) | Open question | Preview rendering location | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O8](Survey.ClassicInterface.md#seed-draft-classicinterface-o8--revision-history-model) | Open question | Revision history model | — | SEED-DRAFT-classicinterface |
-| [SEED-DRAFT-classicinterface-O9](Survey.ClassicInterface.md#seed-draft-classicinterface-o9--the-target-resolution-rule) | Open question | The [[target]] resolution rule | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-programmaticdrawing-O1](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o1--a-native-seed-interface-mode) | Open question | A native Seed interface mode | — | SEED-DRAFT-programmaticdrawing |
 | [SEED-DRAFT-programmaticdrawing-O2](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o2--what-does-reach-mean) | Open question | What does reach mean? | — | SEED-DRAFT-programmaticdrawing |
 | [SEED-DRAFT-programmaticdrawing-O3](Survey.ProgrammaticDrawing.md#seed-draft-programmaticdrawing-o3--which-graphs-can-the-list-show) | Open question | Which graphs can the list show? | — | SEED-DRAFT-programmaticdrawing |

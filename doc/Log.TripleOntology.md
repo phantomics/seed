@@ -18,7 +18,7 @@ provenance:
 relates-to:
   - SEED-0004
   - SEED-0005
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
 cites:
   - title:     "CLIM II Specification"
     locator:   "Part VI: Extended Stream Input Facilities, §23 Presentation Types"
@@ -375,7 +375,7 @@ several commits; `aeedefb` is the pinned snapshot.
 - **Client-side dispatch for `:activating` controls.** The rendered
   `data-action`/`data-target` attributes have no listener. This is the
   first prerequisite for the Classic interface mode
-  (SEED-DRAFT-classicinterface, step A1).
+  (SEED-0011, step A1).
 - **Tier-1 `:sorting` and `:extending`.** Both are stubs. `:sorting` should
   inject a per-item drag-handle wrapper (uim-web: htmx/Alpine drag-and-drop);
   `:extending` should inject an add-item control into the sequence's own header.
@@ -401,7 +401,7 @@ several commits; `aeedefb` is the pinned snapshot.
 
 ## Update 2026-11-12 — The IS/AS boundary for formats and languages
 
-During the design of the Classic interface mode (SEED-DRAFT-classicinterface),
+During the design of the Classic interface mode (SEED-0011),
 a question arose: where do format annotations like `:markdown` and `:lexis`
 sit in the IS/AS taxonomy? Classic's `:format` slot option assigns a source
 format to body data, and the Classic→fx bridge must map this to one of the

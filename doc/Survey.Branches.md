@@ -19,7 +19,7 @@ relates-to:
   - SEED-0006
   - SEED-0008
   - SEED-0010
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
   - VOX-DRAFT-vox
   - ORIGIN-0006
   - ORIGIN-0008
@@ -612,7 +612,7 @@ Within the Seed corpus:
   Architecture with Seed's branches. It is the source of the prior art this
   survey draws on: CICS `XCTL` and syncpoint, Pedestal's interceptors, and
   Elm's commands as data.
-- SEED-DRAFT-classicinterface — the Classic interface mode, whose step E
+- SEED-0011 — the Classic interface mode, whose step E
   migrates the `:cms` branch to branch objects with operations, effect
   classes, and Classic writes as queued effects — the first application of
   this design.

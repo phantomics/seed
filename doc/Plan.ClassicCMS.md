@@ -9,7 +9,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
   - SEED-0003
   - SEED-0004
   - SEED-0008
@@ -37,7 +37,7 @@ open-questions:
 
 # The Classic CMS in the New Grammar: Development Plan
 
-This plan turns the Classic interface Survey (SEED-DRAFT-classicinterface) into
+This plan turns the Classic interface Survey (SEED-0011) into
 work. It moves the CMS in `systems/demo.access` from the old interface grammar
 to the IS/AS/BY grammar of `modulate2` (SEED-0003, SEED-0004) one view at a
 time, building in `modulate2` the pieces each view needs: tests first, then

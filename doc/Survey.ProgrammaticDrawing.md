@@ -15,7 +15,7 @@ relates-to:
   - SEED-0005
   - SEED-0009
   - SEED-DRAFT-chartediting
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -111,7 +111,7 @@ vocabulary.
 
 Seed's demonstration applications are chosen to cover different kinds of
 interface, so that the general forms derived from them are tested against
-unlike needs. The Classic CMS (SEED-DRAFT-classicinterface) tests documents
+unlike needs. The Classic CMS (SEED-0011) tests documents
 and workflow; chart editing (SEED-DRAFT-chartediting) tests geometry and direct
 manipulation over data. A drawing tool tests a third kind: dense numeric
 arrays, edited through gestures, where the result of an edit is computed
@@ -670,7 +670,7 @@ Within the Seed corpus:
 - SEED-DRAFT-chartediting — the chart-editing Survey, whose figure vocabulary
   shapes would share, and whose question about a modality for dragged anchors
   recurs here.
-- SEED-DRAFT-classicinterface — the Classic interface Survey, whose rule for
+- SEED-0011 — the Classic interface Survey, whose rule for
   keeping Seed usable during development this survey follows.
 
 External:

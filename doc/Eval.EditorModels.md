@@ -21,7 +21,7 @@ relates-to:
   - SEED-0008
   - SEED-0009
   - SEED-0010
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
   - SEED-0007
 cites:
   - title:     "EMACS: The Extensible, Customizable, Self-Documenting Display Editor"

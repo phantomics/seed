@@ -17,7 +17,7 @@ provenance:
 relates-to:
   - SEED-0003
   - SEED-0005
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
 decisions:
   - SEED-D20
   - SEED-D21
@@ -310,8 +310,8 @@ Table: Files changed or created for the dx ontology unification.
 - **Portal development with new dx.** The next milestone is developing
   `demo.access` using the new `(dx)` ontology end-to-end, which will
   exercise provisioning, layout, and the full expression/construction
-  pipeline in a real portal. SEED-DRAFT-classicinterface surveys this
+  pipeline in a real portal. SEED-0011 surveys this
   work and proposes an increment ladder.
 - **`:provision-document`.** A rich-document editing modality
   (ProseMirror with a Lexis-mirroring schema) is anticipated as a later
-  BY vocabulary addition; see SEED-DRAFT-classicinterface.
+  BY vocabulary addition; see SEED-0011.

@@ -19,7 +19,7 @@ relates-to:
   - SEED-0004
   - SEED-0006
   - SEED-0008
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
 cites:
   - title:     "CICS Transaction Server for z/OS Documentation"
     locator:   "IBM, https://www.ibm.com/docs/en/cics-ts/6.x"

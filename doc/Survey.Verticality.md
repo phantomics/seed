@@ -20,7 +20,7 @@ relates-to:
   - SEED-0004
   - SEED-0008
   - SEED-0009
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
 cites:
   - title:     "The Mythical Man-Month"
     locator:   "Brooks, F. P. Addison-Wesley, 1975; Anniversary Edition, 1995. Ch. 3: The Surgical Team"
@@ -523,7 +523,7 @@ users at multiple tiers, the power-law claim is an aspiration, not a finding.
 Eve (SEED-0005) is the cautionary case: its pursuit of programming for
 everyone produced more than thirty prototypes and no settled application.
 Seed's answer is to prove the pyramid through one concrete application, the
-Classic CMS (SEED-DRAFT-classicinterface), before claiming it in general.
+Classic CMS (SEED-0011), before claiming it in general.
 
 **The vendor-incentive hypotheses are speculative.** Attributing motives to IBM
 or Apple based on structural analysis is not the same as having evidence of
@@ -564,7 +564,7 @@ Within the Seed corpus:
 - SEED-0009 — the branch-system survey, which notes that the
   leverage pyramid depends on the branch system serving configurators through
   derived interfaces.
-- SEED-DRAFT-classicinterface — the Classic CMS, the concrete application
+- SEED-0011 — the Classic CMS, the concrete application
   through which the tiers are meant to be proved.
 
 External works cited are listed in the front-matter `cites:` block.

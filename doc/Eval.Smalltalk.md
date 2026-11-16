@@ -17,7 +17,7 @@ relates-to:
   - SEED-0005
   - SEED-0006
   - SEED-0007
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
   - SEED-0009
 cites:
   - title:     "Design Principles Behind Smalltalk"
@@ -277,7 +277,7 @@ generated from a model.
 Renggli's thesis also presents Pier, "a meta-described content management and
 Wiki system" built on Magritte: a CMS and a wiki whose editing is driven by
 Magritte descriptions. Pier is the direct precedent for Seed's Classic
-interface mode (SEED-DRAFT-classicinterface), which aims at the same pair of
+interface mode (SEED-0011), which aims at the same pair of
 applications — a blog-style CMS and a wiki — derived from Classic's slot
 metadata and lenses instead of Smalltalk descriptions.
 
@@ -570,7 +570,7 @@ The derived interface is meant for people who never see Lisp: an analyst
 edits chart parameters through fields and lists in a browser. The old-grammar
 portals already serve such users (*realised*); serving them through the
 IS/AS/BY pipeline end to end is the aim of the Classic interface mode
-(SEED-DRAFT-classicinterface) (*architectural*).
+(SEED-0011) (*architectural*).
 
 **E10 — Multi-user and server deployment: one image, many sessions.**
 A Seed portal is a web server (Woo through Clack and Ningle) in a single

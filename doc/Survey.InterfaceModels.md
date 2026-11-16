@@ -18,7 +18,7 @@ relates-to:
   - SEED-0003
   - SEED-0004
   - SEED-0009
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
   - SEED-0008
   - SEED-0007
   - SEED-0006
@@ -256,7 +256,7 @@ of interfaces from metadata, and the contrasts are precise:
   the medium.
 
 Classic's lenses play Magritte's role inside the Seed and Classic pair: they
-are class-level defaults, and the Classic→fx bridge (SEED-DRAFT-classicinterface)
+are class-level defaults, and the Classic→fx bridge (SEED-0011)
 turns them into per-value `fx` annotations that individual values can override.
 Pier is the direct precedent for that work. SEED-0008 treats Seaside
 and Magritte at greater length.
@@ -416,7 +416,7 @@ representations. Specific parallels and contrasts:
 - **Concreteness.** Eve's search for a general audience ("programming for
   humans") produced many prototypes and no settled application. Seed proves
   itself through a concrete one, the Classic CMS
-  (SEED-DRAFT-classicinterface).
+  (SEED-0011).
 
 ### Hypermedia (REST and htmx)
 
@@ -873,7 +873,7 @@ Within the Seed corpus, this survey relates to:
 - SEED-0009 — the branch system's stage model and its split between
   safe operations and effects queued for commit, compared here with Eve's
   `bind`/`commit` and Fry's seven stages.
-- SEED-DRAFT-classicinterface — the Classic CMS, the concrete application
+- SEED-0011 — the Classic CMS, the concrete application
   through which Seed proves its thesis.
 - SEED-0008 — the Smalltalk evaluation, which examines Glamorous
   Toolkit and Magritte in more depth than the family entries here.

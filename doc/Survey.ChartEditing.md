@@ -16,7 +16,7 @@ relates-to:
   - SEED-0006
   - SEED-0009
   - SEED-0010
-  - SEED-DRAFT-classicinterface
+  - SEED-0011
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -68,7 +68,7 @@ non-normative; it proposes directions for a later Plan.
 ## Motivation
 
 Charting is the second proving ground for Seed's thesis, alongside the Classic
-CMS (SEED-DRAFT-classicinterface). The CMS tests derived interfaces for
+CMS (SEED-0011). The CMS tests derived interfaces for
 documents and workflow; charting tests them for geometry and direct
 manipulation, where an interface must respond at the rate of a dragging hand
 and the data being edited is a set of points in time and price.
@@ -450,7 +450,7 @@ Table: A possible sequence of increments. A Plan would decide the final order.
 
 Steps C1 and C2 change nothing the user sees. C3 lets both renderers run side
 by side on the same data. The `:chart` branch's move to the branch-object
-model in C4 should follow the CMS's step E (SEED-DRAFT-classicinterface), so
+model in C4 should follow the CMS's step E (SEED-0011), so
 that the branch model is not in flux in two places at once.
 
 
@@ -513,7 +513,7 @@ Within the Seed corpus:
   operations, effect classes and commit model the chart branch would adopt.
 - SEED-0001 — Philo, the accessor through which analysis files would be read
   and written.
-- SEED-DRAFT-classicinterface — the sibling Survey for the CMS, whose rule for
+- SEED-0011 — the sibling Survey for the CMS, whose rule for
   keeping Seed usable throughout development this survey follows.
 
 External:

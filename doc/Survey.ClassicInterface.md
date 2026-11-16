@@ -1,11 +1,15 @@
 ---
-id:            SEED-DRAFT-classicinterface
+id:            SEED-0011
 title:         "The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY"
 genre:         Survey
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-15
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
@@ -51,15 +55,15 @@ cites:
     locator:   "ORIGIN-0006, ORIGIN-0008"
     external:  true
 open-questions:
-  - SEED-DRAFT-classicinterface-O1
-  - SEED-DRAFT-classicinterface-O2
-  - SEED-DRAFT-classicinterface-O3
-  - SEED-DRAFT-classicinterface-O4
-  - SEED-DRAFT-classicinterface-O5
-  - SEED-DRAFT-classicinterface-O6
-  - SEED-DRAFT-classicinterface-O7
-  - SEED-DRAFT-classicinterface-O8
-  - SEED-DRAFT-classicinterface-O9
+  - SEED-O20
+  - SEED-O21
+  - SEED-O22
+  - SEED-O23
+  - SEED-O24
+  - SEED-O25
+  - SEED-O26
+  - SEED-O27
+  - SEED-O28
 ---
 
 # The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY
@@ -266,7 +270,7 @@ All three describe at the class or table level, as Magritte and Classic's
 lenses do. What none offers is the per-value layer of `fx`: an individual
 value that carries its own annotations and overrides its class's
 presentation. That layer is what the bridge adds, and the reason
-SEED-DRAFT-classicinterface-O1 (slot-level or instance-level annotation)
+SEED-O20 (slot-level or instance-level annotation)
 matters. The products differ also in where the description lives — in code
 (Django, Strapi) or in the database (Directus); Classic's MOP metadata is
 of the first kind.
@@ -302,7 +306,7 @@ The bridge turns Classic's `:format` into an AS annotation:
 `(:as :markdown)`, `(:as :lexis)`, `(:as :sql)`, and so on. SEED-D19 (in
 SEED-0003) settles that such formats are AS program-semantic roles,
 extending `+as-program-roles+`; the format roles are not yet in that
-vocabulary, and how far it should grow is SEED-DRAFT-classicinterface-O6.
+vocabulary, and how far it should grow is SEED-O25.
 The provisioning system reads this annotation to select the CodeMirror
 mode, the preview renderer, and the save pipeline.
 
@@ -734,7 +738,7 @@ identifier management and the interaction with `compass check`.
 
 ## Open Questions
 
-### SEED-DRAFT-classicinterface-O1 — Bridge granularity
+### SEED-O20 — Bridge granularity
 
 Should the Classic→fx bridge generate annotations at the slot level (one
 `fx` form per slot value) or at the instance level (one compound `fx`
@@ -742,7 +746,7 @@ form for the whole object)? Slot-level gives finer control;
 instance-level keeps the bridge simpler and matches how lenses are
 specified.
 
-### SEED-DRAFT-classicinterface-O2 — Format migration UX
+### SEED-O21 — Format migration UX
 
 When a user promotes a Markdown document to Lexis-native, what does the
 interface show? A diff? A preview of the converted document? A warning
@@ -750,20 +754,20 @@ about tags with no Markdown equivalent? The fidelity principle says the
 conversion is one-way, but the user needs to understand what they gain
 and what they cannot undo.
 
-### SEED-DRAFT-classicinterface-O3 — CodeMirror mode switching
+### SEED-O22 — CodeMirror mode switching
 
 The AS annotation determines the CodeMirror mode (Lisp for Lexis,
 Markdown for Markdown). Can the mode change dynamically if the source
 format changes, or must the editor be reloaded?
 
-### SEED-DRAFT-classicinterface-O4 — Wiki-link completion source
+### SEED-O23 — Wiki-link completion source
 
 Should CodeMirror's `[[` completion query the server (through the
 branch) or preload the full page list? Small wikis favour preloading;
 large ones need server-side search. The answer may depend on a
 threshold.
 
-### SEED-DRAFT-classicinterface-O5 — Lexis reader hardening
+### SEED-O24 — Lexis reader hardening
 
 What is the right restricted readtable for untrusted Lexis input? Lexis
 tags should intern into the `lexis` package only; unknown symbols should
@@ -771,28 +775,28 @@ signal a condition. Does this need a dedicated safe-reader, or can
 Lexis's existing `parse-document` be extended with a binding for
 `*readtable*`?
 
-### SEED-DRAFT-classicinterface-O6 — The AS vocabulary for formats
+### SEED-O25 — The AS vocabulary for formats
 
 How large should the format vocabulary grow? `:markdown`, `:lexis`,
 `:html` are clear. Should `:wikitext` (for MediaWiki import), `:org`
 (for Org-mode), or `:rst` (for reStructuredText) be anticipated in the
 AS taxonomy, or added ad hoc when needed?
 
-### SEED-DRAFT-classicinterface-O7 — Preview rendering location
+### SEED-O26 — Preview rendering location
 
 Should Markdown→Lexis→HTML happen server-side (keeping Seed independent
 of the medium) or client-side (lower latency for live preview)?
 Server-side is the recommendation, but live preview may want a
 client-side fallback.
 
-### SEED-DRAFT-classicinterface-O8 — Revision history model
+### SEED-O27 — Revision history model
 
 Should article history be a branch-level concern (a history stage per
 SEED-0009), a Classic-level concern (revision objects stored
 by the persistence backend), or both? The wiki already has revision
 objects; the branch stage model offers a uniform approach.
 
-### SEED-DRAFT-classicinterface-O9 — The `[[target]]` resolution rule
+### SEED-O28 — The `[[target]]` resolution rule
 
 If Lexis changes bare `[[target]]` to mean "page link" in wiki contexts
 and "cross-ref" in document contexts, what determines the context? The
