@@ -21,7 +21,7 @@ Table: Documents in the SEED namespace.
 | [SEED-0009](Survey.Branches.md) | The Branch System: Design Space and Future Directions | Survey | project | Accepted | — |
 | [SEED-0010](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-0011](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Accepted | — |
-| [SEED-DRAFT-chartediting](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Draft | — |
+| [SEED-0012](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Accepted | — |
 | [SEED-DRAFT-chartingplatform](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Draft | — |
 | [SEED-DRAFT-classiccms](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Draft | — |
 | [SEED-DRAFT-programmaticdrawing](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Draft | — |
@@ -88,14 +88,14 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-O26](Survey.ClassicInterface.md#seed-o26--preview-rendering-location) | Open question | Preview rendering location | — | SEED-0011 |
 | [SEED-O27](Survey.ClassicInterface.md#seed-o27--revision-history-model) | Open question | Revision history model | — | SEED-0011 |
 | [SEED-O28](Survey.ClassicInterface.md#seed-o28--the-target-resolution-rule) | Open question | The [[target]] resolution rule | — | SEED-0011 |
-| [SEED-DRAFT-chartediting-O1](Survey.ChartEditing.md#seed-draft-chartediting-o1--one-provider-or-two) | Open question | One provider or two? | — | SEED-DRAFT-chartediting |
-| [SEED-DRAFT-chartediting-O2](Survey.ChartEditing.md#seed-draft-chartediting-o2--how-large-should-the-geometry-language-be) | Open question | How large should the geometry language be? | — | SEED-DRAFT-chartediting |
-| [SEED-DRAFT-chartediting-O3](Survey.ChartEditing.md#seed-draft-chartediting-o3--compile-or-interpret-on-the-client) | Open question | Compile, or interpret on the client? | — | SEED-DRAFT-chartediting |
-| [SEED-DRAFT-chartediting-O4](Survey.ChartEditing.md#seed-draft-chartediting-o4--time-or-bar-index) | Open question | Time or bar index? | — | SEED-DRAFT-chartediting |
-| [SEED-DRAFT-chartediting-O5](Survey.ChartEditing.md#seed-draft-chartediting-o5--do-anchors-need-a-by-modality) | Open question | Do anchors need a BY modality? | — | SEED-DRAFT-chartediting |
-| [SEED-DRAFT-chartediting-O6](Survey.ChartEditing.md#seed-draft-chartediting-o6--is-the-ruler-a-figure) | Open question | Is the ruler a figure? | — | SEED-DRAFT-chartediting |
-| [SEED-DRAFT-chartediting-O7](Survey.ChartEditing.md#seed-draft-chartediting-o7--what-does-snapping-mean-for-general-series) | Open question | What does snapping mean for general series? | — | SEED-DRAFT-chartediting |
-| [SEED-DRAFT-chartediting-O8](Survey.ChartEditing.md#seed-draft-chartediting-o8--where-do-the-existing-appchart-classes-go) | Open question | Where do the existing app.chart classes go? | — | SEED-DRAFT-chartediting |
+| [SEED-O29](Survey.ChartEditing.md#seed-o29--one-provider-or-two) | Open question | One provider or two? | — | SEED-0012 |
+| [SEED-O30](Survey.ChartEditing.md#seed-o30--how-large-should-the-geometry-language-be) | Open question | How large should the geometry language be? | — | SEED-0012 |
+| [SEED-O31](Survey.ChartEditing.md#seed-o31--compile-or-interpret-on-the-client) | Open question | Compile, or interpret on the client? | — | SEED-0012 |
+| [SEED-O32](Survey.ChartEditing.md#seed-o32--time-or-bar-index) | Open question | Time or bar index? | — | SEED-0012 |
+| [SEED-O33](Survey.ChartEditing.md#seed-o33--do-anchors-need-a-by-modality) | Open question | Do anchors need a BY modality? | — | SEED-0012 |
+| [SEED-O34](Survey.ChartEditing.md#seed-o34--is-the-ruler-a-figure) | Open question | Is the ruler a figure? | — | SEED-0012 |
+| [SEED-O35](Survey.ChartEditing.md#seed-o35--what-does-snapping-mean-for-general-series) | Open question | What does snapping mean for general series? | — | SEED-0012 |
+| [SEED-O36](Survey.ChartEditing.md#seed-o36--where-do-the-existing-appchart-classes-go) | Open question | Where do the existing app.chart classes go? | — | SEED-0012 |
 | [SEED-DRAFT-classiccms-O1](Plan.ClassicCMS.md#seed-draft-classiccms-o1--how-are-constraints-written) | Open question | How are constraints written? | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O2](Plan.ClassicCMS.md#seed-draft-classiccms-o2--how-are-errors-represented) | Open question | How are errors represented? | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O3](Plan.ClassicCMS.md#seed-draft-classiccms-o3--effect-classes-on-controls-now) | Open question | Effect classes on controls now? | — | SEED-DRAFT-classiccms |

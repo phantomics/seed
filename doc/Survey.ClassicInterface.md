@@ -19,7 +19,7 @@ relates-to:
   - SEED-0006
   - SEED-0009
   - SEED-0008
-  - SEED-DRAFT-chartediting
+  - SEED-0012
   - SEED-DRAFT-classiccms
   - VOX-DRAFT-vox
   - CLASSIC-0007
@@ -83,7 +83,7 @@ it reveals are the most valuable finding.
 
 Chart editing (`systems/abcd`) shares infrastructure with the CMS — especially
 Tier-1 manipulation defaults — but its specific concerns are the subject of
-a separate Survey (SEED-DRAFT-chartediting). The work this Survey proposes
+a separate Survey (SEED-0012). The work this Survey proposes
 is planned in SEED-DRAFT-classiccms.
 
 
@@ -730,7 +730,7 @@ identifier management and the interaction with `compass check`.
   Classic's internal representation.
 - **Chart editing** (`systems/abcd`) shares Tier-1 manipulation defaults
   (`:sorting`, `:extending`, `:reducing`) with the CMS. It exercises
-  valence and layout, which the CMS does not. SEED-DRAFT-chartediting
+  valence and layout, which the CMS does not. SEED-0012
   surveys it.
 - **SEED-DRAFT-classiccms** plans the work this Survey proposes, beginning
   with the create form, and describes modulate2 and the CMS as they stand.

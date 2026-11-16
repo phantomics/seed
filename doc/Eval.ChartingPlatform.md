@@ -10,7 +10,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
-  - SEED-DRAFT-chartediting
+  - SEED-0012
   - SEED-0009
   - SEED-0010
   - SEED-0006
@@ -79,7 +79,7 @@ monitor markets on a user's behalf: how an alert is attached to a drawing,
 where the monitoring runs, what triggers it, and how its result reaches the
 user. It is prior art for Seed's financial utilities — the server-side chart
 model in `application/app.chart`, and the figure vocabulary proposed in the
-chart-editing Survey (SEED-DRAFT-chartediting).
+chart-editing Survey (SEED-0012).
 
 The first version of Seed's financial utilities is limited to **monitoring and
 alerts**. Placing orders through brokers' APIs is a later goal; the platforms'
@@ -512,7 +512,7 @@ The remaining criteria do not apply.
 
 Seed's financial utilities are assessed at revision `bf51998`. Most of what
 follows is *architectural*: it draws on the chart-editing Survey
-(SEED-DRAFT-chartediting), the branch Survey (SEED-0009) and Vox
+(SEED-0012), the branch Survey (SEED-0009) and Vox
 (VOX-DRAFT-vox).
 
 **M1 — Where monitoring runs: a server image, by design.** Seed runs as a

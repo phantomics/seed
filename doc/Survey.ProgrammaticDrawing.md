@@ -14,7 +14,7 @@ relates-to:
   - SEED-0004
   - SEED-0005
   - SEED-0009
-  - SEED-DRAFT-chartediting
+  - SEED-0012
   - SEED-0011
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
@@ -103,7 +103,7 @@ the core from universals with familiar tools as presets, write the domain in
 its own notation, and let one description serve every use. It is exploratory
 and non-normative; it proposes directions for a later Plan. It assumes the
 IS/AS/BY ontology (SEED-0003, SEED-0004), the branch Survey (SEED-0009) and the
-chart-editing Survey (SEED-DRAFT-chartediting), with which it shares a figure
+chart-editing Survey (SEED-0012), with which it shares a figure
 vocabulary.
 
 
@@ -112,7 +112,7 @@ vocabulary.
 Seed's demonstration applications are chosen to cover different kinds of
 interface, so that the general forms derived from them are tested against
 unlike needs. The Classic CMS (SEED-0011) tests documents
-and workflow; chart editing (SEED-DRAFT-chartediting) tests geometry and direct
+and workflow; chart editing (SEED-0012) tests geometry and direct
 manipulation over data. A drawing tool tests a third kind: dense numeric
 arrays, edited through gestures, where the result of an edit is computed
 rather than stored.
@@ -441,7 +441,7 @@ The document fits the ontology directly:
 Two things have no modality yet. The canvas — an image the user draws on — has
 no provisioning mode alongside `:provision-chart` and `:provision-graph`; and
 an anchor moved by dragging is the same unnamed modality the chart Survey asks
-about (SEED-DRAFT-chartediting-O5). Both are open
+about (SEED-O33). Both are open
 (SEED-DRAFT-programmaticdrawing-O5).
 
 
@@ -667,7 +667,7 @@ Within the Seed corpus:
 - SEED-0009 — the branch Survey, whose history stage provides undo and
   variants, and whose operations the drawing branch would adopt.
 - SEED-0001 — Philo, through which documents are read and written.
-- SEED-DRAFT-chartediting — the chart-editing Survey, whose figure vocabulary
+- SEED-0012 — the chart-editing Survey, whose figure vocabulary
   shapes would share, and whose question about a modality for dragged anchors
   recurs here.
 - SEED-0011 — the Classic interface Survey, whose rule for
@@ -715,7 +715,7 @@ transform run — in the image, or in the browser?
 
 Is a canvas a new provisioning mode — a `:provision-image`, beside
 `:provision-chart` — and does dragging an anchor need a modality of its own,
-shared with charts and graphs (SEED-DRAFT-chartediting-O5)?
+shared with charts and graphs (SEED-O33)?
 
 ### SEED-DRAFT-programmaticdrawing-O6 — Where does the stroke stream come from?
 

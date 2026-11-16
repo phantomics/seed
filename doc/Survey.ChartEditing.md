@@ -1,11 +1,15 @@
 ---
-id:            SEED-DRAFT-chartediting
+id:            SEED-0012
 title:         "Chart Editing: A Declarative Figure Vocabulary for Seed's Charts"
 genre:         Survey
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-16
 provenance:
   assistant:   claude-opus-5-5
 relates-to:
@@ -46,14 +50,14 @@ cites:
     locator:   "Part VI: Extended Stream Input Facilities, §23 Presentation Types"
     external:  true
 open-questions:
-  - SEED-DRAFT-chartediting-O1
-  - SEED-DRAFT-chartediting-O2
-  - SEED-DRAFT-chartediting-O3
-  - SEED-DRAFT-chartediting-O4
-  - SEED-DRAFT-chartediting-O5
-  - SEED-DRAFT-chartediting-O6
-  - SEED-DRAFT-chartediting-O7
-  - SEED-DRAFT-chartediting-O8
+  - SEED-O29
+  - SEED-O30
+  - SEED-O31
+  - SEED-O32
+  - SEED-O33
+  - SEED-O34
+  - SEED-O35
+  - SEED-O36
 ---
 
 # Chart Editing: A Declarative Figure Vocabulary for Seed's Charts
@@ -382,7 +386,7 @@ numerically in the form.
 
 Whether anchors need a BY modality of their own — a `:positioning` modality for
 values that are moved by dragging in a spatial view — is open
-(SEED-DRAFT-chartediting-O5).
+(SEED-O33).
 
 
 ## Providers
@@ -589,7 +593,7 @@ External:
 
 ## Open Questions
 
-### SEED-DRAFT-chartediting-O1 — One provider or two?
+### SEED-O29 — One provider or two?
 
 KLineChart for financial series and a second library for general series, or
 one library for both? Two providers keep each fit to its job and supply the
@@ -597,7 +601,7 @@ second-instance test; one provider halves the adapter work. If two, which
 general library — Plotly, for its built-in shape editing, or another with
 better support for families of figures?
 
-### SEED-DRAFT-chartediting-O2 — How large should the geometry language be?
+### SEED-O30 — How large should the geometry language be?
 
 Which primitives (segment, ray, line, level, circle, arc, polygon, text) and
 which operations on anchors (interpolation, offset, perpendicular, distance)
@@ -605,7 +609,7 @@ does the vocabulary need for the figures in scope, and where does it stop?
 Should label formats be part of the language, or a separate formatting
 vocabulary?
 
-### SEED-DRAFT-chartediting-O3 — Compile, or interpret on the client?
+### SEED-O31 — Compile, or interpret on the client?
 
 Figure geometry could be compiled to JavaScript per figure type, or sent as
 data and interpreted by a small generic evaluator on the client. Compilation
@@ -613,33 +617,33 @@ is faster and fits KLineChart's template functions; interpretation keeps one
 evaluator for all figures and makes new figure types available without
 regenerating client code.
 
-### SEED-DRAFT-chartediting-O4 — Time or bar index?
+### SEED-O32 — Time or bar index?
 
 Should anchors record time, bar index, or both? Time is what traders read and
 what survives a change of data range; a bar index is what snapping and gaps
 (weekends, holidays) make convenient. KLineChart records both.
 
-### SEED-DRAFT-chartediting-O5 — Do anchors need a BY modality?
+### SEED-O33 — Do anchors need a BY modality?
 
 Figure parameters map onto existing modalities, but dragging an anchor in a
 spatial view has no BY modality of its own. Is `:provision-chart` enough, or
 should a modality such as `:positioning` describe values moved by dragging, so
 that other spatial views (graphs, maps) can share it?
 
-### SEED-DRAFT-chartediting-O6 — Is the ruler a figure?
+### SEED-O34 — Is the ruler a figure?
 
 A ruler measures and is usually discarded. Should it be a transient figure
 that is never persisted, a persisted figure the user may keep, or a mode of
 the chart rather than a figure at all?
 
-### SEED-DRAFT-chartediting-O7 — What does snapping mean for general series?
+### SEED-O35 — What does snapping mean for general series?
 
 For bars, snapping means moving an anchor to a bar's open, high, low or close.
 For a general series it might mean the nearest data point, the nearest grid
 line, or nothing. Should the magnet setting be part of the figure definition,
 the provider, or the series?
 
-### SEED-DRAFT-chartediting-O8 — Where do the existing app.chart classes go?
+### SEED-O36 — Where do the existing app.chart classes go?
 
 `app.chart` already models charts, entity sets, styles, and lines and
 retracements as CLOS classes. Should the figure vocabulary build on those
