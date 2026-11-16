@@ -14,6 +14,8 @@ relates-to:
   - SEED-0009
   - SEED-0010
   - SEED-0006
+  - SEED-0008
+  - SEED-0001
   - VOX-DRAFT-vox
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
@@ -61,11 +63,29 @@ cites:
   - title:     "Automatic trading — ProOrder AutoTrading"
     locator:   "ProRealTime, https://www.prorealtime.com/en/auto-trading (consulted November 2026)"
     external:  true
+  - title:     "Conditions of Execution of Automatic Trading Systems"
+    locator:   "ProRealTime, https://trading.prorealtime.com/en/automatic-trading-conditions (consulted November 2026)"
+    external:  true
+  - title:     "What Is ProOrder? Automated Trading in ProRealTime with IG"
+    locator:   "A+ Algos, https://www.aplusalgos.com/blogs/learn/prorealtime-proorder-automated-trading (updated October 2026)"
+    external:  true
   - title:     "ProOrder AutoTrading quick guide"
     locator:   "IG Securities (Japan), https://a.c-dn.net/c/content/dam/publicsites/1466049315736/igcom/jp/files/ig-services/ProOrder-quick_guide.pdf"
     external:  true
   - title:     "TradingView alerts: create, configure and automate"
     locator:   "TheConnector, https://theconnector.fr/en/tradingview-alerts (consulted November 2026)"
+    external:  true
+  - title:     "Manage alerts"
+    locator:   "TradingView support, https://www.tradingview.com/support/solutions/43000595311-manage-alerts (consulted November 2026)"
+    external:  true
+  - title:     "What timezone is displayed in alerts?"
+    locator:   "TradingView support, https://www.tradingview.com/support/solutions/43000691967-what-timezone-is-displayed-in-alerts (consulted November 2026)"
+    external:  true
+  - title:     "Concepts / Alerts"
+    locator:   "Pine Script User Manual, TradingView, https://www.tradingview.com/pine-script-docs/concepts/alerts (consulted November 2026)"
+    external:  true
+  - title:     "Alert lists to be exported to CSV"
+    locator:   "r/TradingView, https://www.reddit.com/r/TradingView/comments/ty84m0/alert_lists_to_be_exported_to_csv (user feature request)"
     external:  true
   - title:     "In Search of an Understandable Consensus Algorithm"
     locator:   "Ongaro, D. and Ousterhout, J. Proc. USENIX ATC 2014"
@@ -160,9 +180,7 @@ user base and broad coverage of equities, forex and crypto.
 
 **M1 — Where monitoring runs: on TradingView's servers.** TradingView's support
 pages state that alerts are server-side: they are created and triggered on
-TradingView's servers and keep working with the chart closed. (One third-party
-guide claims that server-side alerts require the higher plans; the vendor's own
-page makes no such distinction.)
+TradingView's servers and keep working with the chart closed.
 
 **M2 — Link between drawing and condition: mixed.** A third-party guide states
 that a drawing alert stays anchored to its drawing, so that moving or extending
@@ -201,16 +219,21 @@ own infrastructure, whose redundancy is not documented to users. There is no
 way for a user to run the same alert in a second place.
 
 **M8 — Inspectability and portability: limited.** Alerts are objects in the
-user's account, managed through the alert manager. Pine Script source can be
-read, but drawings and alerts are not exported as data a user could version or
+user's account, managed through the alert manager. The alert *log* — the
+record of triggered alerts — can be exported to a CSV file, by TradingView's
+own support pages. The alert definitions themselves cannot, as far as the
+sources examined show: users ask for that export in TradingView's community
+forum (a third-party source). Pine Script source can be read, but the rules
+a user has set up live in the account, not in data the user can version or
 move.
 
 **M9 — Asset-class coverage: broad.** Equities, forex and crypto are all
 covered, with data from many venues.
 
 **M10 — Extensibility: Pine Script.** Custom conditions are written as Pine
-Script indicators with `alertcondition()` or `alert()` calls; drawing tools
-themselves cannot be defined by users.
+Script indicators with `alertcondition()` or `alert()` calls, both described
+in the Pine Script manual. Drawing tools themselves cannot, as far as is
+known, be defined by users; this was not confirmed in the sources examined.
 
 **Scenario walk-through.**
 
@@ -299,9 +322,9 @@ automation in NinjaScript (C#).
 
 **M1 — Where monitoring runs: in the open chart tab.** NinjaTrader's own blog
 states that each alert is local to its chart tab and runs only while that tab
-is open and enabled. A current third-party guide states that NinjaTrader 8 has no
-server-side alerts: closing the platform, or letting the computer sleep, stops
-all monitoring.
+is open and enabled. A current third-party guide states that NinjaTrader 8
+has no server-side alerts: closing the platform, or letting the computer
+sleep, stops all monitoring.
 
 **M2 — Link between drawing and condition: direct, while the tab lives.** Any
 drawing object on the chart can be the condition object of an alert ("Cross
@@ -453,12 +476,15 @@ one rule serving both uses among the platforms examined.
 and performance reports are sent by e-mail or to a phone.
 
 **M7 — Resilience: the vendor's, and the broker's.** Server-side execution
-removes the user's machine, but a third-party account records a period in 2025
-when a partner broker's outage stopped systems from trading.
+removes the user's machine, but not the dependence on the broker. A
+third-party vendor of ProOrder systems, A+ Algos, reports that IG had major
+IT problems in September 2025, and that its own systems on IG largely did
+not trade after 10 September that month.
 
 **M8 — Inspectability and portability: code, with an expiry.** Systems are
-code; an IG guide notes that every running system has an expiry date and stops
-unless the user extends it.
+code. ProRealTime's conditions of execution state that running systems have
+a common validity date, and that ProOrder may stop them automatically if the
+user does not extend it before that date; an IG guide says the same.
 
 **M9 — Asset-class coverage: broker-dependent.** Through partner brokers,
 commonly CFDs.
@@ -525,7 +551,10 @@ well as drawn. An alert refers to the figure instance, so editing the figure
 changes the condition by construction; pinning an alert to a revision of the
 figure is an explicit choice (*architectural*). Figures are already stored as
 Lisp data on the server (*realised*), and `app.chart`'s `plot` method begins
-comparing lines with new data, unfinished (*realised* in part).
+comparing lines with new data, unfinished (*realised* in part). These are the
+figures of the chart-entity editor in `systems/abcd`, the editor whose
+structured parameters SEED-0006 evaluates in its scenario S1; a watcher would
+refer to the same figure instances that editor creates.
 
 **M3 — Condition vocabulary: from the figure families.** Because retracements,
 channels and concentric circles share one form — a base, a transform and a
@@ -559,10 +588,14 @@ condition — so a retried delivery is recognisable as a repeat
 **M7 — Resilience: several hosts.** See "Monitoring across hosts" in the
 Synthesis (*architectural*).
 
-**M8 — Inspectability and portability: data in files.** Figures and watchers
-are Lisp data in version-controlled files, read and written through Philo, and
-a branch's `describe` reports what is being watched (*realised* for figures;
-*architectural* for watchers).
+**M8 — Inspectability and portability: data in files.** Figures are already
+Lisp data in version-controlled analysis files (*realised*). Today those
+files are read with `load` and `from-system-file`
+(`systems/abcd/seed.lisp:init-chart-entities@bf51998`) and new figures are
+written back through a string templater; reading and writing them through
+Philo (SEED-0001), as SEED-0012's persistence step proposes, is
+*architectural*. So are watchers as data in the same files, and a branch's
+`describe` reporting what is being watched.
 
 **M9 — Asset-class coverage: not yet built.** Equities, forex and crypto
 differ in sessions (equity sessions and gaps, forex through the week, crypto
@@ -588,20 +621,20 @@ partial server-side chart model, and a branch system in one image.
 
 ## Comparison
 
-Table: Summary scores per criterion. ● strong; ◐ partial; ○ weak; – not applicable. Seed's scores are architectural.
+Table: Summary scores per criterion. ● strong; ◐ partial; ○ weak; – not applicable. Seed's column scores its design, under one rule: what is not built scores at most ◐, and ● is reserved for what is realised.
 
 | Criterion | TradingView | MetaTrader + VH | NinjaTrader 8 | MotiveWave | ProRealTime | Bridges | Seed (design) |
 |---|---|---|---|---|---|---|---|
-| M1 Where it runs | ● vendor servers | ◐ hosted terminal | ○ open chart tab | ○ running app | ● vendor servers | – | ◐ server image |
-| M2 Drawing link | ◐ reportedly follows | ◐ via code | ◐ while tab lives | ● component alerts | – | – | ● one description |
+| M1 Where it runs | ● vendor servers | ◐ hosted terminal | ○ open chart tab | ○ running app | ● vendor servers | – | ◐ server image, unbuilt |
+| M2 Drawing link | ◐ reportedly follows | ◐ via code | ◐ while tab lives | ● component alerts | – | – | ◐ one description, unbuilt |
 | M3 Conditions | ● per tool, bands | ◐ coded | ● builder | ● widest tool set | ◐ coded | – | ◐ families, unbuilt |
-| M4 Trigger semantics | ◐ settings | ◐ coded | ◐ explicit rearm | ◐ explicit options | ◐ coded | – | ● part of the rule |
+| M4 Trigger semantics | ◐ settings | ◐ coded | ◐ explicit rearm | ◐ explicit options | ◐ coded | – | ◐ part of the rule, unbuilt |
 | M5 Same-rule backtest | ○ not for drawings | ◐ for EAs | ○ not for alerts | ○ not for alerts | ● same code | – | ◐ by replay, unbuilt |
-| M6 Delivery | ◐ logged, may fail | ◐ per EA | ○ local | ○ local | ◐ reports | ○ inherited | ◐ keyed effects |
+| M6 Delivery | ◐ logged, may fail | ◐ per EA | ○ local | ○ local | ◐ reports | ○ inherited | ◐ keyed effects, unbuilt |
 | M7 Resilience | ◐ vendor's | ◐ one instance | ○ desktop | ○ desktop | ◐ vendor's and broker's | ○ chained | ◐ multi-host, unbuilt |
-| M8 Inspectable | ○ account objects | ◐ code files | ○ workspace | ○ workspace | ◐ code | ○ fragmented | ● data in files |
+| M8 Inspectable | ○ account objects; log exports | ◐ code files | ○ workspace | ○ workspace | ◐ code | ○ fragmented | ◐ figures in files; watchers unbuilt |
 | M9 Asset classes | ● broad | ◐ forex first | ◐ futures first | ● broad | ◐ via brokers | – | ○ no feed yet |
-| M10 Extensibility | ◐ Pine Script | ● MQL | ● NinjaScript | ● Java SDK | ◐ ProBuilder | – | ● Lisp |
+| M10 Extensibility | ◐ Pine Script | ● MQL | ● NinjaScript | ● Java SDK | ◐ ProBuilder | – | ◐ Lisp definitions, unbuilt |
 
 Two patterns stand out. First, **no platform describes a drawing-based rule
 once**: the drawing, the alert, the strategy and the backtest are separate
@@ -611,8 +644,11 @@ user's machine is a vendor's service, not a property of the rule**: where it
 exists (TradingView, ProRealTime, MetaTrader's hosting), it runs in one place
 the user cannot replicate.
 
-Seed's design answers both in principle; it has built neither. Its scores
-measure the design against shipped products, and should be read that way.
+Seed's design answers both in principle; it has built neither. Under the
+rule in the caption, nothing in Seed's column scores ●: its cells record
+where the design aims and what it would cover, not a claim to match shipped
+products. The rendition above gives the design's case criterion by
+criterion.
 
 
 ## Synthesis
@@ -698,15 +734,16 @@ again — and that this regularity is a better foundation for monitoring that
 must be trusted than any single vendor's service.
 
 
-## Appendix — Source Notes
+## Appendix — Source Map
 
-Table: Where the evidence for each rendition comes from, and its standing.
+Table: Where the evidence for each rendition comes from, and its standing. "Not confirmed" claims rest on general knowledge and were not checked against the sources examined.
 
 | Rendition | Vendor documentation | Third-party sources | Not confirmed |
 |---|---|---|---|
-| TradingView | Server-side alerts; drawing-alert conditions; indicator-parameter snapshot; webhook limits | Frequency options; drawing alerts following edits; 15 triggers in 3 minutes | Backtesting of drawing alerts |
-| MetaTrader | Virtual Hosting migration rules | — | EAs reading chart objects |
-| NinjaTrader 8 | Drawing objects as conditions; alerts local to the chart tab; drawing alerts dropped on changing instrument (2017 support reply) | No server-side alerts; rearm types; 200 ms checking | — |
-| MotiveWave | Alert types and options; "must be running" warning; SDK strategies; tool list | — | Band conditions on retracements |
-| ProRealTime | Server-side ProOrder; safeguards | 2025 broker outage | Drawing alerts |
+| TradingView | Server-side alerts; drawing-alert conditions; indicator-parameter snapshot; webhook limits; alert log export to CSV; Pine Script's `alert()` and `alertcondition()` | Frequency options; drawing alerts following edits; 15 triggers in 3 minutes; alert definitions not exportable (user feature requests) | Backtesting of drawing alerts; users unable to define drawing tools |
+| MetaTrader | Virtual Hosting migration rules | — | EAs reading chart objects; backtesting EAs in the Strategy Tester |
+| NinjaTrader 8 | Drawing objects as conditions; alerts local to the chart tab; drawing alerts dropped on changing instrument (2017 support reply) | No server-side alerts; rearm types; 200 ms checking | Strategies tested in the Strategy Analyzer |
+| MotiveWave | Alert types and options; "must be running" warning; SDK strategies; tool list | — | Band conditions on retracements; "more than thirty brokers and data feeds" |
+| ProRealTime | Server-side ProOrder; safeguards; validity date and automatic stopping | IG's September 2025 IT problems (A+ Algos) | Drawing alerts |
 | Bridges | TheConnector's page | — | — |
+| Synthesis | — | — | Brokers' APIs accepting client-assigned order identifiers; the venue of the Raft paper, cited from memory |
