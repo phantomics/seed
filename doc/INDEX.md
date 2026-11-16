@@ -22,6 +22,7 @@ Table: Documents in the SEED namespace.
 | [SEED-0010](Eval.BranchModels.md) | Branch Pipeline Models: Transaction Monitors, Middleware, Actors, and Reducers as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-DRAFT-chartediting](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Draft | — |
 | [SEED-DRAFT-chartingplatform](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Draft | — |
+| [SEED-DRAFT-classiccms](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Draft | — |
 | [SEED-DRAFT-classicinterface](Survey.ClassicInterface.md) | The Classic Interface Mode: A CMS Proving Ground for IS/AS/BY | Survey | project | Draft | — |
 | [SEED-DRAFT-programmaticdrawing](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Draft | — |
 
@@ -53,6 +54,12 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-D22](Log.DXOntologyUpdate.md#seed-d22--provisioning-widgets-are-abstract-by-modalities) | Decision | Provisioning widgets are abstract BY modalities | Implemented | SEED-0004 |
 | [SEED-D23](Log.DXOntologyUpdate.md#seed-d23--the-dx-macro-gains-a-grammar-detection-branch) | Decision | The dx macro gains a grammar-detection branch | Implemented | SEED-0004 |
 | [SEED-D24](Log.DXOntologyUpdate.md#seed-d24--layout-positioning-is-applied-per-body-group-within-valence) | Decision | Layout positioning is applied per body group within valence | Implemented | SEED-0004 |
+| [SEED-DRAFT-classiccms-D1](Plan.ClassicCMS.md#seed-draft-classiccms-d1--the-create-form-is-the-first-view-to-move) | Decision | The create form is the first view to move | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D2](Plan.ClassicCMS.md#seed-draft-classiccms-d2--how-a-form-is-submitted) | Decision | How a form is submitted | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D3](Plan.ClassicCMS.md#seed-draft-classiccms-d3--one-client-dispatcher-for-controls) | Decision | One client dispatcher for controls | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D4](Plan.ClassicCMS.md#seed-draft-classiccms-d4--the-forms-description-validates-its-submission) | Decision | The form's description validates its submission | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D5](Plan.ClassicCMS.md#seed-draft-classiccms-d5--actions-are-keywords-from-a-closed-set) | Decision | Actions are keywords from a closed set | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D6](Plan.ClassicCMS.md#seed-draft-classiccms-d6--create-and-edit-are-one-form) | Decision | Create and edit are one form | Proposed | SEED-DRAFT-classiccms |
 | [SEED-O1](Survey.InterfaceModels.md#seed-o1--can-isasby-serve-as-a-narrow-waist-for-inter-domain-composition) | Open question | Can IS/AS/BY serve as a narrow waist for inter-domain composition? | — | SEED-0005 |
 | [SEED-O2](Survey.InterfaceModels.md#seed-o2--how-do-derived-interfaces-reach-hand-crafted-quality) | Open question | How do derived interfaces reach hand-crafted quality? | — | SEED-0005 |
 | [SEED-O3](Survey.InterfaceModels.md#seed-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-0005 |
@@ -80,6 +87,13 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-chartediting-O6](Survey.ChartEditing.md#seed-draft-chartediting-o6--is-the-ruler-a-figure) | Open question | Is the ruler a figure? | — | SEED-DRAFT-chartediting |
 | [SEED-DRAFT-chartediting-O7](Survey.ChartEditing.md#seed-draft-chartediting-o7--what-does-snapping-mean-for-general-series) | Open question | What does snapping mean for general series? | — | SEED-DRAFT-chartediting |
 | [SEED-DRAFT-chartediting-O8](Survey.ChartEditing.md#seed-draft-chartediting-o8--where-do-the-existing-appchart-classes-go) | Open question | Where do the existing app.chart classes go? | — | SEED-DRAFT-chartediting |
+| [SEED-DRAFT-classiccms-O1](Plan.ClassicCMS.md#seed-draft-classiccms-o1--how-are-constraints-written) | Open question | How are constraints written? | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O2](Plan.ClassicCMS.md#seed-draft-classiccms-o2--how-are-errors-represented) | Open question | How are errors represented? | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O3](Plan.ClassicCMS.md#seed-draft-classiccms-o3--effect-classes-on-controls-now) | Open question | Effect classes on controls now? | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O4](Plan.ClassicCMS.md#seed-draft-classiccms-o4--naming-editors) | Open question | Naming editors | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O5](Plan.ClassicCMS.md#seed-draft-classiccms-o5--generated-handlers-or-one-listener) | Open question | Generated handlers or one listener? | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O6](Plan.ClassicCMS.md#seed-draft-classiccms-o6--addressing-articles) | Open question | Addressing articles | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O7](Plan.ClassicCMS.md#seed-draft-classiccms-o7--context-without-the-old-panes) | Open question | Context without the old panes | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classicinterface-O1](Survey.ClassicInterface.md#seed-draft-classicinterface-o1--bridge-granularity) | Open question | Bridge granularity | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O2](Survey.ClassicInterface.md#seed-draft-classicinterface-o2--format-migration-ux) | Open question | Format migration UX | — | SEED-DRAFT-classicinterface |
 | [SEED-DRAFT-classicinterface-O3](Survey.ClassicInterface.md#seed-draft-classicinterface-o3--codemirror-mode-switching) | Open question | CodeMirror mode switching | — | SEED-DRAFT-classicinterface |
