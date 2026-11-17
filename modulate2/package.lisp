@@ -36,6 +36,7 @@
            #:mfn-controls
            ;; IS vocabulary
            #:infer-data-character
+           #:resolve-is
            ;; AS vocabulary - program element roles
            #:+as-program-roles+
            #:+as-atomic-roles+

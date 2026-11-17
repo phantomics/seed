@@ -933,7 +933,7 @@
               ;; Sequence: each child is a member.
               (make-instance 'mfn-sequence
                              :value children
-                             :is (or is-spec (list :list))
+                             :is (resolve-is children (or is-spec (list :list)))
                              :as as-roles
                              :by resolved-by
                              :name name
@@ -945,7 +945,7 @@
               ;; Atom: single value or nil.
               (make-instance 'mfn-atom
                              :value children
-                             :is (or is-spec (list (infer-data-character children)))
+                             :is (resolve-is children is-spec)
                              :as as-roles
                              :by resolved-by
                              :name name
