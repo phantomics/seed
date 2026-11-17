@@ -147,7 +147,7 @@
         ;; send them to the branch via fetchContact, then trigger a refresh.
         (create-js
           (format nil "~@{~a~}"
-                  "var f=$event.target.closest('.series');"
+                  "let f=$event.target.closest('.series');"
                   "if(f){"
                   "var ti=f.querySelector('[name=title]');"
                   "var bo=f.querySelector('[name=body]');"
