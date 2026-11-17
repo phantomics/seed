@@ -110,8 +110,9 @@ Three gaps matter for the CMS:
 1. **Controls do nothing.** `modulate2/modulate2.lisp:make-control@7a82b07`
    builds `:activating` atoms, rendered as buttons with `data-action` and
    `data-target` attributes, but no client code responds to them. Branch code
-   also has no way to write a control: `make-control` is internal, and a
-   `dx` form with a list value becomes a sequence, not a control.
+   can call `make-control` (it is exported), but it takes no arguments beyond
+   action, label and target — there is no `data-args` — and a `dx` form with
+   a list value becomes a sequence, not a control.
 2. **There are no forms.** `:provision-form` renders an empty `<form>` and
    drops its members; nothing gathers named fields and submits them.
 3. **There are no tests.** SEED-0004 records that its test script was not
@@ -153,6 +154,13 @@ Two pieces of the old grammar already do part of what a form needs.
 data of the nearest enclosing `<form>` and posts it through `fetch-contact`,
 and an old-grammar series with the `uir-form` role renders as a `<form>`
 (`modulate/modulate.lisp:uic-series@7a82b07`). The CMS uses neither.
+
+**Correction (step 0):** `form-input` does not reach the browser.  Both
+`form-input` and `field-in` are registered under the same key
+(`:form-input-def`) in `enter-js-element`, and the second registration
+overwrites the first.  The built client (`int.js`) contains `fieldIn` and
+no `formInput`.  Step 3 must write the form gathering fresh rather than
+extending `form-input`, and the duplicate key should be fixed.
 
 
 ## Goals
@@ -200,8 +208,9 @@ content from its CodeMirror instance, under the editor's field name — and
 posts one flat payload, the action plus one key per field, to the branch.
 Fields inside a form post nothing until the form is submitted. A
 successful submit is followed by a refresh.
-The gathering extends the existing `form-input` function, adding the
-editors' content and the action, rather than replacing it.
+The gathering is a new function (since `form-input` does not reach the
+browser — see the correction under "Starting point: the CMS"), adding
+the editors' content and the action.
 **Alternatives:** Nesting the fields under a `fields` key — workable, since
 `adapt-from-json` normalises nested keys against the same declared list, but
 rejected as the more complex shape: a flat payload matches the way the
@@ -222,8 +231,8 @@ from data attributes, submits the enclosing form when the control is inside
 one (SEED-DRAFT-classiccms-D2), otherwise posts the action and arguments
 through `fetch-contact`, and then refreshes. Controls carry arguments — an
 article's index, for example — as a `data-args` attribute alongside the
-target path. `make-control`, or a constructor built on it, is exported so
-branch code can write controls.
+target path. `make-control` is already exported; it gains an `:args`
+keyword so controls can carry arguments.
 **Alternatives:** A single listener on the document for every
 `[data-action]` click — cleaner markup, but it must recover the Alpine scope
 for each element; kept open as SEED-DRAFT-classiccms-O5.
@@ -337,7 +346,7 @@ constructor of SEED-DRAFT-classiccms-D3.
 
 ### What modulate2 must gain
 
-- An exported control constructor; controls with arguments.
+- Controls with arguments (`make-control` gains `:args`).
 - `:provision-form` rendering its members inside the form.
 - A field name on `:provision-text` elements, so the form can gather them.
 - Editor mode chosen from the field's AS format role
@@ -494,8 +503,8 @@ lands.
    controls with arguments, and the dispatcher (SEED-DRAFT-classiccms-D3);
    tests for the generated buttons.
 4. **Step 3 — Forms.** `:provision-form` rendering its members; field names
-   on `:provision-text`; form gathering in the dispatcher, extending
-   `form-input` (SEED-DRAFT-classiccms-D2); tests, including a
+   on `:provision-text`; form gathering as a new client function in the
+   dispatcher (SEED-DRAFT-classiccms-D2); tests, including a
    `:provision-text` field whose value is a list (expressed as a sequence)
    and a form with a `nil` member.
 5. **Step 4 — The create view.** The article form
