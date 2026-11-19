@@ -43,6 +43,7 @@ decisions:
   - SEED-D39
   - SEED-D40
   - SEED-D41
+  - SEED-DRAFT-classiccms-D18
 open-questions:
   - SEED-O46
   - SEED-O47
@@ -53,6 +54,7 @@ open-questions:
   - SEED-O52
   - SEED-O53
   - SEED-O54
+  - SEED-DRAFT-classiccms-O10
 ---
 
 # The Classic CMS in the New Grammar: Development Plan
@@ -75,10 +77,16 @@ interpreter of that markup and the interface model kept on the server
 (SEED-D31 to SEED-D36). It revises
 SEED-D26 and SEED-D27 to match, and adds
 step 8, keyboard navigation and sorting (SEED-D37 to
-SEED-D41). The records it adds or revises are Proposed.
+SEED-D41).
+
+The revision of 2026-11-19 makes the control banks the standard place for a
+view's controls that are not tied to a part of it
+(SEED-DRAFT-classiccms-D18), and adds their preparation to step 2. Its
+records are Proposed.
 
 Code references are pinned to revision `7a82b07`, except those added by the
-revision of 2026-11-18, which are pinned to `f55f092`.
+revision of 2026-11-18, which are pinned to `f55f092`, and those added by
+the revision of 2026-11-19, which are pinned to `0478c2e`.
 
 
 ## Problem
@@ -799,6 +807,67 @@ until its views migrate.
 **Alternatives:** Porting the old protocol of path and positions —
 rejected: positions go stale, and the browser would keep data addresses.
 
+### SEED-DRAFT-classiccms-D18 — Control banks hold a view's controls that are not tied to a part of it
+
+**Status:** Accepted
+**Context:** Most branch views show two banks of controls beside their
+content; the CMS's "new" button is in one. The old dual-bank pane
+(`modulate/modulate.lisp:amake@0478c2e`, the method on
+`uia-primal-dual-bank-pane`) fills them by calling the branch with
+`(:uimod :header-controls)` and `(:uimod :footer-controls)`, names that tie
+the banks to one layout, a bank above and a bank below. The pane renders
+the banks with the page, and the content in its own frame request, so the
+banks sit outside the content in the page. The bank contents are built
+while the branch's function runs but rendered later, during the `:view`
+branch's render. A standard place for controls that act on the whole view
+lets every medium present them uniformly, however much space it has.
+**Decision:** A branch view has two control banks, *primary* and
+*secondary*:
+
+- **Primary and secondary, not top and bottom.** The primary bank holds the
+  controls most used; the secondary bank holds the rest. The branch fills
+  each for the current view state by answering `(:uimod :cbank-primary)`
+  and `(:uimod :cbank-secondary)` with a `(:as :controls)` sequence of
+  new-grammar controls. These names replace `:header-controls` and
+  `:footer-controls` in every system that uses them.
+- **Placement belongs to the medium.** The dual-bank pane places the
+  primary bank above the content and the secondary below. Where space is
+  scarce, a medium may show only the primary bank, with a hint that brings
+  up the secondary bank when a narrow area is clicked or tapped; a terminal
+  might place the banks in a status line.
+- **Bank controls act on the view or on a collection by name,** as
+  `(:by (:submitting :article))`, never by position.
+- **The banks share the view's context, collections and refresh.** The old
+  grammar's `:join` root — the pane enclosing both banks and the content —
+  renders the context and region attributes (SEED-D31, SEED-D33), so it is
+  the branch view's root: a bank control finds its context there, and
+  gathering a collection searches the whole pane. Bank controls are built
+  during the branch's own call, so they carry its context, which is
+  captured when a manifestation is built rather than when it is rendered
+  (SEED-0016).
+- **Banks hold controls only.** The banks and the content are rendered in
+  separate requests, so the uniqueness of names (SEED-D35) cannot be
+  checked across them. A dispatcher that finds no fields for the collection
+  a bank control submits signals an error rather than posting an empty
+  submission, and the branch rejects a collection the view does not
+  declare (SEED-D26).
+- The web rendering marks each bank with the ARIA role `toolbar`.
+
+When the old panes are retired (SEED-O52), the banks become part of the
+view's own description rather than separate `:uimod` requests.
+**Alternatives:**
+- Keeping `:header-controls` and `:footer-controls` — rejected: the names
+  couple the banks to one layout.
+- View-wide controls placed in the content, wherever each view puts them —
+  rejected: without a standard place, a medium cannot rearrange them for
+  its space, and navigation cannot treat them uniformly.
+- More than two ranked banks — not needed now: two cover the layouts in
+  use, and the primary/secondary division matches the trigger taxonomy of
+  SEED-D37. More can be added if a use appears.
+- The banks declared in the view's own description now — deferred: while
+  the panes fetch the content in a separate request, the banks are built by
+  separate calls.
+
 
 ## Design
 
@@ -818,6 +887,7 @@ Table: Attributes the web medium renders for the client, and the decisions that 
 | `data-target` | Controls acting on another node | The target's navigation key, not its path, sent as the envelope's `target` | SEED-D26, SEED-D40 |
 | `data-seed-submits` | `:submitting` controls | The collection submitted | SEED-D35 |
 | `data-seed-field`, `data-seed-in` | Fields | The field's name, and every collection it belongs to | SEED-D35 |
+| `role="toolbar"` | The primary and secondary control banks | A bank of view-wide controls | SEED-DRAFT-classiccms-D18 |
 | `x-data`, `data-seed-params` | Widgets | The registered component's name, and its parameters as JSON | SEED-D32 |
 | `data-nav`, `data-nav-key`, `role`, `tabindex` | Stops and groups (step 8) | The navigation projection | SEED-D38, SEED-D40 |
 | `data-seed-sort`, with item keys | Sortable sequences (step 8) | The move operation | SEED-D41 |
@@ -980,9 +1050,13 @@ navigation walker are checked by hand until there is a client test harness.
 
 **Where the root learns its context.** `modulate2` must render each branch
 view's address (SEED-D31) while old-grammar panes still
-supply `mode`. Where the system and branch come from at that moment is not
-yet confirmed; it is settled at step 2, and bears on
-SEED-O52.
+supply `mode`. This was settled before step 2 (SEED-0016): each branch's
+function binds the system and branch dynamically
+(`generate/generate.lisp:channel-fns@0478c2e`), and a manifestation records
+the binding when it is built, because some, such as the controls in a
+bank, are rendered after their branch's call has returned
+(SEED-DRAFT-classiccms-D18). It still bears on SEED-O52: once the old
+panes are gone, something must make the same binding.
 
 **Ambiguous names.** Gathering matches collections and fields by name, so a
 duplicate name would gather the wrong fields. The server's check while
@@ -1083,6 +1157,17 @@ other `:provision-*` modalities — text, sheet, chart, graph — name abstract
 widgets. Is "provision" the right term for them, or should they be renamed
 in the same way, before more code depends on the names?
 
+### SEED-DRAFT-classiccms-O10 — Reaching the control banks by keyboard
+
+Under SEED-D38 a pane's primary bank, content and secondary bank are
+siblings in the navigation tree, so reaching a bank from deep in the
+content means moving up to the pane, then across. If the banks are the
+standard place for a view's controls (SEED-DRAFT-classiccms-D18), should
+there be a quicker way to them — the cross trigger cycling through the
+content and the banks within a pane, or a key for each bank — and how does
+that fit the cross trigger's role of moving between top-level spaces
+(SEED-D39)? To be settled at step 8.
+
 
 ## Prior Art
 
@@ -1120,18 +1205,26 @@ Each step is recorded in a Log (SEED-0016) as it lands.
    construction, valence and layout, `:reducing` controls, `:provision-text`
    output, and the bridges; `construct` resolves IS.
 3. **Step 2 — Controls that work.** The exported control constructor with
-   arguments; context attributes on the branch view's root
-   (SEED-D31), with where the root learns its context
-   settled; the delegated listener, the envelope and refresh by name
-   (SEED-D27, SEED-D26,
-   SEED-D33); the duplicate `:form-input-def` key in
-   `maple.lisp` fixed. The edit view's old-grammar Back button is replaced
-   by a new-grammar control, the first to reach the CMS, so the checklist
-   exercises the dispatcher before any form exists; the branch already
-   handles `back`. The Back control is a test fixture for the dispatcher,
-   not a move of the edit view, which moves at step 6, so the order of
-   SEED-D25 is unchanged. Tests for the generated buttons and their
-   attributes, including `data-args` and `data-target`.
+   arguments; the branch context bound by each branch's function and
+   recorded by a manifestation when it is built; context and region
+   attributes on the branch view's root (SEED-D31,
+   SEED-D33) — for the old panes, the `:join` root, which encloses the
+   control banks (SEED-DRAFT-classiccms-D18); the delegated listener, the
+   envelope and refresh by name (SEED-D27, SEED-D26,
+   SEED-D33), each region falling back to a refresh of the whole page; the
+   duplicate `:form-input-def` key in `maple.lisp` fixed.
+   `:header-controls` and `:footer-controls` renamed `:cbank-primary` and
+   `:cbank-secondary` in every system that uses them, and the banks marked
+   with the role `toolbar`. Two old-grammar buttons are replaced by
+   new-grammar controls, so the checklist exercises the dispatcher before
+   any form exists: Back in the edit view, inside the content, and "new" in
+   the primary bank, outside it. The branch already handles both actions.
+   They are test fixtures for the dispatcher, not moves of their views,
+   which move at steps 4–6, so the order of SEED-D25 is unchanged. Tests
+   for the generated buttons and their attributes, including `data-args`
+   and `data-target`; for the context recorded at construction and kept
+   when rendered under another branch's binding; and for the attributes of
+   a `:join` root.
 4. **Step 3 — Forms.** Collections (SEED-D35,
    SEED-D36): `:collecting`, `:submitting` and
    `(:member …)` parsed; membership resolved, with the uniqueness checks;
@@ -1178,7 +1271,8 @@ Each step is recorded in a Log (SEED-0016) as it lands.
    bindings, the client walker, edit mode on fields and the triggers
    (SEED-D37, SEED-D39); the server's
    focus and last-visited memory (SEED-D34); the focused
-   group's direction shown. The `:sorting` default and the `:move`
+   group's direction shown; how the control banks are reached
+   (SEED-DRAFT-classiccms-O10). The `:sorting` default and the `:move`
    operation, by drag-and-drop and by keyboard (SEED-D41).
    Tests for the projection, which is computed on the server; the
    checklist covers the walker, edit mode and keyboard access to the page
