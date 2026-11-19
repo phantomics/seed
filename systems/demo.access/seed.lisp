@@ -180,7 +180,7 @@
          ;; window.seedData and send it via fetchContact.
          (save-js
            (format nil "~@{~a~}"
-                   "var t='" *cms-cm-token* "';"
+                   "let t='" *cms-cm-token* "';"
                    "if(seedData[t]){"
                    "fetchContact($event.target,mode,"
                    "{text:[seedData[t].state.doc.toString()]},"
