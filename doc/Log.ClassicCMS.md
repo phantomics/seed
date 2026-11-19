@@ -9,7 +9,7 @@ status:        Draft
 provenance:
   assistant:   claude-opus-4-6
 relates-to:
-  - SEED-DRAFT-classiccms
+  - SEED-0015
   - SEED-0011
   - SEED-0003
   - SEED-0004
@@ -22,7 +22,7 @@ open-questions:
 # Classic CMS Development Log
 
 This document chronicles the implementation of the Classic CMS interface in
-the IS/AS/BY grammar, following the Plan (SEED-DRAFT-classiccms). It grows
+the IS/AS/BY grammar, following the Plan (SEED-0015). It grows
 with one Update section per step, as the SpecOps Manifest Log does.
 
 The initial entry records step 0 (diagnosis of the Create failure) and
@@ -34,7 +34,7 @@ be recorded as they land.
 
 The CMS's Create button did nothing. The Plan identified three candidates
 but had not diagnosed the failure. The old grammar was scheduled for
-replacement (SEED-DRAFT-classiccms-D1), but shared code that the new form
+replacement (SEED-D25), but shared code that the new form
 also uses — `fetchContact`, the refresh mechanism, Classic's checks — could
 carry the same fault.
 
@@ -96,8 +96,8 @@ The CMS branch's guard (`(when (and title (plusp (length title))))`) rejects
 nil and empty titles, so Classic's type error is not reached in practice.
 However, Classic does not enforce "required" on its own: a title of `""`
 passes through to the persistence layer. This confirms that "required" must
-come from the form's description, bearing on SEED-DRAFT-classiccms-D4 and
-SEED-DRAFT-classiccms-O1.
+come from the form's description, bearing on SEED-D28 and
+SEED-O46.
 
 ### The `form-input` / `field-in` key collision
 
@@ -105,7 +105,7 @@ Both `form-input` and `field-in` are registered in
 `platform/browser/pla.browser.maple/maple.lisp@bdf7f99` under the same key,
 `:form-input-def`, in `enter-js-element`. The macro uses `setf getf`, so
 the second registration overwrites the first. The built client (`int.js`)
-contains `fieldIn` and no `formInput`. SEED-DRAFT-classiccms-D2's claim to
+contains `fieldIn` and no `formInput`. SEED-D26's claim to
 "extend the existing `form-input` function" was corrected in the Plan
 revision at `1a8135c`: step 3 writes the form gathering fresh.
 
@@ -173,7 +173,7 @@ address the duplication. Using Alpine's `x-on:click="$dispatch('action',
 {...})"` — adds an Alpine dependency to the protocol.
 
 The Plan's revision of 2026-11-18 folds this decision into
-SEED-DRAFT-classiccms-D3, which goes further: one delegated listener
+SEED-D27, which goes further: one delegated listener
 handles every control, so generated markup carries no handler code at all,
 and any `x-on:` attribute that must still be generated holds a single call.
 When that revision is accepted, this record can be marked superseded by it.
@@ -188,7 +188,7 @@ The old grammar's `:meta-path` conflates data addresses (positions in the
 only by `express`, so `dx`-built components get no path, and positional
 indices go stale after inserts or sorts. These should be separated: a
 data address for write-back (opaque, branch-interpreted, possibly a URI
-per SEED-DRAFT-classiccms-O6) and a navigation model for keyboard focus
+per SEED-O51) and a navigation model for keyboard focus
 (derived from the manifestation tree's AS roles and BY modalities, rendered
 as ARIA roles and a roving tabindex, computed from the DOM at key-press
 time so it cannot go stale). The navigation model is discussed but not yet
@@ -196,11 +196,11 @@ decided; it will be recorded in a Plan revision when settled.
 
 The Plan's revision of 2026-11-18 proposes answers. Data addresses stay on
 the server and navigation keys are rendered separately
-(SEED-DRAFT-classiccms-D16). The navigation model is a projection of the
+(SEED-D40). The navigation model is a projection of the
 manifestation tree, computed on the server and rendered as markers, with
 movement over the tree of forms rather than the page
-(SEED-DRAFT-classiccms-D14) and focus owned by the server
-(SEED-DRAFT-classiccms-D10). The resolution is recorded when the revision
+(SEED-D38) and focus owned by the server
+(SEED-D34). The resolution is recorded when the revision
 is accepted.
 
 
@@ -226,36 +226,36 @@ Before step 2, the redesign of the old grammar's `mode`, `methods` and
 `patch`, and the navigation model, were settled in discussion and recorded
 as a revision of the Plan. The revision's records are Proposed:
 
-- **Context, widget state and refresh** (SEED-DRAFT-classiccms-D7 to
-  SEED-DRAFT-classiccms-D9). `mode`'s address becomes `data-` attributes
+- **Context, widget state and refresh** (SEED-D31 to
+  SEED-D33). `mode`'s address becomes `data-` attributes
   on each branch view's root; widget behaviour is written once and
   registered as Alpine components with JSON parameters; the server names
   the regions a response refreshes, replacing `patch`.
-- **Reported state** (SEED-DRAFT-classiccms-D10). Focus and the drafts of
+- **Reported state** (SEED-D34). Focus and the drafts of
   changed fields travel with every request and are kept by the server, so
   that a partial submit loses no unsaved edits and a terminal medium can
   share the model. Keeping the rendered tree in the session was considered
   and deferred to increment E.
-- **Forms as collections** (SEED-DRAFT-classiccms-D11,
-  SEED-DRAFT-classiccms-D12). `(:by :collecting)` replaces
+- **Forms as collections** (SEED-D35,
+  SEED-D36). `(:by :collecting)` replaces
   `:provision-form`; membership comes from nesting, plus
   `(:as (:member …))`, which adds to it; `(:by :submitting)` controls are
   the only ones that gather fields. AS roles may now name other nodes,
   refining SEED-D19.
 - **Revisions of the payload and the dispatcher**
-  (SEED-DRAFT-classiccms-D2, SEED-DRAFT-classiccms-D3). An envelope
+  (SEED-D26, SEED-D27). An envelope
   replaces the flat payload; no HTML `<form>` element; one delegated
   listener replaces per-control handlers, absorbing
   SEED-DRAFT-classiccmslog-D1.
-- **Step 8, navigation and sorting** (SEED-DRAFT-classiccms-D13 to
-  SEED-DRAFT-classiccms-D17). Movement through spaces chosen by mode, the
+- **Step 8, navigation and sorting** (SEED-D37 to
+  SEED-D41). Movement through spaces chosen by mode, the
   first space being the tree of forms; triggers mapped to BY modalities;
   data addresses separate from navigation keys; sorting as a `:move`
   operation, by drag-and-drop or by keyboard.
 
 Two new open questions record what was deferred: exclusive or subtractive
-membership (SEED-DRAFT-classiccms-O8) and the naming of the `:provision-*`
-modalities (SEED-DRAFT-classiccms-O9).
+membership (SEED-O53) and the naming of the `:provision-*`
+modalities (SEED-O54).
 
 While checking this Log against the code, the edit view's Save script was
 found still to begin with `var` (see step 0) and was fixed at `f55f092`.
@@ -263,7 +263,7 @@ found still to begin with `var` (see step 0) and was fixed at `f55f092`.
 
 ## Outstanding Work
 
-- Steps 2–8 of SEED-DRAFT-classiccms, beginning with working controls
+- Steps 2–8 of SEED-0015, beginning with working controls
   (step 2) and collections (step 3), under the revision of 2026-11-18.
 - Check the Save fix at `f55f092` in the browser.
 - Adopt cl-hamcrest's matchers in the modulate2 test suite, as the Square

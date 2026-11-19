@@ -20,7 +20,7 @@ relates-to:
   - SEED-0009
   - SEED-0008
   - SEED-0012
-  - SEED-DRAFT-classiccms
+  - SEED-0015
   - VOX-DRAFT-vox
   - CLASSIC-0007
   - CLASSIC-0011
@@ -84,7 +84,7 @@ it reveals are the most valuable finding.
 Chart editing (`systems/abcd`) shares infrastructure with the CMS — especially
 Tier-1 manipulation defaults — but its specific concerns are the subject of
 a separate Survey (SEED-0012). The work this Survey proposes
-is planned in SEED-DRAFT-classiccms.
+is planned in SEED-0015.
 
 
 ## Motivation
@@ -129,7 +129,7 @@ All code references in this section are pinned to revision `6a9aa8e`.
   `:activating` — exist in modulate2, but no demonstration uses them yet.
 - **`:cms`** — a Classic blog editor with an article list, a create form,
   and a CodeMirror edit view. The create form's Create button does not
-  work, for a cause not yet diagnosed (step 0 of SEED-DRAFT-classiccms). It is
+  work, for a cause not yet diagnosed (step 0 of SEED-0015). It is
   written entirely in the old grammar (`dx`, `uic-series`, `uicc-button`,
   `uicc-field`, `uir-*` roles) and is the migration target for this work.
 
@@ -423,7 +423,7 @@ A container with:
 
 The effect classes given for controls here and below are proposals; whether
 controls carry them before the branch-object migration is open
-(SEED-DRAFT-classiccms-O3).
+(SEED-O48).
 
 ### The edit view
 
@@ -499,8 +499,8 @@ The wiki extends the CMS with:
 ### Increment ladder
 
 Table: Proposed increments, what each changes, and the infrastructure
-it pulls in. The Plan (SEED-DRAFT-classiccms) decides the final sequence;
-its SEED-DRAFT-classiccms-D1 moves the create form ahead of A1.
+it pulls in. The Plan (SEED-0015) decides the final sequence;
+its SEED-D25 moves the create form ahead of A1.
 
 | Step | What changes | Infrastructure pulled in |
 |------|-------------|--------------------------|
@@ -680,7 +680,7 @@ identifier management and the interaction with `compass check`.
    its default arguments, which leave deleted articles out, and counts from
    0; `edit-article` counts from 1 over `get-articles` with
    `:include-deleted t`. The two agree only while no article has been
-   deleted (SEED-DRAFT-classiccms records this under its risks). The CMS
+   deleted (SEED-0015 records this under its risks). The CMS
    must work around this until URI-keyed accessors are available.
 2. **The `:activating` gap is real.** Until client-side dispatch is wired,
    no control written in the new grammar works; the old grammar's controls
@@ -732,7 +732,7 @@ identifier management and the interaction with `compass check`.
   (`:sorting`, `:extending`, `:reducing`) with the CMS. It exercises
   valence and layout, which the CMS does not. SEED-0012
   surveys it.
-- **SEED-DRAFT-classiccms** plans the work this Survey proposes, beginning
+- **SEED-0015** plans the work this Survey proposes, beginning
   with the create form, and describes modulate2 and the CMS as they stand.
 
 

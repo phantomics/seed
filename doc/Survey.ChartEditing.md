@@ -23,7 +23,7 @@ relates-to:
   - SEED-0011
   - SEED-0013
   - SEED-0014
-  - SEED-DRAFT-classiccms
+  - SEED-0015
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -504,7 +504,7 @@ Steps C1 and C2 change nothing the user sees. C3 lets both renderers run side
 by side on the same data. The `:chart` branch's move to the branch-object
 model in C4 should follow the CMS's step E (SEED-0011), so
 that the branch model is not in flux in two places at once. For the same
-reason, C7 should follow step 3 of the CMS Plan (SEED-DRAFT-classiccms),
+reason, C7 should follow step 3 of the CMS Plan (SEED-0015),
 which gives modulate2 the working controls and submittable forms a derived
 properties panel needs.
 
@@ -572,7 +572,7 @@ Within the Seed corpus:
   and written.
 - SEED-0011 — the sibling Survey for the CMS, whose rule for
   keeping Seed usable throughout development this survey follows.
-- SEED-DRAFT-classiccms — the CMS Plan, whose controls and forms in
+- SEED-0015 — the CMS Plan, whose controls and forms in
   modulate2 the properties panel (C7) would use.
 - SEED-0013 — the Eval of charting platforms for
   monitoring and alerts, which builds on this vocabulary: watchers refer to

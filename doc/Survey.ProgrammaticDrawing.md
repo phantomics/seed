@@ -20,7 +20,7 @@ relates-to:
   - SEED-0009
   - SEED-0012
   - SEED-0011
-  - SEED-DRAFT-classiccms
+  - SEED-0015
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -686,7 +686,7 @@ P1 is deliberately without an interface: it settles whether April evaluates
 effects fast enough before anything is built on the assumption. P6 should
 follow the chart Survey's C1, so that the figure vocabulary has one owner at a
 time. For the same reason, P5 should follow step 3 of the CMS Plan
-(SEED-DRAFT-classiccms): the layer list's controls (create, copy, delete,
+(SEED-0015): the layer list's controls (create, copy, delete,
 change effect) need the working `:activating` controls of its step 2, and a
 layer's parameters the submittable forms of its step 3.
 
@@ -738,7 +738,7 @@ Within the Seed corpus:
   recurs here.
 - SEED-0011 — the Classic interface Survey, whose rule for
   keeping Seed usable during development this survey follows.
-- SEED-DRAFT-classiccms — the CMS Plan, whose working controls and forms in
+- SEED-0015 — the CMS Plan, whose working controls and forms in
   modulate2 the layer-list editor (P5) would use.
 
 External:
