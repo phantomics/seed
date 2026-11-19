@@ -43,7 +43,7 @@ decisions:
   - SEED-D39
   - SEED-D40
   - SEED-D41
-  - SEED-DRAFT-classiccms-D18
+  - SEED-D45
 open-questions:
   - SEED-O46
   - SEED-O47
@@ -54,7 +54,7 @@ open-questions:
   - SEED-O52
   - SEED-O53
   - SEED-O54
-  - SEED-DRAFT-classiccms-O10
+  - SEED-O56
 ---
 
 # The Classic CMS in the New Grammar: Development Plan
@@ -81,7 +81,7 @@ SEED-D41).
 
 The revision of 2026-11-19 makes the control banks the standard place for a
 view's controls that are not tied to a part of it
-(SEED-DRAFT-classiccms-D18), and adds their preparation to step 2. Its
+(SEED-D45), and adds their preparation to step 2. Its
 records are Proposed.
 
 Code references are pinned to revision `7a82b07`, except those added by the
@@ -807,7 +807,7 @@ until its views migrate.
 **Alternatives:** Porting the old protocol of path and positions —
 rejected: positions go stale, and the browser would keep data addresses.
 
-### SEED-DRAFT-classiccms-D18 — Control banks hold a view's controls that are not tied to a part of it
+### SEED-D45 — Control banks hold a view's controls that are not tied to a part of it
 
 **Status:** Accepted
 **Context:** Most branch views show two banks of controls beside their
@@ -887,7 +887,7 @@ Table: Attributes the web medium renders for the client, and the decisions that 
 | `data-target` | Controls acting on another node | The target's navigation key, not its path, sent as the envelope's `target` | SEED-D26, SEED-D40 |
 | `data-seed-submits` | `:submitting` controls | The collection submitted | SEED-D35 |
 | `data-seed-field`, `data-seed-in` | Fields | The field's name, and every collection it belongs to | SEED-D35 |
-| `role="toolbar"` | The primary and secondary control banks | A bank of view-wide controls | SEED-DRAFT-classiccms-D18 |
+| `role="toolbar"` | The primary and secondary control banks | A bank of view-wide controls | SEED-D45 |
 | `x-data`, `data-seed-params` | Widgets | The registered component's name, and its parameters as JSON | SEED-D32 |
 | `data-nav`, `data-nav-key`, `role`, `tabindex` | Stops and groups (step 8) | The navigation projection | SEED-D38, SEED-D40 |
 | `data-seed-sort`, with item keys | Sortable sequences (step 8) | The move operation | SEED-D41 |
@@ -1055,7 +1055,7 @@ function binds the system and branch dynamically
 (`generate/generate.lisp:channel-fns@0478c2e`), and a manifestation records
 the binding when it is built, because some, such as the controls in a
 bank, are rendered after their branch's call has returned
-(SEED-DRAFT-classiccms-D18). It still bears on SEED-O52: once the old
+(SEED-D45). It still bears on SEED-O52: once the old
 panes are gone, something must make the same binding.
 
 **Ambiguous names.** Gathering matches collections and fields by name, so a
@@ -1157,12 +1157,12 @@ other `:provision-*` modalities — text, sheet, chart, graph — name abstract
 widgets. Is "provision" the right term for them, or should they be renamed
 in the same way, before more code depends on the names?
 
-### SEED-DRAFT-classiccms-O10 — Reaching the control banks by keyboard
+### SEED-O56 — Reaching the control banks by keyboard
 
 Under SEED-D38 a pane's primary bank, content and secondary bank are
 siblings in the navigation tree, so reaching a bank from deep in the
 content means moving up to the pane, then across. If the banks are the
-standard place for a view's controls (SEED-DRAFT-classiccms-D18), should
+standard place for a view's controls (SEED-D45), should
 there be a quicker way to them — the cross trigger cycling through the
 content and the banks within a pane, or a key for each bank — and how does
 that fit the cross trigger's role of moving between top-level spaces
@@ -1209,7 +1209,7 @@ Each step is recorded in a Log (SEED-0016) as it lands.
    recorded by a manifestation when it is built; context and region
    attributes on the branch view's root (SEED-D31,
    SEED-D33) — for the old panes, the `:join` root, which encloses the
-   control banks (SEED-DRAFT-classiccms-D18); the delegated listener, the
+   control banks (SEED-D45); the delegated listener, the
    envelope and refresh by name (SEED-D27, SEED-D26,
    SEED-D33), each region falling back to a refresh of the whole page; the
    duplicate `:form-input-def` key in `maple.lisp` fixed.
@@ -1272,7 +1272,7 @@ Each step is recorded in a Log (SEED-0016) as it lands.
    (SEED-D37, SEED-D39); the server's
    focus and last-visited memory (SEED-D34); the focused
    group's direction shown; how the control banks are reached
-   (SEED-DRAFT-classiccms-O10). The `:sorting` default and the `:move`
+   (SEED-O56). The `:sorting` default and the `:move`
    operation, by drag-and-drop and by keyboard (SEED-D41).
    Tests for the projection, which is computed on the server; the
    checklist covers the walker, edit mode and keyboard access to the page

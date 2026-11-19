@@ -114,3 +114,7 @@
 (:id "SEED-0016" :kind :document :draft "SEED-DRAFT-classiccmslog" :path "doc/Log.ClassicCMS.md" :date "2026-11-19" :by "Andrew Sengul")
 (:id "SEED-D42" :kind :decision :draft "SEED-DRAFT-classiccmslog-D1" :host "SEED-0016" :date "2026-11-19" :by "Andrew Sengul")
 (:id "SEED-O55" :kind :open-question :draft "SEED-DRAFT-classiccmslog-O1" :host "SEED-0016" :date "2026-11-19" :by "Andrew Sengul")
+(:id "SEED-D43" :kind :decision :draft "SEED-DRAFT-classiccmslog-D2" :host "SEED-0016" :date "2026-11-19" :by "Andrew Sengul")
+(:id "SEED-D44" :kind :decision :draft "SEED-DRAFT-classiccmslog-D3" :host "SEED-0016" :date "2026-11-19" :by "Andrew Sengul")
+(:id "SEED-D45" :kind :decision :draft "SEED-DRAFT-classiccms-D18" :host "SEED-0015" :date "2026-11-19" :by "Andrew Sengul")
+(:id "SEED-O56" :kind :open-question :draft "SEED-DRAFT-classiccms-O10" :host "SEED-0015" :date "2026-11-19" :by "Andrew Sengul")

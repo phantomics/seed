@@ -19,8 +19,8 @@ relates-to:
   - SEED-0004
 decisions:
   - SEED-D42
-  - SEED-DRAFT-classiccmslog-D2
-  - SEED-DRAFT-classiccmslog-D3
+  - SEED-D43
+  - SEED-D44
 open-questions:
   - SEED-O55
 ---
@@ -184,7 +184,7 @@ handles every control, so generated markup carries no handler code at all,
 and any `x-on:` attribute that must still be generated holds a single call.
 When that revision is accepted, this record can be marked superseded by it.
 
-### SEED-DRAFT-classiccmslog-D2 — The branch context is bound dynamically and recorded when a manifestation is built
+### SEED-D43 — The branch context is bound dynamically and recorded when a manifestation is built
 
 **Status:** Accepted
 **Context:** SEED-D31 left open where `modulate2` learns the system and
@@ -194,7 +194,7 @@ which knows both names when it expands. Some manifestations are built
 during one branch's call and rendered during another's: the controls in a
 control bank are built by the CMS branch answering
 `(:uimod :cbank-primary)`, and rendered by the `:view` branch's render
-(SEED-DRAFT-classiccms-D18). A context read when rendering would label them
+(SEED-D45). A context read when rendering would label them
 with the wrong branch.
 **Decision:** `channel-fns` wraps each branch function — both forms it
 produces, the composed pipeline and the single function it otherwise
@@ -212,7 +212,7 @@ no further mechanism.
 - Reading the binding when rendering — rejected for the reason in the
   context.
 
-### SEED-DRAFT-classiccmslog-D3 — At step 2, regions fall back to a refresh of the whole page
+### SEED-D44 — At step 2, regions fall back to a refresh of the whole page
 
 **Status:** Accepted
 **Context:** SEED-D33 names the regions a response refreshes but does not
@@ -221,7 +221,7 @@ say how a region re-renders. Today `#main` re-renders the whole page on a
 (`platform/browser/pla.browser.maple/maple.lisp:build-static-page@0478c2e`),
 and a branch's frame re-renders its content on `reload`. The control banks
 and the content are rendered by separate requests
-(SEED-DRAFT-classiccms-D18).
+(SEED-D45).
 **Decision:** At step 2 the dispatcher's `seed:refresh` on any region falls
 back to triggering `refresh` on `#main`, which re-renders the whole page,
 banks included — the effect of today's `{next: 'refresh'}`. Region names
@@ -328,12 +328,12 @@ third about the control banks.
 
 **Where a root learns its context.** Each branch's function binds the
 system and branch, and a manifestation records the binding when it is
-built (SEED-DRAFT-classiccmslog-D2). The control banks showed why the
+built (SEED-D43). The control banks showed why the
 binding must be recorded at construction: bank controls are built in the
 CMS branch's call but rendered during the `:view` branch's render.
 
 **How a region refreshes.** At step 2, every region falls back to a refresh
-of the whole page (SEED-DRAFT-classiccmslog-D3).
+of the whole page (SEED-D44).
 
 **The control banks.** The dual-bank pane (`modulate/modulate.lisp:amake@0478c2e`,
 the method on `uia-primal-dual-bank-pane`) renders two banks of controls
@@ -344,7 +344,7 @@ that root render the context and region attributes makes the pane the
 branch view's root, so a bank control can submit a collection in the
 content by name. The banks were made the standard place for a view's
 controls that are not tied to a part of it, as a revision of the Plan
-(SEED-DRAFT-classiccms-D18):
+(SEED-D45):
 
 - `:header-controls` and `:footer-controls`, which named one layout, become
   `:cbank-primary` and `:cbank-secondary`. The primary bank holds the
@@ -357,7 +357,7 @@ controls that are not tied to a part of it, as a revision of the Plan
 - Banks hold controls only, since name uniqueness cannot be checked across
   the separate renders of banks and content.
 - How the banks are reached by keyboard is left to step 8
-  (SEED-DRAFT-classiccms-O10).
+  (SEED-O56).
 
 The "new" button in the CMS's primary bank moves to the new grammar at
 step 2, beside Back in the edit view: Back tests a control inside the
@@ -368,8 +368,8 @@ content, and "new" a control outside it.
 
 - Steps 2–8 of SEED-0015, beginning with working controls
   (step 2) and collections (step 3). Step 2 includes the context binding
-  (SEED-DRAFT-classiccmslog-D2), the region fallback
-  (SEED-DRAFT-classiccmslog-D3), the `:join` root's attributes, the
+  (SEED-D43), the region fallback
+  (SEED-D44), the `:join` root's attributes, the
   renaming of the control banks, and the Back and "new" controls.
 - Check the Save fix at `f55f092` in the browser.
 - Adopt cl-hamcrest's matchers in the modulate2 test suite, as the Square
