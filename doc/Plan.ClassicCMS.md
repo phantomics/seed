@@ -90,8 +90,10 @@ the ontology and the first implementation. Neither says what `modulate2` can
 and cannot yet do, and the first increment the Survey proposes depends on
 infrastructure that does not exist.
 
-Meanwhile the CMS's Create button does not work, so the rule the Survey sets —
-a working CMS at every step — is already broken.
+Meanwhile the CMS's Create button did not work when the plan was written, so
+the rule the Survey sets — a working CMS at every step — was already broken.
+Step 0 found and fixed the fault (see the corrections under "Starting point:
+the CMS").
 
 ### Starting point: modulate2
 
@@ -267,7 +269,7 @@ Create broken longer.
 
 ### SEED-D26 — How a form is submitted
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** (Revised 2026-11-18. The decision was Accepted in its earlier
 form, which is kept among the alternatives.) The old views assemble payloads by hand in inline scripts, and
 an old-grammar field posts each change on its own. HTML forms cannot nest:
@@ -285,13 +287,15 @@ value accessor (SEED-D32) — and posts one envelope to the
 branch:
 
 ```json
-{"action": "update-meta", "args": {}, "collection": "meta",
+{"action": "update-meta", "args": {}, "target": null, "collection": "meta",
  "fields": {"status": "draft", "category": "news"},
  "drafts": {"title": "A new title"}, "focus": "status", "state": {}}
 ```
 
-`fields` holds every field of the submitted collection; `drafts` holds the
-changed fields outside it (SEED-D34). Every request has
+`target` holds the navigation key of the node a control acts on, from its
+`data-target` attribute (SEED-D40), or `null`. `fields` holds every field
+of the submitted collection; `drafts` holds changed fields outside it whose
+drafts have not yet been sent (SEED-D34). Every request has
 the same envelope, with `collection` and `fields` empty when no collection
 is submitted. The branch validates only `fields`, against the collection
 the form function declares (SEED-D28), and rejects any
@@ -314,7 +318,7 @@ browser — see the correction under "Starting point: the CMS").
 
 ### SEED-D27 — One client dispatcher for controls
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** (Revised 2026-11-18. The decision was Accepted in its earlier
 form, which is kept among the alternatives.) `:activating` controls render with `data-action` and
 `data-target` but nothing handles them. Step 0 showed how fragile handler
@@ -326,15 +330,15 @@ attribute. Generated markup carries no handler code; where an `x-on:`
 attribute must still be generated, it contains exactly one function call.
 On activation the listener:
 
-1. reads the action, and the arguments from a `data-args` attribute holding
-   JSON;
+1. reads the action, the arguments from a `data-args` attribute holding
+   JSON, and the target from a `data-target` attribute, when there is one;
 2. finds the system and branch from the nearest enclosing context
    attributes (SEED-D31);
 3. if the control is `:submitting`, gathers the collection it submits
    (SEED-D26, SEED-D35); a plain
    `:activating` control gathers nothing;
 4. posts the envelope of SEED-D26 through `fetch-contact`,
-   with the drafts, focus and reported widget state
+   with any drafts not yet sent, the focus and reported widget state
    (SEED-D34);
 5. triggers the refreshes the response names (SEED-D33).
 
@@ -346,7 +350,7 @@ On activation the listener:
   depends on the old grammar's scope and keeps code in markup.
 - Submitting the enclosing form whenever a control is inside one — the
   earlier form, rejected: a Back control inside a form would submit it.
-  Only `:submitting` controls submit.
+  Only `:submitting` nodes submit (SEED-D35).
 - Inline scripts per view, as the old CMS views have — rejected for the
   fragility step 0 exposed.
 
@@ -421,7 +425,7 @@ views would diverge and the editor would have to be added again later.
 
 ### SEED-D31 — Context is declared in data attributes
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The old grammar's `mode` mixes the address a request goes to
 with widget state, and inner scopes that define `mode` must restate the
 address (see "Starting point: the client protocol"). The address is fixed
@@ -443,7 +447,7 @@ renders or from the medium is to be settled at step 2.
 
 ### SEED-D32 — Widgets are registered components with data parameters
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The old grammar generates each widget's functions as
 JavaScript text into its `x-data` attribute on every render, and keeps the
 widget's state in `mode` beside the address.
@@ -472,16 +476,18 @@ focus (SEED-D34). Other state is discarded on refresh.
 
 ### SEED-D33 — The server names what to refresh
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The old grammar's `patch` registry lets client code trigger a
 refresh of named regions, so the client guesses which regions a change
 affects. The server knows what changed.
 **Decision:** A region that can be refreshed is marked with
 `data-seed-region` and its name, and listens for a namespaced `seed:refresh`
-event. A branch's response carries `refresh`, a list of region names; the
-dispatcher triggers those regions. A response that names none refreshes
-the region containing the control that made the request, which keeps the
-behaviour of today's `{next: 'refresh'}`.
+event. The root of every branch view is a region, so every control has an
+enclosing region. A branch's response carries `refresh`, a list of region
+names; the dispatcher triggers those regions. A response that names none
+refreshes the nearest region containing the control that made the request,
+which keeps the behaviour of today's `{next: 'refresh'}`. A request that
+only sends drafts (SEED-D34) refreshes nothing.
 **Alternatives:**
 - The `patch` registry — rejected for the reason in the context.
 - Returning the re-rendered HTML in the contact response, saving the second
@@ -490,7 +496,7 @@ behaviour of today's `{next: 'refresh'}`.
 
 ### SEED-D34 — Focus and field drafts are reported state, owned by the server
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** A refresh replaces DOM nodes, losing the focus and any unsaved
 edits. A partial submit — a nested collection's control — re-renders the
 view and would discard unsaved edits elsewhere in the form; refreshing
@@ -498,13 +504,38 @@ only the submitted region is not enough when a change affects more than
 one region. A terminal medium holds focus and field values on the server
 in any case.
 **Decision:** Every request carries the navigation key of the focused
-element and the *drafts*: the fields, in any collection on the view, whose
-value differs from the value they were rendered with (SEED-D26).
+element. A *draft* is the value of a field the view declares, when it
+differs from the value the field was rendered with. The client sends a
+field's draft when the field changes — on its change event, or after a
+pause in typing for a text widget — as a request that names no action and
+refreshes nothing (SEED-D33); a request made before a pending draft has
+been sent carries it in `drafts` (SEED-D26).
+
 The server keeps, per branch view in the session, the focus, the
 last-visited memory of navigation (SEED-D38) and the
 drafts, and renders from them; the client focuses the element the server
 marks. Only the submitted collection is validated and written. This also
-provides SEED-D28's "keeps the submitted values".
+provides SEED-D28's "keeps the submitted values". Drafts are governed by
+four rules:
+
+- **Keyed by record.** Each draft is stored under its field, its
+  collection and the record the collection edits — for the CMS, the
+  article's index, later its URI (SEED-O51). The branch learns which record
+  each collection edits by rebuilding the view's forms, as it does to
+  validate them (SEED-D28). A draft for one article never appears in the
+  form for another, and the create form has its own record.
+- **Declared fields only.** The server stores drafts only for fields the
+  view declares and rejects others, as it rejects undeclared submitted
+  fields (SEED-D26).
+- **Lifetime.** A successful submit clears the drafts of the submitted
+  collection, for its record. An action may also discard the drafts of the
+  view it leaves; for the CMS, `:back` does.
+- **Widgets that load their own value.** A widget that fetches its value by
+  a separate request, as the `:provision-text` editor does through the
+  branch's text protocol, receives the draft when there is one, so a
+  refresh after a partial submit does not replace an unsaved body with the
+  stored one. For the CMS, the text protocol's load returns the body's
+  draft when it has one.
 **Alternatives:**
 - Each group remembering its last focused child in the browser — rejected:
   the model would live in the browser, and a terminal medium would need a
@@ -521,7 +552,7 @@ provides SEED-D28's "keeps the submitted values".
 
 ### SEED-D35 — Forms are collections of named fields
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** A CMS article form has a title, a body editor and property
 fields such as status and category, which WordPress-like editors place in
 separate panels, each with its own update control, while the main save
@@ -545,18 +576,27 @@ replaces `:provision-form`.
 - **A control submits with `(:by :submitting)`**, which submits its nearest
   enclosing collection, or `(:by (:submitting :article))`, which submits
   the named collection wherever the control sits. `:submitting` implies
-  `:activating`. Only `:submitting` controls gather fields
+  `:activating`. Only `:submitting` nodes gather fields
   (SEED-D27).
+- **A field outside every collection submits its single datum.** It acts
+  as a collection of one, named by its field name: a control submits it by
+  name, as `(:by (:submitting :key))`, and the field submits itself when it
+  is activated, if it carries `:submitting` of its own — as when Enter is
+  pressed in a named text field (SEED-D39). A field that submits itself
+  names its action as a control does. A field inside a collection
+  that carries `:submitting` of its own submits its nearest enclosing
+  collection, as a control does.
 
 The server resolves membership when it renders: one function walks the
 tree, applies nesting, `:member` and inclusion, and renders each field with
 `data-seed-field` (its name) and `data-seed-in` (every collection it
-belongs to), and each submitting control with `data-seed-submits`. The
+belongs to), and each submitting node with `data-seed-submits`. The
 client gathers a collection with `[data-seed-in~="meta"]` within the branch
-root. Collection names must be unique within a branch view, and field names
-within the outermost collection each reaches; the server checks both while
-resolving membership and signals an error rather than render an ambiguous
-form. `parse-as-spec` and `parse-by-spec`
+root. Collection names and field names must be unique within a branch
+view, and no field outside a collection may share a collection's name,
+because gathering, submission by name and drafts (SEED-D34) all match by
+name; the server checks this while resolving membership and signals an
+error rather than render an ambiguous form. `parse-as-spec` and `parse-by-spec`
 (`modulate2/modulate2.lisp:parse-as-spec@f55f092`,
 `modulate2/modulate2.lisp:parse-by-spec@f55f092`) each gain a branch for
 the new sub-form, and manifestations gain slots for membership and the
@@ -574,13 +614,13 @@ collection a control submits.
 
 ### SEED-D36 — AS roles may be relational
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** SEED-D19 places a datum's role in the program — what it is for
 — under AS, with formats such as `:markdown` and `:sql` as examples. Those
 roles describe the node alone. Membership in a collection describes a
 node's role in relation to others: these values are changed in concert and
-entered as a group. AS already holds a structured sub-form that relates a
-node to its siblings, `(:layout …)`.
+entered as a group. AS already holds a structured sub-form that is not a
+one-word role: `(:layout …)`, which arranges a node's members.
 **Decision:** An AS role may name other nodes. `(:member …)` is the first
 such role: a program-semantic, medium-independent statement that the item
 is changed in concert with the other members of the named collections. Like
@@ -597,7 +637,7 @@ This refines SEED-D19.
 
 ### SEED-D37 — Navigation is movement through spaces, chosen by mode
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** Seed's interaction model treats input as movement of a point
 through a space: the same directional keys always move the point, and the
 active mode decides which space it moves through — the visible branches,
@@ -616,12 +656,23 @@ rendered projection, so that a key press needs no request. Other modes —
 top-level movement between branches and the sidebar, history, the
 clipboard — are outside this plan; each move in them changes server state,
 so each is naturally a request.
-**Alternatives:** Ad hoc keyboard shortcuts per view — rejected: they
-would not port between media, and would grow without a model.
+**Alternatives:**
+- The browser's own Tab order alone, with no model of movement — rejected:
+  it moves through every focusable element in document order, one
+  dimension only, and exists only in the browser.
+- A client-side roving-focus library — rejected: the navigation model
+  would live in the browser, and a terminal medium would need a second
+  copy of it.
+- Each mode's keys as unrelated bindings, rather than one vocabulary of
+  directions and triggers — rejected: keys would mean different things in
+  each mode, and every medium would have to map each mode's bindings
+  separately.
+- Ad hoc keyboard shortcuts per view — rejected: they would not port
+  between media, and would grow without a model.
 
 ### SEED-D38 — The first space is the form's tree
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** Movement can follow the rendered layout, the on-screen
 geometry, or the structure of the forms the interface is derived from.
 Layout-driven movement changes which key moves to a sibling as groups of
@@ -678,7 +729,7 @@ depth and sibling direction in every medium.
 
 ### SEED-D39 — Triggers map to BY modalities, and fields have an edit mode
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** Mousetrap ignores keys inside inputs, selects and
 contenteditable elements, CodeMirror among them, so a field holding DOM
 focus would capture navigation keys.
@@ -691,10 +742,15 @@ Table: What each trigger does, by the BY modality at the point.
 
 | Trigger | Key | Action |
 |---|---|---|
-| Primary | Enter | Fires an `:activating` or `:submitting` control; enters edit mode on an `:entering` field or a text widget |
-| Secondary | Space | Acts on `:cycling` and `:choosing` controls; picks an item up for a move (SEED-D41) |
+| Primary | Enter | Fires an `:activating` or `:submitting` control; enters edit mode on an `:entering` or `:choosing` field or a text widget |
+| Secondary | Space | Acts on `:cycling` controls; picks an item up for a move (SEED-D41) |
 | Cross | Tab | Moves between top-level spaces, such as the branch panes and the sidebar |
 | Anti | Escape | Leaves edit mode or the current mode; cancels |
+
+In edit mode, Enter does nothing on a single field unless the field
+carries `:submitting` of its own, when it submits as SEED-D35 describes; in
+a text widget, Enter is text. These details are to be discussed further at
+step 8.
 
 Using Tab as the cross trigger replaces the browser's default Tab order, so
 step 8 must confirm that keyboard and screen-reader users can still leave
@@ -706,7 +762,7 @@ separates them.
 
 ### SEED-D40 — Data addresses are separate from navigation keys
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The old grammar's `:meta-path` serves as a data address for
 write-back, set only by `express`, and positional paths go stale after an
 insert or a sort (SEED-DRAFT-classiccmslog-O1). Navigation needs keys that
@@ -721,7 +777,7 @@ with its position used only for anonymous members.
 
 ### SEED-D41 — Sorting is a move operation
 
-**Status:** Proposed
+**Status:** Accepted
 **Context:** The old drag-and-drop sort posts a positional path and two
 positions read from the DOM, so the client does the bookkeeping and a
 stale view moves the wrong item. Sorting is also needed without a mouse.
@@ -733,9 +789,10 @@ once, binds Pragmatic drag-and-drop to each sortable sequence; a drop sends
 `{action: "move", args: {item, before}}` through the dispatcher
 (SEED-D27). The server resolves the keys against the
 current data; a key it cannot find rejects the move and refreshes, so a
-stale view fails visibly. For stored `fx` forms, a generic `:move` writes
-back at the sequence's data address; for live data, the branch supplies the
-handler. The same operation has a keyboard path: the secondary trigger
+stale view fails visibly. `:move` is an action each branch declares in its
+closed set (SEED-D29), and its handler is the branch's own: for stored `fx`
+forms it writes back at the sequence's data address, for live data it
+changes the data as the branch requires. The same operation has a keyboard path: the secondary trigger
 picks an item up, the directions move it, the primary trigger places it and
 the anti-trigger cancels. The old grammar's sort, with `:meta-path`, stays
 until its views migrate.
@@ -758,7 +815,7 @@ Table: Attributes the web medium renders for the client, and the decisions that 
 | `data-seed-system`, `data-seed-branch` | The root of a branch view | The address requests go to | SEED-D31 |
 | `data-seed-region` | A region that can be refreshed | Its name, for the response's `refresh` list | SEED-D33 |
 | `data-action`, `data-args` | Controls | The action, and its arguments as JSON | SEED-D27 |
-| `data-target` | Controls acting on another node | The target's navigation key, not its path | SEED-D40 |
+| `data-target` | Controls acting on another node | The target's navigation key, not its path, sent as the envelope's `target` | SEED-D26, SEED-D40 |
 | `data-seed-submits` | `:submitting` controls | The collection submitted | SEED-D35 |
 | `data-seed-field`, `data-seed-in` | Fields | The field's name, and every collection it belongs to | SEED-D35 |
 | `x-data`, `data-seed-params` | Widgets | The registered component's name, and its parameters as JSON | SEED-D32 |
@@ -766,8 +823,9 @@ Table: Attributes the web medium renders for the client, and the decisions that 
 | `data-seed-sort`, with item keys | Sortable sequences (step 8) | The move operation | SEED-D41 |
 
 Every request posts the envelope of SEED-D26, carrying the
-focus, drafts and reported widget state (SEED-D34), and
-every response may name the regions to refresh (SEED-D33).
+focus, any drafts not yet sent and reported widget state (SEED-D34), and
+every response may name the regions to refresh (SEED-D33). A field's
+draft is also sent on its own when the field changes.
 
 ### The round trip of a form
 
@@ -778,7 +836,8 @@ every response may name the regions to refresh (SEED-D33).
    with the role `form`. `:entering` fields are named inputs; a
    `:provision-text` field is a registered editor component carrying its
    field name; each control is a button with `data-action`. Fields are
-   filled from the session's drafts where there are any.
+   filled from the session's drafts for the record the form edits, where
+   there are any; as the user edits, each changed field's draft is sent.
 3. When a `:submitting` control is activated, the dispatcher gathers the
    collection it submits and posts the envelope through `fetch-contact`
    (SEED-D26, SEED-D27).
@@ -930,9 +989,10 @@ duplicate name would gather the wrong fields. The server's check while
 resolving membership (SEED-D35) must be tested, not
 assumed.
 
-**Draft size.** Every request carries the changed fields of the whole view,
-including a changed article body. This is acceptable for the CMS; a view
-with many large fields might need drafts sent only on change.
+**Draft size.** A draft is sent when its field changes, so a changed
+article body is sent again after each pause in typing (SEED-D34). This is
+acceptable for the CMS; a view with very large text fields might need
+drafts sent as changes to the previous draft rather than whole values.
 
 **Structure against appearance.** Movement over the form's tree will
 sometimes contradict what the eye sees (SEED-D38). The
@@ -975,7 +1035,7 @@ form can hold more than one, and two forms can share a page?
 
 ### SEED-O50 — Generated handlers or one listener?
 
-SEED-D27 calls the dispatcher from a click handler
+As first accepted, SEED-D27 called the dispatcher from a click handler
 generated on each control. A single listener on the document would remove
 the handlers from the markup, but must find each element's Alpine scope. Is
 that worth doing, and when?
@@ -1068,31 +1128,41 @@ Each step is recorded in a Log (SEED-DRAFT-classiccmslog) as it lands.
    `maple.lisp` fixed. The edit view's old-grammar Back button is replaced
    by a new-grammar control, the first to reach the CMS, so the checklist
    exercises the dispatcher before any form exists; the branch already
-   handles `back`. Tests for the generated buttons and their attributes.
+   handles `back`. The Back control is a test fixture for the dispatcher,
+   not a move of the edit view, which moves at step 6, so the order of
+   SEED-D25 is unchanged. Tests for the generated buttons and their
+   attributes, including `data-args` and `data-target`.
 4. **Step 3 — Forms.** Collections (SEED-D35,
    SEED-D36): `:collecting`, `:submitting` and
    `(:member …)` parsed; membership resolved, with the uniqueness checks;
    the field attributes rendered. The `:provision-text` editor as a
    registered component with a field name and value accessor
    (SEED-D32). Form gathering in the dispatcher
-   (SEED-D26); drafts and focus kept in the session and
-   rendered from (SEED-D34). Tests, including membership
-   by nesting, by `:member` and by inclusion, a duplicate name, a
+   (SEED-D26), and fields outside every collection submitting their single
+   datum (SEED-D35). Drafts sent when a field changes, kept in the session
+   by field, collection and record, limited to declared fields, cleared on
+   a successful submit, and rendered from; focus kept likewise
+   (SEED-D34). Tests, including membership
+   by nesting, by `:member` and by inclusion, a duplicate name, a field
+   outside every collection, drafts for two records of one form, a
    `:provision-text` field whose value is a list (expressed as a sequence)
    and a collection with a `nil` member.
 5. **Step 4 — The create view.** The article form
    (SEED-D30) in create mode, its body editor in Markdown
    mode selected through `(:as :markdown)`, with `@codemirror/lang-markdown`
    declared explicitly in the `package.json` of the npm interface the client
-   build imports it from; the `:create` action with
+   build imports it from; the text protocol's load returning the body's
+   draft when there is one (SEED-D34); the `:create` action with
    validation (SEED-D28) and closed actions
-   (SEED-D29); `render-cms-create` and its inline script
-   deleted. Create works.
+   (SEED-D29); `:back` discarding the view's drafts;
+   `render-cms-create` and its inline script deleted. Create works in the
+   new grammar.
 6. **Step 5 — The article list** (Survey A1). Headline, state and date as
    `:observing` atoms, with an edit control per article carrying its index;
    `render-cms-list` deleted.
 7. **Step 6 — The edit view** (Survey A2). The article form in save mode,
-   loading its body through the text protocol; the `:save` action calling
+   loading its body through the text protocol, or its draft for that
+   article when there is one (SEED-D34); the `:save` action calling
    `edit-article` with title and text; `render-cms-edit`, its inline script
    and the text protocol's save path deleted.
 8. **Step 7 — The metadata panel** (Survey A3). Fields generated from
