@@ -1,11 +1,15 @@
 ---
-id:            SEED-DRAFT-classiccmslog
+id:            SEED-0016
 title:         "Classic CMS Development Log"
 genre:         Log
 scope:         project
 project:       Seed
 language:      en
-status:        Draft
+status:        Accepted
+authors:
+  - Andrew Sengul
+approved-by:   Andrew Sengul
+reviewed:      2026-11-16
 provenance:
   assistant:   claude-opus-4-6
 relates-to:
@@ -14,9 +18,9 @@ relates-to:
   - SEED-0003
   - SEED-0004
 decisions:
-  - SEED-DRAFT-classiccmslog-D1
+  - SEED-D42
 open-questions:
-  - SEED-DRAFT-classiccmslog-O1
+  - SEED-O55
 ---
 
 # Classic CMS Development Log
@@ -156,7 +160,7 @@ stored `fx` forms but not in `dx` specs:
 
 ## Design Decisions
 
-### SEED-DRAFT-classiccmslog-D1 — Generated handler attributes are a single function call
+### SEED-D42 — Generated handler attributes are a single function call
 
 **Status:** Proposed
 **Context:** The Create failure was caused by Alpine 3 rejecting `var` at
@@ -181,7 +185,7 @@ When that revision is accepted, this record can be marked superseded by it.
 
 ## Open Questions
 
-### SEED-DRAFT-classiccmslog-O1 — Navigation model
+### SEED-O55 — Navigation model
 
 The old grammar's `:meta-path` conflates data addresses (positions in the
 `fx` source, used for write-back) with interface navigation. It is set
@@ -246,7 +250,7 @@ as a revision of the Plan. The revision's records are Proposed:
   (SEED-D26, SEED-D27). An envelope
   replaces the flat payload; no HTML `<form>` element; one delegated
   listener replaces per-control handlers, absorbing
-  SEED-DRAFT-classiccmslog-D1.
+  SEED-D42.
 - **Step 8, navigation and sorting** (SEED-D37 to
   SEED-D41). Movement through spaces chosen by mode, the
   first space being the tree of forms; triggers mapped to BY modalities;

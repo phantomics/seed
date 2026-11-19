@@ -25,7 +25,7 @@ Table: Documents in the SEED namespace.
 | [SEED-0013](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-0014](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Accepted | — |
 | [SEED-0015](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Accepted | — |
-| [SEED-DRAFT-classiccmslog](Log.ClassicCMS.md) | Classic CMS Development Log | Log | project | Draft | — |
+| [SEED-0016](Log.ClassicCMS.md) | Classic CMS Development Log | Log | project | Accepted | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
 
@@ -56,23 +56,23 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-D23](Log.DXOntologyUpdate.md#seed-d23--the-dx-macro-gains-a-grammar-detection-branch) | Decision | The dx macro gains a grammar-detection branch | Implemented | SEED-0004 |
 | [SEED-D24](Log.DXOntologyUpdate.md#seed-d24--layout-positioning-is-applied-per-body-group-within-valence) | Decision | Layout positioning is applied per body group within valence | Implemented | SEED-0004 |
 | [SEED-D25](Plan.ClassicCMS.md#seed-d25--the-create-form-is-the-first-view-to-move) | Decision | The create form is the first view to move | Accepted | SEED-0015 |
-| [SEED-D26](Plan.ClassicCMS.md#seed-d26--how-a-form-is-submitted) | Decision | How a form is submitted | Proposed | SEED-0015 |
-| [SEED-D27](Plan.ClassicCMS.md#seed-d27--one-client-dispatcher-for-controls) | Decision | One client dispatcher for controls | Proposed | SEED-0015 |
+| [SEED-D26](Plan.ClassicCMS.md#seed-d26--how-a-form-is-submitted) | Decision | How a form is submitted | Accepted | SEED-0015 |
+| [SEED-D27](Plan.ClassicCMS.md#seed-d27--one-client-dispatcher-for-controls) | Decision | One client dispatcher for controls | Accepted | SEED-0015 |
 | [SEED-D28](Plan.ClassicCMS.md#seed-d28--the-forms-description-validates-its-submission) | Decision | The form's description validates its submission | Accepted | SEED-0015 |
 | [SEED-D29](Plan.ClassicCMS.md#seed-d29--actions-are-keywords-from-a-closed-set) | Decision | Actions are keywords from a closed set | Accepted | SEED-0015 |
 | [SEED-D30](Plan.ClassicCMS.md#seed-d30--create-and-edit-are-one-form) | Decision | Create and edit are one form | Accepted | SEED-0015 |
-| [SEED-D31](Plan.ClassicCMS.md#seed-d31--context-is-declared-in-data-attributes) | Decision | Context is declared in data attributes | Proposed | SEED-0015 |
-| [SEED-D32](Plan.ClassicCMS.md#seed-d32--widgets-are-registered-components-with-data-parameters) | Decision | Widgets are registered components with data parameters | Proposed | SEED-0015 |
-| [SEED-D33](Plan.ClassicCMS.md#seed-d33--the-server-names-what-to-refresh) | Decision | The server names what to refresh | Proposed | SEED-0015 |
-| [SEED-D34](Plan.ClassicCMS.md#seed-d34--focus-and-field-drafts-are-reported-state-owned-by-the-server) | Decision | Focus and field drafts are reported state, owned by the server | Proposed | SEED-0015 |
-| [SEED-D35](Plan.ClassicCMS.md#seed-d35--forms-are-collections-of-named-fields) | Decision | Forms are collections of named fields | Proposed | SEED-0015 |
-| [SEED-D36](Plan.ClassicCMS.md#seed-d36--as-roles-may-be-relational) | Decision | AS roles may be relational | Proposed | SEED-0015 |
-| [SEED-D37](Plan.ClassicCMS.md#seed-d37--navigation-is-movement-through-spaces-chosen-by-mode) | Decision | Navigation is movement through spaces, chosen by mode | Proposed | SEED-0015 |
-| [SEED-D38](Plan.ClassicCMS.md#seed-d38--the-first-space-is-the-forms-tree) | Decision | The first space is the form's tree | Proposed | SEED-0015 |
-| [SEED-D39](Plan.ClassicCMS.md#seed-d39--triggers-map-to-by-modalities-and-fields-have-an-edit-mode) | Decision | Triggers map to BY modalities, and fields have an edit mode | Proposed | SEED-0015 |
-| [SEED-D40](Plan.ClassicCMS.md#seed-d40--data-addresses-are-separate-from-navigation-keys) | Decision | Data addresses are separate from navigation keys | Proposed | SEED-0015 |
-| [SEED-D41](Plan.ClassicCMS.md#seed-d41--sorting-is-a-move-operation) | Decision | Sorting is a move operation | Proposed | SEED-0015 |
-| [SEED-DRAFT-classiccmslog-D1](Log.ClassicCMS.md#seed-draft-classiccmslog-d1--generated-handler-attributes-are-a-single-function-call) | Decision | Generated handler attributes are a single function call | Proposed | SEED-DRAFT-classiccmslog |
+| [SEED-D31](Plan.ClassicCMS.md#seed-d31--context-is-declared-in-data-attributes) | Decision | Context is declared in data attributes | Accepted | SEED-0015 |
+| [SEED-D32](Plan.ClassicCMS.md#seed-d32--widgets-are-registered-components-with-data-parameters) | Decision | Widgets are registered components with data parameters | Accepted | SEED-0015 |
+| [SEED-D33](Plan.ClassicCMS.md#seed-d33--the-server-names-what-to-refresh) | Decision | The server names what to refresh | Accepted | SEED-0015 |
+| [SEED-D34](Plan.ClassicCMS.md#seed-d34--focus-and-field-drafts-are-reported-state-owned-by-the-server) | Decision | Focus and field drafts are reported state, owned by the server | Accepted | SEED-0015 |
+| [SEED-D35](Plan.ClassicCMS.md#seed-d35--forms-are-collections-of-named-fields) | Decision | Forms are collections of named fields | Accepted | SEED-0015 |
+| [SEED-D36](Plan.ClassicCMS.md#seed-d36--as-roles-may-be-relational) | Decision | AS roles may be relational | Accepted | SEED-0015 |
+| [SEED-D37](Plan.ClassicCMS.md#seed-d37--navigation-is-movement-through-spaces-chosen-by-mode) | Decision | Navigation is movement through spaces, chosen by mode | Accepted | SEED-0015 |
+| [SEED-D38](Plan.ClassicCMS.md#seed-d38--the-first-space-is-the-forms-tree) | Decision | The first space is the form's tree | Accepted | SEED-0015 |
+| [SEED-D39](Plan.ClassicCMS.md#seed-d39--triggers-map-to-by-modalities-and-fields-have-an-edit-mode) | Decision | Triggers map to BY modalities, and fields have an edit mode | Accepted | SEED-0015 |
+| [SEED-D40](Plan.ClassicCMS.md#seed-d40--data-addresses-are-separate-from-navigation-keys) | Decision | Data addresses are separate from navigation keys | Accepted | SEED-0015 |
+| [SEED-D41](Plan.ClassicCMS.md#seed-d41--sorting-is-a-move-operation) | Decision | Sorting is a move operation | Accepted | SEED-0015 |
+| [SEED-D42](Log.ClassicCMS.md#seed-d42--generated-handler-attributes-are-a-single-function-call) | Decision | Generated handler attributes are a single function call | Proposed | SEED-0016 |
 | [SEED-O1](Survey.InterfaceModels.md#seed-o1--can-isasby-serve-as-a-narrow-waist-for-inter-domain-composition) | Open question | Can IS/AS/BY serve as a narrow waist for inter-domain composition? | — | SEED-0005 |
 | [SEED-O2](Survey.InterfaceModels.md#seed-o2--how-do-derived-interfaces-reach-hand-crafted-quality) | Open question | How do derived interfaces reach hand-crafted quality? | — | SEED-0005 |
 | [SEED-O3](Survey.InterfaceModels.md#seed-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-0005 |
@@ -127,4 +127,4 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-O52](Plan.ClassicCMS.md#seed-o52--context-without-the-old-panes) | Open question | Context without the old panes | — | SEED-0015 |
 | [SEED-O53](Plan.ClassicCMS.md#seed-o53--exclusive-and-subtractive-membership) | Open question | Exclusive and subtractive membership | — | SEED-0015 |
 | [SEED-O54](Plan.ClassicCMS.md#seed-o54--naming-the-widget-modalities) | Open question | Naming the widget modalities | — | SEED-0015 |
-| [SEED-DRAFT-classiccmslog-O1](Log.ClassicCMS.md#seed-draft-classiccmslog-o1--navigation-model) | Open question | Navigation model | — | SEED-DRAFT-classiccmslog |
+| [SEED-O55](Log.ClassicCMS.md#seed-o55--navigation-model) | Open question | Navigation model | — | SEED-0016 |

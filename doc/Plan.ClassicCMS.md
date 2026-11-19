@@ -20,7 +20,7 @@ relates-to:
   - SEED-0009
   - SEED-0012
   - SEED-0014
-  - SEED-DRAFT-classiccmslog
+  - SEED-0016
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -196,7 +196,7 @@ with `let`, `const` or `if`, and the script began with `var`. Changing the
 first `var` to `let` fixed Create in the old grammar
 (`systems/demo.access/seed.lisp:render-cms-create@bdf7f99`); the edit view's
 Save script had the same fault and was fixed at `f55f092`. The candidates
-listed above were not the cause. The Log (SEED-DRAFT-classiccmslog) records
+listed above were not the cause. The Log (SEED-0016) records
 the diagnosis.
 
 ### Starting point: the client protocol
@@ -765,7 +765,7 @@ separates them.
 **Status:** Accepted
 **Context:** The old grammar's `:meta-path` serves as a data address for
 write-back, set only by `express`, and positional paths go stale after an
-insert or a sort (SEED-DRAFT-classiccmslog-O1). Navigation needs keys that
+insert or a sort (SEED-O55). Navigation needs keys that
 survive a refresh.
 **Decision:** `mfn-path`, the source position `express-new` records, stays
 a server-side data address for write-back and is not rendered. A node's
@@ -1111,7 +1111,7 @@ Table: Prior systems and what this plan draws from each.
 
 Each step ends with the CMS's list, create, edit and save flow working and
 the checklist passed; Create was restored in the old grammar at step 0.
-Each step is recorded in a Log (SEED-DRAFT-classiccmslog) as it lands.
+Each step is recorded in a Log (SEED-0016) as it lands.
 
 1. **Step 0 — Diagnose Create.** Done: the cause was a `var` at the start
    of an Alpine handler (see "Starting point: the CMS").
