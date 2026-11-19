@@ -24,7 +24,8 @@ Table: Documents in the SEED namespace.
 | [SEED-0012](Survey.ChartEditing.md) | Chart Editing: A Declarative Figure Vocabulary for Seed's Charts | Survey | project | Accepted | — |
 | [SEED-0013](Eval.ChartingPlatform.md) | Market Monitoring and Alerts: Charting Platforms as Prior Art | Eval (prior-art) | project | Accepted | — |
 | [SEED-0014](Survey.ProgrammaticDrawing.md) | Programmatic Drawing: Layers and Strokes as APL Effects | Survey | project | Accepted | — |
-| [SEED-DRAFT-classiccms](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Draft | — |
+| [SEED-DRAFT-classiccms](Plan.ClassicCMS.md) | The Classic CMS in the New Grammar: Development Plan | Plan | project | Accepted | — |
+| [SEED-DRAFT-classiccmslog](Log.ClassicCMS.md) | Classic CMS Development Log | Log | project | Draft | — |
 
 Table: Decision, open-question, and memo records in the SEED namespace.
 
@@ -54,12 +55,24 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-D22](Log.DXOntologyUpdate.md#seed-d22--provisioning-widgets-are-abstract-by-modalities) | Decision | Provisioning widgets are abstract BY modalities | Implemented | SEED-0004 |
 | [SEED-D23](Log.DXOntologyUpdate.md#seed-d23--the-dx-macro-gains-a-grammar-detection-branch) | Decision | The dx macro gains a grammar-detection branch | Implemented | SEED-0004 |
 | [SEED-D24](Log.DXOntologyUpdate.md#seed-d24--layout-positioning-is-applied-per-body-group-within-valence) | Decision | Layout positioning is applied per body group within valence | Implemented | SEED-0004 |
-| [SEED-DRAFT-classiccms-D1](Plan.ClassicCMS.md#seed-draft-classiccms-d1--the-create-form-is-the-first-view-to-move) | Decision | The create form is the first view to move | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D1](Plan.ClassicCMS.md#seed-draft-classiccms-d1--the-create-form-is-the-first-view-to-move) | Decision | The create form is the first view to move | Accepted | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-D2](Plan.ClassicCMS.md#seed-draft-classiccms-d2--how-a-form-is-submitted) | Decision | How a form is submitted | Proposed | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-D3](Plan.ClassicCMS.md#seed-draft-classiccms-d3--one-client-dispatcher-for-controls) | Decision | One client dispatcher for controls | Proposed | SEED-DRAFT-classiccms |
-| [SEED-DRAFT-classiccms-D4](Plan.ClassicCMS.md#seed-draft-classiccms-d4--the-forms-description-validates-its-submission) | Decision | The form's description validates its submission | Proposed | SEED-DRAFT-classiccms |
-| [SEED-DRAFT-classiccms-D5](Plan.ClassicCMS.md#seed-draft-classiccms-d5--actions-are-keywords-from-a-closed-set) | Decision | Actions are keywords from a closed set | Proposed | SEED-DRAFT-classiccms |
-| [SEED-DRAFT-classiccms-D6](Plan.ClassicCMS.md#seed-draft-classiccms-d6--create-and-edit-are-one-form) | Decision | Create and edit are one form | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D4](Plan.ClassicCMS.md#seed-draft-classiccms-d4--the-forms-description-validates-its-submission) | Decision | The form's description validates its submission | Accepted | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D5](Plan.ClassicCMS.md#seed-draft-classiccms-d5--actions-are-keywords-from-a-closed-set) | Decision | Actions are keywords from a closed set | Accepted | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D6](Plan.ClassicCMS.md#seed-draft-classiccms-d6--create-and-edit-are-one-form) | Decision | Create and edit are one form | Accepted | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D7](Plan.ClassicCMS.md#seed-draft-classiccms-d7--context-is-declared-in-data-attributes) | Decision | Context is declared in data attributes | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D8](Plan.ClassicCMS.md#seed-draft-classiccms-d8--widgets-are-registered-components-with-data-parameters) | Decision | Widgets are registered components with data parameters | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D9](Plan.ClassicCMS.md#seed-draft-classiccms-d9--the-server-names-what-to-refresh) | Decision | The server names what to refresh | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D10](Plan.ClassicCMS.md#seed-draft-classiccms-d10--focus-and-field-drafts-are-reported-state-owned-by-the-server) | Decision | Focus and field drafts are reported state, owned by the server | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D11](Plan.ClassicCMS.md#seed-draft-classiccms-d11--forms-are-collections-of-named-fields) | Decision | Forms are collections of named fields | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D12](Plan.ClassicCMS.md#seed-draft-classiccms-d12--as-roles-may-be-relational) | Decision | AS roles may be relational | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D13](Plan.ClassicCMS.md#seed-draft-classiccms-d13--navigation-is-movement-through-spaces-chosen-by-mode) | Decision | Navigation is movement through spaces, chosen by mode | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D14](Plan.ClassicCMS.md#seed-draft-classiccms-d14--the-first-space-is-the-forms-tree) | Decision | The first space is the form's tree | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D15](Plan.ClassicCMS.md#seed-draft-classiccms-d15--triggers-map-to-by-modalities-and-fields-have-an-edit-mode) | Decision | Triggers map to BY modalities, and fields have an edit mode | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D16](Plan.ClassicCMS.md#seed-draft-classiccms-d16--data-addresses-are-separate-from-navigation-keys) | Decision | Data addresses are separate from navigation keys | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-D17](Plan.ClassicCMS.md#seed-draft-classiccms-d17--sorting-is-a-move-operation) | Decision | Sorting is a move operation | Proposed | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccmslog-D1](Log.ClassicCMS.md#seed-draft-classiccmslog-d1--generated-handler-attributes-are-a-single-function-call) | Decision | Generated handler attributes are a single function call | Proposed | SEED-DRAFT-classiccmslog |
 | [SEED-O1](Survey.InterfaceModels.md#seed-o1--can-isasby-serve-as-a-narrow-waist-for-inter-domain-composition) | Open question | Can IS/AS/BY serve as a narrow waist for inter-domain composition? | — | SEED-0005 |
 | [SEED-O2](Survey.InterfaceModels.md#seed-o2--how-do-derived-interfaces-reach-hand-crafted-quality) | Open question | How do derived interfaces reach hand-crafted quality? | — | SEED-0005 |
 | [SEED-O3](Survey.InterfaceModels.md#seed-o3--which-media-should-be-targeted-after-the-web) | Open question | Which media should be targeted after the web? | — | SEED-0005 |
@@ -112,3 +125,6 @@ Table: Decision, open-question, and memo records in the SEED namespace.
 | [SEED-DRAFT-classiccms-O5](Plan.ClassicCMS.md#seed-draft-classiccms-o5--generated-handlers-or-one-listener) | Open question | Generated handlers or one listener? | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O6](Plan.ClassicCMS.md#seed-draft-classiccms-o6--addressing-articles) | Open question | Addressing articles | — | SEED-DRAFT-classiccms |
 | [SEED-DRAFT-classiccms-O7](Plan.ClassicCMS.md#seed-draft-classiccms-o7--context-without-the-old-panes) | Open question | Context without the old panes | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O8](Plan.ClassicCMS.md#seed-draft-classiccms-o8--exclusive-and-subtractive-membership) | Open question | Exclusive and subtractive membership | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccms-O9](Plan.ClassicCMS.md#seed-draft-classiccms-o9--naming-the-widget-modalities) | Open question | Naming the widget modalities | — | SEED-DRAFT-classiccms |
+| [SEED-DRAFT-classiccmslog-O1](Log.ClassicCMS.md#seed-draft-classiccmslog-o1--navigation-model) | Open question | Navigation model | — | SEED-DRAFT-classiccmslog |

@@ -20,6 +20,7 @@ relates-to:
   - SEED-0009
   - SEED-0012
   - SEED-0014
+  - SEED-DRAFT-classiccmslog
 cites:
   - title:     "Exact: Essential eXpression Articulating Coherent Topology"
     locator:   "~/src/chat/Exact.md"
@@ -31,6 +32,17 @@ decisions:
   - SEED-DRAFT-classiccms-D4
   - SEED-DRAFT-classiccms-D5
   - SEED-DRAFT-classiccms-D6
+  - SEED-DRAFT-classiccms-D7
+  - SEED-DRAFT-classiccms-D8
+  - SEED-DRAFT-classiccms-D9
+  - SEED-DRAFT-classiccms-D10
+  - SEED-DRAFT-classiccms-D11
+  - SEED-DRAFT-classiccms-D12
+  - SEED-DRAFT-classiccms-D13
+  - SEED-DRAFT-classiccms-D14
+  - SEED-DRAFT-classiccms-D15
+  - SEED-DRAFT-classiccms-D16
+  - SEED-DRAFT-classiccms-D17
 open-questions:
   - SEED-DRAFT-classiccms-O1
   - SEED-DRAFT-classiccms-O2
@@ -39,6 +51,8 @@ open-questions:
   - SEED-DRAFT-classiccms-O5
   - SEED-DRAFT-classiccms-O6
   - SEED-DRAFT-classiccms-O7
+  - SEED-DRAFT-classiccms-O8
+  - SEED-DRAFT-classiccms-O9
 ---
 
 # The Classic CMS in the New Grammar: Development Plan
@@ -48,11 +62,23 @@ work. It moves the CMS in `systems/demo.access` from the old interface grammar
 to the IS/AS/BY grammar of `modulate2` (SEED-0003, SEED-0004) one view at a
 time, building in `modulate2` the pieces each view needs: tests first, then
 client dispatch for `:activating` controls, then submittable forms. Its first
-deliverable is a working Create, which is broken today. The plan details steps
-0–7, which cover the Survey's increments A1–A3, and keeps the later increments
-(B–E) in outline. It is expected to change as the work shows what is needed.
+deliverable was a working Create, which was broken when the plan was written.
+The plan details steps
+0–8, which cover the Survey's increments A1–A3 and keyboard navigation, and
+keeps the later increments (B–E) in outline. It is expected to change as the
+work shows what is needed.
 
-All code references are pinned to revision `7a82b07`.
+The revision of 2026-11-18, made after steps 0 and 1 had landed, settles the
+client protocol that steps 2 and 3 build on: how markup declares context,
+widget state, refreshes and form collections, with the browser as a generic
+interpreter of that markup and the interface model kept on the server
+(SEED-DRAFT-classiccms-D7 to SEED-DRAFT-classiccms-D12). It revises
+SEED-DRAFT-classiccms-D2 and SEED-DRAFT-classiccms-D3 to match, and adds
+step 8, keyboard navigation and sorting (SEED-DRAFT-classiccms-D13 to
+SEED-DRAFT-classiccms-D17). The records it adds or revises are Proposed.
+
+Code references are pinned to revision `7a82b07`, except those added by the
+revision of 2026-11-18, which are pinned to `f55f092`.
 
 
 ## Problem
@@ -162,19 +188,60 @@ overwrites the first.  The built client (`int.js`) contains `fieldIn` and
 no `formInput`.  Step 3 must write the form gathering fresh rather than
 extending `form-input`, and the duplicate key should be fixed.
 
+**Correction (step 0, diagnosed):** Create failed because Alpine 3 rejected
+its handler: an `x-on:` attribute is read as an expression unless it begins
+with `let`, `const` or `if`, and the script began with `var`. Changing the
+first `var` to `let` fixed Create in the old grammar
+(`systems/demo.access/seed.lisp:render-cms-create@bdf7f99`); the edit view's
+Save script had the same fault and was fixed at `f55f092`. The candidates
+listed above were not the cause. The Log (SEED-DRAFT-classiccmslog) records
+the diagnosis.
+
+### Starting point: the client protocol
+
+The old grammar places three objects in each component's Alpine scope
+(`modulate/modulate.lisp:generate@f55f092`, the `:around` method on
+`(uim-web ui-component)`):
+
+- **`mode`** holds two kinds of state at once: the *address* — the system and
+  branch a request goes to — and *widget state*, such as a chart's
+  interaction state or a toggle's index. An inner `x-data` that defines
+  `mode` hides the outer one, so every widget that needs state must restate
+  the address too.
+- **`methods`** holds client functions, generated as JavaScript text into
+  each `x-data` attribute and rebuilt on every render.
+- **`patch`** is a registry in which frames record themselves by name, so
+  that a method can trigger a refresh of a named region. The client guesses
+  which regions a change affects.
+
+Generated handlers are also JavaScript text in attributes — the fault that
+broke Create at step 0.
+
+The old grammar's `:meta-path` attribute, a positional path set by `express`,
+has one reader in the client: the drag-and-drop sort handler
+(`platform/browser/pla.browser.maple/maple.lisp:mcode-drop-target@f55f092`),
+which posts the path and two item positions
+read from `index` attributes. Mousetrap is loaded but nothing binds keys with
+it; keyboard navigation does not exist yet.
+
 
 ## Goals
 
 - **Create works**, through a new-grammar form, before anything else moves.
-- **No inline JavaScript in the CMS's views.** Controls and forms are
-  described in IS/AS/BY and rendered by `modulate2`.
+- **No JavaScript in generated markup.** Controls, forms and widgets are
+  described in IS/AS/BY and rendered by `modulate2` as declarative attributes;
+  all client behaviour is written once, in `maple.lisp`.
+- **The interface model lives on the server.** Context, focus, field drafts,
+  form membership and navigation are decided by Seed and rendered as markup
+  that the browser interprets generically, so that a terminal medium can
+  share the same model rather than duplicate it in the browser.
 - **One form description renders and validates.** The fields a form declares
   are the fields the branch accepts and checks.
 - **`modulate2` has a test suite**, growing with each step.
-- **The CMS works at every step,** as the Survey requires — restored at step
-  4, when Create works again. Until then, steps 0–3 must not break the list or
-  the edit view. Each step is checked by a short manual checklist and by the
-  tests.
+- **The CMS works at every step,** as the Survey requires. Create was
+  restored in the old grammar at step 0, so no step may break the list,
+  create or edit flows. Each step is checked by a short manual checklist and
+  by the tests.
 - **The documents catch up with the code:** this plan describes `modulate2`
   as it is; a Log records each step as it lands.
 
@@ -187,6 +254,9 @@ extending `form-input`, and the duplicate key should be fixed.
 **Context:** The Survey orders the views list, edit, metadata (A1–A3). But
 Create is broken, small, and needs exactly the two missing pieces —
 working controls and form submission — that every later view also needs.
+(Step 0 found the fault to be one word in the old view's script and fixed
+it there, so Create no longer waits for step 4. The decision stands on its
+second reason: Create exercises both missing pieces.)
 **Decision:** Replace the create view first, directly in the new grammar,
 without repairing the old one. Then the list, then the edit view, then the
 metadata panel.
@@ -197,45 +267,88 @@ Create broken longer.
 
 ### SEED-DRAFT-classiccms-D2 — How a form is submitted
 
-**Status:** Accepted
-**Context:** The old views assemble payloads by hand in inline scripts, and
-an old-grammar field posts each change on its own.
-**Decision:** A `:provision-form` node renders its members inside a
-`<form>`. A submit is an `:activating` control among its members. On
-submit, the client gathers every named field in the form — inputs and
-selects through the form's data, and each `:provision-text` editor's
-content from its CodeMirror instance, under the editor's field name — and
-posts one flat payload, the action plus one key per field, to the branch.
-Fields inside a form post nothing until the form is submitted. A
-successful submit is followed by a refresh.
+**Status:** Proposed
+**Context:** (Revised 2026-11-18. The decision was Accepted in its earlier
+form, which is kept among the alternatives.) The old views assemble payloads by hand in inline scripts, and
+an old-grammar field posts each change on its own. HTML forms cannot nest:
+an inner form cannot submit only its own fields while the outer form
+submits both. Requests now carry more than an action and fields — control
+arguments, focus, reported widget state and field drafts
+(SEED-DRAFT-classiccms-D8, SEED-DRAFT-classiccms-D10) — so a flat payload's
+top-level keys would collide with field names such as `action` or `focus`.
+**Decision:** A form is a collection (SEED-DRAFT-classiccms-D11), rendered
+as an element with the ARIA role `form` and an accessible name, not as an
+HTML `<form>`. A `:submitting` control gathers the named fields of the
+collection it submits — native inputs and selects by their value, and
+widgets such as the `:provision-text` editor through their component's
+value accessor (SEED-DRAFT-classiccms-D8) — and posts one envelope to the
+branch:
+
+```json
+{"action": "update-meta", "args": {}, "collection": "meta",
+ "fields": {"status": "draft", "category": "news"},
+ "drafts": {"title": "A new title"}, "focus": "status", "state": {}}
+```
+
+`fields` holds every field of the submitted collection; `drafts` holds the
+changed fields outside it (SEED-DRAFT-classiccms-D10). Every request has
+the same envelope, with `collection` and `fields` empty when no collection
+is submitted. The branch validates only `fields`, against the collection
+the form function declares (SEED-DRAFT-classiccms-D4), and rejects any
+field it does not declare. A successful submit is followed by the refreshes
+the response names (SEED-DRAFT-classiccms-D9).
 The gathering is a new function (since `form-input` does not reach the
-browser — see the correction under "Starting point: the CMS"), adding
-the editors' content and the action.
-**Alternatives:** Nesting the fields under a `fields` key — workable, since
-`adapt-from-json` normalises nested keys against the same declared list, but
-rejected as the more complex shape: a flat payload matches the way the
-branch already receives its input, as one plist of declared keys.
-Per-field posting as the old `uicc-field` does — rejected for forms, where a
-partial article is not a meaningful state.
+browser — see the correction under "Starting point: the CMS").
+**Alternatives:**
+- A flat payload, the action plus one key per field — this decision's
+  earlier form, rejected now that reserved keys would collide with field
+  names. `adapt-from-json` normalises nested keys against the declared
+  list, so the envelope costs the branch nothing.
+- Rendering forms as HTML `<form>` elements — rejected: they cannot nest,
+  and an input can belong to only one form. Enter is handled as the primary
+  trigger (SEED-DRAFT-classiccms-D15), so `<form>` would add only browser
+  autofill, which the CMS does not need.
+- Per-field posting as the old `uicc-field` does — rejected for forms,
+  where a partial article is not a meaningful state; drafts are reported
+  but never committed until submitted.
 
 ### SEED-DRAFT-classiccms-D3 — One client dispatcher for controls
 
-**Status:** Accepted
-**Context:** `:activating` controls render with `data-action` and
-`data-target` but nothing handles them.
-**Decision:** Add one function to the shared client code in `maple.lisp`,
-called from each control's generated click handler with the control's
-element and the `mode` in scope, as the old grammar's generated handlers
-already pass it. The function reads the control's action and its arguments
-from data attributes, submits the enclosing form when the control is inside
-one (SEED-DRAFT-classiccms-D2), otherwise posts the action and arguments
-through `fetch-contact`, and then refreshes. Controls carry arguments — an
-article's index, for example — as a `data-args` attribute alongside the
-target path. `make-control` is already exported; it gains an `:args`
-keyword so controls can carry arguments.
-**Alternatives:** A single listener on the document for every
-`[data-action]` click — cleaner markup, but it must recover the Alpine scope
-for each element; kept open as SEED-DRAFT-classiccms-O5.
+**Status:** Proposed
+**Context:** (Revised 2026-11-18. The decision was Accepted in its earlier
+form, which is kept among the alternatives.) `:activating` controls render with `data-action` and
+`data-target` but nothing handles them. Step 0 showed how fragile handler
+code in attributes is: Create failed because Alpine rejected the first
+token of a generated script.
+**Decision:** One delegated listener on the document, defined once in
+`maple.lisp`, handles the activation of every element with a `data-action`
+attribute. Generated markup carries no handler code; where an `x-on:`
+attribute must still be generated, it contains exactly one function call.
+On activation the listener:
+
+1. reads the action, and the arguments from a `data-args` attribute holding
+   JSON;
+2. finds the system and branch from the nearest enclosing context
+   attributes (SEED-DRAFT-classiccms-D7);
+3. if the control is `:submitting`, gathers the collection it submits
+   (SEED-DRAFT-classiccms-D2, SEED-DRAFT-classiccms-D11); a plain
+   `:activating` control gathers nothing;
+4. posts the envelope of SEED-DRAFT-classiccms-D2 through `fetch-contact`,
+   with the drafts, focus and reported widget state
+   (SEED-DRAFT-classiccms-D10);
+5. triggers the refreshes the response names (SEED-DRAFT-classiccms-D9).
+
+`make-control` is already exported; it gains an `:args` keyword, and
+`modulate2` renders the arguments as `data-args`.
+**Alternatives:**
+- A function called from a click handler generated on each control, passed
+  the `mode` in Alpine scope — this decision's earlier form, rejected: it
+  depends on the old grammar's scope and keeps code in markup.
+- Submitting the enclosing form whenever a control is inside one — the
+  earlier form, rejected: a Back control inside a form would submit it.
+  Only `:submitting` controls submit.
+- Inline scripts per view, as the old CMS views have — rejected for the
+  fragility step 0 exposed.
 
 ### SEED-DRAFT-classiccms-D4 — The form's description validates its submission
 
@@ -306,73 +419,467 @@ follows when Classic gains a `:lexis` format.
 **Alternatives:** A plain multi-line field for Create — simpler, but the two
 views would diverge and the editor would have to be added again later.
 
+### SEED-DRAFT-classiccms-D7 — Context is declared in data attributes
+
+**Status:** Proposed
+**Context:** The old grammar's `mode` mixes the address a request goes to
+with widget state, and inner scopes that define `mode` must restate the
+address (see "Starting point: the client protocol"). The address is fixed
+for everything beneath a branch's root and nothing should change it.
+**Decision:** The root element of each `modulate2` branch view carries the
+address as attributes, `data-seed-system` and `data-seed-branch`. Client
+code finds it with `closest('[data-seed-branch]')`; widgets never write it.
+Because no Alpine scope is needed to find the address, one delegated
+listener can handle every control (SEED-DRAFT-classiccms-D3). During the
+migration, `modulate2` must know the system and branch when it renders a
+root; whether they come from a dynamic binding made while the branch
+renders or from the medium is to be settled at step 2.
+**Alternatives:**
+- One inherited, read-only context object in Alpine scope, placed at the
+  branch's root — workable, but every control would still depend on Alpine
+  scope, and a delegated listener would have to recover it.
+- Keeping `mode` as the old grammar builds it — rejected for the reasons in
+  the context.
+
+### SEED-DRAFT-classiccms-D8 — Widgets are registered components with data parameters
+
+**Status:** Proposed
+**Context:** The old grammar generates each widget's functions as
+JavaScript text into its `x-data` attribute on every render, and keeps the
+widget's state in `mode` beside the address.
+**Decision:** Each kind of widget has its behaviour written once, in
+Parenscript in `maple.lisp`, and registered as an Alpine component with
+`Alpine.data` at `alpine:init`. The markup names the component and carries
+its parameters as JSON produced by the server's encoder, for example
+`x-data="seedChart"` with `data-seed-params='{"xAxisLabel":"time"}'`. Each
+component keeps its state under one top-level key named for its kind
+(`chart`, `editor`, `toggle`), so nested widgets cannot hide each other's
+state. A widget that holds a field's value, such as the `:provision-text`
+editor, exposes a value accessor that form gathering calls
+(SEED-DRAFT-classiccms-D2).
+
+State in the browser is limited to what changes between requests without
+the server knowing — a drag in progress, a chart's zoom, an editor's text
+before submission. Anything meaningful to the program is held by the
+server and arrives as parameters. A widget declares which of its state
+keys are *reported*; the client adds them to every request, as it does the
+focus (SEED-DRAFT-classiccms-D10). Other state is discarded on refresh.
+**Alternatives:**
+- Functions generated into each `x-data` attribute — the old `methods`,
+  rejected: rebuilt on every render, and copied into markup per instance.
+- An `x-data` attribute holding a JavaScript object literal of parameters —
+  rejected as generated JavaScript text.
+
+### SEED-DRAFT-classiccms-D9 — The server names what to refresh
+
+**Status:** Proposed
+**Context:** The old grammar's `patch` registry lets client code trigger a
+refresh of named regions, so the client guesses which regions a change
+affects. The server knows what changed.
+**Decision:** A region that can be refreshed is marked with
+`data-seed-region` and its name, and listens for a namespaced `seed:refresh`
+event. A branch's response carries `refresh`, a list of region names; the
+dispatcher triggers those regions. A response that names none refreshes
+the region containing the control that made the request, which keeps the
+behaviour of today's `{next: 'refresh'}`.
+**Alternatives:**
+- The `patch` registry — rejected for the reason in the context.
+- Returning the re-rendered HTML in the contact response, saving the second
+  request — deferred; it changes the response format, and can follow
+  without changing how regions are named.
+
+### SEED-DRAFT-classiccms-D10 — Focus and field drafts are reported state, owned by the server
+
+**Status:** Proposed
+**Context:** A refresh replaces DOM nodes, losing the focus and any unsaved
+edits. A partial submit — a nested collection's control — re-renders the
+view and would discard unsaved edits elsewhere in the form; refreshing
+only the submitted region is not enough when a change affects more than
+one region. A terminal medium holds focus and field values on the server
+in any case.
+**Decision:** Every request carries the navigation key of the focused
+element and the *drafts*: the fields, in any collection on the view, whose
+value differs from the value they were rendered with (SEED-DRAFT-classiccms-D2).
+The server keeps, per branch view in the session, the focus, the
+last-visited memory of navigation (SEED-DRAFT-classiccms-D14) and the
+drafts, and renders from them; the client focuses the element the server
+marks. Only the submitted collection is validated and written. This also
+provides SEED-DRAFT-classiccms-D4's "keeps the submitted values".
+**Alternatives:**
+- Each group remembering its last focused child in the browser — rejected:
+  the model would live in the browser, and a terminal medium would need a
+  second copy.
+- Protecting unsaved edits only by refreshing the submitted region —
+  rejected as insufficient, above.
+- Keeping the last rendered manifestation tree of each branch view in the
+  session, so that markup carries only node identifiers and every action
+  names a node (Seaside's approach, evaluated in SEED-0008) — deferred to
+  increment E, where a branch object holding its view is the natural home
+  for it. SEED-DRAFT-classiccms-D4's rebuilding of the form suffices until
+  then, and a kept tree needs a generation identifier per render, because
+  two tabs showing one branch would overwrite each other's tree.
+
+### SEED-DRAFT-classiccms-D11 — Forms are collections of named fields
+
+**Status:** Proposed
+**Context:** A CMS article form has a title, a body editor and property
+fields such as status and category, which WordPress-like editors place in
+separate panels, each with its own update control, while the main save
+submits everything. The layout tree and the grouping of fields for
+submission often differ: a property panel sits in a sidebar column, a Save
+control in a toolbar.
+**Decision:** A collection is a manifestation with the modality
+`(:by :collecting)` and a `:name`, which identifies it. `:collecting`
+replaces `:provision-form`.
+
+- **Membership comes from nesting:** a named field belongs to every
+  collection that encloses it.
+- **`(:as (:member …))` adds memberships**, naming collections the item
+  also belongs to wherever it sits, for example
+  `(:as (:member :article :meta))`. It adds to the memberships nesting
+  gives; it does not replace them (SEED-DRAFT-classiccms-O8).
+- **A collection can be a member of a collection.** A nested collection is
+  a member of the collections enclosing it, and `(:as (:member …))` on a
+  `:collecting` node includes all its members in the named collections.
+  Collections including collections needs no other mechanism.
+- **A control submits with `(:by :submitting)`**, which submits its nearest
+  enclosing collection, or `(:by (:submitting :article))`, which submits
+  the named collection wherever the control sits. `:submitting` implies
+  `:activating`. Only `:submitting` controls gather fields
+  (SEED-DRAFT-classiccms-D3).
+
+The server resolves membership when it renders: one function walks the
+tree, applies nesting, `:member` and inclusion, and renders each field with
+`data-seed-field` (its name) and `data-seed-in` (every collection it
+belongs to), and each submitting control with `data-seed-submits`. The
+client gathers a collection with `[data-seed-in~="meta"]` within the branch
+root. Collection names must be unique within a branch view, and field names
+within the outermost collection each reaches; the server checks both while
+resolving membership and signals an error rather than render an ambiguous
+form. `parse-as-spec` and `parse-by-spec`
+(`modulate2/modulate2.lisp:parse-as-spec@f55f092`,
+`modulate2/modulate2.lisp:parse-by-spec@f55f092`) each gain a branch for
+the new sub-form, and manifestations gain slots for membership and the
+collection a control submits.
+**Alternatives:**
+- Membership by nesting only — rejected: it forces the collection tree to
+  follow the layout tree.
+- Membership by explicit identifier only, as HTML's `form` attribute gives
+  an input — rejected as not seamless, since the common case would need an
+  annotation on every field; HTML also allows one form per input.
+- A plain `:activating` control inside a collection submitting it —
+  rejected (SEED-DRAFT-classiccms-D3).
+- Membership and submission as identity slots beside `:name`, outside
+  IS/AS/BY — rejected (SEED-DRAFT-classiccms-D12).
+
+### SEED-DRAFT-classiccms-D12 — AS roles may be relational
+
+**Status:** Proposed
+**Context:** SEED-D19 places a datum's role in the program — what it is for
+— under AS, with formats such as `:markdown` and `:sql` as examples. Those
+roles describe the node alone. Membership in a collection describes a
+node's role in relation to others: these values are changed in concert and
+entered as a group. AS already holds a structured sub-form that relates a
+node to its siblings, `(:layout …)`.
+**Decision:** An AS role may name other nodes. `(:member …)` is the first
+such role: a program-semantic, medium-independent statement that the item
+is changed in concert with the other members of the named collections. Like
+`(:layout …)`, it is written as a structured sub-form,
+`(:as (:member :article :meta))`, because `parse-as-spec` reads flat
+keywords as roles and lists beginning with a keyword as sub-forms. The
+modality of acting on a collection — `:collecting`, `:submitting` — is BY.
+This refines SEED-D19.
+**Alternatives:**
+- Identity slots beside `:name`, outside the three axes — rejected:
+  membership is a role in the program, and the ontology should describe it.
+- Writing `(:as :member (:article :meta))` — rejected: the parser would read
+  `:member` as a flat role and drop the list.
+
+### SEED-DRAFT-classiccms-D13 — Navigation is movement through spaces, chosen by mode
+
+**Status:** Proposed
+**Context:** Seed's interaction model treats input as movement of a point
+through a space: the same directional keys always move the point, and the
+active mode decides which space it moves through — the visible branches,
+a branch's interface, the text in an editor, history, the clipboard. The
+same model must serve the browser, a terminal and other input devices.
+**Decision:** Navigation has an abstract vocabulary of four directions and
+four triggers — primary (Enter), secondary (Space), cross (Tab) and anti
+(Escape). Each medium translates its raw input into that vocabulary:
+Mousetrap in the browser, and later the terminal and other devices. Key
+bindings are declared once in Lisp, with arrows by default and `hjkl` as a
+configurable alternative; `maple` renders the declaration as Mousetrap
+bindings. The server owns the mode and the point. The first space, built at
+step 8, is the form's tree within a branch view
+(SEED-DRAFT-classiccms-D14). Moves within it run in the browser from the
+rendered projection, so that a key press needs no request. Other modes —
+top-level movement between branches and the sidebar, history, the
+clipboard — are outside this plan; each move in them changes server state,
+so each is naturally a request.
+**Alternatives:** Ad hoc keyboard shortcuts per view — rejected: they
+would not port between media, and would grow without a model.
+
+### SEED-DRAFT-classiccms-D14 — The first space is the form's tree
+
+**Status:** Proposed
+**Context:** Movement can follow the rendered layout, the on-screen
+geometry, or the structure of the forms the interface is derived from.
+Layout-driven movement changes which key moves to a sibling as groups of
+different orientations nest; geometric movement needs the browser's
+geometry, so it would be a browser-only algorithm. Movement over the
+structure ports to a terminal unchanged and corresponds to the Lisp forms
+beneath the interface.
+**Decision:** A medium-independent `modulate2` function computes a
+*navigation projection* of the manifestation tree, after the Tier-1
+defaults have added their controls:
+
+- **Stops:** atoms whose BY is interactive — `:entering`, `:choosing`,
+  `:cycling`, `:activating`, `:submitting`, and the widget modalities.
+- **Groups:** sequences and containers holding stops.
+- **Elided:** `:observing` atoms, decoration and status; the wrappers
+  rendering adds (`mfn-item`, `mfn-header`, layout cells); a group with a
+  single stop, which collapses into it; an `:observing` sequence of rows
+  with no controls. A node may override the elision with an explicit
+  navigation annotation, as `:bare` overrides the Tier-1 defaults
+  (SEED-D18), for when these rules guess wrong.
+
+Movement is over the projection drawn as a tree, root at the top and
+children left to right:
+
+- **Up and down** change depth. Depth is counted in the projection, so
+  there are no invisible levels. Down goes to the last-visited child, or
+  else the first.
+- **Right and left** move to the next or previous branch: the nearest
+  ancestor with a child after (or before) the one containing the point;
+  into that child, to the same depth relative to that ancestor, or to the
+  deepest level of that branch if it is shallower.
+- **At the target depth,** the point goes to the last-visited node, or else
+  the first in the projection's order — not the leftmost on screen, which
+  varies with the rendering.
+
+The server keeps the last-visited memory (SEED-DRAFT-classiccms-D10). The
+web rendering marks the projection with `data-nav` (stop or group) and
+`data-nav-key` (SEED-DRAFT-classiccms-D16), with ARIA roles and a roving
+`tabindex`, so that focus stays real DOM focus, followed by screen readers.
+The visual order will sometimes differ from the structure — the next
+article in a vertical list is *right*, not down. This is accepted as a
+learned convention, as in paredit, and the server shows the focused group's
+depth and sibling direction in every medium.
+**Alternatives:**
+- Sibling movement along each group's `:layout` axis, crossing axes by
+  moving to the parent — rejected: keys change meaning as layouts nest.
+- Geometric movement to the nearest element on screen, as in the W3C's
+  spatial-navigation proposal — rejected: browser-only, and arbitrary
+  across groups.
+- Rotating the axes by layout, as ARIA's tree-view convention does for
+  vertical lists — held in reserve, if use shows the mismatch hurts.
+- Neighbour links precomputed by the server for each stop — rejected: links
+  crossing a refreshed region go stale.
+
+### SEED-DRAFT-classiccms-D15 — Triggers map to BY modalities, and fields have an edit mode
+
+**Status:** Proposed
+**Context:** Mousetrap ignores keys inside inputs, selects and
+contenteditable elements, CodeMirror among them, so a field holding DOM
+focus would capture navigation keys.
+**Decision:** A field at the point is in navigation mode: DOM focus rests
+on the field's wrapper, and the directional keys move the point. The
+primary trigger enters edit mode, focusing the input or editor itself; the
+anti-trigger leaves it. The triggers act by modality:
+
+Table: What each trigger does, by the BY modality at the point.
+
+| Trigger | Key | Action |
+|---|---|---|
+| Primary | Enter | Fires an `:activating` or `:submitting` control; enters edit mode on an `:entering` field or a text widget |
+| Secondary | Space | Acts on `:cycling` and `:choosing` controls; picks an item up for a move (SEED-DRAFT-classiccms-D17) |
+| Cross | Tab | Moves between top-level spaces, such as the branch panes and the sidebar |
+| Anti | Escape | Leaves edit mode or the current mode; cancels |
+
+Using Tab as the cross trigger replaces the browser's default Tab order, so
+step 8 must confirm that keyboard and screen-reader users can still leave
+the page.
+**Alternatives:** A custom Mousetrap `stopCallback` or the `bindGlobal`
+plugin so that navigation keys work inside focused fields — rejected as the
+primary means: it fights the fields for their keys, where edit mode
+separates them.
+
+### SEED-DRAFT-classiccms-D16 — Data addresses are separate from navigation keys
+
+**Status:** Proposed
+**Context:** The old grammar's `:meta-path` serves as a data address for
+write-back, set only by `express`, and positional paths go stale after an
+insert or a sort (SEED-DRAFT-classiccmslog-O1). Navigation needs keys that
+survive a refresh.
+**Decision:** `mfn-path`, the source position `express-new` records, stays
+a server-side data address for write-back and is not rendered. A node's
+navigation key, rendered as `data-nav-key`, is its `:name`, or the datum's
+identity for data rows (a URI once SEED-DRAFT-classiccms-O6 is settled),
+with its position used only for anonymous members.
+**Alternatives:** One positional path serving both purposes, as
+`:meta-path` does — rejected for the reasons in the context.
+
+### SEED-DRAFT-classiccms-D17 — Sorting is a move operation
+
+**Status:** Proposed
+**Context:** The old drag-and-drop sort posts a positional path and two
+positions read from the DOM, so the client does the bookkeeping and a
+stale view moves the wrong item. Sorting is also needed without a mouse.
+**Decision:** The Tier-1 `:sorting` default, a stub today
+(`modulate2/modulate2.lisp:apply-sorting-default@f55f092`), marks the
+sequence with `data-seed-sort` and each item with its key, as navigation
+keys are formed (SEED-DRAFT-classiccms-D16). One drag handler, registered
+once, binds Pragmatic drag-and-drop to each sortable sequence; a drop sends
+`{action: "move", args: {item, before}}` through the dispatcher
+(SEED-DRAFT-classiccms-D3). The server resolves the keys against the
+current data; a key it cannot find rejects the move and refreshes, so a
+stale view fails visibly. For stored `fx` forms, a generic `:move` writes
+back at the sequence's data address; for live data, the branch supplies the
+handler. The same operation has a keyboard path: the secondary trigger
+picks an item up, the directions move it, the primary trigger places it and
+the anti-trigger cancels. The old grammar's sort, with `:meta-path`, stays
+until its views migrate.
+**Alternatives:** Porting the old protocol of path and positions —
+rejected: positions go stale, and the browser would keep data addresses.
+
 
 ## Design
 
+### The client protocol
+
+The web medium renders the interface model as attributes, and the client
+code in `maple.lisp` interprets them generically. No attribute holds
+JavaScript beyond a component name.
+
+Table: Attributes the web medium renders for the client, and the decisions that define them.
+
+| Attribute | On | Meaning | Decision |
+|---|---|---|---|
+| `data-seed-system`, `data-seed-branch` | The root of a branch view | The address requests go to | SEED-DRAFT-classiccms-D7 |
+| `data-seed-region` | A region that can be refreshed | Its name, for the response's `refresh` list | SEED-DRAFT-classiccms-D9 |
+| `data-action`, `data-args` | Controls | The action, and its arguments as JSON | SEED-DRAFT-classiccms-D3 |
+| `data-target` | Controls acting on another node | The target's navigation key, not its path | SEED-DRAFT-classiccms-D16 |
+| `data-seed-submits` | `:submitting` controls | The collection submitted | SEED-DRAFT-classiccms-D11 |
+| `data-seed-field`, `data-seed-in` | Fields | The field's name, and every collection it belongs to | SEED-DRAFT-classiccms-D11 |
+| `x-data`, `data-seed-params` | Widgets | The registered component's name, and its parameters as JSON | SEED-DRAFT-classiccms-D8 |
+| `data-nav`, `data-nav-key`, `role`, `tabindex` | Stops and groups (step 8) | The navigation projection | SEED-DRAFT-classiccms-D14, SEED-DRAFT-classiccms-D16 |
+| `data-seed-sort`, with item keys | Sortable sequences (step 8) | The move operation | SEED-DRAFT-classiccms-D17 |
+
+Every request posts the envelope of SEED-DRAFT-classiccms-D2, carrying the
+focus, drafts and reported widget state (SEED-DRAFT-classiccms-D10), and
+every response may name the regions to refresh (SEED-DRAFT-classiccms-D9).
+
 ### The round trip of a form
 
-1. The branch's form function returns a `:provision-form` node whose members
-   are its fields and controls.
-2. `generate` renders a `<form>` containing the fields. `:entering` fields
-   are named inputs; a `:provision-text` field is a CodeMirror element that
-   also carries its field name; each control is a button whose click handler
-   calls the dispatcher.
-3. On submit, the dispatcher gathers the fields
-   (SEED-DRAFT-classiccms-D2) and posts `{action, field…}` through
-   `fetch-contact`.
-4. The branch maps the action (SEED-DRAFT-classiccms-D5), rebuilds the
-   form, checks the fields (SEED-DRAFT-classiccms-D4), and either calls
-   Classic or stores the values and errors.
-5. The refresh re-renders the view: the list after a successful create, or
-   the form again with its values and errors.
+1. The branch's form function returns a `:collecting` node whose members
+   are its fields, nested collections and controls
+   (SEED-DRAFT-classiccms-D11).
+2. `generate` resolves membership and renders the collection as an element
+   with the role `form`. `:entering` fields are named inputs; a
+   `:provision-text` field is a registered editor component carrying its
+   field name; each control is a button with `data-action`. Fields are
+   filled from the session's drafts where there are any.
+3. When a `:submitting` control is activated, the dispatcher gathers the
+   collection it submits and posts the envelope through `fetch-contact`
+   (SEED-DRAFT-classiccms-D2, SEED-DRAFT-classiccms-D3).
+4. The branch stores the drafts and focus, maps the action
+   (SEED-DRAFT-classiccms-D5), rebuilds the form, checks the submitted
+   collection's fields (SEED-DRAFT-classiccms-D4), and either calls Classic
+   or stores the errors.
+5. The response names the regions to refresh: the list after a successful
+   create, or the form again with its values and errors.
 
 ### A sketch of the article form
 
 Illustrative, not a specification. `control` stands for the exported control
-constructor of SEED-DRAFT-classiccms-D3.
+constructor of SEED-DRAFT-classiccms-D3, with `:submitting t` producing
+`(:by :submitting)` and `:submitting :article` producing
+`(:by (:submitting :article))`.
 
 ```lisp
 (defun cms-article-form (&key article index errors)
-  (dx (:as :article-form :by :provision-form :name :article)
-      (dx (:is :- :required :by :entering :name :title)
-          (if article (headline article) ""))
-      (dx (:as :markdown :by :provision-text :name :body) (list *system* :cms))
+  (dx (:as :article-form (:layout :horizontal) :by :collecting :name :article)
+      (dx (:as :editing)
+          (dx (:is :- :required :by :entering :name :title)
+              (if article (headline article) ""))
+          (dx (:as :markdown :by :provision-text :name :body) (list *system* :cms)))
+      (dx (:as :properties :by :collecting :name :meta)   ; nested, like a WordPress meta box
+          (dx (:by :choosing :name :status) …)
+          (dx (:by :choosing :name :category) …)
+          (control :update-meta "Update" :submitting t))  ; sends :status and :category
       (if article
-          (control :save "Save" :args (list :index index))
-          (control :create "Create"))
-      (control :back "Back")
+          (control :save "Save" :submitting t :args (list :index index)) ; sends all four
+          (control :create "Create" :submitting t))
+      (control :back "Back")                              ; sends no fields
       (when errors (dx (:as :errors) errors))))
 ```
 
+A field placed outside the form's subtree joins it with
+`(:as (:member :article))`, and a Save control in a toolbar outside it is
+`(control :save "Save" :submitting :article)`. The `:update-meta` action
+joins the branch's closed set of actions (SEED-DRAFT-classiccms-D5) when
+the metadata panel arrives (step 7).
+
 ### What modulate2 must gain
 
-- Controls with arguments (`make-control` gains `:args`).
-- `:provision-form` rendering its members inside the form.
-- A field name on `:provision-text` elements, so the form can gather them.
+For controls (step 2):
+
+- Controls with arguments (`make-control` gains `:args`), rendered as
+  `data-args`.
+- Context attributes on each branch view's root
+  (SEED-DRAFT-classiccms-D7) and region names (SEED-DRAFT-classiccms-D9).
+- The delegated listener and dispatcher, the envelope, and refresh by name,
+  in `maple.lisp`.
+
+For forms (step 3):
+
+- The `:collecting` and `:submitting` modalities and the `(:member …)` AS
+  sub-form, in `parse-by-spec` and `parse-as-spec`, with manifestation
+  slots for them (SEED-DRAFT-classiccms-D11, SEED-DRAFT-classiccms-D12).
+- Membership resolution, with the uniqueness checks, and the field
+  attributes it renders.
+- The `:provision-text` editor as a registered component with a field name
+  and a value accessor (SEED-DRAFT-classiccms-D8).
+- Drafts and focus in the session, and rendering from them
+  (SEED-DRAFT-classiccms-D10).
 - Editor mode chosen from the field's AS format role
   (SEED-DRAFT-classiccms-D6): a language argument to the client's
   `create-codemirror`, which today always uses Lisp mode, and CodeMirror's
   Markdown language declared as a direct dependency and imported into the
   client build.
-- The dispatcher, in `maple.lisp`.
-- `construct` resolving IS through `resolve-is`.
 - A representation of field errors for rendering (SEED-DRAFT-classiccms-O2).
-- Tests for each.
+
+For navigation and sorting (step 8): the navigation projection, its
+attributes, the key declaration and the client walker
+(SEED-DRAFT-classiccms-D13 to SEED-DRAFT-classiccms-D16), and the
+`:sorting` default with the `:move` operation (SEED-DRAFT-classiccms-D17).
+
+Tests for each. (`construct` resolving IS through `resolve-is` landed at
+step 1.)
 
 ### Tests
 
 A `seed.modulate2.test` system beside `test/seed.generate.test.asd`, written
 to the Square standard (FiveAM and cl-hamcrest, wired to ASDF's `test-op`).
-The tests check manifestation trees and the generated HTML trees, not
-rendered strings, so that they survive changes of markup. The client
-dispatcher is checked by the manual checklist until there is a way to test
-client code.
+The suite as it landed at step 1 uses FiveAM's own assertions only; adopting
+cl-hamcrest's matchers is outstanding. The tests check manifestation trees
+and the generated HTML trees, not rendered strings, so that they survive
+changes of markup. Membership resolution and the navigation projection are
+server-side functions over the manifestation tree, so they are tested like
+the rest. The client code — the dispatcher, form gathering and the
+navigation walker — is checked by the manual checklist until there is a way
+to test client code.
 
 
 ## Scope and Non-Goals
 
-- **In scope:** steps 0–7 below — the CMS's create, list, edit and metadata
-  views in the new grammar, and the `modulate2` pieces they need.
+- **In scope:** steps 0–8 below — the CMS's create, list, edit and metadata
+  views in the new grammar, the `modulate2` pieces they need, and keyboard
+  navigation and sorting over `modulate2` views.
+- **Not in scope here:** navigation in old-grammar views, which take no
+  part: an old-grammar region inside a new-grammar view is a single stop
+  that cannot be entered. Navigation modes other than the form's tree
+  (SEED-DRAFT-classiccms-D13).
 - **Not in scope here:** workflow controls, the preview, the wiki, and the
   branch-object migration (the Survey's increments B–E), which are outlined
   in the Roadmap and will be planned in detail when they come; Vox; the
@@ -409,8 +916,32 @@ system and branch, so one branch can hold only one server-fetched editor at
 a time. The CMS shows one at a time; a form with two text fields could not
 (SEED-DRAFT-classiccms-O4).
 
-**Client code is untested.** The dispatcher and form gathering are checked
-by hand until there is a client test harness.
+**Client code is untested.** The dispatcher, form gathering and the
+navigation walker are checked by hand until there is a client test harness.
+
+**Where the root learns its context.** `modulate2` must render each branch
+view's address (SEED-DRAFT-classiccms-D7) while old-grammar panes still
+supply `mode`. Where the system and branch come from at that moment is not
+yet confirmed; it is settled at step 2, and bears on
+SEED-DRAFT-classiccms-O7.
+
+**Ambiguous names.** Gathering matches collections and fields by name, so a
+duplicate name would gather the wrong fields. The server's check while
+resolving membership (SEED-DRAFT-classiccms-D11) must be tested, not
+assumed.
+
+**Draft size.** Every request carries the changed fields of the whole view,
+including a changed article body. This is acceptable for the CMS; a view
+with many large fields might need drafts sent only on change.
+
+**Structure against appearance.** Movement over the form's tree will
+sometimes contradict what the eye sees (SEED-DRAFT-classiccms-D14). The
+convention is accepted and the focused group's direction is shown; if use
+shows it hurts, the reserved alternative is rotating the axes by layout.
+
+**Tab as the cross trigger.** Taking over Tab removes the browser's own
+keyboard order (SEED-DRAFT-classiccms-D15); step 8 must keep the page
+usable by keyboard and screen-reader users.
 
 
 ## Open Questions
@@ -449,6 +980,11 @@ generated on each control. A single listener on the document would remove
 the handlers from the markup, but must find each element's Alpine scope. Is
 that worth doing, and when?
 
+The revision of 2026-11-18 proposes an answer: with the context in data
+attributes (SEED-DRAFT-classiccms-D7), a listener needs no Alpine scope,
+and SEED-DRAFT-classiccms-D3 now uses one delegated listener from step 2.
+The resolution is recorded when that is accepted.
+
 ### SEED-DRAFT-classiccms-O6 — Addressing articles
 
 Should controls address articles by URI — which `write-article` returns —
@@ -465,6 +1001,28 @@ place in scope to address the branch. When the old aspect system is
 retired, what provides that context — a manifestation-level attribute
 naming the system and branch, or something the branch-object model supplies?
 
+SEED-DRAFT-classiccms-D7 answers the client side: the address is rendered
+as attributes on each branch view's root, and the dispatcher no longer
+uses `mode`. What remains open is the server side — what gives `modulate2`
+the system and branch when it renders the root, once the old panes are
+gone.
+
+### SEED-DRAFT-classiccms-O8 — Exclusive and subtractive membership
+
+`(:as (:member …))` adds to the memberships nesting gives
+(SEED-DRAFT-classiccms-D11). A field may sometimes need to sit inside a
+collection without being submitted with it — a search box within a form —
+or to belong only to the collections it names. Should a later form express
+exclusive membership, or remove memberships that would otherwise apply,
+and how is it written?
+
+### SEED-DRAFT-classiccms-O9 — Naming the widget modalities
+
+`:provision-form` becomes `:collecting` (SEED-DRAFT-classiccms-D11). The
+other `:provision-*` modalities — text, sheet, chart, graph — name abstract
+widgets. Is "provision" the right term for them, or should they be renamed
+in the same way, before more code depends on the names?
+
 
 ## Prior Art
 
@@ -476,37 +1034,52 @@ Table: Prior systems and what this plan draws from each.
 
 | System | What to draw from |
 |---|---|
-| HTML forms and `FormData` | Gathering named fields from a form, used directly by the dispatcher |
-| Phoenix LiveView forms and Ecto changesets | Validation against a declared schema on the server, with errors and submitted values re-rendered in the form |
-| Rails strong parameters | Accepting only declared parameters (SEED-DRAFT-classiccms-D5, and the flat payload of SEED-DRAFT-classiccms-D2) |
-| Seaside (evaluated in SEED-0008) | Forms whose controls are bound to server-side actions, with no hand-written client code |
-| The old grammar's `uir-call` roles | Generated click handlers that pass the scope's `mode` to `fetch-contact` |
+| HTML forms and `FormData` | Gathering named fields; the `form` attribute, which associates an input with a form elsewhere on the page, is the precedent for `(:as (:member …))` — limited to one form per input (SEED-DRAFT-classiccms-D11) |
+| Phoenix LiveView forms and Ecto changesets | Validation against a declared schema on the server, with errors and submitted values re-rendered in the form; change events reporting unsaved values to the server (SEED-DRAFT-classiccms-D10) |
+| Rails strong parameters | Accepting only declared parameters (SEED-DRAFT-classiccms-D5, and the `fields` of SEED-DRAFT-classiccms-D2) |
+| WordPress's post editor | Property panels beside the main text, each with its own update control, inside one post form (SEED-DRAFT-classiccms-D11) |
+| Seaside (evaluated in SEED-0008) | Forms whose controls are bound to server-side actions, with no hand-written client code; its server-side registry of rendered callbacks is the deferred kept-tree alternative of SEED-DRAFT-classiccms-D10 |
+| Alpine's `Alpine.data` components | Behaviour registered once and named from markup (SEED-DRAFT-classiccms-D8) |
+| htmx's `HX-Trigger` response header | The server naming the events, and so the regions, a response triggers (SEED-DRAFT-classiccms-D9) |
+| Paredit and structural editors | Movement over the tree of forms rather than over text or the screen (SEED-DRAFT-classiccms-D14) |
+| WAI-ARIA tree views and roving `tabindex` | Keyboard focus that stays real DOM focus; the tree view's axes, held in reserve (SEED-DRAFT-classiccms-D14) |
+| The W3C's CSS spatial-navigation proposal | Geometric movement, considered and rejected (SEED-DRAFT-classiccms-D14) |
+| The old grammar's `uir-call` roles | Generated click handlers that pass the scope's `mode` to `fetch-contact` — superseded by the delegated listener (SEED-DRAFT-classiccms-D3) |
 
 
 ## Roadmap
 
-From step 4 on, each step ends with the CMS's list, create, edit and save
-flow working and the checklist passed; steps 0–3 leave the list and the edit
-view working while Create is rebuilt. Each step is recorded in a Log as it
-lands.
+Each step ends with the CMS's list, create, edit and save flow working and
+the checklist passed; Create was restored in the old grammar at step 0.
+Each step is recorded in a Log (SEED-DRAFT-classiccmslog) as it lands.
 
-1. **Step 0 — Diagnose Create.** Reproduce the failure with the browser's
-   console and network panel and the server log, and record the cause. The
-   old view will be replaced, but the cause may lie in shared code
-   (`fetch-contact`, the refresh, Classic's checks) that the new form also
-   uses.
-2. **Step 1 — A test suite for modulate2.** Tests for what exists:
+1. **Step 0 — Diagnose Create.** Done: the cause was a `var` at the start
+   of an Alpine handler (see "Starting point: the CMS").
+2. **Step 1 — A test suite for modulate2.** Done at `7564294`: tests for
    expression of atoms and sequences, IS resolution including `:-`, `dx`
    construction, valence and layout, `:reducing` controls, `:provision-text`
-   output, and the bridges. Fix `construct` to resolve IS.
-3. **Step 2 — Controls that work.** The exported control constructor,
-   controls with arguments, and the dispatcher (SEED-DRAFT-classiccms-D3);
-   tests for the generated buttons.
-4. **Step 3 — Forms.** `:provision-form` rendering its members; field names
-   on `:provision-text`; form gathering as a new client function in the
-   dispatcher (SEED-DRAFT-classiccms-D2); tests, including a
+   output, and the bridges; `construct` resolves IS.
+3. **Step 2 — Controls that work.** The exported control constructor with
+   arguments; context attributes on the branch view's root
+   (SEED-DRAFT-classiccms-D7), with where the root learns its context
+   settled; the delegated listener, the envelope and refresh by name
+   (SEED-DRAFT-classiccms-D3, SEED-DRAFT-classiccms-D2,
+   SEED-DRAFT-classiccms-D9); the duplicate `:form-input-def` key in
+   `maple.lisp` fixed. The edit view's old-grammar Back button is replaced
+   by a new-grammar control, the first to reach the CMS, so the checklist
+   exercises the dispatcher before any form exists; the branch already
+   handles `back`. Tests for the generated buttons and their attributes.
+4. **Step 3 — Forms.** Collections (SEED-DRAFT-classiccms-D11,
+   SEED-DRAFT-classiccms-D12): `:collecting`, `:submitting` and
+   `(:member …)` parsed; membership resolved, with the uniqueness checks;
+   the field attributes rendered. The `:provision-text` editor as a
+   registered component with a field name and value accessor
+   (SEED-DRAFT-classiccms-D8). Form gathering in the dispatcher
+   (SEED-DRAFT-classiccms-D2); drafts and focus kept in the session and
+   rendered from (SEED-DRAFT-classiccms-D10). Tests, including membership
+   by nesting, by `:member` and by inclusion, a duplicate name, a
    `:provision-text` field whose value is a list (expressed as a sequence)
-   and a form with a `nil` member.
+   and a collection with a `nil` member.
 5. **Step 4 — The create view.** The article form
    (SEED-DRAFT-classiccms-D6) in create mode, its body editor in Markdown
    mode selected through `(:as :markdown)`, with `@codemirror/lang-markdown`
@@ -525,9 +1098,22 @@ lands.
 8. **Step 7 — The metadata panel** (Survey A3). Fields generated from
    Classic's slot metadata (CLASSIC-0007) through the Classic→fx bridge; the
    `:extending` and `:reducing` defaults finished for the category list.
+   The panel is a nested `:meta` collection with its own submitting
+   control (SEED-DRAFT-classiccms-D11).
    This step will be detailed in a revision of this plan, once steps 4–6
    have shown the form in use.
-9. **Later — Survey increments B–E,** in outline: workflow controls filtered
+9. **Step 8 — Keyboard navigation and sorting.** The navigation projection
+   and its attributes (SEED-DRAFT-classiccms-D14,
+   SEED-DRAFT-classiccms-D16); the key declaration and its Mousetrap
+   bindings, the client walker, edit mode on fields and the triggers
+   (SEED-DRAFT-classiccms-D13, SEED-DRAFT-classiccms-D15); the server's
+   focus and last-visited memory (SEED-DRAFT-classiccms-D10); the focused
+   group's direction shown. The `:sorting` default and the `:move`
+   operation, by drag-and-drop and by keyboard (SEED-DRAFT-classiccms-D17).
+   Tests for the projection, which is computed on the server; the
+   checklist covers the walker, edit mode and keyboard access to the page
+   with a screen reader.
+10. **Later — Survey increments B–E,** in outline: workflow controls filtered
    by permission (B); the rendered preview (C); the wiki views (D); the
    branch-object migration, with operations, effect classes and Classic
    writes as queued effects (E, SEED-0009). Each is planned when it comes.
