@@ -34,6 +34,7 @@
            #:mfn-layout
            #:mfn-adapting
            #:mfn-controls
+           #:mfn-context
            ;; IS vocabulary
            #:infer-data-character
            #:resolve-is

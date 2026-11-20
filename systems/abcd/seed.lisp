@@ -55,26 +55,26 @@
 (branch :summary
   (lambda (state input)
     (declare (ignore state input))
-    (symbol-macrolet ((header-controls (grow *system* name nil (list :uimod :header-controls)))
-                      (footer-controls (grow *system* name nil (list :uimod :footer-controls))))
+    (symbol-macrolet ((cbank-primary (grow *system* name nil (list :uimod :cbank-primary)))
+                      (cbank-secondary (grow *system* name nil (list :uimod :cbank-secondary))))
       (list (aspect pane-series (:name :start :role (patching))
               ;; (let ((name :create)   (title :welcome))
               (dx (uic-page :type (:column))
                   '(:div :class "column-inner" (:h2 "Welcome")
                     (:p "This is a financial analysis chart tool.")))
               ;; (aspect dual-bank-pane :name name :title title
-              ;;   :system *system* :controls (list header-controls footer-controls))
+              ;;   :system *system* :controls (list cbank-primary cbank-secondary))
               ;; )
               (let ((name :nav)      (title :browse))
                 (aspect dual-bank-pane :name name :title title :role (pro-form)
-                  :system *system* :controls (list header-controls footer-controls))))
+                  :system *system* :controls (list cbank-primary cbank-secondary))))
             (aspect pane-series (:name :chart :role (patching))
               (let ((name :chart)    (title :chart-candle))
                 (aspect dual-bank-pane :name name :title title :role (pro-chart)
-                  :system *system* :controls (list header-controls footer-controls)))
+                  :system *system* :controls (list cbank-primary cbank-secondary)))
               (let ((name :chentity) (title :entities-view))
                 (aspect dual-bank-pane :name name :title title :role (pro-form)
-                  :system *system* :controls (list header-controls footer-controls))))))))
+                  :system *system* :controls (list cbank-primary cbank-secondary))))))))
 
 (branch :view
   (adapt-from-json :path :session)
@@ -143,7 +143,7 @@
           input
         (when data (setf sys-name data))
         (cond (identity (values nil))
-              ((eq uimod :header-controls)
+              ((eq uimod :cbank-primary)
                (dx (uic-series :type (:ui :controls) :map #'buttonize-calling)
                    (list :create)))
               (form-input
@@ -203,10 +203,10 @@
       ;; (print (list :ac action entities))
       
       (cond (identity :chart) ;; TODO: change ifmod-head stuff to reference a :controls super-property
-            ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)
+            ((eq uimod :cbank-primary) (dx (uic-series :type (:ui :controls)
                                                          :map #'buttonize :role (toggle))
                                              (list :select :draw :retrace-x :retrace-y)))
-            ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls) :map #'buttonize)
+            ((eq uimod :cbank-secondary) (dx (uic-series :type (:ui :controls) :map #'buttonize)
                                              (list :save :zoom-actual)))
             (entities
              (let* ((collected)
@@ -495,10 +495,10 @@
   (lambda (state input)
     (destructuring-bind (&key identity uimod action &allow-other-keys) input
       (cond (identity :meta-code-form)
-            ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)
+            ((eq uimod :cbank-primary) (dx (uic-series :type (:ui :controls)
                                                          :map #'buttonize-calling)
                                              (list :add-span :add-set :save)))
-            ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls)
+            ((eq uimod :cbank-secondary) (dx (uic-series :type (:ui :controls)
                                                          :map #'buttonize-calling)
                                              (list :save)))
             (action (let ((chart-path (namestring (nth (of-state :- :chart-point)

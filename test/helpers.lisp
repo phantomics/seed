@@ -9,7 +9,13 @@
 ;;; Suite hierarchy
 ;;; -----------------------------------------------------------------------
 
-(def-suite philo :description "All philo (Positional Heuristic Interaction for Lisp Objects) tests")
+(def-suite generate :description "All seed.generate tests")
+
+(def-suite branch-context :in generate
+  :description "The branch context each branch's function binds while it runs")
+
+(def-suite philo :in generate
+  :description "All philo (Positional Heuristic Interaction for Lisp Objects) tests")
 
 (def-suite philo-read   :in philo :description "Key-blind reads: offset, range, predicate, as-string")
 (def-suite philo-write  :in philo :description "Replace via (setf philo): atom vs list, round-trip, any-offset")
@@ -88,8 +94,8 @@ followed by another keyword).")
 ;;; -----------------------------------------------------------------------
 
 (defun run-all-tests ()
-  "Run every philo test.  Returns T if all pass."
-  (run! 'philo))
+  "Run every seed.generate test.  Returns T if all pass."
+  (run! 'generate))
 
 (defun %resolve-suite-name (name)
   "Resolve a suite name (keyword, string, or symbol) to the interned symbol."

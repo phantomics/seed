@@ -11,6 +11,7 @@
                           #:uia-based-pane-series #:uia-primal-dual-bank-pane
                           #:uir-patching #:uir-pro-form
                           #:uir-call-refreshing #:uir-contact-refreshing)
+  (:shadowing-import-from #:seed.modulate2 #:make-control)
   ;; Classic CMS API — the portal depends on classic.models.common so these
   ;; packages exist by the time load-system-directory processes this file.
   (:shadowing-import-from #:classic.models.common
@@ -43,19 +44,19 @@
 (branch :summary
   (lambda (state input)
     (declare (ignore state input))
-    (symbol-macrolet ((header-controls (grow *system* name nil (list :uimod :header-controls)))
-                      (footer-controls (grow *system* name nil (list :uimod :footer-controls))))
+    (symbol-macrolet ((cbank-primary (grow *system* name nil (list :uimod :cbank-primary)))
+                      (cbank-secondary (grow *system* name nil (list :uimod :cbank-secondary))))
       (list
        ;; Tab 1 — existing Philo catalog demo (unchanged)
        (aspect pane-series (:name :catalog :role (patching))
          (let ((name :catalog) (title :catalog-view))
            (list (aspect dual-bank-pane :name name :title title :role (pro-form)
-                   :system *system* :controls (list header-controls footer-controls)))))
+                   :system *system* :controls (list cbank-primary cbank-secondary)))))
        ;; Tab 2 — Classic CMS
        (aspect pane-series (:name :cms :role (patching))
          (let ((name :cms) (title :classic-cms))
            (list (aspect dual-bank-pane :name name :title title :role (pro-form)
-                   :system *system* :controls (list header-controls footer-controls)))))))))
+                   :system *system* :controls (list cbank-primary cbank-secondary)))))))))
 
 ;;; ---------------------------------------------------------------------------
 ;;; :view — route to the active tab (unchanged)
@@ -89,8 +90,8 @@
         (print (list :hh height width)))
       (cond
         (identity :meta-code-form)
-        ((eq uimod :header-controls) (dx (uic-series :type (:ui :controls)) (list :one)))
-        ((eq uimod :footer-controls) (dx (uic-series :type (:ui :controls)) (list :one)))
+        ((eq uimod :cbank-primary) (dx (uic-series :type (:ui :controls)) (list :one)))
+        ((eq uimod :cbank-secondary) (dx (uic-series :type (:ui :controls)) (list :one)))
         (t (let* ((path *catalog-path*)
                   (members
                     (append
@@ -194,10 +195,9 @@
                           (dx (uicc-field :name :text :type (:code))
                               (list *system* :cms))
                           `(:button :class "button" :|x-on:click| ,save-js "Save")
-                          (make-instance
-                           'uicc-button :base "back"
-                           :role (list (make-instance
-                                        'uir-call-refreshing :n :action)))))))))
+                          ;; A new-grammar control, handled by the client's
+                          ;; delegated listener (SEED-0015, step 2).
+                          (make-control :back "back")))))))
 
 ;;; The :cms branch.
 ;;;
@@ -221,14 +221,12 @@
         ;; ----- Standard system metadata -----
         (identity :meta-code-form)
 
-        ((eq uimod :header-controls)
-         (dx (uic-series :type (:ui :controls))
-             (list (make-instance
-                    'uicc-button :base "new"
-                    :role (list (make-instance
-                                 'uir-call-refreshing :n :action))))))
+        ;; The primary control bank: new-grammar controls, built here so that
+        ;; they record this branch's context, though the pane renders them.
+        ((eq uimod :cbank-primary)
+         (dx (:as :controls) (list (make-control :new "new"))))
 
-        ((eq uimod :footer-controls)
+        ((eq uimod :cbank-secondary)
          (dx (uic-series :type (:ui :controls)) (list :one)))
 
         ;; ----- CodeMirror text protocol (via /contact/) -----

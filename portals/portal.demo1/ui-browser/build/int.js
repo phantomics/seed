@@ -1,5 +1,11 @@
 window.seedData = {  };
 window.seedElements = {  };
+function formInput(element, context, event) {
+    var fdata = new FormData(element.closest('form'));
+    var obj = Object.fromEntries(fdata.entries());
+    __PS_MV_REG = [];
+    return fetchContact(element, context, obj, event);
+};
 function fieldIn(element, path, context, event) {
     __PS_MV_REG = [];
     return fetchContact(element, context, { path : path,
@@ -21,6 +27,57 @@ function fetchContact(element, context, input, event) {
         return htmx.trigger(element, event.next);
     } : null));
 };
+function seedContext(element) {
+    var root = element.closest('[data-seed-branch]');
+    return root ? { system : root.dataset.seedSystem, branch : root.dataset.seedBranch } : null;
+};
+function seedEnvelope(control) {
+    var args1 = control.dataset.args;
+    return { action : control.dataset.action,
+             args : args1 ? JSON.parse(args1) : {  },
+             target : control.dataset.target || null,
+             collection : null,
+             fields : {  },
+             drafts : {  },
+             focus : null,
+             state : {  }
+           };
+};
+function seedRefreshRegions(regions) {
+    return regions.length > 0 ? htmx.trigger(document.getElementById('main'), 'refresh') : null;
+};
+function seedRefresh(control, data) {
+    var names = data && data.refresh;
+    var regions = [];
+    if (names) {
+        names.forEach(function (name) {
+            return document.querySelectorAll('[data-seed-region=\"' + name + '\"]').forEach(function (region) {
+                return regions.push(region);
+            });
+        });
+    };
+    if (0 === regions.length) {
+        regions.push(control.closest('[data-seed-region]') || document.getElementById('main'));
+    };
+    __PS_MV_REG = [];
+    return seedRefreshRegions(regions);
+};
+function seedActivate(control) {
+    var context = seedContext(control);
+    __PS_MV_REG = [];
+    return context ? fetchContact(control, context, seedEnvelope(control), function (data) {
+        __PS_MV_REG = [];
+        return seedRefresh(control, data);
+    }) : console.error('Seed: no branch context for control', control);
+};
+document.addEventListener('click', function (event) {
+    var control = event.target.closest && event.target.closest('[data-action]');
+    if (control) {
+        event.preventDefault();
+        __PS_MV_REG = [];
+        return seedActivate(control);
+    };
+});
 function realize(system, branch, element) {
     return function (input) {
         __PS_MV_REG = [];
@@ -63,10 +120,10 @@ function initializeDraggable(element, mode, inSeries) {
         };
     });
     if (handleContainer) {
-        var _js203 = handleContainer.childNodes;
-        var _js205 = _js203.length;
-        for (var _js204 = 0; _js204 < _js205; _js204 += 1) {
-            var n = _js203[_js204];
+        var _js2 = handleContainer.childNodes;
+        var _js4 = _js2.length;
+        for (var _js3 = 0; _js3 < _js4; _js3 += 1) {
+            var n = _js2[_js3];
             if (n.className === 'control drag-handle') {
                 handle = n;
                 break;
@@ -172,10 +229,10 @@ function submitForms(formList) {
 };
 function ejoin(base, event) {
     if (!('undefined' === typeof(event) || 'undefined' === typeof(event.detail))) {
-        var _js206 = Object.keys(event.detail);
-        var _js208 = _js206.length;
-        for (var _js207 = 0; _js207 < _js208; _js207 += 1) {
-            var k = _js206[_js207];
+        var _js5 = Object.keys(event.detail);
+        var _js7 = _js5.length;
+        for (var _js6 = 0; _js6 < _js7; _js6 += 1) {
+            var k = _js5[_js6];
             if (!(k === 'elt' || 'undefined' === typeof(event.detail[k]))) {
                 base[k] = event.detail[k];
             };
@@ -194,29 +251,29 @@ var drawLine = function (ctx, ent, chart, points) {
         ctx.lineWidth = 1.25 * ctx.lineWidth;
     };
     ctx.beginPath();
-    var points209 = points ? points : derivePoints(ent, chart);
+    var points8 = points ? points : derivePoints(ent, chart);
     var circleRadius = 5;
-    ctx.moveTo(points209[0][0], points209[0][1]);
-    ctx.lineTo(points209[1][0], points209[1][1]);
+    ctx.moveTo(points8[0][0], points8[0][1]);
+    ctx.lineTo(points8[1][0], points8[1][1]);
     ctx.closePath();
     ctx.stroke();
     if (ent.inFlux && 'false' !== ent.inFlux) {
-        var diffs = [[points209[0][0] - points209[1][0], points209[0][1] - points209[1][1]], [points209[1][0] - points209[0][0], points209[1][1] - points209[0][1]]];
+        var diffs = [[points8[0][0] - points8[1][0], points8[0][1] - points8[1][1]], [points8[1][0] - points8[0][0], points8[1][1] - points8[0][1]]];
         var ri = [Math.sign(diffs[0][1]) * Math.acos(diffs[0][0] / Math.sqrt(Math.pow(diffs[0][0], 2) + Math.pow(diffs[0][1], 2))), Math.sign(diffs[1][1]) * Math.acos(diffs[1][0] / Math.sqrt(Math.pow(diffs[1][0], 2) + Math.pow(diffs[1][1], 2)))];
         ctx.strokeStyle = 'black';
         ctx.fillStyle = 'black';
         ctx.lineWidth = 0.5;
         ctx.beginPath();
-        ctx.arc(points209[0][0], points209[0][1], 1, 0, Math.PI * 2, true);
+        ctx.arc(points8[0][0], points8[0][1], 1, 0, Math.PI * 2, true);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(points209[1][0], points209[1][1], 1, 0, Math.PI * 2, true);
+        ctx.arc(points8[1][0], points8[1][1], 1, 0, Math.PI * 2, true);
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(points209[0][0], points209[0][1], circleRadius, -Math.PI + (ri[0] - Math.PI * 0.2), -Math.PI + (ri[0] + Math.PI * 0.2), true);
+        ctx.arc(points8[0][0], points8[0][1], circleRadius, -Math.PI + (ri[0] - Math.PI * 0.2), -Math.PI + (ri[0] + Math.PI * 0.2), true);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(points209[1][0], points209[1][1], circleRadius, -Math.PI + (ri[1] - Math.PI * 0.2), -Math.PI + (ri[1] + Math.PI * 0.2), true);
+        ctx.arc(points8[1][0], points8[1][1], circleRadius, -Math.PI + (ri[1] - Math.PI * 0.2), -Math.PI + (ri[1] + Math.PI * 0.2), true);
         ctx.stroke();
     };
     ctx.strokeStyle = 'black';
@@ -243,10 +300,10 @@ if ('undefined' === typeof drawMethods) {
         ctx.lineWidth = 1;
         var xOrigin = points[0][0] < points[1][0] ? points[0][0] : points[1][0];
         var xInterval = points[0][0] - points[1][0];
-        var _js210 = ent.ratios[0];
-        var _js212 = _js210.length;
-        for (var _js211 = 0; _js211 < _js212; _js211 += 1) {
-            var ratio = _js210[_js211];
+        var _js9 = ent.ratios[0];
+        var _js11 = _js9.length;
+        for (var _js10 = 0; _js10 < _js11; _js10 += 1) {
+            var ratio = _js9[_js10];
             var xLevel = points[0][0] < points[1][0] ? xOrigin - ratio * xInterval : xOrigin + ratio * xInterval;
             ctx.beginPath();
             ctx.moveTo(xLevel, 0);
@@ -266,10 +323,10 @@ if ('undefined' === typeof drawMethods) {
         var xOrigin = points[0][0] < points[1][0] ? points[0][0] : points[1][0];
         var yOrigin = points[0][1] < points[1][1] ? points[0][1] : points[1][1];
         var yInterval = points[0][1] - points[1][1];
-        var _js213 = ent.ratios[1];
-        var _js215 = _js213.length;
-        for (var _js214 = 0; _js214 < _js215; _js214 += 1) {
-            var ratio = _js213[_js214];
+        var _js12 = ent.ratios[1];
+        var _js14 = _js12.length;
+        for (var _js13 = 0; _js13 < _js14; _js13 += 1) {
+            var ratio = _js12[_js13];
             var yLevel = points[0][1] < points[1][1] ? yOrigin - ratio * yInterval : yOrigin + ratio * yInterval;
             ctx.beginPath();
             ctx.moveTo(xOrigin, yLevel);
@@ -309,9 +366,9 @@ function interactorMousewheel(mode) {
         } else {
             var timeRange = chart.xAxisRange();
             var timeInterval = timeRange[1] - timeRange[0];
-            var zoomInterval216 = 0.05 * timeInterval;
-            var wheelDelta217 = 0 < event.deltaY ? 1 : -1;
-            return chart.updateOptions({ dateWindow : [1 === wheelDelta217 ? timeRange[0] - zoomInterval216 : timeRange[0] + zoomInterval216, timeRange[1]], valueRange : chart.yAxisRange() });
+            var zoomInterval15 = 0.05 * timeInterval;
+            var wheelDelta16 = 0 < event.deltaY ? 1 : -1;
+            return chart.updateOptions({ dateWindow : [1 === wheelDelta16 ? timeRange[0] - zoomInterval15 : timeRange[0] + zoomInterval15, timeRange[1]], valueRange : chart.yAxisRange() });
         };
     };
 };
@@ -324,8 +381,8 @@ function interactorMousedown(mode) {
         switch (mode.interaction) {
         case 'select':
             var entityClicked = false;
-            var _js218 = entitiesCount - 1;
-            for (var entix = 0; entix <= _js218; entix += 1) {
+            var _js17 = entitiesCount - 1;
+            for (var entix = 0; entix <= _js17; entix += 1) {
                 self.drawMethods.line.intersect(mode.entities[entix], mode.chart, domCoords, function (ent) {
                     entityClicked = true;
                     ent.layerPoints = [g.toDomCoords(ent.points[0][0], ent.points[0][1]), g.toDomCoords(ent.points[1][0], ent.points[1][1])];
@@ -351,10 +408,10 @@ function interactorMousedown(mode) {
             };
             if (!entityClicked) {
                 mode.entitiesInFlux = [];
-                var _js219 = mode.entities;
-                var _js221 = _js219.length;
-                for (var _js220 = 0; _js220 < _js221; _js220 += 1) {
-                    var ent = _js219[_js220];
+                var _js18 = mode.entities;
+                var _js20 = _js18.length;
+                for (var _js19 = 0; _js19 < _js20; _js19 += 1) {
+                    var ent = _js18[_js19];
                     ent.inFlux = false;
                 };
             };
@@ -396,10 +453,10 @@ function interactorMouseup(mode) {
                 window.Dygraph.endPan(event, chart, context);
                 return chart.drawGraph_();
             } else {
-                var _js222 = mode.entities;
-                var _js224 = _js222.length;
-                for (var _js223 = 0; _js223 < _js224; _js223 += 1) {
-                    var ent = _js222[_js223];
+                var _js21 = mode.entities;
+                var _js23 = _js21.length;
+                for (var _js22 = 0; _js22 < _js23; _js22 += 1) {
+                    var ent = _js21[_js22];
                     if (ent.inFlux && 'false' !== ent.inFlux) {
                         ent.points[0] = chart.toDataCoords(ent.layerPoints[0][0], ent.layerPoints[0][1]);
                         ent.points[1] = chart.toDataCoords(ent.layerPoints[1][0], ent.layerPoints[1][1]);
@@ -429,14 +486,14 @@ function interactorMousemove(mode) {
                 if (0 === mode.entitiesInFlux.length) {
                     return context.isPanning ? window.Dygraph.movePan(event, chart, context) : chart.drawGraph_();
                 } else {
-                    var movingFrom225 = mode.movingFrom;
+                    var movingFrom24 = mode.movingFrom;
                     tempCanvas.clearRect(0, 0, chart.canvas_.width, chart.canvas_.height);
-                    var _js226 = mode.entitiesInFlux;
-                    var _js228 = _js226.length;
-                    for (var _js227 = 0; _js227 < _js228; _js227 += 1) {
-                        var ent = _js226[_js227];
+                    var _js25 = mode.entitiesInFlux;
+                    var _js27 = _js25.length;
+                    for (var _js26 = 0; _js26 < _js27; _js26 += 1) {
+                        var ent = _js25[_js26];
                         if (0 === ent.pointsInFlux.length) {
-                            ent.layerPoints = [[ent.layerPoints[0][0] - (movingFrom225[0] - event.layerX), ent.layerPoints[0][1] - (movingFrom225[1] - event.layerY)], [ent.layerPoints[1][0] - (movingFrom225[0] - event.layerX), ent.layerPoints[1][1] - (movingFrom225[1] - event.layerY)]];
+                            ent.layerPoints = [[ent.layerPoints[0][0] - (movingFrom24[0] - event.layerX), ent.layerPoints[0][1] - (movingFrom24[1] - event.layerY)], [ent.layerPoints[1][0] - (movingFrom24[0] - event.layerX), ent.layerPoints[1][1] - (movingFrom24[1] - event.layerY)]];
                         } else {
                             var timeInterval = chart.rawData_[1][0] - chart.rawData_[0][0];
                             var domCoords = chart.eventToDomCoords(event);
@@ -447,10 +504,10 @@ function interactorMousemove(mode) {
                             };
                             var columnValue = chart.getValue(dataPos[0], 1);
                             var cvals = [Math.floor(chart.toDomYCoord(chart['rawData_'][dataPos[0]][2])), Math.floor(chart.toDomYCoord(chart['rawData_'][dataPos[0]][3]))];
-                            var _js229 = ent.pointsInFlux;
-                            var _js231 = _js229.length;
-                            for (var _js230 = 0; _js230 < _js231; _js230 += 1) {
-                                var point = _js229[_js230];
+                            var _js28 = ent.pointsInFlux;
+                            var _js30 = _js28.length;
+                            for (var _js29 = 0; _js29 < _js30; _js29 += 1) {
+                                var point = _js28[_js29];
                                 ent['layerPoints'][point] = [event.layerX, event.layerY];
                                 if (8 > Math.abs(cvals[0] - ent['layerPoints'][point][1])) {
                                     ent['layerPoints'][point][1] = cvals[0];
@@ -468,18 +525,18 @@ function interactorMousemove(mode) {
                     return;
                 };
             case 'draw':
-                var timeInterval229 = chart.rawData_[1][0] - chart.rawData_[0][0];
-                var domCoords230 = chart.eventToDomCoords(event);
-                var dataPos231 = chart.toDataCoords(domCoords230[0], domCoords230[1]);
-                var remainder232 = (dataPos231[0] % timeInterval229 + timeInterval229) % timeInterval229;
-                var ent233 = mode.activeEntity;
-                if (0 !== remainder232) {
-                    dataPos231[0] -= remainder232;
+                var timeInterval28 = chart.rawData_[1][0] - chart.rawData_[0][0];
+                var domCoords29 = chart.eventToDomCoords(event);
+                var dataPos30 = chart.toDataCoords(domCoords29[0], domCoords29[1]);
+                var remainder31 = (dataPos30[0] % timeInterval28 + timeInterval28) % timeInterval28;
+                var ent32 = mode.activeEntity;
+                if (0 !== remainder31) {
+                    dataPos30[0] -= remainder31;
                 };
-                ent233.points[1] = [dataPos231[0], dataPos231[1]];
+                ent32.points[1] = [dataPos30[0], dataPos30[1]];
                 tempCanvas.clearRect(0, 0, chart.canvas_.width, chart.canvas_.height);
                 __PS_MV_REG = [];
-                return drawMethods[ent233.type]['draw'](tempCanvas, ent233, chart);
+                return drawMethods[ent32.type]['draw'](tempCanvas, ent32, chart);
             };
         };
     };
@@ -499,10 +556,10 @@ function getCandlePlotter(mode) {
                 var ctx = e.drawingContext;
                 var candleMaxSpacing = 3;
                 var barCount = (range = e.dygraph.xAxisRange(), counting = false, length = 0, ((function () {
-                    var _js234 = sets[0];
-                    var _js236 = _js234.length;
-                    for (var _js235 = 0; _js235 < _js236; _js235 += 1) {
-                        var point = _js234[_js235];
+                    var _js33 = sets[0];
+                    var _js35 = _js33.length;
+                    for (var _js34 = 0; _js34 < _js35; _js34 += 1) {
+                        var point = _js33[_js34];
                         if (!counting && point.xval > range[0]) {
                             counting = true;
                         };
@@ -521,8 +578,8 @@ function getCandlePlotter(mode) {
                 var downFillStyle = 'rgba(220,50,47,1.0)';
                 var downStrokeStyle = 2 < barWidth ? 'rgba(220,50,47,1.0)' : 'rgba(220,50,47,0.6)';
                 ctx.lineWidth = 0.6;
-                var _js237 = sets[0].length - 1;
-                for (var p = 0; p <= _js237; p += 1) {
+                var _js36 = sets[0].length - 1;
+                for (var p = 0; p <= _js36; p += 1) {
                     var price = { open : sets[0][p]['yval'],
                                   high : sets[1][p]['yval'],
                                   low : sets[2][p]['yval'],
@@ -557,10 +614,10 @@ function getCandlePlotter(mode) {
                 };
                 ctx.strokeStyle = 'black';
                 ctx.lineWidth = 1.5;
-                var _js238 = mode.entities;
-                var _js240 = _js238.length;
-                for (var _js239 = 0; _js239 < _js240; _js239 += 1) {
-                    var ent = _js238[_js239];
+                var _js37 = mode.entities;
+                var _js39 = _js37.length;
+                for (var _js38 = 0; _js38 < _js39; _js38 += 1) {
+                    var ent = _js37[_js38];
                     if (!(mode.mousedown && ent.inFlux)) {
                         drawMethods[ent.type]['draw'](ctx, ent, mode.chart);
                     };

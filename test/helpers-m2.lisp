@@ -17,6 +17,7 @@
 (def-suite m2-controls   :in modulate2 :description "make-control and Tier-1 defaults")
 (def-suite m2-rendering  :in modulate2 :description "generate for uim-web")
 (def-suite m2-bridge     :in modulate2 :description "modulate ↔ modulate2 bridge hooks")
+(def-suite m2-context    :in modulate2 :description "Branch context: captured at construction, rendered on roots")
 
 ;;; -----------------------------------------------------------------------
 ;;; Helpers
@@ -50,6 +51,18 @@
                   (progn (push (first rest) children)
                          (setf rest (cdr rest)))))
     (nreverse children)))
+
+(defun find-tree (tree predicate)
+  "Return the first node of a Spinneret TREE, depth-first and including TREE
+   itself, that satisfies PREDICATE, or NIL."
+  (cond ((and (consp tree) (keywordp (first tree)))
+         (if (funcall predicate tree)
+             tree
+             (loop :for child :in (tree-children tree)
+                   :thereis (find-tree child predicate))))
+        ((consp tree)
+         (loop :for item :in tree :thereis (find-tree item predicate)))
+        (t nil)))
 
 ;;; -----------------------------------------------------------------------
 ;;; Test runners

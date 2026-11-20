@@ -354,6 +354,11 @@ body{
     display: inline;
 }
 
+.ui.header .controls .mfn-item,
+.ui.footer .controls .mfn-item{
+    display: inline;
+}
+
 .ui.header .button,
 .ui.footer .button{
     background: #fbf5de;

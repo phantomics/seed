@@ -7,6 +7,6 @@
   :version "0.0.1"
   :serial t
   :depends-on ("symbol-munger" "spinneret" "parenscript"
-               "seed.modulate")
+               "seed.generate" "seed.modulate")
   :components ((:file "package")
                (:file "modulate2")))

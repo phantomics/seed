@@ -8,7 +8,7 @@
   :author "Andrew Sengul"
   :license "GPL-3.0"
   :serial t
-  :depends-on ("seed.modulate2" "fiveam")
+  :depends-on ("seed.modulate2" "fiveam" "com.inuoe.jzon")
   :components ((:file "package-m2")
                (:file "helpers-m2")
                (:file "test-modulate2"))

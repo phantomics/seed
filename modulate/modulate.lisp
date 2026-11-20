@@ -643,6 +643,22 @@
   "Guard against infinite mutual delegation between generate and
    *generate-foreign* when a component is handled by neither system.")
 
+(defvar *rendered-context* nil
+  "The branch context, as a plist (:system SYSTEM :branch BRANCH), declared by
+   the innermost element being rendered that declares one.  Both grammars bind
+   it while rendering a branch view's root, so that what is rendered inside
+   does not repeat the same context.")
+
+(defun context-attributes (context)
+  "The attributes by which a branch view's root declares CONTEXT, a plist
+   (:system SYSTEM :branch BRANCH): its address, read by the client's
+   dispatcher, and the region named for its branch."
+  (destructuring-bind (&key system branch) context
+    (let ((branch-name (string-downcase (string branch))))
+      (list :data-seed-system (string-downcase (string system))
+            :data-seed-branch branch-name
+            :data-seed-region branch-name))))
+
 (defgeneric locate (medium component index item))
 
 (defmethod locate ((medium uim-web) (comp t) index item)
@@ -1118,11 +1134,11 @@
   (dx (uic-series :layout (:vertical :of 3 1 1 1) :join (list system name) :type (:column)
                   :mode (funcall to-grow nil name context (list :identity title)))
       (dx (uic-series :type (:ui :header))
-          title (funcall to-grow nil name context (list :uimod :header-controls)))
+          title (funcall to-grow nil name context (list :uimod :cbank-primary)))
       (dx (uic-frame :name title :type (:body) :access system)
           name)
       (dx (uic-series :type (:ui :footer))
-          (list (funcall to-grow nil name context (list :uimod :footer-controls))))))
+          (list (funcall to-grow nil name context (list :uimod :cbank-secondary))))))
 
 ;; (dx (uic-series :layout (:horizontal :even) :type (:workspace :even))
 ;;     (loop :for l :in (rest (nth branch-point summary))
@@ -1134,13 +1150,13 @@
 ;;                        (dx (uic-series :type (:ui :header))
 ;;                            (second l)
 ;;                            (grow nil (first l)
-;;                                  context (list :uimod :header-controls)))
+;;                                  context (list :uimod :cbank-primary)))
 ;;                        (dx (uic-frame :name (second l) :type (:body)
 ;;                                       :access *system*)
 ;;                            (first l))
 ;;                        (dx (uic-series :type (:ui :footer))
 ;;                            (list (grow nil (first l)
-;;                                        context (list :uimod :footer-controls)))))))
+;;                                        context (list :uimod :cbank-secondary)))))))
 
 ;; (and (and (member :controls types) (member :extog types))
 ;;      (list :x-data (psl (create this-toggle null
@@ -1530,8 +1546,13 @@
     (xfurnish medium aspect role)))
 
 (defmethod generate :around ((medium uim-web) (aspect ui-component))
-  "Generation method qualifier manifesting call effects for UI components."
-  (let* ((main (call-next-method))
+  "Generation method qualifier manifesting call effects for UI components.
+   A component with a :join is the root of its branch's view: it declares the
+   branch's context, and what it encloses is rendered within that context."
+  (let* ((join (uic-join aspect))
+         (context (and join (list :system (first join) :branch (second join))))
+         (main (let ((*rendered-context* (or context *rendered-context*)))
+                 (call-next-method)))
          (base (uic-base aspect))
          (furnishing (furnish medium aspect)))
     ;; (when call (print (list :ava aspect furnishing call)))
@@ -1539,7 +1560,12 @@
     ;;                                                   of-local (manifest-locality)))))
 
     (cons (first main)
-          (append (and (uic-path aspect)
+          (append (and context (context-attributes context))
+                  ;; A series of controls, as a control bank is, is a toolbar.
+                  (and (member :controls (funcall (if (listp (uic-type aspect)) #'identity #'list)
+                                                  (uic-type aspect)))
+                       (list :role "toolbar"))
+                  (and (uic-path aspect)
                        (list :meta-path (format nil "~{~a ~}" (uic-path aspect))))
                   ;; (let ((jsen (getf (uic-plan aspect) :js-entities)))
                   ;;   (and (or (getf (getf (uic-plan aspect) :js-entities) :mode)

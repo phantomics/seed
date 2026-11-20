@@ -336,7 +336,7 @@
         :border-width 0 ;; 0 2px
         :border-style solid :border-color ,color-focal-fg35
         :display grid :grid-template-rows 100%
-        (.controls :grid-column-end 3 (.item :display inline))
+        (.controls :grid-column-end 3 (.item :display inline) (.mfn-item :display inline))
         (.button :background ,color-focal-sh1 :border-color ,color-focal-sh0)
         ((.item > .symbol) :font-size 1.4em :font-weight ))
 
@@ -626,7 +626,7 @@
            (obj (chain -object (from-entries (chain fdata (entries))))))
       (fetch-contact element context obj event))))
 
-(enter-js-element *misc-js* :form-input-def
+(enter-js-element *misc-js* :field-in-def
   (defun field-in (element path context event)
     ;; (log :ell element context)
     (fetch-contact element context (create path path data (@ element value)
@@ -659,6 +659,76 @@
                        event (if (not (= "undefined" (typeof event)))
                                  (lambda (data)
                                    (chain htmx (trigger element (@ event next)))))))))))
+
+;; The client side of the control protocol (SEED-D27, SEED-D31, SEED-D33).
+;; Markup declares controls, the branch context and regions as attributes,
+;; and these functions interpret them; generated markup carries no handler
+;; code.  One listener on the document handles every control.
+
+(enter-js-element *misc-js* :seed-dispatch-defs
+  (progn
+    ;; The branch a control belongs to, from the nearest enclosing element
+    ;; that declares one: a branch view's root.
+    (defun seed-context (element)
+      (let ((root (chain element (closest "[data-seed-branch]"))))
+        (if root
+            (create system (@ root dataset seed-system)
+                    branch (@ root dataset seed-branch))
+            nil)))
+
+    ;; The envelope every request posts (SEED-D26).  Until forms arrive,
+    ;; no collection is submitted and there are no drafts or focus to report.
+    (defun seed-envelope (control)
+      (let ((args (@ control dataset args)))
+        (create action     (@ control dataset action)
+                args       (if args (chain -j-s-o-n (parse args)) (create))
+                target     (or (@ control dataset target) nil)
+                collection nil
+                fields     (create)
+                drafts     (create)
+                focus      nil
+                state      (create))))
+
+    ;; Refresh the given regions.  For now every region falls back to a
+    ;; refresh of the whole page, which also redraws the control banks
+    ;; (SEED-D44).
+    (defun seed-refresh-regions (regions)
+      (when (> (@ regions length) 0)
+        (chain htmx (trigger (chain document (get-element-by-id "main")) "refresh"))))
+
+    ;; Refresh the regions a response names, or else the region containing
+    ;; the control that made the request.
+    (defun seed-refresh (control data)
+      (let ((names (and data (@ data refresh)))
+            (regions (list)))
+        (when names
+          (chain names (for-each
+                        (lambda (name)
+                          (chain document
+                                 (query-selector-all (+ "[data-seed-region=\"" name "\"]"))
+                                 (for-each (lambda (region) (chain regions (push region)))))))))
+        (when (= 0 (@ regions length))
+          (chain regions (push (or (chain control (closest "[data-seed-region]"))
+                                   (chain document (get-element-by-id "main"))))))
+        (seed-refresh-regions regions)))
+
+    ;; Post a control's action to its branch, then refresh.
+    (defun seed-activate (control)
+      (let ((context (seed-context control)))
+        (if context
+            (fetch-contact control context (seed-envelope control)
+                           (lambda (data) (seed-refresh control data)))
+            (chain console (error "Seed: no branch context for control" control)))))
+
+    (chain document
+           (add-event-listener
+            "click"
+            (lambda (event)
+              (let ((control (and (@ event target closest)
+                                  (chain event target (closest "[data-action]")))))
+                (when control
+                  (chain event (prevent-default))
+                  (seed-activate control))))))))
 
 (enter-js-element *misc-js* :realize-def
   (defun realize (system branch element)

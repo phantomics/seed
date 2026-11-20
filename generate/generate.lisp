@@ -23,21 +23,38 @@
            (-<> ,input ,@(loop :for item :in fns :collect `(funcall ,item ,context <>)))))
       (first fns)))
 
+(defvar *branch-context* nil
+  "The branch whose function is running, as a plist (:system SYSTEM :branch
+   BRANCH), or NIL outside any branch.  Each branch's function binds it for
+   the duration of its call (see CHANNEL-FNS), so a branch called from
+   another through grow has its own context.  Manifestations record it when
+   they are built, because some are rendered after their branch's call has
+   returned.")
+
 (defun channel-fns (syname brname fns)
+  "Build the form of a branch's function from FNS, the branch's pipeline of
+   functions of (state input).  The function binds *BRANCH-CONTEXT* to
+   SYNAME and BRNAME while it runs."
   (let ((state (gensym (string-upcase syname))) (data (gensym (string-upcase brname)))
-        (final (gensym)) (output (gensym)) (final-out (gensym)))
-    (if (rest fns)
-        `(lambda (,state ,data)
-           (let ((,final))
-             ,@(loop :for fn :in fns :for fix :from (1- (length fns)) :downto 0
-                     :collect `(multiple-value-bind (,output ,final-out)
-                                   (if ,final (values ,data ,final) (funcall ,fn ,state ,data))
-                                 (setf ,data  ,output
-                                       ;; ,data  ,(if (zerop fix)
-                                       ;;             output (list 'or output data))
-                                       ,final ,final-out)))
-             ,data))
-        (first fns))))
+        (final (gensym)) (output (gensym)) (final-out (gensym))
+        (inner (gensym "BRANCH-FN")))
+    `(let ((,inner
+             ,(if (rest fns)
+                  `(lambda (,state ,data)
+                     (let ((,final))
+                       ,@(loop :for fn :in fns :for fix :from (1- (length fns)) :downto 0
+                               :collect `(multiple-value-bind (,output ,final-out)
+                                             (if ,final (values ,data ,final)
+                                                 (funcall ,fn ,state ,data))
+                                           (setf ,data  ,output
+                                                 ;; ,data  ,(if (zerop fix)
+                                                 ;;             output (list 'or output data))
+                                                 ,final ,final-out)))
+                       ,data))
+                  (first fns))))
+       (lambda (,state ,data)
+         (let ((*branch-context* (list :system ',syname :branch ',brname)))
+           (funcall ,inner ,state ,data))))))
 
 (defmacro seed (name &body props)
   (let* ((access    (rest (assoc :access props)))

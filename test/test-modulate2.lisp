@@ -172,14 +172,25 @@
 (in-suite m2-controls)
 
 (def-test make-control-structure ()
-  "make-control builds an mfn-atom with :activating modality and :controls AS."
-  (let ((c (make-control :edit "Edit" '(0 1))))
+  "make-control builds an mfn-atom with :activating modality and :controls AS,
+   carrying its action, label and the navigation key of its target."
+  (let ((c (make-control :edit "Edit" :target :title)))
     (is (typep c 'mfn-atom))
     (is (equal '(:activating) (mfn-by c)))
     (is (member :controls (mfn-as c)))
     (is (equal :edit (getf (mfn-value c) :action)))
     (is (equal "Edit" (getf (mfn-value c) :label)))
-    (is (equal '(0 1) (getf (mfn-value c) :target)))))
+    (is (equal :title (getf (mfn-value c) :target)))))
+
+(def-test make-control-args ()
+  "make-control carries its arguments, as a plist, in its value."
+  (let ((c (make-control :edit "Edit" :args '(:index 3))))
+    (is (equal '(:index 3) (getf (mfn-value c) :args)))
+    (is (null (getf (mfn-value c) :target)))))
+
+(def-test make-control-no-args ()
+  "A control made without arguments carries none."
+  (is (null (getf (mfn-value (make-control :back "Back")) :args))))
 
 (def-test reducing-injects-controls ()
   "The :reducing default injects a remove control into each member's controls."
@@ -193,6 +204,19 @@
     (is (= 1 (length (mfn-controls m1))))
     (is (= 1 (length (mfn-controls m2))))
     (is (eq :remove (getf (mfn-value (first (mfn-controls m1))) :action)))))
+
+(def-test reducing-targets-navigation-keys ()
+  "A :reducing remove control targets its member by navigation key — the
+   member's name, or its position when it has none — never by its path."
+  (let* ((m1 (make-instance 'mfn-atom :value "a" :name :alpha :path '(0 0)))
+         (m2 (make-instance 'mfn-atom :value "b" :path '(0 1)))
+         (seq (make-instance 'mfn-sequence
+                             :value '("a" "b")
+                             :by '(:reducing)
+                             :members (list m1 m2))))
+    (apply-modality-defaults (make-web-medium) seq)
+    (is (eq :alpha (getf (mfn-value (first (mfn-controls m1))) :target)))
+    (is (eql 1 (getf (mfn-value (first (mfn-controls m2))) :target)))))
 
 (def-test bare-suppresses-defaults ()
   "A sequence with :bare does not get Tier-1 affordances."
@@ -226,12 +250,64 @@
     (is (search "entering" (tree-class tree)))))
 
 (def-test render-activating-atom ()
-  "An :activating control renders as a button with data-action."
-  (let* ((m (make-control :save "Save" nil))
+  "An :activating control renders as a button with data-action, and with no
+   data-args or data-target when it has neither."
+  (let* ((m (make-control :save "Save"))
          (tree (generate (make-web-medium) m)))
     (is (eq :button (tree-tag tree)))
     (is (search "mfn-control" (tree-class tree)))
-    (is (equal "save" (tree-attr tree :data-action)))))
+    (is (equal "save" (tree-attr tree :data-action)))
+    (is (null (tree-attr tree :data-args)))
+    (is (null (tree-attr tree :data-target)))))
+
+(def-test render-control-args-as-json ()
+  "A control's arguments render as a JSON object in data-args, with
+   camel-cased keys, as the dispatcher posts them."
+  (let* ((tree (generate (make-web-medium)
+                         (make-control :edit "Edit" :args '(:index 3 :article-kind "post"))))
+         (args (com.inuoe.jzon:parse (tree-attr tree :data-args))))
+    (is (hash-table-p args))
+    (is (eql 3 (gethash "index" args)))
+    (is (equal "post" (gethash "articleKind" args)))))
+
+(def-test render-control-target-key ()
+  "A control's target renders as a navigation key: a name camel-cased as
+   field names are, or a position as a decimal string."
+  (let ((medium (make-web-medium)))
+    (is (equal "articleTitle"
+               (tree-attr (generate medium (make-control :remove "×" :target :article-title))
+                          :data-target)))
+    (is (equal "2"
+               (tree-attr (generate medium (make-control :remove "×" :target 2))
+                          :data-target)))))
+
+(def-test render-control-target-rejects-path ()
+  "A positional path is not a navigation key; rendering a control that
+   targets one signals an error rather than putting the path in the markup."
+  (signals error
+    (generate (make-web-medium) (make-control :remove "×" :target '(0 1)))))
+
+(def-test render-controls-sequence-as-toolbar ()
+  "A sequence whose AS role is :controls renders with the ARIA role toolbar,
+   as a control bank does."
+  (let ((tree (generate (make-web-medium)
+                        (construct '(:as :controls)
+                                   (list (make-control :new "new")
+                                         (make-control :back "back"))))))
+    (is (equal "toolbar" (tree-attr tree :role)))))
+
+(def-test render-sequence-roles-as-classes ()
+  "A sequence's AS roles appear in its class list, so that styles for a role,
+   such as the control banks' styles for controls, apply to it."
+  (let ((tree (generate (make-web-medium)
+                        (construct '(:as :controls) (list (make-control :new "new"))))))
+    (is (search "mfn-sequence" (tree-class tree)))
+    (is (search "controls" (tree-class tree)))))
+
+(def-test render-plain-sequence-not-toolbar ()
+  "A sequence without the :controls role has no toolbar role."
+  (is (null (tree-attr (generate (make-web-medium) (construct '(:by :observing) (list "a" "b")))
+                       :role))))
 
 (def-test render-sequence ()
   "A sequence renders as a div with mfn-item children."
@@ -280,7 +356,7 @@
 (def-test render-with-controls ()
   "An atom with injected controls gets wrapped with a header."
   (let* ((m (make-instance 'mfn-atom :value "x" :by '(:observing)))
-         (c (make-control :remove "×" nil)))
+         (c (make-control :remove "×")))
     (push c (mfn-controls m))
     (let ((tree (generate (make-web-medium) m)))
       (is (eq :div (tree-tag tree)))
@@ -315,3 +391,132 @@
     (is (typep m 'mfn-atom))
     (is (equal "hello" (mfn-value m)))
     (is (eq :test (mfn-name m)))))
+
+(def-test bridge-join-root-renders-context ()
+  "An old-grammar component with a :join — the root of a dual-bank pane —
+   renders the branch's context and region attributes, so that controls in
+   its banks and its content find their branch there."
+  (let ((tree (seed.modulate::generate
+               (make-web-medium)
+               (seed.modulate::dx (seed.modulate::uic-series :join (list :demo.access :cms)
+                                                             :type (:column))
+                   (list "a" "b")))))
+    (is (equal "demo.access" (tree-attr tree :data-seed-system)))
+    (is (equal "cms" (tree-attr tree :data-seed-branch)))
+    (is (equal "cms" (tree-attr tree :data-seed-region)))))
+
+(def-test bridge-join-root-not-repeated-inside ()
+  "A manifestation of the same branch rendered inside a :join root does not
+   repeat the context the root already declares."
+  (let* ((control (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+                    (make-control :new "new")))
+         (tree (seed.modulate::generate
+                (make-web-medium)
+                (seed.modulate::dx (seed.modulate::uic-series :join (list :demo.access :cms)
+                                                              :type (:column))
+                    (list control))))
+         (button (find-tree tree (lambda (node) (eq :button (tree-tag node))))))
+    (is (not (null button)))
+    (is (null (tree-attr button :data-seed-branch)))))
+
+(def-test bridge-legacy-controls-series-as-toolbar ()
+  "An old-grammar series of type :controls, as the existing systems return
+   for their control banks, renders with the ARIA role toolbar."
+  (let ((tree (seed.modulate::generate
+               (make-web-medium)
+               (seed.modulate::dx (seed.modulate::uic-series :type (:ui :controls))
+                   (list "one" "two")))))
+    (is (equal "toolbar" (tree-attr tree :role)))))
+
+;;; =======================================================================
+;;; Branch context: captured at construction, rendered on subtree roots
+;;; =======================================================================
+
+(in-suite m2-context)
+
+(def-test context-captured-at-construction ()
+  "A manifestation built while a branch's function runs records that
+   branch's context."
+  (let ((c (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+             (make-control :new "new"))))
+    (is (equal '(:system :demo.access :branch :cms) (mfn-context c)))))
+
+(def-test context-captured-by-dx ()
+  "A manifestation built by a new-grammar dx form records the branch context,
+   as do its members."
+  (let ((m (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+             (seed.modulate::dx (:as :controls) (list "a" (make-control :new "new"))))))
+    (is (equal '(:system :demo.access :branch :cms) (mfn-context m)))
+    (is (every (lambda (member) (equal (mfn-context m) (mfn-context member)))
+               (mfn-members m)))))
+
+(def-test context-captured-by-express ()
+  "A manifestation expressed from a stored fx form records the branch context."
+  (let ((m (let ((seed.generate:*branch-context* '(:system :demo.access :branch :catalog)))
+             (express-new '(fx "x" (:by :observing))))))
+    (is (equal '(:system :demo.access :branch :catalog) (mfn-context m)))))
+
+(def-test context-absent-outside-a-branch ()
+  "A manifestation built outside any branch's function has no context."
+  (is (null (mfn-context (make-control :new "new")))))
+
+(def-test context-rendered-on-root ()
+  "The root of a rendered subtree carries its recorded context as the
+   branch's address and region."
+  (let* ((c (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+              (make-control :back "Back")))
+         (tree (generate (make-web-medium) c)))
+    (is (equal "demo.access" (tree-attr tree :data-seed-system)))
+    (is (equal "cms" (tree-attr tree :data-seed-branch)))
+    (is (equal "cms" (tree-attr tree :data-seed-region)))
+    (is (equal "back" (tree-attr tree :data-action)))))
+
+(def-test context-kept-under-another-binding ()
+  "A manifestation rendered while another branch's function runs keeps the
+   context it was built with, as bank controls rendered by the :view branch
+   must."
+  (let* ((c (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+              (make-control :new "new")))
+         (tree (let ((seed.generate:*branch-context* '(:system :demo.access :branch :view)))
+                 (generate (make-web-medium) c))))
+    (is (equal "cms" (tree-attr tree :data-seed-branch)))))
+
+(def-test context-not-repeated-in-members ()
+  "Members sharing their root's context do not repeat it."
+  (let* ((seq (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+                (construct '(:as :controls) (list (make-control :new "new")))))
+         (tree (generate (make-web-medium) seq))
+         (button (find-tree tree (lambda (node) (eq :button (tree-tag node))))))
+    (is (equal "cms" (tree-attr tree :data-seed-branch)))
+    (is (not (null button)))
+    (is (null (tree-attr button :data-seed-branch)))))
+
+(def-test context-declared-where-it-changes ()
+  "A member built in another branch declares its own context inside its
+   root's."
+  (let* ((inner (let ((seed.generate:*branch-context* '(:system :demo.access :branch :catalog)))
+                  (make-control :open "open")))
+         (seq (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+                (construct '(:as :controls) (list inner))))
+         (button (find-tree (generate (make-web-medium) seq)
+                            (lambda (node) (eq :button (tree-tag node))))))
+    (is (equal "catalog" (tree-attr button :data-seed-branch)))))
+
+(def-test context-injected-controls-take-member-context ()
+  "Controls the Tier-1 defaults inject while rendering take the context of
+   the member they act on, not the branch whose render is running."
+  (let* ((seq (let ((seed.generate:*branch-context* '(:system :demo.access :branch :cms)))
+                (construct '(:by :reducing) (list "a" "b"))))
+         (tree (let ((seed.generate:*branch-context* '(:system :demo.access :branch :view)))
+                 (generate (make-web-medium) seq)))
+         (button (find-tree tree (lambda (node) (eq :button (tree-tag node))))))
+    (is (equal '(:system :demo.access :branch :cms)
+               (mfn-context (first (mfn-controls (first (mfn-members seq)))))))
+    (is (not (null button)))
+    (is (null (tree-attr button :data-seed-branch)))))
+
+(def-test context-absent-renders-no-attributes ()
+  "A manifestation with no recorded context renders no context attributes."
+  (let ((tree (generate (make-web-medium) (make-control :new "new"))))
+    (is (null (tree-attr tree :data-seed-branch)))
+    (is (null (tree-attr tree :data-seed-region)))))

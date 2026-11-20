@@ -203,7 +203,15 @@
                              Populated by Tier-1 modality defaults and processors.")
    (%defaults-applied :accessor mfn-defaults-applied
                       :initform nil
-                      :documentation "Guard so Tier-1 modality defaults run at most once."))
+                      :documentation "Guard so Tier-1 modality defaults run at most once.")
+   (%context :accessor mfn-context
+             :initform seed.generate:*branch-context*
+             :initarg  :context
+             :documentation "The branch this manifestation was built in, as a plist
+                            (:system SYSTEM :branch BRANCH), recorded when it is built.
+                            Some manifestations, such as the controls in a control bank,
+                            are rendered after their branch's call has returned, so the
+                            context cannot be read when rendering."))
   (:documentation
    "Base class for all manifestations — objects produced by expressing fx-annotated forms
     through the IS/AS/BY taxonomy. A manifestation carries its datum along with the three
@@ -459,25 +467,36 @@
 ;;; known) and dispatch on (medium node-class), so a uim-web sorting default
 ;;; can differ from a future uim-terminal one. A node tagged :bare opts out.
 
-(defun make-control (action label target)
+(defun make-control (action label &key target args)
   "Build a control manifestation: a leaf with interface role :controls and
-   modality :activating. ACTION is a keyword naming the action, LABEL is the
-   display text, TARGET is the path of the element the control acts upon."
+   modality :activating. ACTION is a keyword naming the action and LABEL the
+   display text. TARGET is the navigation key of the node the control acts
+   upon — a name, or a position for an anonymous member — never a path.
+   ARGS is a plist of arguments posted with the action."
   (make-instance 'mfn-atom
-                 :value (list :action action :label label :target target)
+                 :value (list :action action :label label :target target :args args)
                  :as (list :controls)
                  :by (list :activating)))
 
+(defun navigation-key (node position)
+  "The navigation key of NODE, a member at POSITION in its sequence: its name,
+   or its position when it has none."
+  (or (and (typep node 'manifestation) (mfn-name node))
+      position))
+
 (defun apply-reducing-default (medium node)
   "Tier-1 :reducing — each member of the sequence may be removed. Inject a
-   remove control into each member's header region (its %controls). The
-   control's target is the member's path, which the renderer wires to the
-   reduce action."
+   remove control into each member's header region (its %controls), targeting
+   the member by its navigation key. The control is built during rendering,
+   so it takes the member's context rather than the one bound then."
   (declare (ignore medium))
-  (dolist (member (mfn-members node))
-    (when (typep member 'manifestation)
-      (push (make-control :remove "×" (mfn-path member))
-            (mfn-controls member)))))
+  (loop :for member :in (mfn-members node)
+        :for position :from 0
+        :when (typep member 'manifestation)
+          :do (let ((control (make-control :remove "×"
+                                           :target (navigation-key member position))))
+                (setf (mfn-context control) (mfn-context member))
+                (push control (mfn-controls member)))))
 
 (defun apply-sorting-default (medium node)
   "Tier-1 :sorting — STUB. Items may be reordered; a drag-handle wrapper
@@ -536,11 +555,27 @@
 ;;; the medium is known and the node's members exist. Injected controls are
 ;;; then rendered by the header helper.
 
+;;; A manifestation whose recorded context differs from the one being
+;;; rendered around it is the root of its branch's view, or of a part of one
+;;; embedded elsewhere: it declares the context, and its members are rendered
+;;; within it, so they do not repeat it.
+
+(defun declare-context (tree context)
+  "Add the attributes declaring CONTEXT to the top element of a Spinneret TREE."
+  (if (and (consp tree) (keywordp (first tree)))
+      (list* (first tree) (append (seed.modulate::context-attributes context) (rest tree)))
+      tree))
+
 (defmethod generate :around ((medium seed.modulate::uim-web) (m manifestation))
   (unless (mfn-defaults-applied m)
     (apply-modality-defaults medium m)
     (setf (mfn-defaults-applied m) t))
-  (call-next-method))
+  (let ((context (mfn-context m)))
+    (if (and context (not (equal context seed.modulate::*rendered-context*)))
+        (declare-context (let ((seed.modulate::*rendered-context* context))
+                           (call-next-method))
+                         context)
+        (call-next-method))))
 
 ;;; ===================================================================
 ;;; SECTION: Provisioning — generate methods for BY :provision-* modalities
@@ -685,6 +720,15 @@
                      item-html))))))))))
 
 
+(defun navigation-key-string (key)
+  "Render a navigation KEY for the client: a name camel-cased as field names
+   are, or a position as a decimal string.  A positional path is not a key,
+   and signals a type error rather than reaching the markup."
+  (etypecase key
+    (symbol  (lisp->camel-case key))
+    (integer (princ-to-string key))
+    (string  key)))
+
 (defun emit-header (medium node &optional header-members)
   "Produce the header div for NODE if it has injected controls or designated
    header members, else NIL. Controls and valence header members share the
@@ -709,14 +753,17 @@
            (or provisioned
             (case modality
              (:activating
-              ;; An injected control: render as a button.
-              (destructuring-bind (&key action label target) value
+              ;; A control: a button the client's delegated listener handles
+              ;; by its data-action, posting data-args and data-target.
+              (destructuring-bind (&key action label target args) value
                 `(:button :class ,(format nil "button mfn-control~@[ ~a~]"
                                           (when action (string-downcase (string action))))
                           ,@(when action
                               (list :data-action (string-downcase (string action))))
+                          ,@(when args
+                              (list :data-args (seed.generate::json-convert-to args)))
                           ,@(when target
-                              (list :data-target (format nil "~{~a~^ ~}" target)))
+                              (list :data-target (navigation-key-string target)))
                           ,(or label ""))))
 
              (:entering
@@ -804,17 +851,21 @@
     (when is-sorting  (push "sortable" class-parts))
     (when is-reducing (push "reducable" class-parts))
     (when layout      (push "grid-layout" class-parts))
+    (dolist (role (mfn-as m))
+      (push (string-downcase (string role)) class-parts))
 
     (or provisioned
-        (let ((class-string (format nil "~{~a~^ ~}" (reverse class-parts))))
+        (let ((class-string (format nil "~{~a~^ ~}" (reverse class-parts)))
+              ;; A sequence of controls, as a control bank is, is a toolbar.
+              (role (and (member :controls (mfn-as m)) (list :role "toolbar"))))
           (if valence
               (multiple-value-bind (header-members body-groups) (split-by-valence members valence)
-                `(:div :class ,class-string
+                `(:div :class ,class-string ,@role
                        ,@(let ((h (emit-header medium m header-members))) (when h (list h)))
                        ,@(loop :for group :in body-groups
                                :collect `(:div :class "mfn-body-group"
                                                ,@(generate-item-list medium group layout)))))
-              `(:div :class ,class-string
+              `(:div :class ,class-string ,@role
                      ,@(let ((h (emit-header medium m))) (when h (list h)))
                      ,@(generate-item-list medium members layout)))))))
 
